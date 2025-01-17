@@ -13,4 +13,5 @@ import org.jetbrains.exposed.sql.*
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 
 fun Application.configureSerialization() {
+    install(ContentNegotiation) {}
 }

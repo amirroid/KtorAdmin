@@ -11,9 +11,10 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
-import annotations.info.ColumnInfo
 import models.ColumnSet
 import models.ColumnType
+import models.Limit
+import models.UploadTarget
 import utils.*
 
 class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
@@ -36,6 +37,8 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         val generatedClass = generateClass(classDeclaration, fileName, columns)
         val fileSpec = FileSpec.builder(packageName, fileName)
             .addImport(ColumnType::class.java.packageName, ColumnType::class.java.simpleName)
+            .addImport(UploadTarget::class.java.packageName, UploadTarget::class.java.simpleName)
+            .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(
@@ -102,18 +105,9 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         declarations.filterIsInstance<KSPropertyDeclaration>().forEach { property ->
             val type = property.type.resolve()
             if (type.toClassName().canonicalName == COLUMN_TYPE) {
-                val genericArgument = type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName
-                val name = property.simpleName.asString()
-                val infoAnnotation =
-                    property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
-                val columnName = infoAnnotation?.findArgument<String>("columnName") ?: name
-                val showInPanel = infoAnnotation?.findArgument<Boolean>("showInPanel") ?: true
-                val columnType = guessPropertyType(genericArgument ?: return@forEach)
-                columns += ColumnSet(
-                    columnName = columnName,
-                    type = columnType,
-                    showInPanel = showInPanel
-                )
+                ColumnsUtils.getColumnSets(property, type)?.let {
+                    columns += it
+                }
             }
         }
         return columns

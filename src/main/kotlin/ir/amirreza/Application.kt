@@ -11,4 +11,5 @@ fun Application.module() {
     configureDatabases()
     configureTemplating()
     configureRouting()
+    configureAdmin()
 }
