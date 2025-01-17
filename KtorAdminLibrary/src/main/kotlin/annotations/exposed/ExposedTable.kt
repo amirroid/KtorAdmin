@@ -5,6 +5,8 @@ package annotations.exposed
 @Retention(AnnotationRetention.SOURCE)
 annotation class ExposedTable(
     val tableName: String,
-    val pluralName: String,
+    val singularName: String = "",
+    val pluralName: String = "",
     val groupName: String = "",
+    val databaseKey: String = ""
 )

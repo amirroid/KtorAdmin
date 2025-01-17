@@ -1,16 +1,35 @@
 package plugins
 
-import io.ktor.http.*
-import io.ktor.serialization.*
+import com.vladsch.kotlin.jdbc.HikariCP
+import com.vladsch.kotlin.jdbc.SessionImpl
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import io.ktor.util.*
+import models.JDBCDrivers
+import modules.configureRouting
+import modules.configureTemplating
 import repository.AdminTableRepository
 
 class KtorAdmin {
     class Configuration {
+        fun jdbc(key: String?, url: String, username: String, password: String, driver: JDBCDrivers) {
+            val config = HikariConfig().apply {
+                driverClassName = driver.driver
+                this.password = password
+                this.username = username
+                this.jdbcUrl = url
+            }
+            val dataSource = HikariDataSource(config)
+            if (key == null) {
+                HikariCP.defaultCustom(dataSource)
+                SessionImpl.defaultDataSource = { HikariCP.dataSource() }
+            } else {
+                HikariCP.custom(key, dataSource)
+            }
+        }
     }
+
     companion object Plugin : BaseApplicationPlugin<Application, Configuration, KtorAdmin> {
         override val key: AttributeKey<KtorAdmin>
             get() = AttributeKey("Ktor Admin")
@@ -18,21 +37,8 @@ class KtorAdmin {
         override fun install(pipeline: Application, configure: Configuration.() -> Unit): KtorAdmin {
             val tables = AdminTableRepository.getAll()
             val configuration = Configuration().apply(configure)
-            pipeline.routing {
-                get("/admin") {
-                    call.respondText(
-                        contentType = ContentType.parse("text/html; charset=utf-8"),
-                        text = tables
-                            .joinToString(prefix = "<ul>", postfix = "</ul>", separator = "\n") {
-                                "<li>${it.getTableName()}<ul>${
-                                    it.getAllColumns().joinToString(separator = "") {
-                                        "<li>${it.columnName} = ${it.type}</li>"
-                                    }
-                                }</ul></li>"
-                            }
-                    )
-                }
-            }
+            pipeline.configureTemplating()
+            pipeline.configureRouting(tables)
             return KtorAdmin()
         }
     }

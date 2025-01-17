@@ -27,8 +27,17 @@ dependencies {
     // Ktor Core
     val ktorVersion = "3.0.3"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
-}
 
+    // Templating
+    implementation("io.ktor:ktor-server-velocity:$ktorVersion")
+
+    // JDBC
+    implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.0")
+    implementation("com.zaxxer:HikariCP:6.2.1")
+
+    // Postgres
+    implementation("org.postgresql:postgresql:42.7.4")
+}
 tasks.test {
     useJUnitPlatform()
 }

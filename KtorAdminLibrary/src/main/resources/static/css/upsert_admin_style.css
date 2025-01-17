@@ -1,0 +1,110 @@
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+form {
+    background-color: #1f1f1f;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+}
+
+label {
+    font-size: 14px;
+    margin-bottom: 4px;
+    display: block;
+    color: #b0b0b0;
+}
+
+input, select, button, input[type="file"], .checkbox-container input[type="checkbox"] {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus, button:focus, input[type="file"]:focus {
+    outline: none;
+    border-color: #6200ea;
+    box-shadow: 0 0 5px rgba(98, 0, 234, 0.6);
+}
+
+input[type="checkbox"] {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #2c2c2c;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    margin-right: 8px;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #6200ea;
+    border-color: #6200ea;
+}
+
+input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background-color: white;
+    border-radius: 2px;
+    transition: transform 0.2s ease-in-out;
+}
+
+input[type="checkbox"]:checked::after {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+button, input[type="file"]::file-selector-button {
+    background-color: #6200ea;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover, input[type="file"]::file-selector-button:hover {
+    background-color: #8900EAFF;
+}
+
+button {
+    margin-top: 16px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.checkbox-container label {
+    margin-left: 8px;
+    font-size: 14px;
+}

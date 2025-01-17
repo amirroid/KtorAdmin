@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grouped Tables</title>
+    <link href="/static/css/amin_panel_styles.css" rel="stylesheet">
+    <script>
+        function redirectToTable(tableName) {
+            window.location.href = "./" + tableName;
+        }
+    </script>
+</head>
+<body>
+
+    #foreach($tableGroup in $tableGroups)
+    <h2>${tableGroup.group}</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Table Name</th>
+            <th>Plural Name</th>
+        </tr>
+        </thead>
+        <tbody>
+            #foreach($table in $tableGroup.tables)
+            <tr onclick="redirectToTable('${table.pluralName}')">
+                <td>${table.tableName}</td>
+                <td>${table.pluralName}</td>
+            </tr>
+            #end
+        </tbody>
+    </table>
+    #end
+
+</body>
+</html>

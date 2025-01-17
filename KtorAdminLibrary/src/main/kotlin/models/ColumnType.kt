@@ -19,6 +19,7 @@ enum class ColumnType {
     BOOLEAN,
     ENUMERATION,
     DATE,
+    DURATION,
     DATETIME,
     NOT_AVAILABLE
 }

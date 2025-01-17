@@ -18,5 +18,8 @@ fun guessPropertyType(type: String) = when (type) {
     "kotlin.Char" -> ColumnType.CHAR
     "kotlin.ByteArray" -> ColumnType.BINARY
     "kotlin.Boolean" -> ColumnType.BOOLEAN
+    "kotlinx.datetime.LocalDateTime" -> ColumnType.DATETIME
+    "kotlinx.datetime.LocalDate" -> ColumnType.DATE
+    "kotlin.time.Duration" -> ColumnType.DURATION
     else -> ColumnType.NOT_AVAILABLE
 }

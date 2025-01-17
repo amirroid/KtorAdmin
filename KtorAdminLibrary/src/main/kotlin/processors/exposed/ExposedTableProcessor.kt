@@ -65,28 +65,42 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addStatement("return listOf(${columnSets.joinToString { it.toSuitableStringForFile() }})")
             .build()
 
+
+        val tableName = classDeclaration.getTableName()
         val getTableNameFunction = FunSpec.builder("getTableName")
             .addModifiers(KModifier.OVERRIDE)
             .returns(String::class)
-            .addStatement("return %S", classDeclaration.getTableName())
+            .addStatement("return %S", tableName)
             .build()
 
         val getPluralNameFunction = FunSpec.builder("getPluralName")
             .addModifiers(KModifier.OVERRIDE)
             .returns(String::class)
-            .addStatement("return %S", classDeclaration.getPluralName())
+            .addStatement("return %S", classDeclaration.getPluralName(tableName))
+            .build()
+        val getSingularNameFunction = FunSpec.builder("getSingularName")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class)
+            .addStatement("return %S", classDeclaration.getSingularName(tableName))
             .build()
         val getGroupNameFunction = FunSpec.builder("getGroupName")
             .addModifiers(KModifier.OVERRIDE)
-            .returns(String::class)
-            .addStatement("return %S", classDeclaration.getGroupName())
+            .returns(String::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${classDeclaration.getGroupName()}")
+            .build()
+        val getDatabaseKeyFunction = FunSpec.builder("getDatabaseKey")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${classDeclaration.getDatabaseKey()}")
             .build()
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminTable))
             .addFunction(getAllColumnsFunction)
             .addFunction(getTableNameFunction)
+            .addFunction(getSingularNameFunction)
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
+            .addFunction(getDatabaseKeyFunction)
             .build()
     }
 
@@ -120,13 +134,21 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         ?.find { it.name?.asString() == "tableName" }
         ?.value as? String ?: ""
 
-    private fun KSClassDeclaration.getGroupName() = getAnnotationArguments()
+    private fun KSClassDeclaration.getGroupName() = (getAnnotationArguments()
         ?.find { it.name?.asString() == "groupName" }
-        ?.value as? String ?: ""
+        ?.value as? String)?.takeIf { it.isNotEmpty() }
 
-    private fun KSClassDeclaration.getPluralName() = getAnnotationArguments()
+    private fun KSClassDeclaration.getDatabaseKey() = (getAnnotationArguments()
+        ?.find { it.name?.asString() == "databaseKey" }
+        ?.value as? String)?.takeIf { it.isNotEmpty() }
+
+    private fun KSClassDeclaration.getPluralName(tableName: String) = (getAnnotationArguments()
         ?.find { it.name?.asString() == "pluralName" }
-        ?.value as? String ?: ""
+        ?.value as? String)?.takeIf { it.isNotEmpty() } ?: (tableName + "s")
+
+    private fun KSClassDeclaration.getSingularName(tableName: String) = (getAnnotationArguments()
+        ?.find { it.name?.asString() == "singularName" }
+        ?.value as? String)?.takeIf { it.isNotEmpty() } ?: (tableName + "s")
 
     private fun KSClassDeclaration.getAnnotationArguments() = annotations
         .find { it.shortName.asString() == ExposedTable::class.simpleName }

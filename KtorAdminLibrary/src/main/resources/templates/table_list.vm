@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grouped Tables</title>
+    <link href="/static/css/amin_panel_styles.css" rel="stylesheet">
+    <script>
+        function redirectToAdd() {
+            window.location.href =  "./add/";
+        }
+    </script>
+</head>
+<body>
+
+<h2>${pluralName}</h2>
+<table>
+    <thead>
+    <tr>
+        #foreach($columnName in $columnNames)
+            <th>$columnName</th>
+        #end
+    </tr>
+    </thead>
+    <tbody>
+        #foreach($data in $rows)
+        <tr onclick="redirectToAdd()">
+            #foreach($item in $data)
+                <td>$item</td>
+            #end
+        </tr>
+        #end
+    </tbody>
+</table>
+
+</body>
+</html>

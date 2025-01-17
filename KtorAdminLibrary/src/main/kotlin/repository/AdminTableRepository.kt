@@ -2,9 +2,10 @@ package repository
 
 import org.reflections.Reflections
 import utils.AdminTable
+import utils.Constants
 
 internal object AdminTableRepository {
-    private const val PACKAGE_NAME = "ir.amirreza"
+    private const val PACKAGE_NAME = Constants.PACKAGE_NAME
 
     fun getAll(): List<AdminTable> {
         val tables = mutableListOf<AdminTable>()

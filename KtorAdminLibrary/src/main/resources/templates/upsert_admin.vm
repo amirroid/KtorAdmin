@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <title>Upsert Form</title>
+    <link href="/static/css/upsert_admin_style.css" rel="stylesheet">
+</head>
+<body>
+    #set($capitalizedName = $tableName.substring(0, 1).toUpperCase() + $tableName.substring(1))
+    <h2>$capitalizedName</h2>
+    <form action="/admin/$table" method="post">
+    #foreach($column in $columns)
+        <label>$column.columnName</label>
+
+        <!-- STRING -->
+        #if($column.type.name == "STRING")
+            <input type="text" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- INTEGER / UINTEGER -->
+        #if($column.type.name == "INTEGER" || $column.type.name == "UINTEGER")
+            <input type="number" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- SHORT / USHORT -->
+        #if($column.type.name == "SHORT" || $column.type.name == "USHORT")
+            <input type="number" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- LONG / ULONG -->
+        #if($column.type.name == "LONG" || $column.type.name == "ULONG")
+            <input type="number" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- DOUBLE -->
+        #if($column.type.name == "DOUBLE")
+            <input type="number" step="any" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- FLOAT -->
+        #if($column.type.name == "FLOAT")
+            <input type="number" step="any" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- BIG_DECIMAL -->
+        #if($column.type.name == "BIG_DECIMAL")
+            <input type="text" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- CHAR -->
+        #if($column.type.name == "CHAR")
+            <input type="text" maxlength="1" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- BINARY -->
+        #if($column.type.name == "BINARY")
+            <input type="file" name="$column.columnName"/>
+        #end
+
+        <!-- BOOLEAN -->
+        #if($column.type.name == "BOOLEAN")
+            <input type="checkbox" name="$column.columnName" #if($column.defaultValue == "true")checked#end />
+        #end
+
+        <!-- ENUMERATION -->
+        #if($column.type.name == "ENUMERATION")
+            <select name="$column.columnName">
+                #foreach($value in $column.enumerationValues)
+                    <option value="$value" #if($value == $column.defaultValue)selected#end>$value</option>
+                #end
+            </select>
+        #end
+
+        <!-- DATE -->
+        #if($column.type.name == "DATE")
+            <input type="date" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- DATETIME -->
+        #if($column.type.name == "DATETIME")
+            <input type="datetime-local" name="$column.columnName" value="$!column.defaultValue"/>
+        #end
+
+        <!-- FILE -->
+        #if($column.type.name == "FILE")
+            <input type="file" name="$column.columnName"/>
+        #end
+
+    #end
+    <button type="submit">Submit</button>
+</form>
+</body>
+</html>
