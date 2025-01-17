@@ -54,7 +54,7 @@ fun Routing.configureGetRouting(tables: List<AdminTable>) {
                             "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm", model = mapOf(
                                 "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
                                 "rows" to data,
-                                "pluralName" to pluralName.orEmpty().replaceFirstChar { it.lowercaseChar() }
+                                "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() }
                             )
                         )
                     )
