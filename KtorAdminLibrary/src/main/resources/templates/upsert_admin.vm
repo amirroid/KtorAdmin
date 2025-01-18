@@ -6,49 +6,57 @@
 </head>
 <body>
     #set($capitalizedName = $tableName.substring(0, 1).toUpperCase() + $tableName.substring(1))
-    <h2>$capitalizedName</h2>
-    <form action="/admin/$table" method="post">
+<h2>$capitalizedName</h2>
+<form method="post">
     #foreach($column in $columns)
+        #if($values.get($column.columnName))
+            #set($defaultValue = $values.get($column.columnName))
+        #else
+            #if ($column.defaultValue)
+                #set($defaultValue = $column.defaultValue)
+            #end
+        #end
+
         <label>$column.columnName</label>
 
         <!-- STRING -->
         #if($column.type.name == "STRING")
-            <input type="text" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="text" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- INTEGER / UINTEGER -->
         #if($column.type.name == "INTEGER" || $column.type.name == "UINTEGER")
-            <input type="number" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="number" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- SHORT / USHORT -->
         #if($column.type.name == "SHORT" || $column.type.name == "USHORT")
-            <input type="number" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="number" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- LONG / ULONG -->
         #if($column.type.name == "LONG" || $column.type.name == "ULONG")
-            <input type="number" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="number" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- DOUBLE -->
         #if($column.type.name == "DOUBLE")
-            <input type="number" step="any" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="number" step="any" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- FLOAT -->
         #if($column.type.name == "FLOAT")
-            <input type="number" step="any" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="number" step="any" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- BIG_DECIMAL -->
         #if($column.type.name == "BIG_DECIMAL")
-            <input type="text" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="text" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- CHAR -->
         #if($column.type.name == "CHAR")
-            <input type="text" maxlength="1" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="text" maxlength="1" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- BINARY -->
@@ -58,26 +66,26 @@
 
         <!-- BOOLEAN -->
         #if($column.type.name == "BOOLEAN")
-            <input type="checkbox" name="$column.columnName" #if($column.defaultValue == "true")checked#end />
+            <input type="checkbox" name="$column.columnName" #if($!defaultValue == "true")checked#end/>
         #end
 
         <!-- ENUMERATION -->
         #if($column.type.name == "ENUMERATION")
             <select name="$column.columnName">
                 #foreach($value in $column.enumerationValues)
-                    <option value="$value" #if($value == $column.defaultValue)selected#end>$value</option>
+                    <option value="$value" #if($value == $!defaultValue)selected#end>$value</option>
                 #end
             </select>
         #end
 
         <!-- DATE -->
         #if($column.type.name == "DATE")
-            <input type="date" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="date" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- DATETIME -->
         #if($column.type.name == "DATETIME")
-            <input type="datetime-local" name="$column.columnName" value="$!column.defaultValue"/>
+            <input type="datetime-local" name="$column.columnName" value="$!defaultValue"/>
         #end
 
         <!-- FILE -->

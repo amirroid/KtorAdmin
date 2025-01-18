@@ -34,9 +34,6 @@ dependencies {
     // JDBC
     implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.0")
     implementation("com.zaxxer:HikariCP:6.2.1")
-
-    // Postgres
-    implementation("org.postgresql:postgresql:42.7.4")
 }
 tasks.test {
     useJUnitPlatform()

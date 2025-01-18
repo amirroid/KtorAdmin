@@ -57,6 +57,13 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
     ): TypeSpec {
         val adminTable = PackagesUtils.getAdminTableClass()
         val columnSet = PackagesUtils.getColumnSetClass()
+
+        val primaryKey = classDeclaration.getPrimaryKey()
+
+        if (!columnSets.any { it.columnName == primaryKey }) {
+            throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any column in the table.")
+        }
+
         val getAllColumnsFunction = FunSpec.builder("getAllColumns")
             .addModifiers(KModifier.OVERRIDE)
             .returns(
@@ -64,7 +71,6 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             )
             .addStatement("return listOf(${columnSets.joinToString { it.toSuitableStringForFile() }})")
             .build()
-
 
         val tableName = classDeclaration.getTableName()
         val getTableNameFunction = FunSpec.builder("getTableName")
@@ -93,9 +99,15 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .returns(String::class.asTypeName().copy(nullable = true))
             .addStatement("return ${classDeclaration.getDatabaseKey()}")
             .build()
+        val getPrimaryKeyFunctions = FunSpec.builder("getPrimaryKey")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class)
+            .addStatement("return %S", primaryKey)
+            .build()
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminTable))
             .addFunction(getAllColumnsFunction)
+            .addFunction(getPrimaryKeyFunctions)
             .addFunction(getTableNameFunction)
             .addFunction(getSingularNameFunction)
             .addFunction(getPluralNameFunction)
@@ -132,6 +144,10 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
 
     private fun KSClassDeclaration.getTableName() = getAnnotationArguments()
         ?.find { it.name?.asString() == "tableName" }
+        ?.value as? String ?: ""
+
+    private fun KSClassDeclaration.getPrimaryKey() = getAnnotationArguments()
+        ?.find { it.name?.asString() == "primaryKey" }
         ?.value as? String ?: ""
 
     private fun KSClassDeclaration.getGroupName() = (getAnnotationArguments()

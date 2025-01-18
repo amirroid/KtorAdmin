@@ -7,7 +7,7 @@
     <link href="/static/css/amin_panel_styles.css" rel="stylesheet">
     <script>
         function redirectToTable(tableName) {
-            window.location.href = "./" + tableName;
+            window.location.href = window.location.href + "/" + tableName;
         }
     </script>
 </head>

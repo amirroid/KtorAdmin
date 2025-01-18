@@ -1,11 +1,7 @@
 package modules
 
-import com.vladsch.kotlin.jdbc.HikariCP
-import com.vladsch.kotlin.jdbc.sqlQuery
-import com.vladsch.kotlin.jdbc.usingDefault
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.velocity.*
@@ -19,18 +15,14 @@ import utils.getAllAllowToShowColumns
 fun Application.configureRouting(tables: List<AdminTable>) {
     routing {
         staticResources("/static", "static")
-        post("/admin/{tableName}") {
-            val table = call.parameters["tableName"]
-            val data = call.receiveParameters()  // دریافت داده‌های فرم
-            println("Received data for table: $table with data: $data")
-        }
         configureGetRouting(tables)
+        configureSavesRouting(tables)
     }
 }
 
 fun Routing.configureGetRouting(tables: List<AdminTable>) {
     val tableGroups = tables.toTableGroups()
-    route("/admin/") {
+    route("/admin") {
         get {
             call.respond(
                 VelocityContent(
@@ -41,7 +33,7 @@ fun Routing.configureGetRouting(tables: List<AdminTable>) {
                 )
             )
         }
-        route("{pluralName}/") {
+        route("/{pluralName}") {
             get {
                 val pluralName = call.parameters["pluralName"]
                 val table = tables.find { it.getPluralName() == pluralName }
@@ -60,7 +52,7 @@ fun Routing.configureGetRouting(tables: List<AdminTable>) {
                     )
                 }
             }
-            get("add/") {
+            get("add") {
                 val pluralName = call.parameters["pluralName"]
                 val table = tables.find { it.getPluralName() == pluralName }
                 if (table == null) {
@@ -69,11 +61,40 @@ fun Routing.configureGetRouting(tables: List<AdminTable>) {
                     call.respond(
                         VelocityContent(
                             "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin.vm", model = mapOf(
-                                "columns" to table.getAllColumns(),
-                                "tableName" to table.getTableName()
+                                "columns" to table.getAllAllowToShowColumns(),
+                                "tableName" to table.getTableName(),
+                                "method" to "post"
                             )
                         )
                     )
+                }
+            }
+            get("/{primaryKey}") {
+                val pluralName = call.parameters["pluralName"]
+                val primaryKey = call.parameters["primaryKey"]
+                val table = tables.find { it.getPluralName() == pluralName }
+                when {
+                    table == null -> call.respondText { "No table found with plural name: $pluralName" }
+                    primaryKey == null -> call.respondText { "No primary key found: $pluralName" }
+                    else -> {
+                        val data = JdbcQueriesRepository.getData(table, primaryKey)
+                        if (data == null) {
+                            call.respondText { "No data found with primary key: $primaryKey" }
+                        } else {
+                            val columns = table.getAllAllowToShowColumns()
+                            call.respond(
+                                VelocityContent(
+                                    "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin.vm", model = mapOf(
+                                        "columns" to columns,
+                                        "tableName" to table.getTableName(),
+                                        "values" to columns.mapIndexed { index, column ->
+                                            column.columnName to data[index]
+                                        }.toMap()
+                                    )
+                                )
+                            )
+                        }
+                    }
                 }
             }
         }

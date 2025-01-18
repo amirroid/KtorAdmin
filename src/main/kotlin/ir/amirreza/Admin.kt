@@ -11,7 +11,7 @@ fun Application.configureAdmin() {
             url = "jdbc:postgresql://localhost:5432/postgres",
             username = "amirreza",
             password = "your_password",
-            driver = JDBCDrivers.POSTGRESQL
+            driver = JDBCDrivers.POSTGRES
         )
     }
 }

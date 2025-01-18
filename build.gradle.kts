@@ -39,6 +39,8 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 
+    // Postgres
+    implementation("org.postgresql:postgresql:42.7.4")
 
     implementation(project(":KtorAdminLibrary"))
     ksp(project(":KtorAdminLibrary"))

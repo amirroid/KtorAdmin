@@ -9,6 +9,7 @@ interface AdminTable {
     fun getPluralName(): String
     fun getGroupName(): String?
     fun getDatabaseKey(): String?
+    fun getPrimaryKey(): String
 }
 
 

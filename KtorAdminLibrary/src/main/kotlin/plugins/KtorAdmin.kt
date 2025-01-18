@@ -13,9 +13,9 @@ import repository.AdminTableRepository
 
 class KtorAdmin {
     class Configuration {
-        fun jdbc(key: String?, url: String, username: String, password: String, driver: JDBCDrivers) {
+        fun jdbc(key: String?, url: String, username: String, password: String, driver: String) {
             val config = HikariConfig().apply {
-                driverClassName = driver.driver
+                driverClassName = driver
                 this.password = password
                 this.username = username
                 this.jdbcUrl = url

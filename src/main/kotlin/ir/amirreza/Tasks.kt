@@ -12,8 +12,9 @@ enum class Priority {
     Low, Medium, High
 }
 
-@ExposedTable("tasks", "task", "tasks")
+@ExposedTable("tasks", "id", "task", "tasks")
 object Tasks : Table() {
+    @ColumnInfo("id", showInPanel = false)
     val id = integer("id").autoIncrement()
     val name = varchar("name", length = 150)
     val description = text("description")

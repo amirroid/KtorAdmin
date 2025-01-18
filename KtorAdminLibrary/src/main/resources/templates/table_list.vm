@@ -6,14 +6,22 @@
     <title>Grouped Tables</title>
     <link href="/static/css/amin_panel_styles.css" rel="stylesheet">
     <script>
+        function redirectToEdit(id) {
+            window.location.href = window.location.href + "/" + id;
+        }
+
         function redirectToAdd() {
-            window.location.href =  "./add/";
+            window.location.href = window.location.href + "/add";
         }
     </script>
 </head>
 <body>
 
-<h2>${pluralName}</h2>
+
+<div class="header-container">
+    <h2>${pluralName}</h2>
+    <button class="add-button" onclick="redirectToAdd()">Add</button>
+</div>
 <table>
     <thead>
     <tr>
@@ -24,8 +32,8 @@
     </thead>
     <tbody>
         #foreach($data in $rows)
-        <tr onclick="redirectToAdd()">
-            #foreach($item in $data)
+        <tr onclick="redirectToEdit($data.primaryKey)">
+            #foreach($item in $data.data)
                 <td>$item</td>
             #end
         </tr>
