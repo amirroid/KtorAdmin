@@ -13,6 +13,7 @@ fun ColumnSet.toSuitableStringForFile() = """
     |ColumnSet(
     |    columnName = "$columnName",
     |    type = ColumnType.${type},
+    |    nullable = $nullable,
     |    showInPanel = $showInPanel,
     |    uploadTarget = ${uploadTarget?.toFormattedString()},
     |    allowedMimeTypes = ${allowedMimeTypes?.toSuitableStringForFile()},

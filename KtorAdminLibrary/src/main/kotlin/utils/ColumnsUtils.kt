@@ -30,6 +30,7 @@ object ColumnsUtils {
             else -> guessPropertyType(genericArgument)
         }
         val showInPanel = infoAnnotation?.findArgument<Boolean>("showInPanel") ?: true
+        val nullable = infoAnnotation?.findArgument<Boolean>("nullable") ?: false
         val defaultValue = infoAnnotation?.findArgument<String>("defaultValue")?.takeIf { it.isNotEmpty() }
         val uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations)
         val allowedMimeTypes =
@@ -37,6 +38,7 @@ object ColumnsUtils {
         return ColumnSet(
             columnName = columnName,
             type = columnType,
+            nullable = nullable,
             showInPanel = showInPanel,
             uploadTarget = uploadTarget,
             allowedMimeTypes = allowedMimeTypes,

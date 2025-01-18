@@ -5,8 +5,7 @@
     <link href="/static/css/upsert_admin_style.css" rel="stylesheet">
 </head>
 <body>
-    #set($capitalizedName = $tableName.substring(0, 1).toUpperCase() + $tableName.substring(1))
-<h2>$capitalizedName</h2>
+<h2>$singularTableName</h2>
 <form method="post">
     #foreach($column in $columns)
         #if($values.get($column.columnName))

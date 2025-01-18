@@ -46,7 +46,7 @@ fun Routing.configureGetRouting(tables: List<AdminTable>) {
                             "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm", model = mapOf(
                                 "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
                                 "rows" to data,
-                                "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() }
+                                "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
                             )
                         )
                     )
@@ -63,7 +63,8 @@ fun Routing.configureGetRouting(tables: List<AdminTable>) {
                             "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin.vm", model = mapOf(
                                 "columns" to table.getAllAllowToShowColumns(),
                                 "tableName" to table.getTableName(),
-                                "method" to "post"
+                                "method" to "post",
+                                "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
                             )
                         )
                     )
@@ -89,7 +90,8 @@ fun Routing.configureGetRouting(tables: List<AdminTable>) {
                                         "tableName" to table.getTableName(),
                                         "values" to columns.mapIndexed { index, column ->
                                             column.columnName to data[index]
-                                        }.toMap()
+                                        }.toMap(),
+                                        "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
                                     )
                                 )
                             )

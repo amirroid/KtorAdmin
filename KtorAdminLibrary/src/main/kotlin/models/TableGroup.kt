@@ -9,7 +9,7 @@ internal class TableGroup(
 
 internal fun List<AdminTable>.toTableGroups() = groupBy { it.getGroupName() }.map { (groupName, tables) ->
     TableGroup(
-        group = groupName ?: "Default",
+        group = groupName?.replaceFirstChar { it.uppercaseChar() } ?: "Default",
         tables = tables
     )
-}
+}.sortedByDescending { it.group == "Default" }
