@@ -10,6 +10,5 @@ annotation class ColumnInfo(
     val columnName: String,
     val defaultValue: String = "",
     val nullable: Boolean = false,
-    val showInPanel: Boolean = true,
     val limits: String = ""
 )

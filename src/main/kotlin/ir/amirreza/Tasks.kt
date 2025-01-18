@@ -3,6 +3,7 @@ package ir.amirreza
 import annotations.enumeration.EnumerationColumn
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
+import annotations.info.IgnoreColumn
 import annotations.limit.ColumnLimits
 import annotations.uploads.AwsS3Upload
 import org.jetbrains.exposed.sql.ReferenceOption
@@ -14,7 +15,7 @@ enum class Priority {
 
 @ExposedTable("tasks", "id", "task", "tasks")
 object Tasks : Table() {
-    @ColumnInfo("id", showInPanel = false)
+    @IgnoreColumn
     val id = integer("id").autoIncrement()
     val name = varchar("name", length = 150)
     val description = text("description")

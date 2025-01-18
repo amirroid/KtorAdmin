@@ -2,6 +2,7 @@ package utils
 
 import annotations.enumeration.EnumerationColumn
 import annotations.info.ColumnInfo
+import annotations.info.IgnoreColumn
 import annotations.limit.ColumnLimits
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
@@ -29,7 +30,7 @@ object ColumnsUtils {
             hasUploadAnnotation -> ColumnType.FILE
             else -> guessPropertyType(genericArgument)
         }
-        val showInPanel = infoAnnotation?.findArgument<Boolean>("showInPanel") ?: true
+        val showInPanel = hasIgnoreColumnAnnotation(property.annotations).not()
         val nullable = infoAnnotation?.findArgument<Boolean>("nullable") ?: false
         val defaultValue = infoAnnotation?.findArgument<String>("defaultValue")?.takeIf { it.isNotEmpty() }
         val uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations)
@@ -50,6 +51,11 @@ object ColumnsUtils {
 
     private fun hasEnumerationColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
         it.shortName.asString() == EnumerationColumn::class.simpleName
+    }
+
+
+    private fun hasIgnoreColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
+        it.shortName.asString() == IgnoreColumn::class.simpleName
     }
 
     private fun Sequence<KSAnnotation>.getEnumerations(): List<String>? {
