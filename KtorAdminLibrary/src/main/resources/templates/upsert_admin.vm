@@ -6,7 +6,7 @@
 </head>
 <body>
 <h2>$singularTableName</h2>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     #foreach($column in $columns)
         #if($values.get($column.columnName))
             #set($defaultValue = $values.get($column.columnName))
@@ -18,80 +18,95 @@
 
         <label>$column.columnName</label>
 
-        <!-- STRING -->
-        #if($column.type.name == "STRING")
-            <input type="text" name="$column.columnName" value="$!defaultValue"/>
-        #end
 
-        <!-- INTEGER / UINTEGER -->
-        #if($column.type.name == "INTEGER" || $column.type.name == "UINTEGER")
-            <input type="number" name="$column.columnName" value="$!defaultValue"/>
-        #end
-
-        <!-- SHORT / USHORT -->
-        #if($column.type.name == "SHORT" || $column.type.name == "USHORT")
-            <input type="number" name="$column.columnName" value="$!defaultValue"/>
-        #end
-
-        <!-- LONG / ULONG -->
-        #if($column.type.name == "LONG" || $column.type.name == "ULONG")
-            <input type="number" name="$column.columnName" value="$!defaultValue"/>
-        #end
-
-        <!-- DOUBLE -->
-        #if($column.type.name == "DOUBLE")
-            <input type="number" step="any" name="$column.columnName" value="$!defaultValue"/>
-        #end
-
-        <!-- FLOAT -->
-        #if($column.type.name == "FLOAT")
-            <input type="number" step="any" name="$column.columnName" value="$!defaultValue"/>
-        #end
-
-        <!-- BIG_DECIMAL -->
-        #if($column.type.name == "BIG_DECIMAL")
-            <input type="text" name="$column.columnName" value="$!defaultValue"/>
-        #end
-
-        <!-- CHAR -->
-        #if($column.type.name == "CHAR")
-            <input type="text" maxlength="1" name="$column.columnName" value="$!defaultValue"/>
-        #end
-
-        <!-- BINARY -->
-        #if($column.type.name == "BINARY")
-            <input type="file" name="$column.columnName"/>
-        #end
-
-        <!-- BOOLEAN -->
-        #if($column.type.name == "BOOLEAN")
-            <input type="checkbox" name="$column.columnName" #if($!defaultValue == "true")checked#end/>
-        #end
-
-        <!-- ENUMERATION -->
-        #if($column.type.name == "ENUMERATION")
+        #if($column.reference)
+            #set($referenceValues = $references.get($column))
             <select name="$column.columnName">
-                #foreach($value in $column.enumerationValues)
-                    <option value="$value" #if($value == $!defaultValue)selected#end>$value</option>
+                #foreach($refValue in $referenceValues)
+                    <option value="$refValue.referenceKey"
+                            #if($refValue == $!defaultValue)selected#end>$refValue.item</option>
                 #end
             </select>
-        #end
+        #else
 
-        <!-- DATE -->
-        #if($column.type.name == "DATE")
-            <input type="date" name="$column.columnName" value="$!defaultValue"/>
-        #end
+            <!-- STRING -->
+            #if($column.type.name == "STRING")
+                <input type="text" name="$column.columnName" value="$!defaultValue"/>
+            #end
 
-        <!-- DATETIME -->
-        #if($column.type.name == "DATETIME")
-            <input type="datetime-local" name="$column.columnName" value="$!defaultValue"/>
-        #end
+            <!-- INTEGER / UINTEGER -->
+            #if($column.type.name == "INTEGER" || $column.type.name == "UINTEGER")
+                <input type="number" name="$column.columnName" value="$!defaultValue"/>
+            #end
 
-        <!-- FILE -->
-        #if($column.type.name == "FILE")
-            <input type="file" name="$column.columnName"/>
-        #end
+            <!-- SHORT / USHORT -->
+            #if($column.type.name == "SHORT" || $column.type.name == "USHORT")
+                <input type="number" name="$column.columnName" value="$!defaultValue"/>
+            #end
 
+            <!-- LONG / ULONG -->
+            #if($column.type.name == "LONG" || $column.type.name == "ULONG")
+                <input type="number" name="$column.columnName" value="$!defaultValue"/>
+            #end
+
+            <!-- DOUBLE -->
+            #if($column.type.name == "DOUBLE")
+                <input type="number" step="any" name="$column.columnName" value="$!defaultValue"/>
+            #end
+
+            <!-- FLOAT -->
+            #if($column.type.name == "FLOAT")
+                <input type="number" step="any" name="$column.columnName" value="$!defaultValue"/>
+            #end
+
+            <!-- BIG_DECIMAL -->
+            #if($column.type.name == "BIG_DECIMAL")
+                <input type="text" name="$column.columnName" value="$!defaultValue"/>
+            #end
+
+            <!-- CHAR -->
+            #if($column.type.name == "CHAR")
+                <input type="text" maxlength="1" name="$column.columnName" value="$!defaultValue"/>
+            #end
+
+            <!-- BINARY -->
+            #if($column.type.name == "BINARY")
+                <input type="file" name="$column.columnName"/>
+            #end
+
+            <!-- BOOLEAN -->
+            #if($column.type.name == "BOOLEAN")
+                <input type="checkbox" name="$column.columnName" #if($!defaultValue == "true")checked#end/>
+            #end
+
+            <!-- ENUMERATION -->
+            #if($column.type.name == "ENUMERATION")
+                <select name="$column.columnName">
+                    #foreach($value in $column.enumerationValues)
+                        <option value="$value" #if($value == $!defaultValue)selected#end>$value</option>
+                    #end
+                </select>
+            #end
+
+            <!-- DATE -->
+            #if($column.type.name == "DATE")
+                <input type="date" name="$column.columnName" value="$!defaultValue"/>
+            #end
+
+            <!-- DATETIME -->
+            #if($column.type.name == "DATETIME")
+                <input type="datetime-local" name="$column.columnName" value="$!defaultValue"/>
+            #end
+
+            <!-- FILE -->
+            #if($column.type.name == "FILE")
+                <input type="file" name="$column.columnName"/>
+                #if($values.get($column.columnName))
+                    <p>Current file: <a href="$!values.get($column.columnName)">$!values.get($column.columnName)</a></p>
+                #end
+            #end
+
+        #end
     #end
     <button type="submit">Submit</button>
 </form>

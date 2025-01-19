@@ -5,7 +5,10 @@ import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.ColumnLimits
+import annotations.references.References
 import annotations.uploads.AwsS3Upload
+import annotations.uploads.LocalUpload
+import jdk.nashorn.internal.ir.annotations.Reference
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 
@@ -29,7 +32,12 @@ object Tasks : Table() {
     )
 
     @ColumnInfo("user_id")
-    val userId = integer("user_id")
+    @References("users", "id")
+    val userId = integer("user_id").references(Users.id)
+
+    @LocalUpload("tasks/")
+    @ColumnInfo(nullable = true)
+    val file = varchar("file", 1000).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

@@ -4,6 +4,7 @@ import annotations.enumeration.EnumerationColumn
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.ColumnLimits
+import annotations.references.References
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
@@ -12,6 +13,7 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import models.ColumnSet
 import models.ColumnType
 import models.Limit
+import models.ColumnReference
 
 object ColumnsUtils {
     fun getColumnSets(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
@@ -21,7 +23,7 @@ object ColumnsUtils {
         val name = property.simpleName.asString()
         val infoAnnotation =
             property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
-        val columnName = infoAnnotation?.findArgument<String>("columnName") ?: name
+        val columnName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() } ?: name
         if (hasUploadAnnotation) {
             UploadUtils.validatePropertyType(genericArgument, columnName)
         }
@@ -45,7 +47,8 @@ object ColumnsUtils {
             allowedMimeTypes = allowedMimeTypes,
             defaultValue = defaultValue,
             enumerationValues = property.annotations.getEnumerations(),
-            limits = property.annotations.getLimits()
+            limits = property.annotations.getLimits(),
+            reference = property.annotations.getReferences()
         )
     }
 
@@ -66,6 +69,22 @@ object ColumnsUtils {
             ?.let { it as? List<*> }
             ?.filterIsInstance<String>()
             ?.takeIf { it.isNotEmpty() }
+    }
+
+
+    private fun hasAnyReferencesAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
+        it.shortName.asString() == IgnoreColumn::class.simpleName
+    }
+
+    private fun Sequence<KSAnnotation>.getReferences(): ColumnReference? {
+        return find { it.shortName.asString() == References::class.simpleName }
+            ?.arguments
+            ?.let {
+                ColumnReference(
+                    tableName = it.firstOrNull { argument -> argument.name?.asString() == "tableName" }!!.value as String,
+                    columnName = it.firstOrNull { argument -> argument.name?.asString() == "targetColumn" }!!.value as String,
+                )
+            }
     }
 
     private fun hasColumnLimitsAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {

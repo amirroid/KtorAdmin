@@ -4,6 +4,9 @@ import io.ktor.server.application.*
 import models.JDBCDrivers
 import plugins.KtorAdmin
 
+const val MEDIA_ROOT = "files"
+const val MEDIA_PATH = "files"
+
 fun Application.configureAdmin() {
     install(KtorAdmin) {
         jdbc(
@@ -13,5 +16,7 @@ fun Application.configureAdmin() {
             password = "your_password",
             driver = JDBCDrivers.POSTGRES
         )
+        mediaPath = "uploads"
+        mediaRoot = MEDIA_ROOT
     }
 }

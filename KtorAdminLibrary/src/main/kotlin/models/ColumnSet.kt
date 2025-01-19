@@ -11,4 +11,5 @@ data class ColumnSet(
     val defaultValue: String? = null,
     val enumerationValues: List<String>? = null,
     val limits: Limit? = null,
+    val reference: ColumnReference? = null
 )

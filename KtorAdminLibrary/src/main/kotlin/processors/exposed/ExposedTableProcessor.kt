@@ -1,5 +1,6 @@
 package processors.exposed
 
+import annotations.display.TableDisplayFormat
 import annotations.exposed.ExposedTable
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -11,10 +12,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
-import models.ColumnSet
-import models.ColumnType
-import models.Limit
-import models.UploadTarget
+import models.*
 import utils.*
 
 class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
@@ -39,6 +37,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addImport(ColumnType::class.java.packageName, ColumnType::class.java.simpleName)
             .addImport(UploadTarget::class.java.packageName, UploadTarget::class.java.simpleName)
             .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
+            .addImport(ColumnReference::class.java.packageName, ColumnReference::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(
@@ -59,8 +58,14 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         val columnSet = PackagesUtils.getColumnSetClass()
 
         val primaryKey = classDeclaration.getPrimaryKey()
+        val displayFormat = classDeclaration.getDisplayFormat()
 
         if (!columnSets.any { it.columnName == primaryKey }) {
+            throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any column in the table.")
+        }
+        if (displayFormat != null && displayFormat.extractTextInCurlyBraces()
+                .any { it !in columnSets.map { sets -> sets.columnName } }
+        ) {
             throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any column in the table.")
         }
 
@@ -94,6 +99,11 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .returns(String::class.asTypeName().copy(nullable = true))
             .addStatement("return ${classDeclaration.getGroupName()?.let { "\"$it\"" }}")
             .build()
+        val getDisplayFormatFunction = FunSpec.builder("getDisplayFormat")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${displayFormat?.let { "\"$it\"" }}")
+            .build()
         val getDatabaseKeyFunction = FunSpec.builder("getDatabaseKey")
             .addModifiers(KModifier.OVERRIDE)
             .returns(String::class.asTypeName().copy(nullable = true))
@@ -112,6 +122,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addFunction(getSingularNameFunction)
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
+            .addFunction(getDisplayFormatFunction)
             .addFunction(getDatabaseKeyFunction)
             .build()
     }
@@ -139,8 +150,12 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         return columns
     }
 
-    private fun KSClassDeclaration.findProperty(propertyName: String) =
-        declarations.filterIsInstance<KSPropertyDeclaration>().find { it.simpleName.asString() == propertyName }
+    private fun KSClassDeclaration.getDisplayFormat() = annotations
+        .find { it.shortName.asString() == TableDisplayFormat::class.simpleName }
+        ?.arguments
+        ?.find { it.name?.asString() == "format" }
+        ?.value as? String
+
 
     private fun KSClassDeclaration.getTableName() = getAnnotationArguments()
         ?.find { it.name?.asString() == "tableName" }
