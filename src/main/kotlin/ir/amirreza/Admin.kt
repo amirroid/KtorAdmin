@@ -3,6 +3,9 @@ package ir.amirreza
 import io.ktor.server.application.*
 import models.JDBCDrivers
 import plugins.KtorAdmin
+import javax.swing.plaf.synth.Region
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.toJavaDuration
 
 const val MEDIA_ROOT = "files"
 const val MEDIA_PATH = "files"
@@ -18,5 +21,7 @@ fun Application.configureAdmin() {
         )
         mediaPath = "uploads"
         mediaRoot = MEDIA_ROOT
+        defaultAwsS3Bucket = "school-data"
+        awsS3SignatureDuration = 1.minutes.toJavaDuration()
     }
 }

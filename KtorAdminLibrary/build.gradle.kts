@@ -34,6 +34,9 @@ dependencies {
     // JDBC
     implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.0")
     implementation("com.zaxxer:HikariCP:6.2.1")
+
+    // S3
+    implementation("software.amazon.awssdk:s3:2.30.2")
 }
 tasks.test {
     useJUnitPlatform()

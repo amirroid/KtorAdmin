@@ -24,7 +24,7 @@ object UploadUtils {
             it.shortName.asString() in annotationNames
         }?.let {
             when (it.shortName.asString()) {
-                awsS3Name -> UploadTarget.AwsS3
+                awsS3Name -> UploadTarget.AwsS3(it.findArgumentIfIsNotEmpty("bucket"))
                 customName -> UploadTarget.Custom(it.findArgumentIfIsNotEmpty("key"))
                 localName -> UploadTarget.LocalFile(it.findArgumentIfIsNotEmpty("path"))
                 else -> null

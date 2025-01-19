@@ -35,7 +35,7 @@ object Tasks : Table() {
     @References("users", "id")
     val userId = integer("user_id").references(Users.id)
 
-    @LocalUpload("tasks/")
+    @AwsS3Upload
     @ColumnInfo(nullable = true)
     val file = varchar("file", 1000).nullable()
 

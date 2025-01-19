@@ -14,7 +14,7 @@ body {
 button.add-button {
     background-color: #6200ea;
     color: white;
-    padding: 8px 24px;
+    padding: 10px 24px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -35,7 +35,7 @@ button.add-button:hover {
     justify-content: space-between;
     align-items: center;
     background-color: #1f1f1f;
-    padding-block: 12px;
+    padding-block: 10px;
     border-radius: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     margin-bottom: 8px;
@@ -85,19 +85,4 @@ td {
 tbody tr:hover td {
     background-color: #4a4949;
     cursor: pointer;
-}
-
-button.add-button {
-    background-color: #6200ea;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 16px;
-}
-
-button.add-button:hover {
-    background-color: #8900EAFF;
 }
