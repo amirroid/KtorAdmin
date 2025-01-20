@@ -1,15 +1,13 @@
 package ir.amirreza
 
+import annotations.computed_column.ComputedColumn
 import annotations.enumeration.EnumerationColumn
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
-import annotations.limit.ColumnLimits
 import annotations.references.References
 import annotations.uploads.AwsS3Upload
 import annotations.uploads.LocalUpload
-import jdk.nashorn.internal.ir.annotations.Reference
-import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 
 enum class Priority {
@@ -35,7 +33,12 @@ object Tasks : Table() {
     @References("users", "id")
     val userId = integer("user_id").references(Users.id)
 
-    @AwsS3Upload
+    @ComputedColumn(
+        compute = "{name}.toLowerCase().replaceAll(' ', '-')"
+    )
+    val slug = varchar("slug", 500)
+
+    @LocalUpload
     @ColumnInfo(nullable = true)
     val file = varchar("file", 1000).nullable()
 

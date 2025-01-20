@@ -9,7 +9,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
+import kotlinx.io.readByteArray
 import models.ColumnSet
+import models.ColumnType
 import repository.JdbcQueriesRepository
 import repository.FileRepository
 import utils.AdminTable
@@ -101,8 +103,19 @@ suspend fun MultiPartData.toTableValues(table: AdminTable): List<String?> {
             when (partData) {
                 is PartData.FormItem -> items[name] = partData.value
                 is PartData.FileItem -> {
-                    val fileName = FileRepository.uploadFile(column.uploadTarget!!, partData)
-                    items[name] = fileName
+                    val targetColumn = table.getAllColumns().firstOrNull { it.columnName == name }
+                    when (targetColumn?.type) {
+                        ColumnType.FILE -> {
+                            val fileName = FileRepository.uploadFile(column.uploadTarget!!, partData)
+                            items[name] = fileName
+                        }
+
+                        ColumnType.BINARY -> {
+                            items[name] = partData.provider().readRemaining().readByteArray().decodeToString()
+                        }
+
+                        else -> Unit
+                    }
                 }
 
                 else -> Unit

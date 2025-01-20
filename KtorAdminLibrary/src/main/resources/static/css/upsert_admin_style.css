@@ -119,3 +119,7 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+input[readonly], select[readonly], textarea[readonly] {
+    opacity: 0.7;
+    pointer-events: none;
+}

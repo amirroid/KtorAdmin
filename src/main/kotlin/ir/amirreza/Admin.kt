@@ -8,7 +8,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
 const val MEDIA_ROOT = "files"
-const val MEDIA_PATH = "files"
+const val MEDIA_PATH = "uploads"
 
 fun Application.configureAdmin() {
     install(KtorAdmin) {
@@ -19,7 +19,7 @@ fun Application.configureAdmin() {
             password = "your_password",
             driver = JDBCDrivers.POSTGRES
         )
-        mediaPath = "uploads"
+        mediaPath = MEDIA_PATH
         mediaRoot = MEDIA_ROOT
         defaultAwsS3Bucket = "school-data"
         awsS3SignatureDuration = 1.minutes.toJavaDuration()

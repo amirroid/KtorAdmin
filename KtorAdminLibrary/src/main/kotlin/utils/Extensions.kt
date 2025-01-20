@@ -16,6 +16,8 @@ fun ColumnSet.toSuitableStringForFile() = """
     |    enumerationValues = ${enumerationValues?.toSuitableStringForFile()},
     |    limits = ${limits?.toFormattedString()},
     |    reference = ${reference?.toFormattedString()},
+    |    readOnly = $readOnly,
+    |    computedColumn = ${computedColumn?.let { "\"${it}\"" }},
     |)
 """.trimMargin("|")
 

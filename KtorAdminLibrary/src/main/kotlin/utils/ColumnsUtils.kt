@@ -1,5 +1,6 @@
 package utils
 
+import annotations.computed_column.ComputedColumn
 import annotations.enumeration.EnumerationColumn
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
@@ -14,6 +15,7 @@ import models.ColumnSet
 import models.ColumnType
 import models.Limit
 import models.ColumnReference
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Str
 
 object ColumnsUtils {
     fun getColumnSets(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
@@ -38,6 +40,9 @@ object ColumnsUtils {
         val uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations)
         val allowedMimeTypes =
             if (hasUploadAnnotation) UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations) else null
+        val computedColumnInfo = property.annotations.getComputedColumn()
+        val isReadOnly =
+            (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) || (computedColumnInfo?.second ?: false)
         return ColumnSet(
             columnName = columnName,
             type = columnType,
@@ -48,7 +53,9 @@ object ColumnsUtils {
             defaultValue = defaultValue,
             enumerationValues = property.annotations.getEnumerations(),
             limits = property.annotations.getLimits(),
-            reference = property.annotations.getReferences()
+            reference = property.annotations.getReferences(),
+            readOnly = isReadOnly,
+            computedColumn = computedColumnInfo?.first
         )
     }
 
@@ -99,6 +106,13 @@ object ColumnsUtils {
                     minLength = it.getArgument("minLength"),
                     regexPattern = it.getArgument<String?>("regexPattern")?.takeIf { it.isNotEmpty() },
                 )
+            }
+    }
+
+    private fun Sequence<KSAnnotation>.getComputedColumn(): Pair<String, Boolean>? {
+        return find { it.shortName.asString() == ComputedColumn::class.simpleName }
+            ?.arguments?.let {
+                it.getArgument<String>("compute")!! to it.getArgument<Boolean>("readOnly")!!
             }
     }
 

@@ -18,10 +18,9 @@
 
         <label>$column.columnName</label>
 
-
         #if($column.reference)
             #set($referenceValues = $references.get($column))
-            <select name="$column.columnName">
+            <select name="$column.columnName" #if($column.readOnly)disabled#end>
                 #foreach($refValue in $referenceValues)
                     <option value="$refValue.referenceKey"
                             #if($refValue == $!defaultValue)selected#end>$refValue.item</option>
@@ -31,57 +30,64 @@
 
             <!-- STRING -->
             #if($column.type.name == "STRING")
-                <input type="text" name="$column.columnName" value="$!defaultValue"/>
+                <input type="text" name="$column.columnName" value="$!defaultValue" #if($column.readOnly)readonly#end/>
             #end
 
             <!-- INTEGER / UINTEGER -->
             #if($column.type.name == "INTEGER" || $column.type.name == "UINTEGER")
-                <input type="number" name="$column.columnName" value="$!defaultValue"/>
+                <input type="number" name="$column.columnName" value="$!defaultValue"
+                       #if($column.readOnly)readonly#end/>
             #end
 
             <!-- SHORT / USHORT -->
             #if($column.type.name == "SHORT" || $column.type.name == "USHORT")
-                <input type="number" name="$column.columnName" value="$!defaultValue"/>
+                <input type="number" name="$column.columnName" value="$!defaultValue"
+                       #if($column.readOnly)readonly#end/>
             #end
 
             <!-- LONG / ULONG -->
             #if($column.type.name == "LONG" || $column.type.name == "ULONG")
-                <input type="number" name="$column.columnName" value="$!defaultValue"/>
+                <input type="number" name="$column.columnName" value="$!defaultValue"
+                       #if($column.readOnly)readonly#end/>
             #end
 
             <!-- DOUBLE -->
             #if($column.type.name == "DOUBLE")
-                <input type="number" step="any" name="$column.columnName" value="$!defaultValue"/>
+                <input type="number" step="any" name="$column.columnName" value="$!defaultValue"
+                       #if($column.readOnly)readonly#end/>
             #end
 
             <!-- FLOAT -->
             #if($column.type.name == "FLOAT")
-                <input type="number" step="any" name="$column.columnName" value="$!defaultValue"/>
+                <input type="number" step="any" name="$column.columnName" value="$!defaultValue"
+                       #if($column.readOnly)readonly#end/>
             #end
 
             <!-- BIG_DECIMAL -->
             #if($column.type.name == "BIG_DECIMAL")
-                <input type="text" name="$column.columnName" value="$!defaultValue"/>
+                <input type="text" name="$column.columnName" value="$!defaultValue" #if($column.readOnly)readonly#end/>
             #end
 
             <!-- CHAR -->
             #if($column.type.name == "CHAR")
-                <input type="text" maxlength="1" name="$column.columnName" value="$!defaultValue"/>
+                <input type="text" maxlength="1" name="$column.columnName" value="$!defaultValue"
+                       #if($column.readOnly)readonly#end/>
             #end
 
             <!-- BINARY -->
             #if($column.type.name == "BINARY")
-                <input type="file" name="$column.columnName"/>
+                <input type="file" name="$column.columnName" #if($column.readOnly)disabled#end/>
             #end
 
             <!-- BOOLEAN -->
             #if($column.type.name == "BOOLEAN")
-                <input type="checkbox" name="$column.columnName" #if($!defaultValue == "true")checked#end/>
+                <input type="checkbox" name="$column.columnName"
+                       #if($!defaultValue == "true")checked#end #if($column.readOnly)disabled#end/>
             #end
 
             <!-- ENUMERATION -->
             #if($column.type.name == "ENUMERATION")
-                <select name="$column.columnName">
+                <select name="$column.columnName" #if($column.readOnly)disabled#end>
                     #foreach($value in $column.enumerationValues)
                         <option value="$value" #if($value == $!defaultValue)selected#end>$value</option>
                     #end
@@ -90,17 +96,18 @@
 
             <!-- DATE -->
             #if($column.type.name == "DATE")
-                <input type="date" name="$column.columnName" value="$!defaultValue"/>
+                <input type="date" name="$column.columnName" value="$!defaultValue" #if($column.readOnly)readonly#end/>
             #end
 
             <!-- DATETIME -->
             #if($column.type.name == "DATETIME")
-                <input type="datetime-local" name="$column.columnName" value="$!defaultValue"/>
+                <input type="datetime-local" name="$column.columnName" value="$!defaultValue"
+                       #if($column.readOnly)readonly#end/>
             #end
 
             <!-- FILE -->
             #if($column.type.name == "FILE")
-                <input type="file" name="$column.columnName"/>
+                <input type="file" name="$column.columnName" #if($column.readOnly)disabled#end/>
                 #if($values.get($column.columnName))
                     <p>Current file: <a href="$!values.get($column.columnName)">$!values.get($column.columnName)</a></p>
                 #end
@@ -110,5 +117,17 @@
     #end
     <button type="submit">Submit</button>
 </form>
+<script>
+    var computedColumns = [];
+        #foreach($column in $columns)
+            #if($column.computedColumn)
+            computedColumns.push({
+                columnName: "$column.columnName",
+                computedColumn: "$column.computedColumn"
+            });
+            #end
+        #end
+</script>
+<script src="/static/js/upsert_admin.js"></script>
 </body>
 </html>
