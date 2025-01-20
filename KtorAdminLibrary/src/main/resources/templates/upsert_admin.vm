@@ -118,8 +118,26 @@
     <button type="submit">Submit</button>
 </form>
 <script>
-    var computedColumns = [];
+    const computedColumns = [];
+    const limitColumns = [];
         #foreach($column in $columns)
+            #if($column.limits)
+                #set($allowedMimeTypes = $column.limits.allowedMimeTypes)
+            limitColumns.push({
+                columnName: "$column.columnName",
+                limits: {
+                    maxLength: $column.limits.maxLength,
+                    minLength: $column.limits.minLength,
+                    regexPattern:#if($column.limits.regexPattern) "$column.limits.regexPattern" #else null #end,
+                    maxCount: $column.limits.maxCount,
+                    minCount: $column.limits.minCount,
+                    maxBytes: $column.limits.maxBytes,
+                    minDateRelativeToNow: $column.limits.minDateRelativeToNow,
+                    maxDateRelativeToNow: $column.limits.maxDateRelativeToNow,
+                    allowedMimeTypes: #if($allowedMimeTypes) [#foreach($type in $allowedMimeTypes) "$type"#if($foreach.hasNext),#end#end] #else null #end
+                }
+            });
+            #end
             #if($column.computedColumn)
             computedColumns.push({
                 columnName: "$column.columnName",

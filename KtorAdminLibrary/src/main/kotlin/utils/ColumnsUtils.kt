@@ -99,14 +99,24 @@ object ColumnsUtils {
     }
 
     private fun Sequence<KSAnnotation>.getLimits(): Limit? {
-        return find { it.shortName.asString() == ColumnLimits::class.simpleName }
-            ?.arguments?.let {
-                Limit(
-                    maxLength = it.getArgument("maxLength"),
-                    minLength = it.getArgument("minLength"),
-                    regexPattern = it.getArgument<String?>("regexPattern")?.takeIf { it.isNotEmpty() },
-                )
-            }
+        return find { it.shortName.asString() == ColumnLimits::class.simpleName }?.arguments?.let { args ->
+            Limit(
+                maxLength = args.getArgument("maxLength") ?: Int.MAX_VALUE,
+                minLength = args.getArgument("minLength") ?: Int.MIN_VALUE,
+                regexPattern = args.getArgument<String?>("regexPattern")?.takeIf { it.isNotEmpty() },
+                maxCount = args.getArgument("maxCount") ?: Double.MAX_VALUE,
+                minCount = args.getArgument("minCount") ?: Double.MIN_VALUE,
+                maxBytes = args.getArgument("maxBytes") ?: Long.MAX_VALUE,
+                minDateRelativeToNow = args.getArgument("minDateRelativeToNow") ?: Long.MAX_VALUE,
+                maxDateRelativeToNow = args.getArgument("maxDateRelativeToNow") ?: Long.MAX_VALUE,
+                allowedMimeTypes = args
+                    .firstOrNull { it.name?.asString() == "allowedMimeTypes" }
+                    ?.value
+                    ?.let { it as? List<*> }
+                    ?.filterIsInstance<String>()
+                    ?.takeIf { it.isNotEmpty() }
+            )
+        }
     }
 
     private fun Sequence<KSAnnotation>.getComputedColumn(): Pair<String, Boolean>? {
