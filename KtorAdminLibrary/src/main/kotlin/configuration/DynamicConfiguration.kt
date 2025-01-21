@@ -1,5 +1,5 @@
 package configuration
 
 internal object DynamicConfiguration {
-    var maxItemsInPage: Int = 2
+    var maxItemsInPage: Int = 20
 }
