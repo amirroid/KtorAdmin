@@ -13,6 +13,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
+import formatters.extractTextInCurlyBraces
 import models.*
 import utils.*
 
@@ -65,7 +66,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any column in the table.")
         }
         if (displayFormat != null && displayFormat.extractTextInCurlyBraces()
-                .any { it !in columnSets.map { sets -> sets.columnName } }
+                .any { it.split(".").firstOrNull() !in columnSets.map { sets -> sets.columnName } }
         ) {
             throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any column in the table.")
         }

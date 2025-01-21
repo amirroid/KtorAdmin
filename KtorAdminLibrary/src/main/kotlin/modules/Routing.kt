@@ -2,6 +2,7 @@ package modules
 
 import annotations.errors.badRequest
 import annotations.errors.notFound
+import annotations.errors.serverError
 import configuration.DynamicConfiguration
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -154,7 +155,7 @@ private suspend fun ApplicationCall.handleEditItem(tables: List<AdminTable>) {
                         )
                     )
                 }.onFailure {
-                    badRequest("Error: ${it.message}")
+                    serverError("Error: ${it.message}")
                 }
             }
         }

@@ -2,13 +2,13 @@ package repository
 
 import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
+import formatters.extractTextInCurlyBraces
+import formatters.populateTemplate
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.ReferenceItem
 import utils.AdminTable
-import utils.extractTextInCurlyBraces
 import utils.getAllAllowToShowColumns
-import utils.populateTemplate
 
 internal object JdbcQueriesRepository {
 
@@ -21,8 +21,9 @@ internal object JdbcQueriesRepository {
         table.usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllQuery(search = search, currentPage = currentPage))) { raw ->
                 DataWithPrimaryKey(
-                    primaryKey = raw.any(table.getPrimaryKey()).toString(),
-                    data = table.getAllAllowToShowColumns().map { raw.anyOrNull(it.columnName).toString() }
+                    primaryKey = raw.any("${table.getTableName()}_${table.getPrimaryKey()}").toString(),
+                    data = table.getAllAllowToShowColumns()
+                        .map { raw.anyOrNull("${table.getTableName()}_${it.columnName}").toString() }
                 )
             }
         }
@@ -35,13 +36,21 @@ internal object JdbcQueriesRepository {
     fun getAllReferences(table: AdminTable, referenceColumn: String): List<ReferenceItem> =
         table.usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllReferencesQuery(referenceColumn))) { raw ->
-                val referenceKey = raw.any(referenceColumn).toString()
+                val referenceKey = raw.any("${table.getTableName()}_$referenceColumn").toString()
                 val displayFormat = table.getDisplayFormat()
                 ReferenceItem(
                     referenceKey = referenceKey,
                     item = displayFormat?.let {
                         val displayFormatValues = it.extractTextInCurlyBraces()
-                        populateTemplate(it, displayFormatValues.associateWith { raw.anyOrNull(it)?.toString() })
+                        populateTemplate(
+                            it,
+                            displayFormatValues.associateWith { item ->
+                                if (item == referenceColumn) {
+                                    referenceKey
+                                } else raw.anyOrNull(
+                                    item.split(".").joinToString(separator = "_")
+                                )?.toString()
+                            })
                     } ?: "${table.getTableName().replaceFirstChar { it.uppercaseChar() }} Object ($referenceKey)"
                 )
             }
@@ -94,37 +103,107 @@ internal object JdbcQueriesRepository {
     }
 
     private fun AdminTable.createGetAllQuery(search: String?, currentPage: Int?) = buildString {
+        val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
+        val selectColumns = columns.map { columnSet ->
+            "${getTableName()}.${columnSet.columnName} AS ${getTableName()}_${columnSet.columnName}"
+        }
+
         append("SELECT ")
-        append(getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
-            .joinToString(", ") { it.columnName })
+        append(selectColumns.joinToString(", "))
         append(" FROM ")
         append(getTableName())
+
         if (search != null) {
-            append(" WHERE")
-            append(createSearchQuery(search))
+            append(" ")
+            append(createSearchConditions(search))
         }
+
         currentPage?.let {
             append(createPaginationQuery(it))
         }
     }.also { println(it) }
+
+    private fun AdminTable.createSearchConditions(search: String): String {
+        val joinConditions = mutableListOf<String>()
+        val searchConditions = getSearchColumns().map { columnPath ->
+            val pathParts = columnPath.split('.')
+            var currentTable = getTableName()
+            val currentColumn = pathParts.last()
+
+            pathParts.firstOrNull()?.let { part ->
+                val columnSet = getAllColumns().find { it.columnName == part }
+                val nextTable = columnSet?.reference?.tableName
+                val currentReferenceColumn = columnSet?.reference?.columnName
+
+                if (nextTable != null && currentReferenceColumn != null) {
+                    joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
+                    currentTable = nextTable
+                }
+            }
+
+            "LOWER(${currentTable}.${currentColumn}) LIKE LOWER('%$search%')"
+        }
+
+        return joinConditions.joinToString(" ") + " WHERE " + searchConditions.joinToString(" OR ") { it }
+    }
+
 
     private fun createPaginationQuery(currentPage: Int) = buildString {
         append(" LIMIT ${DynamicConfiguration.maxItemsInPage}")
         append(" OFFSET ${DynamicConfiguration.maxItemsInPage * currentPage}")
     }
 
-    private fun AdminTable.createSearchQuery(search: String) =
-        getSearchColumns().joinToString(separator = " OR ", prefix = " ", postfix = "") {
-            "LOWER($it) LIKE LOWER('%$search%')"
+
+    private fun AdminTable.createGetAllReferencesQuery(leftReferenceColumn: String): String {
+        val columns = getDisplayFormat()?.extractTextInCurlyBraces().orEmpty()
+        val selectColumns = mutableSetOf<String>()
+        val joins = mutableListOf<String>()
+
+        selectColumns.add("${getTableName()}.$leftReferenceColumn AS ${getTableName()}_$leftReferenceColumn")
+
+        columns.forEach { column ->
+            if (column.contains('.')) {
+                var currentTable = getTableName()
+                var currentColumn = ""
+                val path = column.split('.')
+
+                for (i in path.indices) {
+                    val referenceColumn = path[i]
+                    val nextColumn = path.getOrNull(i + 1)
+                    val columnSet = getAllColumns().find { it.columnName == referenceColumn }
+                    val reference = columnSet?.reference
+
+                    if (reference != null) {
+                        val joinTable = reference.tableName
+                        val joinColumn = reference.columnName
+                        currentColumn = nextColumn ?: referenceColumn
+
+                        joins.add("LEFT JOIN $joinTable ON $currentTable.$referenceColumn = $joinTable.$joinColumn")
+                        currentTable = joinTable
+                    } else if (i == path.lastIndex) {
+                        currentColumn = referenceColumn
+                    }
+                }
+
+                if (currentColumn.isNotEmpty()) {
+                    selectColumns.add("$currentTable.$currentColumn AS ${path.joinToString("_")}")
+                }
+            } else {
+                if (column != leftReferenceColumn && column != getPrimaryKey()) {
+                    selectColumns.add("${getTableName()}.$column")
+                }
+            }
         }
 
-    private fun AdminTable.createGetAllReferencesQuery(referenceColumn: String) = buildString {
-        append("SELECT ")
-        val columns = listOf(referenceColumn) + getDisplayFormat()?.extractTextInCurlyBraces().orEmpty()
-        append(columns.distinct().joinToString(", "))
-        append(" FROM ")
-        append(getTableName())
+        return buildString {
+            append("SELECT DISTINCT ")
+            append(selectColumns.joinToString(", "))
+            append(" FROM ")
+            append(getTableName())
+            joins.forEach { append(" $it") }
+        }
     }
+
 
     private fun AdminTable.createGetOneItemQuery(primaryKey: String) = buildString {
         append("SELECT ")

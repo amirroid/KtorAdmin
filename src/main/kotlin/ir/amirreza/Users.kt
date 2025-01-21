@@ -3,6 +3,7 @@ package ir.amirreza
 import annotations.display.TableDisplayFormat
 import annotations.exposed.ExposedTable
 import annotations.info.IgnoreColumn
+import annotations.references.References
 import org.jetbrains.exposed.sql.Table
 
 @ExposedTable(
