@@ -2,6 +2,7 @@ package modules
 
 import annotations.errors.badRequest
 import annotations.errors.notFound
+import configuration.DynamicConfiguration
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -57,17 +58,33 @@ private suspend fun ApplicationCall.renderAdminPanel(tableGroups: List<TableGrou
 
 private suspend fun ApplicationCall.handleTableList(tables: List<AdminTable>) {
     val pluralName = parameters["pluralName"]
+    val searchParameter = parameters["search"]?.takeIf { it.isNotEmpty() }
+    val currentPage = runCatching {
+        parameters["page"]?.toInt()?.minus(1) ?: 0
+    }.onFailure { cause ->
+        badRequest(cause.message ?: "")
+    }.getOrNull()
     val table = tables.find { it.getPluralName() == pluralName }
     if (table == null) {
         notFound("No table found with plural name: $pluralName")
     } else {
-        val data = JdbcQueriesRepository.getAllData(table)
+        val data = JdbcQueriesRepository.getAllData(table, searchParameter, currentPage)
+        val maxPages = JdbcQueriesRepository.getCount(table, searchParameter).let {
+            val calculatedValue = it / DynamicConfiguration.maxItemsInPage
+            if (it % DynamicConfiguration.maxItemsInPage == 0) {
+                calculatedValue
+            } else calculatedValue.plus(1)
+        }
+        val hasSearchColumn = table.getSearchColumns().isNotEmpty()
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm", model = mapOf(
                     "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
                     "rows" to data,
-                    "pluralName" to pluralName.orEmpty().capitalize()
+                    "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
+                    "hasSearchColumn" to hasSearchColumn,
+                    "currentPage" to (currentPage?.plus(1) ?: 1),
+                    "maxPages" to maxPages
                 )
             )
         )

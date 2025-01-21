@@ -5,15 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grouped Tables</title>
     <link href="/static/css/amin_panel_styles.css" rel="stylesheet">
-    <script>
-        function redirectToEdit(id) {
-            window.location.href = window.location.href + "/" + id;
-        }
-
-        function redirectToAdd() {
-            window.location.href = window.location.href + "/add";
-        }
-    </script>
 </head>
 <body>
 
@@ -22,6 +13,12 @@
     <h2>${pluralName}</h2>
     <button class="add-button" onclick="redirectToAdd()">Add</button>
 </div>
+    #if($hasSearchColumn)
+    <div id="search-header">
+        <label for="search-input"></label><input type="text" id="search-input" placeholder="Search..."/>
+        <button type="button" id="search-button">Search</button>
+    </div>
+    #end
 <table>
     <thead>
     <tr>
@@ -40,6 +37,29 @@
         #end
     </tbody>
 </table>
+<div class="pagination">
+    #set($prevPage = $currentPage - 1)
+    #set($nextPage = $currentPage + 1)
+    #if($prevPage > 1)
+        <span class="first" onclick="redirectToPage(1)">1</span>
+        <span class="dots">...</span>
+    #end
 
+    #if($prevPage > 0)
+        <span class="prev" onclick="redirectToPage($prevPage)">$prevPage</span>
+    #end
+
+    <span class="page-number current">$currentPage</span>
+
+    #if($nextPage <= $maxPages)
+        <span class="next" onclick="redirectToPage($nextPage)">$nextPage</span>
+    #end
+
+    #if($nextPage < $maxPages)
+        <span class="dots">...</span>
+        <span class="last" onclick="redirectToPage($maxPages)">$maxPages</span>
+    #end
+</div>
+<script src="/static/js/table_list.js"></script>
 </body>
 </html>

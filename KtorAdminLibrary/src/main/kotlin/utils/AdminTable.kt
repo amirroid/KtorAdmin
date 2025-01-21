@@ -11,6 +11,8 @@ interface AdminTable {
     fun getDatabaseKey(): String?
     fun getPrimaryKey(): String
     fun getDisplayFormat(): String?
+    fun getSearchColumns(): List<String>
+    fun getFilterColumns(): List<String>
 }
 
 

@@ -2,6 +2,7 @@ package processors.exposed
 
 import annotations.display.TableDisplayFormat
 import annotations.exposed.ExposedTable
+import annotations.query.QueryColumns
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -77,6 +78,25 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addStatement("return listOf(${columnSets.joinToString { it.toSuitableStringForFile() }})")
             .build()
 
+        val queryArguments = classDeclaration.getQueryColumnsArguments()
+        val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
+        val filterColumns = queryArguments?.findStringList("filters") ?: emptyList()
+        val getSearchColumnsFunction = FunSpec.builder("getSearchColumns")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${searchColumns.joinToString { "\"$it\"" }})")
+            .build()
+
+        val getFilterColumnsFunction = FunSpec.builder("getFilterColumns")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${filterColumns.joinToString { "\"$it\"" }})")
+            .build()
+
         val tableName = classDeclaration.getTableName()
         val getTableNameFunction = FunSpec.builder("getTableName")
             .addModifiers(KModifier.OVERRIDE)
@@ -117,6 +137,8 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminTable))
             .addFunction(getAllColumnsFunction)
+            .addFunction(getFilterColumnsFunction)
+            .addFunction(getSearchColumnsFunction)
             .addFunction(getPrimaryKeyFunctions)
             .addFunction(getTableNameFunction)
             .addFunction(getSingularNameFunction)
@@ -157,6 +179,11 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         ?.value as? String
 
 
+    private fun KSClassDeclaration.getQueryColumnsArguments() = annotations
+        .find { it.shortName.asString() == QueryColumns::class.simpleName }
+        ?.arguments
+
+
     private fun KSClassDeclaration.getTableName() = getAnnotationArguments()
         ?.find { it.name?.asString() == "tableName" }
         ?.value as? String ?: ""
@@ -184,6 +211,11 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
     private fun KSClassDeclaration.getAnnotationArguments() = annotations
         .find { it.shortName.asString() == ExposedTable::class.simpleName }
         ?.arguments
+
+    fun List<KSValueArgument>.findStringList(name: String) = firstOrNull { it.name?.asString() == name }
+        ?.value
+        ?.let { it as? List<*> }
+        ?.filterIsInstance<String>()
 
     companion object {
         private const val COLUMN_TYPE = "org.jetbrains.exposed.sql.Column"

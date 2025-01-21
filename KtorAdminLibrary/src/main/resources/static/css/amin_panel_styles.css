@@ -38,7 +38,7 @@ button.add-button:hover {
     padding-block: 10px;
     border-radius: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    margin-bottom: 8px;
+    margin-bottom: 20px;
 }
 
 h2 {
@@ -85,4 +85,88 @@ td {
 tbody tr:hover td {
     background-color: #4a4949;
     cursor: pointer;
+}
+
+#search-input {
+    flex-grow: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    box-sizing: border-box;
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+#search-input:focus {
+    outline: none;
+    border-color: #6200ea;
+    box-shadow: 0 0 5px rgba(98, 0, 234, 0.6);
+}
+
+#search-button {
+    width: auto;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    background-color: #6200ea;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#search-button:hover {
+    background-color: #8900EAFF;
+}
+
+#search-header {
+    width: 90%;
+    max-width: 650px;
+    display: flex;
+    align-items: center;
+    vertical-align: center;
+    margin-bottom: 20px;
+}
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination span {
+    background-color: #2c2c2c; /* رنگ پس‌زمینه بقیه دکمه‌ها */
+    color: #e0e0e0;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 8px;
+    text-decoration: none;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.pagination .current {
+    background-color: #6200ea; /* رنگ بنفش برای صفحه جاری */
+    color: white;
+}
+
+.pagination .dots {
+    font-size: 18px;
+    color: #e0e0e0;
+    padding: 0 8px;
+    cursor: default;
+    background: transparent;
+}
+.pagination .dots:hover {}
+
+.pagination span:hover:not(.current) {
+    background-color: #4a4a4a;
+    transform: scale(1.05);
+}
+
+.pagination span:active:not(.current) {
+    background-color: #3a3a3a;
+    transform: scale(0.95);
 }

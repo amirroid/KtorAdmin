@@ -1,9 +1,9 @@
 function handleComputedColumns() {
     computedColumns.forEach(function (item) {
         console.log(item.columnName)
-        const sourceSelector = `[name="${item.computedColumn.match(/\{(.+?)}/)[1]}"]`
+        const sourceSelector = `[name="${item.computedColumn.match(/\{(.+?)}/)[1]}"].form-input`
         const sourceField = document.querySelector(sourceSelector);
-        const targetField = document.querySelector(`[name="${item.columnName}"]`);
+        const targetField = document.querySelector(`[name="${item.columnName}"].form-input`);
         if (sourceField && targetField) {
             sourceField.addEventListener("input", function () {
                 const value = sourceField.value;
@@ -24,7 +24,7 @@ function handleComputedColumns() {
 function handleLimits() {
     limitColumns.forEach(function (column) {
         console.log(column)
-        const inputElement = document.querySelector(`[name="${column.columnName}"]`);
+        const inputElement = document.querySelector(`[name="${column.columnName}"].form-input`);
 
         if (inputElement && column.limits) {
             const currentTime = new Date().getTime();

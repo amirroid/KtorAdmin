@@ -1,6 +1,7 @@
 package repository
 
 import com.vladsch.kotlin.jdbc.*
+import configuration.DynamicConfiguration
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.ReferenceItem
@@ -16,14 +17,19 @@ internal object JdbcQueriesRepository {
         return using(session(dataSource), lambda)
     }
 
-    fun getAllData(table: AdminTable): List<DataWithPrimaryKey> =
+    fun getAllData(table: AdminTable, search: String?, currentPage: Int?): List<DataWithPrimaryKey> =
         table.usingDataSource { session ->
-            session.list(sqlQuery(table.createGetAllQuery())) { raw ->
+            session.list(sqlQuery(table.createGetAllQuery(search = search, currentPage = currentPage))) { raw ->
                 DataWithPrimaryKey(
                     primaryKey = raw.any(table.getPrimaryKey()).toString(),
                     data = table.getAllAllowToShowColumns().map { raw.anyOrNull(it.columnName).toString() }
                 )
             }
+        }
+
+    fun getCount(table: AdminTable, search: String?): Int =
+        table.usingDataSource { session ->
+            session.count(sqlQuery(table.createGetAllQuery(search = search, null)))
         }
 
     fun getAllReferences(table: AdminTable, referenceColumn: String): List<ReferenceItem> =
@@ -87,13 +93,30 @@ internal object JdbcQueriesRepository {
         }
     }
 
-    private fun AdminTable.createGetAllQuery() = buildString {
+    private fun AdminTable.createGetAllQuery(search: String?, currentPage: Int?) = buildString {
         append("SELECT ")
         append(getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
             .joinToString(", ") { it.columnName })
         append(" FROM ")
         append(getTableName())
+        if (search != null) {
+            append(" WHERE")
+            append(createSearchQuery(search))
+        }
+        currentPage?.let {
+            append(createPaginationQuery(it))
+        }
+    }.also { println(it) }
+
+    private fun createPaginationQuery(currentPage: Int) = buildString {
+        append(" LIMIT ${DynamicConfiguration.maxItemsInPage}")
+        append(" OFFSET ${DynamicConfiguration.maxItemsInPage * currentPage}")
     }
+
+    private fun AdminTable.createSearchQuery(search: String) =
+        getSearchColumns().joinToString(separator = " OR ", prefix = " ", postfix = "") {
+            "LOWER($it) LIKE LOWER('%$search%')"
+        }
 
     private fun AdminTable.createGetAllReferencesQuery(referenceColumn: String) = buildString {
         append("SELECT ")

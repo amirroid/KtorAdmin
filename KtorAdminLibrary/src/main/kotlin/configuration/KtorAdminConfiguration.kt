@@ -35,6 +35,12 @@ class KtorAdminConfiguration {
             AWSS3StorageProvider.signatureDuration = value
         }
 
+    var maxItemsInPage: Int
+        get() = DynamicConfiguration.maxItemsInPage
+        set(value) {
+            DynamicConfiguration.maxItemsInPage = value
+        }
+
     fun registerStorageProvider(storageProvider: StorageProvider) {
         FileRepository.registerStorageProvider(storageProvider)
     }

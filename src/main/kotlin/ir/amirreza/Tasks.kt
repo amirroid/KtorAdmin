@@ -6,6 +6,7 @@ import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.ColumnLimits
+import annotations.query.QueryColumns
 import annotations.references.References
 import annotations.uploads.AwsS3Upload
 import annotations.uploads.LocalUpload
@@ -18,6 +19,9 @@ enum class Priority {
 
 
 @ExposedTable("tasks", "id", "task", "tasks")
+@QueryColumns(
+    searches = ["name", "description"],
+)
 object Tasks : Table() {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
