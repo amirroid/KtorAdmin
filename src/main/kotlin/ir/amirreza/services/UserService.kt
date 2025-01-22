@@ -1,5 +1,6 @@
 package ir.amirreza.services
 
+import ir.amirreza.Users
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
@@ -16,15 +17,6 @@ data class User(
 )
 
 class UserService(database: Database) {
-    object Users : Table() {
-        val id = integer("id").autoIncrement()
-        val username = varchar("username", length = 100)
-        val email = varchar("email", length = 150)
-        val password = text("password")
-
-        override val primaryKey = PrimaryKey(id)
-    }
-
     init {
         transaction(database) {
             SchemaUtils.create(Users)

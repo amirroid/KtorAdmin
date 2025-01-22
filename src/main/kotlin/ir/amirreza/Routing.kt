@@ -1,30 +1,22 @@
 package ir.amirreza
 
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
-import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.thymeleaf.Thymeleaf
-import io.ktor.server.thymeleaf.ThymeleafContent
 import ir.amirreza.services.TaskService
 import ir.amirreza.services.TokenService
+import ir.amirreza.services.User
 import ir.amirreza.services.UserService
+import kotlinx.datetime.toKotlinLocalDateTime
 import org.jetbrains.exposed.sql.*
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 import java.io.File
+import java.time.ZoneId
+import java.util.*
 
-fun Application.configureRouting() {
-    val database =
-        Database.connect(
-            url = "jdbc:postgresql://localhost:5432/postgres",
-            user = "amirreza",
-            driver = "org.postgresql.Driver",
-            password = "your_password",
-        )
+fun Application.configureRouting(database: Database) {
     val tasksService = TaskService(database)
     val userService = UserService(database)
     val tokenService = TokenService(database)
@@ -63,6 +55,11 @@ fun Application.configureRouting() {
                     "tokens" to tokens
                 )
             )
+        }
+        post("/login") {
+            val user = call.receive<User>()
+            userService.getUser(user.username, user.password)?.id ?: userService.create(user)
+            call.respond(user)
         }
     }
 }

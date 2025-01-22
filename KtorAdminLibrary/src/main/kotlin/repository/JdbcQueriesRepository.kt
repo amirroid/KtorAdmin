@@ -64,18 +64,18 @@ internal object JdbcQueriesRepository {
             }
         }
 
-    fun insertData(table: AdminTable, parameters: List<String?>) {
-        table.usingDataSource { session ->
+    fun insertData(table: AdminTable, parameters: List<String?>): Int? {
+        return table.usingDataSource { session ->
             session.transaction { tx ->
-                tx.execute(sqlQuery(table.createInsertQuery(parameters)))
+                tx.updateGetId(sqlQuery(table.createInsertQuery(parameters)))
             }
         }
     }
 
-    fun updateChangedData(table: AdminTable, parameters: List<String?>, primaryKey: String) {
+    fun updateChangedData(table: AdminTable, parameters: List<String?>, primaryKey: String): Pair<Int, List<String>>? {
         val initialData = getData(table, primaryKey)
-        if (initialData == null) {
-            insertData(table, parameters)
+        return if (initialData == null) {
+            insertData(table, parameters)?.let { id -> id to table.getAllAllowToShowColumns().map { it.columnName } }
         } else {
             val columns = table.getAllAllowToShowColumns()
             val changedData = parameters.mapIndexed { index, item ->
@@ -88,7 +88,7 @@ internal object JdbcQueriesRepository {
             if (changedData.isNotEmpty()) {
                 table.usingDataSource { session ->
                     session.transaction { tx ->
-                        tx.update(
+                        tx.updateGetId(
                             sqlQuery(
                                 table.createUpdateQuery(
                                     changedData.map { it.first },
@@ -98,8 +98,8 @@ internal object JdbcQueriesRepository {
                             )
                         )
                     }
-                }
-            }
+                }?.let { id -> id to changedData.map { it.first.columnName } }
+            } else null
         }
     }
 

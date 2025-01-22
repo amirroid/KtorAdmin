@@ -25,7 +25,6 @@ class TaskService(private val database: Database) {
     init {
         transaction(database) {
             SchemaUtils.create(Tasks)
-            SchemaUtils.create(TestTable)
         }
     }
 
@@ -47,6 +46,14 @@ class TaskService(private val database: Database) {
                     val user = UserService(database).read(it[Tasks.userId])!!
                     Task(it[Tasks.id], it[Tasks.name], it[Tasks.description], it[Tasks.priority], user)
                 }
+        }
+    }
+
+    suspend fun updateThumbnail(id: Int, thumbnail: String) {
+        dbQuery {
+            Tasks.update({ Tasks.id eq id }) {
+                it[videoThumbnail] = thumbnail
+            }
         }
     }
 

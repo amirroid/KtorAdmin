@@ -1,16 +1,21 @@
 package ir.amirreza
 
 import io.ktor.server.application.*
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import org.jetbrains.exposed.sql.Database
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 
 fun Application.module() {
+    val database =
+        Database.connect(
+            url = "jdbc:postgresql://0.0.0.0:5432/postgres",
+            user = "amirreza",
+            driver = "org.postgresql.Driver",
+            password = "your_password",
+        )
     configureSerialization()
-    configureDatabases()
     configureTemplating()
-    configureRouting()
-    configureAdmin()
+    configureRouting(database)
+    configureAdmin(database)
 }

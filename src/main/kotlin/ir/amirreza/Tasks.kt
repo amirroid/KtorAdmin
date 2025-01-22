@@ -31,7 +31,7 @@ enum class Priority {
 @TableDisplayFormat(
     format = "{id} - User: {user_id.username}",
 )
-object Tasks : Table() {
+object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
 
@@ -42,9 +42,6 @@ object Tasks : Table() {
 
     @ColumnLimits(
         maxLength = 500
-    )
-    @ColumnInfo(
-        nullable = true
     )
     val description = text("description")
 
@@ -82,5 +79,4 @@ object Tasks : Table() {
     val videoThumbnail = varchar("thumbnail", 1000).nullable()
 
     override val primaryKey = PrimaryKey(id)
-
 }

@@ -4,13 +4,20 @@ body {
     font-family: 'Roboto', sans-serif;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* برای اینکه محتوا از بالا شروع بشه */
     align-items: center;
-    height: 100vh;
     margin: 0;
+    padding-top: 20px;
+    overflow-y: auto; /* برای فعال کردن اسکرول */
 }
 
-/* استایل برای دکمه "Add" */
+header {
+    width: 100%;
+    padding: 10px;
+    background-color: #6200ea;
+    color: white;
+}
+
 button.add-button {
     background-color: #6200ea;
     color: white;
@@ -46,7 +53,6 @@ h2 {
     font-size: 20px;
     margin-left: 16px;
 }
-
 
 table {
     width: 90%;
@@ -128,6 +134,7 @@ tbody tr:hover td {
     vertical-align: center;
     margin-bottom: 20px;
 }
+
 .pagination {
     display: flex;
     align-items: center;
@@ -136,7 +143,7 @@ tbody tr:hover td {
 }
 
 .pagination span {
-    background-color: #2c2c2c; /* رنگ پس‌زمینه بقیه دکمه‌ها */
+    background-color: #2c2c2c;
     color: #e0e0e0;
     padding: 10px 16px;
     border-radius: 4px;
@@ -148,7 +155,7 @@ tbody tr:hover td {
 }
 
 .pagination .current {
-    background-color: #6200ea; /* رنگ بنفش برای صفحه جاری */
+    background-color: #6200ea;
     color: white;
 }
 
@@ -159,7 +166,6 @@ tbody tr:hover td {
     cursor: default;
     background: transparent;
 }
-.pagination .dots:hover {}
 
 .pagination span:hover:not(.current) {
     background-color: #4a4a4a;

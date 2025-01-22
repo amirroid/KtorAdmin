@@ -4,6 +4,7 @@ import com.vladsch.kotlin.jdbc.HikariCP
 import com.vladsch.kotlin.jdbc.SessionImpl
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import listener.AdminEventListener
 import providers.StorageProvider
 import providers.AWSS3StorageProvider
 import repository.FileRepository
@@ -68,6 +69,10 @@ class KtorAdminConfiguration {
         endpoint: String? = null,
     ) {
         AWSS3StorageProvider.register(secretKey, accessKey, region, endpoint)
+    }
+
+    fun registerEventListener(listener: AdminEventListener) {
+        DynamicConfiguration.registerEventListener(listener)
     }
 
     internal fun closeDatabase() {

@@ -45,4 +45,7 @@ dependencies {
 
     implementation(project(":KtorAdminLibrary"))
     ksp(project(":KtorAdminLibrary"))
+
+    implementation("org.jcodec:jcodec:0.2.5")
+    implementation("org.jcodec:jcodec-javase:0.2.5")
 }
