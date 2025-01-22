@@ -11,6 +11,7 @@ import utils.AdminTable
 import utils.getAllAllowToShowColumns
 
 internal object JdbcQueriesRepository {
+    private const val NULL = "NULL"
 
     private fun <T> AdminTable.usingDataSource(lambda: (Session) -> T): T {
         val dataSource = HikariCP.dataSource()
@@ -217,12 +218,17 @@ internal object JdbcQueriesRepository {
     }
 
     private fun AdminTable.createInsertQuery(parameters: List<String?>) = buildString {
+        val columns = getAllAllowToShowColumns()
+        val parametersWithNULL = parameters.mapIndexed { index, parameter ->
+            if (columns[index].nullable && parameter.isNullOrEmpty()) NULL else parameter?.addQuotationIfIsString()
+                ?: NULL
+        }
         append("INSERT INTO ")
         append(getTableName())
         append(" (")
-        append(getAllAllowToShowColumns().joinToString(", ") { it.columnName })
+        append(columns.joinToString(", ") { it.columnName })
         append(") VALUES (")
-        append(parameters.joinToString(", ") { it?.addQuotationIfIsString() ?: "NULL" })
+        append(parametersWithNULL.joinToString(", "))
         append(")")
     }
 
@@ -235,7 +241,9 @@ internal object JdbcQueriesRepository {
         append(getTableName())
         append(" SET ")
         val columnsWithValues = updatedColumns.mapIndexed { index, column ->
-            column.columnName to parameters[index]?.addQuotationIfIsString()
+            column.columnName to parameters[index]?.let {
+                if (it.isEmpty() && column.nullable) NULL else it.addQuotationIfIsString()
+            }
         }
         append(columnsWithValues.joinToString(", ") { (columnName, value) -> "$columnName = $value" })
         append(" WHERE ")

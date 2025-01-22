@@ -11,8 +11,13 @@ import annotations.query.QueryColumns
 import annotations.references.References
 import annotations.uploads.AwsS3Upload
 import annotations.uploads.LocalUpload
-import org.jetbrains.exposed.sql.Table
+import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.transactions.transaction
 
 enum class Priority {
     Low, Medium, High
@@ -38,6 +43,9 @@ object Tasks : Table() {
     @ColumnLimits(
         maxLength = 500
     )
+    @ColumnInfo(
+        nullable = true
+    )
     val description = text("description")
 
     @EnumerationColumn("Low", "Medium", "High")
@@ -52,17 +60,27 @@ object Tasks : Table() {
     @References("users", "id")
     val userId = integer("user_id").references(Users.id)
 
-//    @ComputedColumn(
-//        compute = "{name}.toLowerCase().replaceAll(' ', '-')"
-//    )
-//    val slug = varchar("slug", 500)
+    @ComputedColumn(
+        compute = "{name}.toLowerCase().replaceAll(' ', '-')"
+    )
+    val slug = varchar("slug", 500)
 
     @LocalUpload
     @ColumnInfo(nullable = true)
     @ColumnLimits(
-        maxBytes = 1024 * 1024
+        maxBytes = 1024 * 1024 * 20,
+        allowedMimeTypes = ["video/mp4"]
     )
     val file = varchar("file", 1000).nullable()
 
+    @ColumnInfo(
+        columnName = "thumbnail",
+        nullable = true,
+        readOnly = true
+    )
+    @LocalUpload
+    val videoThumbnail = varchar("thumbnail", 1000).nullable()
+
     override val primaryKey = PrimaryKey(id)
+
 }
