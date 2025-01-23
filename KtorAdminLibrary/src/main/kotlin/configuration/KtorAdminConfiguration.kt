@@ -5,10 +5,10 @@ import com.vladsch.kotlin.jdbc.SessionImpl
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import listener.AdminEventListener
+import models.forms.LoginFiled
 import providers.StorageProvider
 import providers.AWSS3StorageProvider
 import repository.FileRepository
-import software.amazon.awssdk.regions.Region
 import java.time.Duration
 
 class KtorAdminConfiguration {
@@ -42,6 +42,13 @@ class KtorAdminConfiguration {
         get() = DynamicConfiguration.maxItemsInPage
         set(value) {
             DynamicConfiguration.maxItemsInPage = value
+        }
+
+
+    var loginFields: List<LoginFiled>
+        get() = DynamicConfiguration.loginFields
+        set(value) {
+            DynamicConfiguration.loginFields = value
         }
 
     fun registerStorageProvider(storageProvider: StorageProvider) {

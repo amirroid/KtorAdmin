@@ -9,6 +9,7 @@ fun Application.configureSecurity() {
     install(Authentication) {
         ktorAdmin(name = "admin") {
             validate { credentials ->
+                println("credentials=$credentials")
                 if (credentials["username"] == "admin" && credentials["password"] == "password") {
                     KtorAdminPrincipal("username")
                 } else null

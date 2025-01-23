@@ -5,6 +5,14 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.sessions.*
+import io.ktor.util.*
+import models.forms.UserForm
+import models.forms.toUserForm
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Str
+import utils.baseUrl
+import java.net.URI
+import java.net.URL
 
 /**
  * Key used to identify the admin authentication challenge.
@@ -21,8 +29,10 @@ class KtorAdminAuthenticationProvider internal constructor(
     config: KtorAdminAuthenticationConfig
 ) : AuthenticationProvider(config) {
 
-    private val authenticateFunction: AuthenticationFunction<Map<String, String>> = config.authenticationFunction
+    private val authenticateFunction: AuthenticationFunction<UserForm> = config.authenticationFunction
     private val challengeFunction: KtorAdminAuthChallengeFunction = config.challengeFunction
+
+    private fun ApplicationCall.getUserFromSessions() = sessions.get<UserForm>()
 
     /**
      * Called during the authentication process to validate credentials and set the principal.
@@ -31,8 +41,11 @@ class KtorAdminAuthenticationProvider internal constructor(
      */
     override suspend fun onAuthenticate(context: AuthenticationContext) {
         val call = context.call
-        // Attempt to receive parameters from the call safely
-        val parameters = kotlin.runCatching { call.receiveNullable<Map<String, String>>() }.getOrNull()
+        val sessionUser = call.getUserFromSessions()
+        val inLoginUrl =
+            call.request.uri.substringBefore("?") == "/admin/login" && call.request.httpMethod == HttpMethod.Post
+        val formParameters = call.takeIf { inLoginUrl }?.receiveParameters()?.toUserForm()
+        val parameters = sessionUser ?: formParameters
 
         // Invoke the authentication function if parameters are present
         val principal = parameters?.let { authenticateFunction.invoke(call, it) }
@@ -40,16 +53,17 @@ class KtorAdminAuthenticationProvider internal constructor(
         if (principal != null) {
             // If authentication is successful, set the principal and return
             context.principal(name, principal)
+            if (inLoginUrl && formParameters != sessionUser) {
+                formParameters?.let { call.sessions.set(it) }
+            }
             return
         }
 
         // Determine the cause of authentication failure
         val cause = when {
-            parameters?.isEmpty() == true -> AuthenticationFailedCause.NoCredentials
+            parameters.isNullOrEmpty() -> AuthenticationFailedCause.NoCredentials
             else -> AuthenticationFailedCause.InvalidCredentials
         }
-        println("Authentication Failed: $cause")
-
         // Trigger the challenge function to handle failed authentication
         context.challenge(adminAuthenticationChallengeKey, cause) { challenge, challengeCall ->
             challengeFunction.invoke(KtorAdminAuthChallengeContext(challengeCall), parameters)
@@ -67,9 +81,18 @@ class KtorAdminAuthenticationProvider internal constructor(
      */
     class KtorAdminAuthenticationConfig internal constructor(name: String? = null) : Config(name) {
 
-        internal var authenticationFunction: AuthenticationFunction<Map<String, String>> = { null }
+        internal var authenticationFunction: AuthenticationFunction<UserForm> = { null }
         internal var challengeFunction: KtorAdminAuthChallengeFunction = {
-            call.respondRedirect("/admin/login")
+            val originUrl = if (call.request.uri.startsWith("/admin/login")) {
+                URLBuilder(call.request.uri).parameters["origin"].orEmpty()
+            } else {
+                URLBuilder(call.baseUrl + call.request.uri).apply {
+                    if (parameters.contains("origin")) {
+                        parameters.remove("origin")
+                    }
+                }.buildString()
+            }
+            call.respondRedirect("${call.baseUrl}/admin/login?origin=$originUrl")
         }
 
         /**
@@ -93,7 +116,7 @@ class KtorAdminAuthenticationProvider internal constructor(
          *
          * @param body The validation logic that takes a map of parameters and returns a principal on success.
          */
-        fun validate(body: suspend ApplicationCall.(Map<String, String>) -> Any?) {
+        fun validate(body: suspend ApplicationCall.(UserForm) -> Any?) {
             authenticationFunction = body
         }
 
@@ -116,7 +139,7 @@ class KtorAdminAuthChallengeContext(val call: ApplicationCall)
  *
  * The function takes a [KtorAdminAuthChallengeContext] and optional credentials as parameters.
  */
-typealias KtorAdminAuthChallengeFunction = suspend KtorAdminAuthChallengeContext.(Map<String, String>?) -> Unit
+typealias KtorAdminAuthChallengeFunction = suspend KtorAdminAuthChallengeContext.(UserForm?) -> Unit
 
 /**
  * Registers the custom admin authentication provider in the Ktor [AuthenticationConfig].

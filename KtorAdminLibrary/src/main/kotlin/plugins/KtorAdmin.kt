@@ -2,8 +2,12 @@ package plugins
 
 import configuration.KtorAdminConfiguration
 import io.ktor.server.application.*
+import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 import io.ktor.util.*
+import models.forms.UserForm
 import modules.configureRouting
+import modules.configureSessions
 import modules.configureTemplating
 import repository.AdminTableRepository
 
@@ -18,9 +22,8 @@ class KtorAdmin {
             val authenticateName = configuration.authenticateName
             pipeline.configureTemplating()
             pipeline.configureRouting(authenticateName, tables)
-            pipeline.monitor.subscribe(ApplicationStopPreparing) {
-                configuration.closeDatabase()
-            }
+            pipeline.configureSessions()
+            pipeline.monitor.subscribe(ApplicationStopPreparing) { configuration.closeDatabase() }
             return KtorAdmin()
         }
     }

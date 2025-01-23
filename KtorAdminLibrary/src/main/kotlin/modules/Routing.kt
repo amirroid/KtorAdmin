@@ -28,7 +28,9 @@ fun Application.configureRouting(
 ) {
     routing {
         staticResources("/static", "static")
-        configureLoginRouting()
+        authenticateName?.let {
+            configureLoginRouting(it)
+        }
         configureGetRouting(tables, authenticateName)
         configureSavesRouting(tables, authenticateName)
     }
