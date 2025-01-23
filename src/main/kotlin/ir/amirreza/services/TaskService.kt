@@ -25,6 +25,7 @@ class TaskService(private val database: Database) {
     init {
         transaction(database) {
             SchemaUtils.create(Tasks)
+            SchemaUtils.create(TestTable)
         }
     }
 

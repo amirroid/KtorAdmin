@@ -13,13 +13,13 @@ import utils.getAllAllowToShowColumns
 internal object JdbcQueriesRepository {
     private const val NULL = "NULL"
 
-    private fun <T> AdminTable.usingDataSource(lambda: (Session) -> T): T {
+    private fun <T> usingDataSource(lambda: (Session) -> T): T {
         val dataSource = HikariCP.dataSource()
         return using(session(dataSource), lambda)
     }
 
     fun getAllData(table: AdminTable, search: String?, currentPage: Int?): List<DataWithPrimaryKey> =
-        table.usingDataSource { session ->
+        usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllQuery(search = search, currentPage = currentPage))) { raw ->
                 DataWithPrimaryKey(
                     primaryKey = raw.any("${table.getTableName()}_${table.getPrimaryKey()}").toString(),
@@ -30,12 +30,12 @@ internal object JdbcQueriesRepository {
         }
 
     fun getCount(table: AdminTable, search: String?): Int =
-        table.usingDataSource { session ->
+        usingDataSource { session ->
             session.count(sqlQuery(table.createGetAllQuery(search = search, null)))
         }
 
     fun getAllReferences(table: AdminTable, referenceColumn: String): List<ReferenceItem> =
-        table.usingDataSource { session ->
+        usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllReferencesQuery(referenceColumn))) { raw ->
                 val referenceKey = raw.any("${table.getTableName()}_$referenceColumn").toString()
                 val displayFormat = table.getDisplayFormat()
@@ -58,14 +58,14 @@ internal object JdbcQueriesRepository {
         }
 
     fun getData(table: AdminTable, primaryKey: String): List<String?>? =
-        table.usingDataSource { session ->
+        usingDataSource { session ->
             session.first(sqlQuery(table.createGetOneItemQuery(primaryKey))) { raw ->
                 table.getAllAllowToShowColumns().map { raw.anyOrNull(it.columnName)?.toString() }
             }
         }
 
     fun insertData(table: AdminTable, parameters: List<String?>): Int? {
-        return table.usingDataSource { session ->
+        return usingDataSource { session ->
             session.transaction { tx ->
                 tx.updateGetId(sqlQuery(table.createInsertQuery(parameters)))
             }
@@ -86,7 +86,7 @@ internal object JdbcQueriesRepository {
             }
 
             if (changedData.isNotEmpty()) {
-                table.usingDataSource { session ->
+                usingDataSource { session ->
                     session.transaction { tx ->
                         tx.updateGetId(
                             sqlQuery(

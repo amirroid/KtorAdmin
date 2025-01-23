@@ -2,6 +2,7 @@ package ir.amirreza
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -12,6 +13,7 @@ import ir.amirreza.services.User
 import ir.amirreza.services.UserService
 import kotlinx.datetime.toKotlinLocalDateTime
 import org.jetbrains.exposed.sql.*
+import plugins.KtorAdmin
 import java.io.File
 import java.time.ZoneId
 import java.util.*
@@ -37,8 +39,10 @@ fun Application.configureRouting(database: Database) {
             val id = call.parameters["id"]!!.toInt()
             call.respond(HttpStatusCode.OK, userService.read(id)!!)
         }
-        get("/tokens") {
-            call.respond(HttpStatusCode.OK, tokenService.getAll())
+        authenticate("admin") {
+            get("/tokens") {
+                call.respond(HttpStatusCode.OK, tokenService.getAll())
+            }
         }
         get("/tokens/{id}") {
             val id = call.parameters["id"]!!.toInt()

@@ -1,10 +1,13 @@
 package ir.amirreza
 
+import authentication.ktorAdmin
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import ir.amirreza.listeners.AdminListener
 import models.JDBCDrivers
 import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
+import providers.StorageProvider
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
@@ -24,6 +27,7 @@ fun Application.configureAdmin(database: Database) {
         mediaRoot = MEDIA_ROOT
         defaultAwsS3Bucket = "school-data"
         awsS3SignatureDuration = 1.minutes.toJavaDuration()
+        authenticateName = "admin"
         registerEventListener(AdminListener(database))
     }
 }

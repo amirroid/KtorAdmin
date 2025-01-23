@@ -15,8 +15,9 @@ class KtorAdmin {
         override fun install(pipeline: Application, configure: KtorAdminConfiguration.() -> Unit): KtorAdmin {
             val tables = AdminTableRepository.getAll()
             val configuration = KtorAdminConfiguration().apply(configure)
+            val authenticateName = configuration.authenticateName
             pipeline.configureTemplating()
-            pipeline.configureRouting(tables)
+            pipeline.configureRouting(authenticateName, tables)
             pipeline.monitor.subscribe(ApplicationStopPreparing) {
                 configuration.closeDatabase()
             }

@@ -41,7 +41,7 @@ open class AdminEventListener {
      * @param tableName the name of the table
      * @param objectPrimaryKey the primary key of the object
      */
-    open suspend fun onDeleteData(
+    open suspend fun onDeleteObject(
         tableName: String,
         objectPrimaryKey: String,
     ) = Unit

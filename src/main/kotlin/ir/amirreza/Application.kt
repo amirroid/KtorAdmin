@@ -14,6 +14,7 @@ fun Application.module() {
             driver = "org.postgresql.Driver",
             password = "your_password",
         )
+    configureSecurity()
     configureSerialization()
     configureTemplating()
     configureRouting(database)

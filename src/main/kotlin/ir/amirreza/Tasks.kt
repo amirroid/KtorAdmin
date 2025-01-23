@@ -10,6 +10,7 @@ import annotations.limit.ColumnLimits
 import annotations.query.QueryColumns
 import annotations.references.References
 import annotations.uploads.AwsS3Upload
+import annotations.uploads.CustomUpload
 import annotations.uploads.LocalUpload
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable

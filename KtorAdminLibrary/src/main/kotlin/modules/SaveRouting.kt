@@ -7,6 +7,7 @@ import configuration.DynamicConfiguration
 import getters.toTypedValue
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -18,19 +19,18 @@ import models.ColumnType
 import models.events.FileEvent
 import repository.JdbcQueriesRepository
 import repository.FileRepository
-import utils.AdminTable
-import utils.allIndexed
-import utils.findWithPluralName
-import utils.getAllAllowToShowColumns
+import utils.*
 
-fun Routing.configureSavesRouting(tables: List<AdminTable>) {
-    route("/admin/") {
-        post("{pluralName}/add") {
-            handleAddRequest(tables)
-        }
+internal fun Routing.configureSavesRouting(tables: List<AdminTable>, authenticateName: String? = null) {
+    withAuthenticate(authenticateName) {
+        route("/admin/") {
+            post("{pluralName}/add") {
+                handleAddRequest(tables)
+            }
 
-        post("{pluralName}/{primaryKey}") {
-            handleUpdateRequest(tables)
+            post("{pluralName}/{primaryKey}") {
+                handleUpdateRequest(tables)
+            }
         }
     }
 }
@@ -40,7 +40,7 @@ private fun List<ColumnSet>.validateParameters(parameters: List<String?>) = allI
 }
 
 
-fun List<ColumnSet>.toEvents(parameters: List<Any?>, changedColumns: List<String>? = null) =
+private fun List<ColumnSet>.toEvents(parameters: List<Any?>, changedColumns: List<String>? = null) =
     mapIndexed { index, columnSet ->
         ColumnEvent(
             changedColumns == null || changedColumns.any { column -> column == columnSet.columnName },
@@ -76,7 +76,7 @@ private suspend fun onUpdate(
     )
 }
 
-suspend fun RoutingContext.handleAddRequest(tables: List<AdminTable>) {
+private suspend fun RoutingContext.handleAddRequest(tables: List<AdminTable>) {
     val pluralName = call.parameters["pluralName"]
     val table = tables.findWithPluralName(pluralName)
     if (table == null) {
@@ -111,7 +111,7 @@ suspend fun RoutingContext.handleAddRequest(tables: List<AdminTable>) {
 }
 
 
-suspend fun RoutingContext.handleUpdateRequest(tables: List<AdminTable>) {
+private suspend fun RoutingContext.handleUpdateRequest(tables: List<AdminTable>) {
     val pluralName = call.parameters["pluralName"]
     val primaryKey = call.parameters["primaryKey"]
 
@@ -144,11 +144,11 @@ suspend fun RoutingContext.handleUpdateRequest(tables: List<AdminTable>) {
     }
 }
 
-fun Parameters.toTableValues(table: AdminTable) = table.getAllAllowToShowColumns().map {
+private fun Parameters.toTableValues(table: AdminTable) = table.getAllAllowToShowColumns().map {
     get(it.columnName)
 }
 
-suspend fun MultiPartData.toTableValues(table: AdminTable): List<Pair<String, Any?>?> {
+private suspend fun MultiPartData.toTableValues(table: AdminTable): List<Pair<String, Any?>?> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val columns = table.getAllAllowToShowColumns()
 

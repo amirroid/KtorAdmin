@@ -30,6 +30,8 @@ class KtorAdminConfiguration {
             AWSS3StorageProvider.defaultBucket = value
         }
 
+    var authenticateName: String? = null
+
     var awsS3SignatureDuration: Duration?
         get() = AWSS3StorageProvider.signatureDuration
         set(value) {
