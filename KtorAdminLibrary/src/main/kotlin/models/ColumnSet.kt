@@ -1,4 +1,7 @@
 package models
+
+import models.types.ColumnType
+
 /**
  * Represents metadata and configuration details for a specific column.
  *

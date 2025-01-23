@@ -1,6 +1,6 @@
 package getters
 
-import models.ColumnType
+import models.types.ColumnType
 
 
 import java.time.LocalDate

@@ -2,7 +2,7 @@ package utils
 
 import com.squareup.kotlinpoet.ClassName
 import models.ColumnSet
-import models.ColumnType
+import models.types.ColumnType
 import tables.AdminJdbcTable
 
 object PackagesUtils {

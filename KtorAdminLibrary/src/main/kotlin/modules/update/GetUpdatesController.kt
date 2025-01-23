@@ -7,7 +7,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
 import models.ColumnSet
-import models.ColumnType
+import models.types.ColumnType
 import repository.FileRepository
 import repository.JdbcQueriesRepository
 import tables.AdminJdbcTable

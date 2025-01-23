@@ -1,6 +1,7 @@
 package utils
 
-import models.ColumnType
+import models.types.ColumnType
+import models.types.FieldType
 
 fun guessPropertyType(type: String) = when (type) {
     "kotlin.Int" -> ColumnType.INTEGER
@@ -22,4 +23,20 @@ fun guessPropertyType(type: String) = when (type) {
     "kotlinx.datetime.LocalDate" -> ColumnType.DATE
     "kotlin.time.Duration" -> ColumnType.DURATION
     else -> ColumnType.NOT_AVAILABLE
+}
+
+fun guessFieldPropertyType(type: String) = when (type) {
+    "kotlin.String" -> FieldType.STRING
+    "kotlin.Int" -> FieldType.INTEGER
+    "kotlin.Long" -> FieldType.LONG
+    "kotlin.Double" -> FieldType.DOUBLE
+    "kotlin.Float" -> FieldType.FLOAT
+    "kotlin.Boolean" -> FieldType.BOOLEAN
+    "java.util.Date" -> FieldType.DATE
+    "kotlin.ByteArray" -> FieldType.BINARY
+    "java.math.BigDecimal" -> FieldType.DECIMAL128
+    "org.bson.types.ObjectId" -> FieldType.OBJECT_ID
+    "kotlinx.datetime.LocalDateTime" -> FieldType.DATETIME
+    "kotlinx.datetime.LocalDate" -> FieldType.DATE
+    else -> FieldType.NOT_AVAILABLE
 }

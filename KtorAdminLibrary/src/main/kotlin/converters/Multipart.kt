@@ -4,7 +4,7 @@ import getters.toTypedValue
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
 import kotlinx.io.readByteArray
-import models.ColumnType
+import models.types.ColumnType
 import models.events.FileEvent
 import repository.FileRepository
 import tables.AdminJdbcTable

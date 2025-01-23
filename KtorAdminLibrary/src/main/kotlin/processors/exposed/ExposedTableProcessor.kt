@@ -15,6 +15,7 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
 import models.*
+import models.types.ColumnType
 import utils.*
 
 class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {

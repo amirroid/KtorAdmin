@@ -12,10 +12,9 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSValueArgument
 import com.squareup.kotlinpoet.ksp.toClassName
 import models.ColumnSet
-import models.ColumnType
+import models.types.ColumnType
 import models.Limit
 import models.ColumnReference
-import software.amazon.awssdk.services.s3.endpoints.internal.Value.Str
 
 object ColumnsUtils {
     fun getColumnSets(property: KSPropertyDeclaration, type: KSType): ColumnSet? {

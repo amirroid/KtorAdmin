@@ -1,4 +1,4 @@
-package models
+package models.types
 
 enum class ColumnType {
     STRING,
