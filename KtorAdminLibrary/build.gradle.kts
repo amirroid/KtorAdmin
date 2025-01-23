@@ -40,6 +40,9 @@ dependencies {
 
     // Authentication
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
+
+    // MongoDB Kotlin driver dependency
+    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.10.1")
 }
 tasks.test {
     useJUnitPlatform()

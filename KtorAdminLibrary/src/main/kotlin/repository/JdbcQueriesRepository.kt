@@ -13,13 +13,14 @@ import tables.getAllAllowToShowColumns
 internal object JdbcQueriesRepository {
     private const val NULL = "NULL"
 
-    private fun <T> usingDataSource(lambda: (Session) -> T): T {
-        val dataSource = HikariCP.dataSource()
+    private fun <T> AdminJdbcTable.usingDataSource(lambda: (Session) -> T): T {
+        val key = getDatabaseKey()
+        val dataSource = if (key == null) HikariCP.dataSource() else HikariCP.dataSource(key)
         return using(session(dataSource), lambda)
     }
 
     fun getAllData(table: AdminJdbcTable, search: String?, currentPage: Int?): List<DataWithPrimaryKey> =
-        usingDataSource { session ->
+        table.usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllQuery(search = search, currentPage = currentPage))) { raw ->
                 DataWithPrimaryKey(
                     primaryKey = raw.any("${table.getTableName()}_${table.getPrimaryKey()}").toString(),
@@ -30,12 +31,12 @@ internal object JdbcQueriesRepository {
         }
 
     fun getCount(table: AdminJdbcTable, search: String?): Int =
-        usingDataSource { session ->
+        table.usingDataSource { session ->
             session.count(sqlQuery(table.createGetAllQuery(search = search, null)))
         }
 
     fun getAllReferences(table: AdminJdbcTable, referenceColumn: String): List<ReferenceItem> =
-        usingDataSource { session ->
+        table.usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllReferencesQuery(referenceColumn))) { raw ->
                 val referenceKey = raw.any("${table.getTableName()}_$referenceColumn").toString()
                 val displayFormat = table.getDisplayFormat()
@@ -58,21 +59,25 @@ internal object JdbcQueriesRepository {
         }
 
     fun getData(table: AdminJdbcTable, primaryKey: String): List<String?>? =
-        usingDataSource { session ->
+        table.usingDataSource { session ->
             session.first(sqlQuery(table.createGetOneItemQuery(primaryKey))) { raw ->
                 table.getAllAllowToShowColumns().map { raw.anyOrNull(it.columnName)?.toString() }
             }
         }
 
     fun insertData(table: AdminJdbcTable, parameters: List<String?>): Int? {
-        return usingDataSource { session ->
+        return table.usingDataSource { session ->
             session.transaction { tx ->
                 tx.updateGetId(sqlQuery(table.createInsertQuery(parameters)))
             }
         }
     }
 
-    fun updateChangedData(table: AdminJdbcTable, parameters: List<String?>, primaryKey: String): Pair<Int, List<String>>? {
+    fun updateChangedData(
+        table: AdminJdbcTable,
+        parameters: List<String?>,
+        primaryKey: String
+    ): Pair<Int, List<String>>? {
         val initialData = getData(table, primaryKey)
         return if (initialData == null) {
             insertData(table, parameters)?.let { id -> id to table.getAllAllowToShowColumns().map { it.columnName } }
@@ -86,7 +91,7 @@ internal object JdbcQueriesRepository {
             }
 
             if (changedData.isNotEmpty()) {
-                usingDataSource { session ->
+                table.usingDataSource { session ->
                     session.transaction { tx ->
                         tx.updateGetId(
                             sqlQuery(

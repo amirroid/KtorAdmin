@@ -1,14 +1,18 @@
 package configuration
 
+import com.mongodb.MongoClientSettings
 import com.vladsch.kotlin.jdbc.HikariCP
 import com.vladsch.kotlin.jdbc.SessionImpl
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import listener.AdminEventListener
 import models.forms.LoginFiled
+import mongo.MongoCredential
+import mongo.MongoServerAddress
 import providers.StorageProvider
 import providers.AWSS3StorageProvider
 import repository.FileRepository
+import repository.MongoClientRepository
 import java.time.Duration
 
 class KtorAdminConfiguration {
@@ -53,6 +57,10 @@ class KtorAdminConfiguration {
 
     fun registerStorageProvider(storageProvider: StorageProvider) {
         FileRepository.registerStorageProvider(storageProvider)
+    }
+
+    fun mongo(key: String?, address: MongoServerAddress, credential: MongoCredential? = null) {
+        MongoClientRepository.registerNewClient(key, address, credential)
     }
 
     fun jdbc(key: String?, url: String, username: String, password: String, driver: String) {
