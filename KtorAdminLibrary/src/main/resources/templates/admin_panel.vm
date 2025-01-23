@@ -23,10 +23,10 @@
         </tr>
         </thead>
         <tbody>
-            #foreach($table in $tableGroup.tables)
-            <tr onclick="redirectToTable('${table.pluralName}')">
-                <td>${table.tableName}</td>
-                <td>${table.pluralName}</td>
+            #foreach($panel in $tableGroup.panels)
+            <tr onclick="redirectToTable('${panel.pluralName}')">
+                <td>${panel.tableName}</td>
+                <td>${panel.pluralName}</td>
             </tr>
             #end
         </tbody>

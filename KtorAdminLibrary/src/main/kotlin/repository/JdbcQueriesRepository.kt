@@ -7,8 +7,8 @@ import formatters.populateTemplate
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.ReferenceItem
-import utils.AdminTable
-import utils.getAllAllowToShowColumns
+import tables.AdminJdbcTable
+import tables.getAllAllowToShowColumns
 
 internal object JdbcQueriesRepository {
     private const val NULL = "NULL"
@@ -18,7 +18,7 @@ internal object JdbcQueriesRepository {
         return using(session(dataSource), lambda)
     }
 
-    fun getAllData(table: AdminTable, search: String?, currentPage: Int?): List<DataWithPrimaryKey> =
+    fun getAllData(table: AdminJdbcTable, search: String?, currentPage: Int?): List<DataWithPrimaryKey> =
         usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllQuery(search = search, currentPage = currentPage))) { raw ->
                 DataWithPrimaryKey(
@@ -29,12 +29,12 @@ internal object JdbcQueriesRepository {
             }
         }
 
-    fun getCount(table: AdminTable, search: String?): Int =
+    fun getCount(table: AdminJdbcTable, search: String?): Int =
         usingDataSource { session ->
             session.count(sqlQuery(table.createGetAllQuery(search = search, null)))
         }
 
-    fun getAllReferences(table: AdminTable, referenceColumn: String): List<ReferenceItem> =
+    fun getAllReferences(table: AdminJdbcTable, referenceColumn: String): List<ReferenceItem> =
         usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllReferencesQuery(referenceColumn))) { raw ->
                 val referenceKey = raw.any("${table.getTableName()}_$referenceColumn").toString()
@@ -57,14 +57,14 @@ internal object JdbcQueriesRepository {
             }
         }
 
-    fun getData(table: AdminTable, primaryKey: String): List<String?>? =
+    fun getData(table: AdminJdbcTable, primaryKey: String): List<String?>? =
         usingDataSource { session ->
             session.first(sqlQuery(table.createGetOneItemQuery(primaryKey))) { raw ->
                 table.getAllAllowToShowColumns().map { raw.anyOrNull(it.columnName)?.toString() }
             }
         }
 
-    fun insertData(table: AdminTable, parameters: List<String?>): Int? {
+    fun insertData(table: AdminJdbcTable, parameters: List<String?>): Int? {
         return usingDataSource { session ->
             session.transaction { tx ->
                 tx.updateGetId(sqlQuery(table.createInsertQuery(parameters)))
@@ -72,7 +72,7 @@ internal object JdbcQueriesRepository {
         }
     }
 
-    fun updateChangedData(table: AdminTable, parameters: List<String?>, primaryKey: String): Pair<Int, List<String>>? {
+    fun updateChangedData(table: AdminJdbcTable, parameters: List<String?>, primaryKey: String): Pair<Int, List<String>>? {
         val initialData = getData(table, primaryKey)
         return if (initialData == null) {
             insertData(table, parameters)?.let { id -> id to table.getAllAllowToShowColumns().map { it.columnName } }
@@ -103,7 +103,7 @@ internal object JdbcQueriesRepository {
         }
     }
 
-    private fun AdminTable.createGetAllQuery(search: String?, currentPage: Int?) = buildString {
+    private fun AdminJdbcTable.createGetAllQuery(search: String?, currentPage: Int?) = buildString {
         val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
         val selectColumns = columns.map { columnSet ->
             "${getTableName()}.${columnSet.columnName} AS ${getTableName()}_${columnSet.columnName}"
@@ -124,7 +124,7 @@ internal object JdbcQueriesRepository {
         }
     }.also { println(it) }
 
-    private fun AdminTable.createSearchConditions(search: String): String {
+    private fun AdminJdbcTable.createSearchConditions(search: String): String {
         val joinConditions = mutableListOf<String>()
         val searchConditions = getSearchColumns().map { columnPath ->
             val pathParts = columnPath.split('.')
@@ -155,7 +155,7 @@ internal object JdbcQueriesRepository {
     }
 
 
-    private fun AdminTable.createGetAllReferencesQuery(leftReferenceColumn: String): String {
+    private fun AdminJdbcTable.createGetAllReferencesQuery(leftReferenceColumn: String): String {
         val columns = getDisplayFormat()?.extractTextInCurlyBraces().orEmpty()
         val selectColumns = mutableSetOf<String>()
         val joins = mutableListOf<String>()
@@ -206,7 +206,7 @@ internal object JdbcQueriesRepository {
     }
 
 
-    private fun AdminTable.createGetOneItemQuery(primaryKey: String) = buildString {
+    private fun AdminJdbcTable.createGetOneItemQuery(primaryKey: String) = buildString {
         append("SELECT ")
         append(getAllAllowToShowColumns().joinToString(", ") { it.columnName })
         append(" FROM ")
@@ -217,7 +217,7 @@ internal object JdbcQueriesRepository {
         append(primaryKey)
     }
 
-    private fun AdminTable.createInsertQuery(parameters: List<String?>) = buildString {
+    private fun AdminJdbcTable.createInsertQuery(parameters: List<String?>) = buildString {
         val columns = getAllAllowToShowColumns()
         val parametersWithNULL = parameters.mapIndexed { index, parameter ->
             if (columns[index].nullable && parameter.isNullOrEmpty()) NULL else parameter?.addQuotationIfIsString()
@@ -232,7 +232,7 @@ internal object JdbcQueriesRepository {
         append(")")
     }
 
-    private fun AdminTable.createUpdateQuery(
+    private fun AdminJdbcTable.createUpdateQuery(
         updatedColumns: List<ColumnSet>,
         parameters: List<String?>,
         primaryKey: String
@@ -255,5 +255,5 @@ internal object JdbcQueriesRepository {
     private fun String.addQuotationIfIsString(): String =
         if (toDoubleOrNull() != null) this else "'$this'"
 
-    private fun AdminTable.getPrimaryKeyColumn() = getAllColumns().first { it.columnName == getPrimaryKey() }
+    private fun AdminJdbcTable.getPrimaryKeyColumn() = getAllColumns().first { it.columnName == getPrimaryKey() }
 }

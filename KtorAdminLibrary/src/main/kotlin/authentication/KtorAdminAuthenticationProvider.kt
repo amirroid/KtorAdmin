@@ -58,7 +58,8 @@ class KtorAdminAuthenticationProvider internal constructor(
             call.request.uri.substringBefore("?") == "/admin/login" && call.request.httpMethod == HttpMethod.Post
         // Extract user parameters from the session or the request body
         val formParameters = call.takeIf { inLoginUrl }?.receiveParameters()?.toUserForm()
-        val parameters = call.getUserFromSessions() ?: formParameters
+        val userSession = call.getUserFromSessions()
+        val parameters = userSession ?: formParameters
 
         // Validate the user credentials
         val principal = parameters?.let { authenticateFunction.invoke(call, it) }
@@ -68,10 +69,14 @@ class KtorAdminAuthenticationProvider internal constructor(
             context.principal(name, principal)
 
             // Update the session with new credentials if logging in
-            if (inLoginUrl && formParameters != call.getUserFromSessions()) {
+            if (inLoginUrl && formParameters != userSession) {
                 formParameters?.let { call.sessions.set(it) }
             }
             return
+        }
+
+        if (userSession != null) {
+            call.sessions.clear<UserForm>()
         }
 
         // Determine the cause of authentication failure
