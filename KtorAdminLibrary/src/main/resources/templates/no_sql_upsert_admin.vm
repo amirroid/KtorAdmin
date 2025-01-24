@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <title>Upsert Form</title>
+    <link href="/static/css/upsert_admin_style.css" rel="stylesheet">
+</head>
+<body>
+<h2>$singularName</h2>
+<form method="post" enctype="multipart/form-data">
+    #foreach($field in $fields)
+        #if($values.get($field.fieldName))
+            #set($defaultValue = $values.get($field.fieldName))
+        #else
+            #if($field.defaultValue)
+                #set($defaultValue = $field.defaultValue)
+            #end
+        #end
+
+        #if($field.reference)
+            <label>$field.fieldName</label>
+            <!-- Reference field with predefined options -->
+            #set($referenceValues = $references.get($field))
+            <select name="$field.fieldName" class="form-input" #if($field.readOnly)disabled#end>
+                #foreach($refValue in $referenceValues)
+                    <option value="$refValue.referenceKey"
+                            #if($refValue == $!defaultValue)selected#end>$refValue.item</option>
+                #end
+            </select>
+        #else
+            <!-- Primitive and other field types -->
+            #if($field.type.name != "Map" && $field.type.name != "List")
+                <label>$field.fieldName</label>
+                <input type="$field.type.fieldType" class="form-input" name="$field.fieldName" value="$!defaultValue"
+                       #if($field.readOnly)readonly#end/>
+            #end
+
+            #if($field.type.name == "Map")
+                <fieldset id="$field.fieldName-container">
+                    <legend>$field.fieldName</legend>
+                    #if($field.type.fields.size() == 1 && !$field.type.fields[0].fieldName)
+                        <div class="map-item">
+                            <label>Key</label>
+                            <input type="text" class="form-input" name="$field.fieldName-key[]"
+                                   placeholder="Enter key"/>
+                            <label>Value</label>
+                            <input type="text" class="form-input" name="$field.fieldName-value[]"
+                                   placeholder="Enter value"/>
+                            <button type="button" onclick="removeMapItem(this)">Remove</button>
+                        </div>
+                        <button type="button" onclick="addKeyValueItem('$field.fieldName')">Add Key-Value</button>
+                    #else
+                        #foreach($subField in $field.type.fields)
+                            <div class="map-item">
+                                <label>$subField.fieldName</label>
+                                <input type="$subField.type.fieldType" class="form-input"
+                                       name="$field.fieldName[$subField.fieldName]" value="$!defaultValue"
+                                       #if($subField.readOnly)readonly#end/>
+                            </div>
+                        #end
+                    #end
+                </fieldset>
+            #end
+
+            #if($field.type.name == "List")
+                <fieldset id="$field.fieldName-container">
+                    <legend>$field.fieldName</legend>
+                    <div id="$field.fieldName-items">
+                        #if($field.type.fields.size() == 1 && !$field.type.fields[0].fieldName)
+                            #foreach($item in $values.get($field.fieldName))
+                                <div class="list-item">
+                                    <input type="$field.type.fieldType" class="form-input"
+                                           name="${field.fieldName}[]" value="$item"/>
+                                    <button type="button" onclick="removeItem(this)">Remove</button>
+                                </div>
+                            #end
+                            <button type="button"
+                                    onclick="addSingleItem('$field.fieldName', '$field.type.fieldType')">Add Item
+                            </button>
+                        #else
+                            #foreach($item in $values.get($field.fieldName))
+                                <div class="list-item">
+                                    #foreach($subField in $field.type.fields)
+                                        <label>$subField.fieldName</label>
+                                        <input type="$subField.type.fieldType" class="form-input"
+                                               name="$field.fieldName[$loop.index][$subField.fieldName]"
+                                               value="$item.get($subField.fieldName)"
+                                               #if($subField.readOnly)readonly#end />
+                                    #end
+                                    <button type="button" onclick="removeItem(this)">Remove</button>
+                                </div>
+                            #end
+                            <button type="button"
+                                    onclick="addComplexItem('$field.fieldName', [#foreach($type in $field.type.fields) {fieldName: '$type.fieldName', fieldType: '$type.type.fieldType'}#if($foreach.hasNext),#end#end])">
+                                Add Item
+                            </button>
+                        #end
+                    </div>
+                </fieldset>
+            #end
+        #end
+    #end
+    <button type="submit" class="form-input">Submit</button>
+</form>
+
+<script>
+    function addSingleItem(fieldName, fieldType) {
+        const container = document.getElementById(`${fieldName}-items`);
+        const newItem = document.createElement('div');
+        newItem.classList.add('list-item');
+        newItem.innerHTML = `
+            <input type="${fieldType}" class="form-input" name="${fieldName}[]" />
+            <button type="button" onclick="removeItem(this)">Remove</button>
+        `;
+        container.appendChild(newItem);
+    }
+
+    function removeItem(button) {
+        button.parentElement.remove();
+    }
+
+    function addComplexItem(fieldName, fieldFields) {
+        const container = document.getElementById(`${fieldName}-items`);
+        const newItem = document.createElement('div');
+        newItem.classList.add('list-item');
+        let innerHTML = '';
+
+        fieldFields.forEach((subField) => {
+            innerHTML += `
+            <label>${subField.fieldName}</label>
+            <input type="${subField.type.fieldType}" class="form-input"
+                   name="${fieldName}[][${subField.fieldName}]" />
+        `;
+        });
+
+        newItem.innerHTML = innerHTML + `
+        <button type="button" onclick="removeItem(this)">Remove</button>
+    `;
+        container.appendChild(newItem);
+    }
+
+    function addKeyValueItem(fieldName) {
+        const container = document.getElementById(`${fieldName}-container`);
+        const newItem = document.createElement('div');
+        newItem.classList.add('map-item');
+        newItem.innerHTML = `
+            <label>Key</label>
+            <input type="text" class="form-input" name="${fieldName}-key[]" placeholder="Enter key" />
+            <label>Value</label>
+            <input type="text" class="form-input" name="${fieldName}-value[]" placeholder="Enter value" />
+            <button type="button" onclick="removeMapItem(this)">Remove</button>
+        `;
+        container.appendChild(newItem);
+    }
+
+    function removeMapItem(button) {
+        button.parentElement.remove();
+    }
+</script>
+</body>
+</html>

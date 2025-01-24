@@ -16,8 +16,9 @@ data class Restaurant(
     @BsonId
     val id: ObjectId,
     val address: Address,
-    val borough: String,
+    val borough: LocalDateTime,
     val cuisine: String,
+    val tests: List<LocalDateTime>,
     val grades: List<Grade>,
     val name: String,
     @BsonProperty("restaurant_id")
@@ -28,7 +29,7 @@ data class Restaurant(
 data class Address(
     val building: String,
     val street: String,
-    val zipcode: String,
+    val zipcode: LocalDateTime,
     val coord: List<Double>,
 //    val test: Test
 )

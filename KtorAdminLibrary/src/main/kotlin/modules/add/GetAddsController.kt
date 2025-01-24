@@ -6,9 +6,7 @@ import getters.getReferencesItems
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
-import panels.AdminJdbcTable
-import panels.AdminPanel
-import panels.getAllAllowToShowColumns
+import panels.*
 import utils.Constants
 
 internal suspend fun ApplicationCall.handleAddNewItem(tables: List<AdminPanel>) {
@@ -19,6 +17,7 @@ internal suspend fun ApplicationCall.handleAddNewItem(tables: List<AdminPanel>) 
     } else {
         when (panel) {
             is AdminJdbcTable -> handleJdbcAddView(table = panel, tables = tables)
+            is AdminMongoCollection -> handleNoSqlAddView(panel = panel)
         }
     }
 }
@@ -38,6 +37,29 @@ private suspend fun ApplicationCall.handleJdbcAddView(
                     "method" to "post",
                     "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
                     "references" to referencesItems
+                )
+            )
+        )
+    }.onFailure {
+        badRequest("Error: ${it.message}")
+    }
+}
+
+private suspend fun ApplicationCall.handleNoSqlAddView(
+    panel: AdminMongoCollection,
+//    panels: List<AdminPanel>,
+) {
+    runCatching {
+        val fields = panel.getAllAllowToShowFieldsInUpsert()
+//        val referencesItems = getReferencesItems(tables.filterIsInstance<AdminJdbcTable>(), columns)
+        respond(
+            VelocityContent(
+                "${Constants.TEMPLATES_PREFIX_PATH}/no_sql_upsert_admin.vm", model = mapOf(
+                    "fields" to fields,
+                    "collectionName" to panel.getCollectionName(),
+                    "method" to "post",
+                    "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
+//                    "references" to referencesItems
                 )
             )
         )

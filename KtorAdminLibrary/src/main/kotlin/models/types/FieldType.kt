@@ -3,23 +3,24 @@ package models.types
 import models.field.FieldSet
 import utils.toSuitableStringForFile
 
-sealed class FieldType {
-    data object String : FieldType()
-    data object Integer : FieldType()
-    data object Long : FieldType()
-    data object Double : FieldType()
-    data object Float : FieldType()
-    data object Boolean : FieldType()
-    data object Date : FieldType()
-    data object DateTime : FieldType()
-    data object Binary : FieldType()
-    data object Enumeration : FieldType()
-    data object File : FieldType()
-    data object Decimal128 : FieldType()
-    data object ObjectId : FieldType()
-    data object NotAvailable : FieldType()
-    data class Map(val fields: kotlin.collections.List<FieldSet>) : FieldType()
-    data class List(val fields: kotlin.collections.List<FieldSet>) : FieldType()
+sealed class FieldType(val name: kotlin.String, val fieldType: kotlin.String) {
+    data object String : FieldType("String", "text")
+    data object Integer : FieldType("Integer", "number")
+    data object Long : FieldType("Long", "number")
+    data object Double : FieldType("Double", "number")
+    data object Float : FieldType("Float", "number")
+    data object Boolean : FieldType("Boolean", "checkbox")
+    data object Date : FieldType("Date", "date")
+    data object DateTime : FieldType("DateTime", "datetime-local")
+    data object Binary : FieldType("Binary", "file")
+    data object Enumeration : FieldType("Enumeration", "select")
+    data object File : FieldType("File", "file")
+    data object Decimal128 : FieldType("Decimal128", "number")
+    data object ObjectId : FieldType("ObjectId", "text")
+    data object NotAvailable : FieldType("NotAvailable", "text")
+
+    data class Map(val fields: kotlin.collections.List<FieldSet>) : FieldType("Map", "map")
+    data class List(val fields: kotlin.collections.List<FieldSet>) : FieldType("List", "list")
 }
 
 fun FieldType.toSuitableStringForFile(): String = when (this) {

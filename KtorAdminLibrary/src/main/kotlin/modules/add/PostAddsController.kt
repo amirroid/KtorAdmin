@@ -8,11 +8,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import models.ColumnSet
+import panels.*
 import repository.JdbcQueriesRepository
-import panels.AdminJdbcTable
-import panels.AdminPanel
-import panels.findWithPluralName
-import panels.getAllAllowToShowColumns
 import validators.validateParameters
 
 private suspend fun onInsert(
