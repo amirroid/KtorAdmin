@@ -1,6 +1,6 @@
 package modules.add
 
-import annotations.errors.badRequest
+import utils.badRequest
 import configuration.DynamicConfiguration
 import converters.toEvents
 import converters.toTableValues
@@ -9,10 +9,10 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import models.ColumnSet
 import repository.JdbcQueriesRepository
-import tables.AdminJdbcTable
-import tables.AdminPanel
-import tables.findWithPluralName
-import tables.getAllAllowToShowColumns
+import panels.AdminJdbcTable
+import panels.AdminPanel
+import panels.findWithPluralName
+import panels.getAllAllowToShowColumns
 import validators.validateParameters
 
 private suspend fun onInsert(

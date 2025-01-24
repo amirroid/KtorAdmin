@@ -8,4 +8,4 @@ package annotations.display
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
-annotation class TableDisplayFormat(val format: String)
+annotation class DisplayFormat(val format: String)

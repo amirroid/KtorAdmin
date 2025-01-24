@@ -1,7 +1,7 @@
 package modules.update
 
-import annotations.errors.notFound
-import annotations.errors.serverError
+import utils.notFound
+import utils.serverError
 import getters.getReferencesItems
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -10,9 +10,9 @@ import models.ColumnSet
 import models.types.ColumnType
 import repository.FileRepository
 import repository.JdbcQueriesRepository
-import tables.AdminJdbcTable
-import tables.AdminPanel
-import tables.getAllAllowToShowColumns
+import panels.AdminJdbcTable
+import panels.AdminPanel
+import panels.getAllAllowToShowColumns
 import utils.Constants
 
 

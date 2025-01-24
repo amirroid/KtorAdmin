@@ -3,7 +3,7 @@ package modules
 import io.ktor.server.routing.*
 import modules.add.handleAddRequest
 import modules.update.handleUpdateRequest
-import tables.AdminPanel
+import panels.AdminPanel
 import utils.*
 
 internal fun Routing.configureSavesRouting(tables: List<AdminPanel>, authenticateName: String? = null) {

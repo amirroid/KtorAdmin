@@ -1,13 +1,13 @@
-package models
+package models.common
 
-data class ColumnReference(
+data class Reference(
     val tableName: String,
     val columnName: String,
 )
 
-fun ColumnReference.toFormattedString(): String {
+fun Reference.toFormattedString(): String {
     return """
-        |ColumnReference(
+        |Reference(
         |       tableName = "$tableName",
         |       columnName = "$columnName",
         |   )

@@ -1,9 +1,7 @@
 package repository
 
 import org.reflections.Reflections
-import org.reflections.scanners.SubTypesScanner
-import tables.AdminJdbcTable
-import tables.AdminPanel
+import panels.AdminPanel
 import utils.Constants
 
 internal object AdminTableRepository {

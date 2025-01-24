@@ -8,7 +8,9 @@ import java.time.LocalDateTime
 
 @MongoCollection(
     "restaurants",
-    "id"
+    "id",
+    pluralName = "restaurants",
+    singularName = "restaurant",
 )
 data class Restaurant(
     @BsonId
@@ -19,7 +21,8 @@ data class Restaurant(
     val grades: List<Grade>,
     val name: String,
     @BsonProperty("restaurant_id")
-    val restaurantId: String
+    val restaurantId: String,
+    val p: Map<String, String>
 )
 
 data class Address(
@@ -27,7 +30,7 @@ data class Address(
     val street: String,
     val zipcode: String,
     val coord: List<Double>,
-    val test: Test
+//    val test: Test
 )
 
 data class Test(
@@ -38,5 +41,6 @@ data class Test(
 data class Grade(
     val date: LocalDateTime,
     val grade: String,
-    val score: Int
+    val score: Int,
+    val tests: List<Test>
 )

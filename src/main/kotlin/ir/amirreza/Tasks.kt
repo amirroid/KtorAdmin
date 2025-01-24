@@ -1,7 +1,7 @@
 package ir.amirreza
 
-import annotations.computed_column.ComputedColumn
-import annotations.display.TableDisplayFormat
+import annotations.computed.Computed
+import annotations.display.DisplayFormat
 import annotations.enumeration.EnumerationColumn
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
@@ -21,7 +21,7 @@ enum class Priority {
 @QueryColumns(
     searches = ["user_id.username", "description"],
 )
-@TableDisplayFormat(
+@DisplayFormat(
     format = "{id} - User: {user_id.username}",
 )
 object Tasks : Table("tasks") {
@@ -50,7 +50,7 @@ object Tasks : Table("tasks") {
     @References("users", "id")
     val userId = integer("user_id").references(Users.id)
 
-    @ComputedColumn(
+    @Computed(
         compute = "{name}.toLowerCase().replaceAll(' ', '-')"
     )
     val slug = varchar("slug", 500)

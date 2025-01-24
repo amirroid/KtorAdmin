@@ -1,6 +1,6 @@
 package models
 
-import tables.AdminPanel
+import panels.AdminPanel
 
 internal class PanelGroup(
     val group: String,

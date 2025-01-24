@@ -1,9 +1,8 @@
-package annotations.errors
+package utils
 
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
-import io.ktor.server.routing.*
 
 suspend fun ApplicationCall.badRequest(message: String) {
     respondText(status = HttpStatusCode.BadRequest) {

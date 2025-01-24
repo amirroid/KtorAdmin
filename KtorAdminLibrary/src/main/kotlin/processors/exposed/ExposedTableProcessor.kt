@@ -1,6 +1,6 @@
 package processors.exposed
 
-import annotations.display.TableDisplayFormat
+import annotations.display.DisplayFormat
 import annotations.exposed.ExposedTable
 import annotations.query.QueryColumns
 import com.google.devtools.ksp.processing.Dependencies
@@ -15,7 +15,9 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
 import models.*
+import models.common.Reference
 import models.types.ColumnType
+import repository.PropertiesRepository
 import utils.*
 
 class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
@@ -40,7 +42,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addImport(ColumnType::class.java.packageName, ColumnType::class.java.simpleName)
             .addImport(UploadTarget::class.java.packageName, UploadTarget::class.java.simpleName)
             .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
-            .addImport(ColumnReference::class.java.packageName, ColumnReference::class.java.simpleName)
+            .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(
@@ -166,7 +168,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         declarations.filterIsInstance<KSPropertyDeclaration>().forEach { property ->
             val type = property.type.resolve()
             if (type.toClassName().canonicalName == COLUMN_TYPE) {
-                ColumnsUtils.getColumnSets(property, type)?.let {
+                PropertiesRepository.getColumnSets(property, type)?.let {
                     columns += it
                 }
             }
@@ -175,7 +177,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
     }
 
     private fun KSClassDeclaration.getDisplayFormat() = annotations
-        .find { it.shortName.asString() == TableDisplayFormat::class.simpleName }
+        .find { it.shortName.asString() == DisplayFormat::class.simpleName }
         ?.arguments
         ?.find { it.name?.asString() == "format" }
         ?.value as? String

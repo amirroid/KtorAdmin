@@ -3,7 +3,7 @@ package getters
 import models.ColumnSet
 import models.ReferenceItem
 import repository.JdbcQueriesRepository
-import tables.AdminJdbcTable
+import panels.AdminJdbcTable
 
 internal fun getReferencesItems(
     tables: List<AdminJdbcTable>,

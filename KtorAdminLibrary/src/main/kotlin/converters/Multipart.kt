@@ -7,8 +7,8 @@ import kotlinx.io.readByteArray
 import models.types.ColumnType
 import models.events.FileEvent
 import repository.FileRepository
-import tables.AdminJdbcTable
-import tables.getAllAllowToShowColumns
+import panels.AdminJdbcTable
+import panels.getAllAllowToShowColumns
 
 internal suspend fun MultiPartData.toTableValues(table: AdminJdbcTable): List<Pair<String, Any?>?> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()

@@ -6,6 +6,7 @@ import annotations.uploads.CustomUpload
 import annotations.uploads.LocalUpload
 import com.google.devtools.ksp.symbol.KSAnnotation
 import models.UploadTarget
+import models.types.FieldType
 
 object UploadUtils {
     private val awsS3Name = AwsS3Upload::class.simpleName
@@ -45,6 +46,13 @@ object UploadUtils {
     fun validatePropertyType(columnType: String, columnName: String): Boolean {
         if (columnType != "kotlin.String") {
             throw IllegalArgumentException("Column '$columnName' must be of type 'kotlin.String' for file uploads. Only properties of type 'kotlin.String' are allowed for file uploads.")
+        }
+        return true
+    }
+
+    fun validatePropertyType(fieldName: String, fieldType: FieldType): Boolean {
+        if (fieldType != FieldType.String) {
+            throw IllegalArgumentException("Field '$fieldType' must be of type 'kotlin.String' for file uploads. Only properties of type 'kotlin.String' are allowed for file uploads.")
         }
         return true
     }

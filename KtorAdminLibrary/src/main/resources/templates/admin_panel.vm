@@ -16,16 +16,16 @@
     #foreach($tableGroup in $tableGroups)
     <h2>${tableGroup.group}</h2>
     <table>
-        <thead>
-        <tr>
-            <th>Table Name</th>
-            <th>Plural Name</th>
-        </tr>
-        </thead>
+        #if($foreach.index == 0)
+            <thead>
+            <tr>
+                <th>Plural Name</th>
+            </tr>
+            </thead>
+        #end
         <tbody>
             #foreach($panel in $tableGroup.panels)
             <tr onclick="redirectToTable('${panel.pluralName}')">
-                <td>${panel.tableName}</td>
                 <td>${panel.pluralName}</td>
             </tr>
             #end

@@ -1,5 +1,6 @@
 package utils
 
+import models.field.FieldSet
 import models.types.ColumnType
 import models.types.FieldType
 
@@ -25,18 +26,20 @@ fun guessPropertyType(type: String) = when (type) {
     else -> ColumnType.NOT_AVAILABLE
 }
 
-fun guessFieldPropertyType(type: String) = when (type) {
-    "kotlin.String" -> FieldType.STRING
-    "kotlin.Int" -> FieldType.INTEGER
-    "kotlin.Long" -> FieldType.LONG
-    "kotlin.Double" -> FieldType.DOUBLE
-    "kotlin.Float" -> FieldType.FLOAT
-    "kotlin.Boolean" -> FieldType.BOOLEAN
-    "java.util.Date" -> FieldType.DATE
-    "kotlin.ByteArray" -> FieldType.BINARY
-    "java.math.BigDecimal" -> FieldType.DECIMAL128
-    "org.bson.types.ObjectId" -> FieldType.OBJECT_ID
-    "kotlinx.datetime.LocalDateTime", "java.time.LocalDateTime" -> FieldType.DATETIME
-    "kotlinx.datetime.LocalDate", "java.time.LocalDate" -> FieldType.DATE
-    else -> FieldType.NOT_AVAILABLE
+fun guessFieldPropertyType(type: String): FieldType = when (type) {
+    "kotlin.String" -> FieldType.String
+    "kotlin.Int" -> FieldType.Integer
+    "kotlin.Long" -> FieldType.Long
+    "kotlin.Double" -> FieldType.Double
+    "kotlin.Float" -> FieldType.Float
+    "kotlin.Boolean" -> FieldType.Boolean
+    "java.util.Date" -> FieldType.Date
+    "kotlin.ByteArray" -> FieldType.Binary
+    "java.math.BigDecimal" -> FieldType.Decimal128
+    "org.bson.types.ObjectId" -> FieldType.ObjectId
+    "kotlinx.datetime.LocalDateTime", "java.time.LocalDateTime" -> FieldType.DateTime
+    "kotlinx.datetime.LocalDate", "java.time.LocalDate" -> FieldType.Date
+    "kotlin.collections.List" -> FieldType.List(emptyList())
+    "kotlin.collections.Map" -> FieldType.Map(emptyList())
+    else -> FieldType.NotAvailable
 }

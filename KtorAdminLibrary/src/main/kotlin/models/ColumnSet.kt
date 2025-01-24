@@ -1,5 +1,6 @@
 package models
 
+import models.common.Reference
 import models.types.ColumnType
 
 /**
@@ -28,7 +29,7 @@ data class ColumnSet(
     val defaultValue: String? = null,
     val enumerationValues: List<String>? = null,
     val limits: Limit? = null,
-    val reference: ColumnReference? = null,
+    val reference: Reference? = null,
     val readOnly: Boolean = false,
     val computedColumn: String? = null
 )

@@ -3,8 +3,7 @@ package modules
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
-import tables.AdminJdbcTable
-import tables.AdminPanel
+import panels.AdminPanel
 
 fun Application.configureRouting(
     authenticateName: String?,

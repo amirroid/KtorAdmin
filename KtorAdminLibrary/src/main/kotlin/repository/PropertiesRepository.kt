@@ -1,6 +1,7 @@
-package utils
+package repository
 
-import annotations.computed_column.ComputedColumn
+import annotations.collection.CollectionInfo
+import annotations.computed.Computed
 import annotations.enumeration.EnumerationColumn
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
@@ -14,9 +15,15 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import models.ColumnSet
 import models.types.ColumnType
 import models.Limit
-import models.ColumnReference
+import models.common.Reference
+import models.field.FieldSet
+import models.types.FieldType
+import utils.UploadUtils
+import utils.findArgument
+import utils.guessFieldPropertyType
+import utils.guessPropertyType
 
-object ColumnsUtils {
+object PropertiesRepository {
     fun getColumnSets(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
         val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
         val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
@@ -39,7 +46,7 @@ object ColumnsUtils {
         val uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations)
         val allowedMimeTypes =
             if (hasUploadAnnotation) UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations) else null
-        val computedColumnInfo = property.annotations.getComputedColumn()
+        val computedColumnInfo = property.annotations.getComputed()
         val isReadOnly =
             (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) || (computedColumnInfo?.second ?: false)
         return ColumnSet(
@@ -58,10 +65,49 @@ object ColumnsUtils {
         )
     }
 
+    fun getFieldSet(property: KSPropertyDeclaration, type: FieldType): FieldSet? {
+        val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
+        val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
+        val name = property.simpleName.asString()
+        val infoAnnotation =
+            property.annotations.find { it.shortName.asString() == CollectionInfo::class.simpleName }
+        val fieldName = infoAnnotation?.findArgument<String>("fieldName")?.takeIf { it.isNotEmpty() } ?: name
+        if (hasUploadAnnotation) {
+            UploadUtils.validatePropertyType(fieldName, type)
+        }
+        val fieldType = when {
+            hasEnumerationColumnAnnotation -> FieldType.Enumeration
+            hasUploadAnnotation -> FieldType.File
+            else -> type
+        }
+        val showInPanel = hasIgnoreColumnAnnotation(property.annotations).not()
+        val nullable = infoAnnotation?.findArgument<Boolean>("nullable") ?: false
+        val defaultValue = infoAnnotation?.findArgument<String>("defaultValue")?.takeIf { it.isNotEmpty() }
+        val uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations)
+        val allowedMimeTypes =
+            if (hasUploadAnnotation) UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations) else null
+        val computedFieldInfo = property.annotations.getComputed()
+        val isReadOnly =
+            (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) || (computedFieldInfo?.second ?: false)
+        return FieldSet(
+            fieldName = fieldName,
+            type = fieldType,
+            nullable = nullable,
+            showInPanel = showInPanel,
+            uploadTarget = uploadTarget,
+            allowedMimeTypes = allowedMimeTypes,
+            defaultValue = defaultValue,
+            enumerationValues = property.annotations.getEnumerations(),
+            limits = property.annotations.getLimits(),
+            reference = property.annotations.getReferences(),
+            readOnly = isReadOnly,
+            computedField = computedFieldInfo?.first
+        )
+    }
+
     private fun hasEnumerationColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
         it.shortName.asString() == EnumerationColumn::class.simpleName
     }
-
 
     private fun hasIgnoreColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
         it.shortName.asString() == IgnoreColumn::class.simpleName
@@ -77,24 +123,15 @@ object ColumnsUtils {
             ?.takeIf { it.isNotEmpty() }
     }
 
-
-    private fun hasAnyReferencesAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
-        it.shortName.asString() == IgnoreColumn::class.simpleName
-    }
-
-    private fun Sequence<KSAnnotation>.getReferences(): ColumnReference? {
+    private fun Sequence<KSAnnotation>.getReferences(): Reference? {
         return find { it.shortName.asString() == References::class.simpleName }
             ?.arguments
             ?.let {
-                ColumnReference(
+                Reference(
                     tableName = it.firstOrNull { argument -> argument.name?.asString() == "tableName" }!!.value as String,
                     columnName = it.firstOrNull { argument -> argument.name?.asString() == "targetColumn" }!!.value as String,
                 )
             }
-    }
-
-    private fun hasColumnLimitsAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
-        it.shortName.asString() == Limits::class.simpleName
     }
 
     private fun Sequence<KSAnnotation>.getLimits(): Limit? {
@@ -118,8 +155,8 @@ object ColumnsUtils {
         }
     }
 
-    private fun Sequence<KSAnnotation>.getComputedColumn(): Pair<String, Boolean>? {
-        return find { it.shortName.asString() == ComputedColumn::class.simpleName }
+    private fun Sequence<KSAnnotation>.getComputed(): Pair<String, Boolean>? {
+        return find { it.shortName.asString() == Computed::class.simpleName }
             ?.arguments?.let {
                 it.getArgument<String>("compute")!! to it.getArgument<Boolean>("readOnly")!!
             }

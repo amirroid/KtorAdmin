@@ -2,7 +2,10 @@ package utils
 
 import com.google.devtools.ksp.symbol.KSAnnotation
 import models.ColumnSet
+import models.common.toFormattedString
+import models.field.FieldSet
 import models.toFormattedString
+import models.types.toSuitableStringForFile
 
 fun ColumnSet.toSuitableStringForFile() = """
     |ColumnSet(
@@ -18,6 +21,23 @@ fun ColumnSet.toSuitableStringForFile() = """
     |    reference = ${reference?.toFormattedString()},
     |    readOnly = $readOnly,
     |    computedColumn = ${computedColumn?.let { "\"${it}\"" }},
+    |)
+""".trimMargin("|")
+
+fun FieldSet.toSuitableStringForFile() = """
+    |FieldSet(
+    |    fieldName = ${fieldName?.let { "\"${it}\"" }},
+    |    type = FieldType.${type.toSuitableStringForFile()},
+    |    nullable = $nullable,
+    |    showInPanel = $showInPanel,
+    |    uploadTarget = ${uploadTarget?.toFormattedString()},
+    |    allowedMimeTypes = ${allowedMimeTypes?.toSuitableStringForFile()},
+    |    defaultValue = ${defaultValue?.let { "\"${it}\"" }},
+    |    enumerationValues = ${enumerationValues?.toSuitableStringForFile()},
+    |    limits = ${limits?.toFormattedString()},
+    |    reference = ${reference?.toFormattedString()},
+    |    readOnly = $readOnly,
+    |    computedField = ${computedField?.let { "\"${it}\"" }},
     |)
 """.trimMargin("|")
 

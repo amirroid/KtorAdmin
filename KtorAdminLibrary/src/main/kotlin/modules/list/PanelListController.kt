@@ -1,15 +1,16 @@
 package modules.list
 
-import annotations.errors.badRequest
-import annotations.errors.notFound
+import utils.badRequest
+import utils.notFound
 import configuration.DynamicConfiguration
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
 import repository.JdbcQueriesRepository
-import tables.AdminJdbcTable
-import tables.AdminPanel
-import tables.getAllAllowToShowColumns
+import panels.AdminJdbcTable
+import panels.AdminMongoCollection
+import panels.AdminPanel
+import panels.getAllAllowToShowColumns
 import utils.Constants
 
 internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
@@ -26,6 +27,7 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
     } else {
         when (panel) {
             is AdminJdbcTable -> handleJdbcList(panel, searchParameter, currentPage, pluralName)
+            is AdminMongoCollection -> respondText { "Coming soon..." }
         }
     }
 }

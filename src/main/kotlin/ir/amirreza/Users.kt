@@ -1,6 +1,6 @@
 package ir.amirreza
 
-import annotations.display.TableDisplayFormat
+import annotations.display.DisplayFormat
 import annotations.exposed.ExposedTable
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
@@ -13,7 +13,7 @@ import org.jetbrains.exposed.sql.Table
     "users",
     "profiles"
 )
-@TableDisplayFormat(
+@DisplayFormat(
     format = "{id} - {username}"
 )
 object Users : Table() {

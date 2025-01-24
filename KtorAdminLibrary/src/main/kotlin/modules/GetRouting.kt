@@ -1,26 +1,16 @@
 package modules
 
-import annotations.errors.badRequest
-import annotations.errors.notFound
-import annotations.errors.serverError
-import configuration.DynamicConfiguration
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.velocity.*
-import models.*
-import models.ReferenceItem
 import models.PanelGroup
 import models.toTableGroups
 import modules.add.handleAddNewItem
 import modules.list.handlePanelList
 import modules.update.handleEditItem
-import repository.FileRepository
-import repository.JdbcQueriesRepository
-import tables.AdminJdbcTable
-import tables.AdminPanel
+import panels.AdminPanel
 import utils.Constants
-import tables.getAllAllowToShowColumns
 import utils.withAuthenticate
 
 

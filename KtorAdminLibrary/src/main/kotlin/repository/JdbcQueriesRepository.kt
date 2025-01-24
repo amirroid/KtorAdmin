@@ -7,8 +7,8 @@ import formatters.populateTemplate
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.ReferenceItem
-import tables.AdminJdbcTable
-import tables.getAllAllowToShowColumns
+import panels.AdminJdbcTable
+import panels.getAllAllowToShowColumns
 
 internal object JdbcQueriesRepository {
     private const val NULL = "NULL"
