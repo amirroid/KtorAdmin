@@ -2,10 +2,8 @@ package ir.amirreza
 
 import annotations.display.TableDisplayFormat
 import annotations.exposed.ExposedTable
-import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
-import annotations.limit.ColumnLimits
-import annotations.references.References
+import annotations.limit.Limits
 import org.jetbrains.exposed.sql.Table
 
 @ExposedTable(
@@ -23,7 +21,7 @@ object Users : Table() {
     val id = integer("id").autoIncrement()
     val username = varchar("username", length = 100)
 
-    @ColumnLimits(
+    @Limits(
         regexPattern = """[A-z0-9]*@[A-z0-9]*.[A-z0-9]*"""
     )
     val email = varchar("email", length = 150)

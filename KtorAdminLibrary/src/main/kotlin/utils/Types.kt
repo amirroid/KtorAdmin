@@ -36,7 +36,7 @@ fun guessFieldPropertyType(type: String) = when (type) {
     "kotlin.ByteArray" -> FieldType.BINARY
     "java.math.BigDecimal" -> FieldType.DECIMAL128
     "org.bson.types.ObjectId" -> FieldType.OBJECT_ID
-    "kotlinx.datetime.LocalDateTime" -> FieldType.DATETIME
-    "kotlinx.datetime.LocalDate" -> FieldType.DATE
+    "kotlinx.datetime.LocalDateTime", "java.time.LocalDateTime" -> FieldType.DATETIME
+    "kotlinx.datetime.LocalDate", "java.time.LocalDate" -> FieldType.DATE
     else -> FieldType.NOT_AVAILABLE
 }

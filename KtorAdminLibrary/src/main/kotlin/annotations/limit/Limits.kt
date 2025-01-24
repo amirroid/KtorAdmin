@@ -1,10 +1,14 @@
 package annotations.limit
 
 /**
- * Annotation to specify various constraints for a column property.
+ * Annotation to specify various constraints for a column or field in a data class.
  *
- * @property maxLength The maximum length allowed for the property. Default is [Int.MAX_VALUE].
- * @property minLength The minimum length allowed for the property. Default is [Int.MIN_VALUE].
+ * This annotation can be used to enforce validation rules for property values in a data class,
+ * ensuring data integrity and consistency according to the specified constraints.
+ * It is applicable for both column properties in relational databases and fields in MongoDB documents.
+ *
+ * @property maxLength The maximum length allowed for the property's value. Default is [Int.MAX_VALUE].
+ * @property minLength The minimum length allowed for the property's value. Default is 0.
  * @property regexPattern A regular expression pattern that the property's value must match. Default is an empty string.
  * @property maxCount The maximum count allowed for numeric properties. Default is [Double.MAX_VALUE].
  * @property minCount The minimum count allowed for numeric properties. Default is [Double.MIN_VALUE].
@@ -13,13 +17,11 @@ package annotations.limit
  *                                Negative values allow dates in the past. Default is [Long.MAX_VALUE].
  * @property maxDateRelativeToNow The maximum date allowed, specified as milliseconds relative to the current time.
  *                                Positive values allow dates in the future. Default is [Long.MAX_VALUE].
- *
- * This annotation can be used to enforce constraints on property values in a data class,
- * helping ensure data integrity and consistency according to the specified rules.
+ * @property allowedMimeTypes An array of allowed MIME types for the property's value. Default is an empty array.
  */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
-annotation class ColumnLimits(
+annotation class Limits(
     val maxLength: Int = Int.MAX_VALUE,
     val minLength: Int = 0,
     val regexPattern: String = "",

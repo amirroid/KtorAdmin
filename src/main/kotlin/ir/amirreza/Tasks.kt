@@ -6,19 +6,11 @@ import annotations.enumeration.EnumerationColumn
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
-import annotations.limit.ColumnLimits
+import annotations.limit.Limits
 import annotations.query.QueryColumns
 import annotations.references.References
-import annotations.uploads.AwsS3Upload
-import annotations.uploads.CustomUpload
 import annotations.uploads.LocalUpload
-import kotlinx.coroutines.Dispatchers
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.kotlin.datetime.datetime
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
 
 enum class Priority {
     Low, Medium, High
@@ -36,12 +28,12 @@ object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
 
-    @ColumnLimits(
+    @Limits(
         maxLength = 20,
     )
     val name = varchar("name", length = 150)
 
-    @ColumnLimits(
+    @Limits(
         maxLength = 500
     )
     val description = text("description")
@@ -65,7 +57,7 @@ object Tasks : Table("tasks") {
 
     @LocalUpload
     @ColumnInfo(nullable = true)
-    @ColumnLimits(
+    @Limits(
         maxBytes = 1024 * 1024 * 20,
         allowedMimeTypes = ["video/mp4"]
     )

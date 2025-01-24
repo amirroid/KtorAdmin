@@ -4,7 +4,7 @@ import annotations.computed_column.ComputedColumn
 import annotations.enumeration.EnumerationColumn
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
-import annotations.limit.ColumnLimits
+import annotations.limit.Limits
 import annotations.references.References
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
@@ -94,11 +94,11 @@ object ColumnsUtils {
     }
 
     private fun hasColumnLimitsAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
-        it.shortName.asString() == ColumnLimits::class.simpleName
+        it.shortName.asString() == Limits::class.simpleName
     }
 
     private fun Sequence<KSAnnotation>.getLimits(): Limit? {
-        return find { it.shortName.asString() == ColumnLimits::class.simpleName }?.arguments?.let { args ->
+        return find { it.shortName.asString() == Limits::class.simpleName }?.arguments?.let { args ->
             Limit(
                 maxLength = args.getArgument("maxLength") ?: Int.MAX_VALUE,
                 minLength = args.getArgument("minLength") ?: Int.MIN_VALUE,

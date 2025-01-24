@@ -36,7 +36,7 @@ private suspend fun ApplicationCall.handleJdbcAddView(
                     "columns" to columns,
                     "tableName" to table.getTableName(),
                     "method" to "post",
-                    "singularTableName" to table.getSingularName().capitalize(),
+                    "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
                     "references" to referencesItems
                 )
             )
