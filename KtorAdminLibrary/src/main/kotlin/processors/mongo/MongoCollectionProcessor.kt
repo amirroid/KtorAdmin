@@ -120,7 +120,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
                 }
 
                 is FieldType.Map -> {
-                    val mapItemType = resolvedType.arguments.firstOrNull()?.type?.resolve()
+                    val mapItemType = resolvedType.arguments.getOrNull(1)?.type?.resolve()
                     if (mapItemType != null) {
                         val mapItemTypeDeclaration = mapItemType.declaration
                         if (mapItemTypeDeclaration is KSClassDeclaration) {

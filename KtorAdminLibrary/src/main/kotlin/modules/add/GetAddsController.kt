@@ -59,7 +59,6 @@ private suspend fun ApplicationCall.handleNoSqlAddView(
                     "collectionName" to panel.getCollectionName(),
                     "method" to "post",
                     "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
-//                    "references" to referencesItems
                 )
             )
         )

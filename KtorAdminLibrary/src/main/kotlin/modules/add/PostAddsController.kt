@@ -4,9 +4,11 @@ import utils.badRequest
 import configuration.DynamicConfiguration
 import converters.toEvents
 import converters.toTableValues
+import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.*
 import models.ColumnSet
 import panels.*
 import repository.JdbcQueriesRepository
@@ -35,6 +37,7 @@ internal suspend fun RoutingContext.handleAddRequest(tables: List<AdminPanel>) {
 
     when (table) {
         is AdminJdbcTable -> insertData(pluralName, table)
+        is AdminMongoCollection -> call.respond(call.receiveParameters().toMap())
     }
 }
 

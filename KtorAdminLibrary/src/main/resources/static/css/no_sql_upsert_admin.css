@@ -1,0 +1,176 @@
+/* General body and form styles */
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    height: 100vh;
+    overflow-y: auto;
+    margin: 0;
+}
+
+form {
+    background-color: #1f1f1f;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+}
+
+/* Input with buttons container */
+.input-with-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.input-with-buttons .form-input {
+    flex-grow: 1;
+}
+
+/* List buttons styles */
+.list-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+    margin-top: 8px;
+}
+
+.list-buttons button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: #6200ea;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.list-buttons button:hover {
+    background-color: #8900EAFF;
+    transform: scale(1.1);
+}
+
+.list-buttons button i {
+    font-size: 16px;
+}
+
+/* Labels */
+label {
+    font-size: 14px;
+    margin-bottom: 4px;
+    display: block;
+    color: #b0b0b0;
+}
+
+/* Inputs and buttons */
+input, select, button, input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    box-sizing: border-box;
+}
+
+/* Nested containers */
+.nested-container {
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.dynamic-item {
+    margin-bottom: 10px;
+}
+
+/* Existing styles remain unchanged */
+
+.list-buttons button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;  /* Slightly larger */
+    height: 40px; /* Slightly larger */
+    padding: 0;
+    border-radius: 50%;
+    background-color: #2c2c2c; /* Darker default background */
+    color: #e0e0e0;
+    border: 1px solid #6200ea;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Existing styles remain unchanged */
+
+/* Previous styles with modifications */
+.list-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.list-buttons button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%; /* Circular buttons */
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border: 1px solid #6200ea;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.list-buttons .remove-button {
+    background-color: #4a4a4a;
+}
+
+.list-buttons button:hover {
+    background-color: #6200ea;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(98, 0, 234, 0.5);
+}
+
+.list-buttons button:hover {
+    background-color: #6200ea;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(98, 0, 234, 0.5);
+}
+
+/* Submit button styling */
+button[type="submit"] {
+    background-color: #6200ea;
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+button[type="submit"]:hover {
+    background-color: #8900ea;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(98, 0, 234, 0.5);
+}

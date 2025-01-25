@@ -4,6 +4,7 @@ import annotations.mongo.MongoCollection
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.codecs.pojo.annotations.BsonProperty
 import org.bson.types.ObjectId
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @MongoCollection(
@@ -15,15 +16,15 @@ import java.time.LocalDateTime
 data class Restaurant(
     @BsonId
     val id: ObjectId,
-    val address: Address,
     val borough: LocalDateTime,
     val cuisine: String,
-    val tests: List<LocalDateTime>,
-    val grades: List<Grade>,
     val name: String,
     @BsonProperty("restaurant_id")
     val restaurantId: String,
-    val p: Map<String, String>
+    val address: Address,
+    val p: Map<String, LocalDate>,
+    val tests: List<LocalDateTime>,
+    val grades: List<Grade>,
 )
 
 data class Address(
