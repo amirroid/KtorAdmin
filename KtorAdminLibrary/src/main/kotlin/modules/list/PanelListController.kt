@@ -41,6 +41,49 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
     }
 }
 
+private suspend fun ApplicationCall.handleJdbcList(
+    table: AdminJdbcTable,
+    tables: List<AdminPanel>,
+    searchParameter: String?,
+    currentPage: Int?,
+    pluralName: String?,
+    parameters: Parameters
+) {
+    val jdbcTables = tables.filterIsInstance<AdminJdbcTable>()
+    val hasSearchColumn = table.getSearchColumns().isNotEmpty()
+
+    // Prepare filters data
+    val filtersData = findFiltersData(table, jdbcTables)
+
+    // Extract actual filters
+    val filters = extractFilters(table, jdbcTables, parameters)
+
+    // Fetch data
+    val data = JdbcQueriesRepository.getAllData(table, searchParameter, currentPage, filters)
+    val maxPages = JdbcQueriesRepository.getCount(table, searchParameter, filters).let {
+        val calculatedValue = it / DynamicConfiguration.maxItemsInPage
+        if (it % DynamicConfiguration.maxItemsInPage == 0) {
+            calculatedValue
+        } else calculatedValue.plus(1)
+    }
+
+    // Respond with Velocity template
+    respond(
+        VelocityContent(
+            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
+            model = mapOf(
+                "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
+                "rows" to data,
+                "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
+                "hasSearchColumn" to hasSearchColumn,
+                "currentPage" to (currentPage?.plus(1) ?: 1),
+                "maxPages" to maxPages,
+                "filtersData" to filtersData
+            )
+        )
+    )
+}
+
 private fun findFiltersData(
     table: AdminJdbcTable,
     jdbcTables: List<AdminJdbcTable>
@@ -157,47 +200,4 @@ private fun handleDateTimeFilter(
             filters.add(Pair(columnSet, "<= '$endTimestamp'"))
         }
     }
-}
-
-private suspend fun ApplicationCall.handleJdbcList(
-    table: AdminJdbcTable,
-    tables: List<AdminPanel>,
-    searchParameter: String?,
-    currentPage: Int?,
-    pluralName: String?,
-    parameters: Parameters
-) {
-    val jdbcTables = tables.filterIsInstance<AdminJdbcTable>()
-    val hasSearchColumn = table.getSearchColumns().isNotEmpty()
-
-    // Prepare filters data
-    val filtersData = findFiltersData(table, jdbcTables)
-
-    // Extract actual filters
-    val filters = extractFilters(table, jdbcTables, parameters)
-
-    // Fetch data
-    val data = JdbcQueriesRepository.getAllData(table, searchParameter, currentPage, filters)
-    val maxPages = JdbcQueriesRepository.getCount(table, searchParameter, filters).let {
-        val calculatedValue = it / DynamicConfiguration.maxItemsInPage
-        if (it % DynamicConfiguration.maxItemsInPage == 0) {
-            calculatedValue
-        } else calculatedValue.plus(1)
-    }
-
-    // Respond with Velocity template
-    respond(
-        VelocityContent(
-            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
-            model = mapOf(
-                "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
-                "rows" to data,
-                "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
-                "hasSearchColumn" to hasSearchColumn,
-                "currentPage" to (currentPage?.plus(1) ?: 1),
-                "maxPages" to maxPages,
-                "filtersData" to filtersData
-            )
-        )
-    )
 }

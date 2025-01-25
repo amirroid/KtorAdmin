@@ -2,6 +2,8 @@ val exposed_version: String by project
 val h2_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
+val kmongoDbVersion = "5.2.1"
+
 
 plugins {
     kotlin("jvm") version "2.1.0"
@@ -52,5 +54,7 @@ dependencies {
     implementation("org.jcodec:jcodec-javase:0.2.5")
 
     // MongoDB Kotlin driver dependency
-    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.10.1")
+//    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$kmongoDbVersion")
+//    implementation("org.mongodb:bson-kotlinx:$kmongoDbVersion")
+//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1")
 }

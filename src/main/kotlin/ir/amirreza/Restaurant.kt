@@ -21,10 +21,10 @@ data class Restaurant(
     val name: String,
     @BsonProperty("restaurant_id")
     val restaurantId: String,
-    val address: Address,
-    val p: Map<String, LocalDate>,
-    val tests: List<LocalDateTime>,
-    val grades: List<Grade>,
+//    val address: Address,
+//    val p: Map<String, LocalDate>,
+//    val tests: List<LocalDateTime>,
+//    val grades: List<Grade>,
 )
 
 data class Address(

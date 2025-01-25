@@ -63,7 +63,7 @@
                             <button type="button"
                                     data-field-name="$fieldName"
                                     data-current-path="$currentPath"
-                                    data-fields='[#foreach($subField in $fieldType.fields){"name":"$subField.fieldName","type":"$subField.type.fieldType"}#if($foreach.hasNext),#end#end]'
+                                    data-fields='[#foreach($subField in $fieldType.fields){"name":"$subField.fieldName","type":"$subField.type.fieldType", "fields" : [#foreach($sub2Field in $!subField.type.fields) {"fieldName" : "$sub2Field.fieldName", "type" : "$sub2Field.type.name"}#if($foreach.hasNext), #end#end]}#if($foreach.hasNext),#end#end]'
                                     onclick="addComplexListItem(this)">
                                 <i class="material-icons">add</i>
                             </button>

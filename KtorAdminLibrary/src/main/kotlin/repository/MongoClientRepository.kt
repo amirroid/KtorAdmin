@@ -2,12 +2,18 @@ package repository
 
 import com.mongodb.MongoClientSettings
 import com.mongodb.ServerAddress
+import com.mongodb.client.model.Projections.*
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import models.DataWithPrimaryKey
 import mongo.MongoCredential
 import mongo.MongoServerAddress
 import org.bson.Document
 import panels.AdminMongoCollection
+import panels.getAllAllowToShowFields
 
 internal object MongoClientRepository {
     private var clients: MutableMap<String, MongoClient> = mutableMapOf()
@@ -50,5 +56,19 @@ internal object MongoClientRepository {
         val document = Document().apply {
         }
 
+    }
+
+    suspend fun getAllData(table: AdminMongoCollection): List<DataWithPrimaryKey> {
+        val projection = table.getCollection().find().projection(
+            fields(
+                fields(*table.getAllAllowToShowFields().map { include(it.fieldName) }.toTypedArray())
+            )
+        ).filterNotNull().toList()
+        return projection.map {
+            DataWithPrimaryKey(
+                primaryKey = it.getString(table.getPrimaryKey()),
+                data = it.values.map { value -> value.toString() }
+            )
+        }
     }
 }
