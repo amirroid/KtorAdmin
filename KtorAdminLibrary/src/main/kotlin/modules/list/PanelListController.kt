@@ -29,6 +29,7 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
     }.onFailure { cause ->
         badRequest(cause.message ?: "")
     }.getOrNull()
+
     val panel = tables.find { it.getPluralName() == pluralName }
     if (panel == null) {
         notFound("No table found with plural name: $pluralName")
@@ -40,25 +41,21 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
     }
 }
 
-
-private suspend fun ApplicationCall.handleJdbcList(
+private fun findFiltersData(
     table: AdminJdbcTable,
-    tables: List<AdminPanel>,
-    searchParameter: String?,
-    currentPage: Int?,
-    pluralName: String?,
-    parameters: Parameters
-) {
-    val jdbcTables = tables.filterIsInstance<AdminJdbcTable>()
-    val hasSearchColumn = table.getSearchColumns().isNotEmpty()
-    val filtersData = table.getFilterColumns().map {
-        val filterTable = if (it.contains(".")) it.split(".").let { paths ->
-            jdbcTables.find { table -> table.getTableName() == paths[paths.size - 2] }
+    jdbcTables: List<AdminJdbcTable>
+): List<FiltersData> {
+    return table.getFilterColumns().map { filterColumn ->
+        val filterTable = if (filterColumn.contains(".")) {
+            val paths = filterColumn.split(".")
+            jdbcTables.find { it.getTableName() == paths[paths.size - 2] }
         } else table
-        val columnSet = if (it.contains(".")) it.split(".").let { paths ->
-            filterTable?.getAllColumns()
-                ?.find { column -> column.columnName == paths.last() }
-        } else filterTable?.getAllColumns()?.find { column -> column.columnName == it }
+
+        val columnSet = if (filterColumn.contains(".")) {
+            val paths = filterColumn.split(".")
+            filterTable?.getAllColumns()?.find { it.columnName == paths.last() }
+        } else filterTable?.getAllColumns()?.find { it.columnName == filterColumn }
+
         when {
             columnSet?.type == ColumnType.DATE -> FiltersData(
                 paramName = columnSet.columnName,
@@ -77,8 +74,10 @@ private suspend fun ApplicationCall.handleJdbcList(
             )
 
             columnSet?.reference != null -> {
-                val referenceTable = jdbcTables.find { table -> table.getTableName() == columnSet.reference.tableName }
-                    ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference.tableName}")
+                val referenceTable = jdbcTables.find {
+                    it.getTableName() == columnSet.reference.tableName
+                } ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference.tableName}")
+
                 FiltersData(
                     paramName = columnSet.columnName,
                     type = FilterTypes.REFERENCE,
@@ -89,54 +88,29 @@ private suspend fun ApplicationCall.handleJdbcList(
             else -> throw IllegalArgumentException("Filters are currently supported only for types: DATE, DATETIME, ENUMERATION, and REFERENCE")
         }
     }
+}
+
+private fun extractFilters(
+    table: AdminJdbcTable,
+    jdbcTables: List<AdminJdbcTable>,
+    parameters: Parameters
+): MutableList<Pair<ColumnSet, String>> {
     val filters = mutableListOf<Pair<ColumnSet, String>>()
-    table.getFilterColumns().forEach {
-        val filterTable = if (it.contains(".")) it.split(".").let { paths ->
-            jdbcTables.find { table -> table.getTableName() == paths[paths.size - 2] }
+
+    table.getFilterColumns().forEach { filterColumn ->
+        val filterTable = if (filterColumn.contains(".")) {
+            val paths = filterColumn.split(".")
+            jdbcTables.find { it.getTableName() == paths[paths.size - 2] }
         } else table
 
-        val columnSet = if (it.contains(".")) it.split(".").let { paths ->
-            filterTable?.getAllColumns()
-                ?.find { column -> column.columnName == paths.last() }
-        } else filterTable?.getAllColumns()?.find { column -> column.columnName == it }
+        val columnSet = if (filterColumn.contains(".")) {
+            val paths = filterColumn.split(".")
+            filterTable?.getAllColumns()?.find { it.columnName == paths.last() }
+        } else filterTable?.getAllColumns()?.find { it.columnName == filterColumn }
 
         when {
-            columnSet?.type == ColumnType.DATE -> {
-                if (parameters.contains("${columnSet.columnName}-start")) {
-                    val startDate = parameters["${columnSet.columnName}-start"]
-                    startDate?.let {
-                        val startTimestamp = Instant.ofEpochMilli(it.toLong()).atZone(ZoneId.systemDefault())
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                        filters.add(Pair(columnSet, ">= '$startTimestamp'"))
-                    }
-                }
-                if (parameters.contains("${columnSet.columnName}-end")) {
-                    val endDate = parameters["${columnSet.columnName}-end"]
-                    endDate?.let {
-                        val endTimestamp = Instant.ofEpochMilli(it.toLong()).atZone(ZoneId.systemDefault())
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                        filters.add(Pair(columnSet, "<= '$endTimestamp'"))
-                    }
-                }
-            }
-
-            columnSet?.type == ColumnType.DATETIME -> {
-                if (parameters.contains("${columnSet.columnName}-start")) {
-                    val startDateTime = parameters["${columnSet.columnName}-start"]
-                    startDateTime?.let {
-                        val startTimestamp = Instant.ofEpochMilli(it.toLong()).atZone(ZoneId.systemDefault())
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                        filters.add(Pair(columnSet, ">= '$startTimestamp'"))
-                    }
-                }
-                if (parameters.contains("${columnSet.columnName}-end")) {
-                    val endDateTime = parameters["${columnSet.columnName}-end"]
-                    endDateTime?.let {
-                        val endTimestamp = Instant.ofEpochMilli(it.toLong()).atZone(ZoneId.systemDefault())
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                        filters.add(Pair(columnSet, "<= '$endTimestamp'"))
-                    }
-                }
+            columnSet?.type == ColumnType.DATE || columnSet?.type == ColumnType.DATETIME -> {
+                handleDateTimeFilter(columnSet, parameters, filters)
             }
 
             columnSet?.type == ColumnType.ENUMERATION -> {
@@ -153,8 +127,56 @@ private suspend fun ApplicationCall.handleJdbcList(
         }
     }
 
-    println("Filters: $filters")
+    return filters
+}
 
+private fun handleDateTimeFilter(
+    columnSet: ColumnSet?,
+    parameters: Parameters,
+    filters: MutableList<Pair<ColumnSet, String>>
+) {
+    if (columnSet == null) return
+
+    val startParamName = "${columnSet.columnName}-start"
+    val endParamName = "${columnSet.columnName}-end"
+
+    if (parameters.contains(startParamName)) {
+        parameters[startParamName]?.let { startValue ->
+            val startTimestamp = Instant.ofEpochMilli(startValue.toLong())
+                .atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            filters.add(Pair(columnSet, ">= '$startTimestamp'"))
+        }
+    }
+
+    if (parameters.contains(endParamName)) {
+        parameters[endParamName]?.let { endValue ->
+            val endTimestamp = Instant.ofEpochMilli(endValue.toLong())
+                .atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            filters.add(Pair(columnSet, "<= '$endTimestamp'"))
+        }
+    }
+}
+
+private suspend fun ApplicationCall.handleJdbcList(
+    table: AdminJdbcTable,
+    tables: List<AdminPanel>,
+    searchParameter: String?,
+    currentPage: Int?,
+    pluralName: String?,
+    parameters: Parameters
+) {
+    val jdbcTables = tables.filterIsInstance<AdminJdbcTable>()
+    val hasSearchColumn = table.getSearchColumns().isNotEmpty()
+
+    // Prepare filters data
+    val filtersData = findFiltersData(table, jdbcTables)
+
+    // Extract actual filters
+    val filters = extractFilters(table, jdbcTables, parameters)
+
+    // Fetch data
     val data = JdbcQueriesRepository.getAllData(table, searchParameter, currentPage, filters)
     val maxPages = JdbcQueriesRepository.getCount(table, searchParameter, filters).let {
         val calculatedValue = it / DynamicConfiguration.maxItemsInPage
@@ -163,9 +185,11 @@ private suspend fun ApplicationCall.handleJdbcList(
         } else calculatedValue.plus(1)
     }
 
+    // Respond with Velocity template
     respond(
         VelocityContent(
-            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm", model = mapOf(
+            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
+            model = mapOf(
                 "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
                 "rows" to data,
                 "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
