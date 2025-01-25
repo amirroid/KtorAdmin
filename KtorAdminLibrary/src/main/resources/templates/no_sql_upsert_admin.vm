@@ -11,7 +11,11 @@
     #macro(renderRecursiveField $field $values $depth $parentPath $labelDisplayed)
         #set($fieldName = $field.fieldName)
         #set($fieldType = $field.type)
-        #set($currentPath = "$!parentPath[$fieldName]")
+        #if($!parentPath)
+            #set($currentPath = $parentPath + "." + $field.fieldName)
+        #else
+            #set($currentPath = $field.fieldName)
+        #end
 
         #if($fieldType.name == "List")
             <fieldset class="nested-container" data-field-name="$fieldName">
@@ -58,6 +62,7 @@
                         <div class="list-buttons">
                             <button type="button"
                                     data-field-name="$fieldName"
+                                    data-current-path="$currentPath"
                                     data-fields='[#foreach($subField in $fieldType.fields){"name":"$subField.fieldName","type":"$subField.type.fieldType"}#if($foreach.hasNext),#end#end]'
                                     onclick="addComplexListItem(this)">
                                 <i class="material-icons">add</i>

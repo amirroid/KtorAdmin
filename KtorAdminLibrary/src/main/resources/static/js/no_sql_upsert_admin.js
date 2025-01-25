@@ -14,6 +14,7 @@ function addSimpleListItem(button) {
 
 function addComplexListItem(button) {
     const fieldName = button.dataset.fieldName;
+    const currentPath = button.dataset.currentPath;
     const fields = JSON.parse(button.dataset.fields);
     const container = button.closest('[data-list-container="true"]');
 
@@ -23,7 +24,7 @@ function addComplexListItem(button) {
     const innerHTML = fields.map(field => `
             <label>${field.name}</label>
             <input type="${field.type}"
-                   name="${fieldName}[][${field.name}]"
+                   name="${currentPath}[][${field.name}]"
                    class="form-input"/>
         `).join('');
 

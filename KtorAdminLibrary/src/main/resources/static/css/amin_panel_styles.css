@@ -33,6 +33,21 @@ button.add-button {
 button.add-button:hover {
     background-color: #8900EAFF;
 }
+#filter-button {
+    background-color: #6200ea;
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+    margin-right: 16px;
+}
+
+#filter-button:hover {
+    background-color: #8900EAFF;
+}
 
 .header-container {
     width: 90%;
@@ -175,4 +190,20 @@ tbody tr:hover td {
 .pagination span:active:not(.current) {
     background-color: #3a3a3a;
     transform: scale(0.95);
+}
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus{
+    outline: none;
+    border-color: #6200ea;
+    box-shadow: 0 0 5px rgba(98, 0, 234, 0.6);
 }

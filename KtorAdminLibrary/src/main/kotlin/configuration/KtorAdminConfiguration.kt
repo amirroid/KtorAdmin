@@ -34,6 +34,12 @@ class KtorAdminConfiguration {
             AWSS3StorageProvider.defaultBucket = value
         }
 
+    var defaultMongoDatabaseName: String?
+        get() = MongoClientRepository.defaultDatabaseName
+        set(value) {
+            MongoClientRepository.defaultDatabaseName = value
+        }
+
     var authenticateName: String? = null
 
     var awsS3SignatureDuration: Duration?
@@ -59,8 +65,8 @@ class KtorAdminConfiguration {
         FileRepository.registerStorageProvider(storageProvider)
     }
 
-    fun mongo(key: String?, address: MongoServerAddress, credential: MongoCredential? = null) {
-        MongoClientRepository.registerNewClient(key, address, credential)
+    fun mongo(databaseName: String, address: MongoServerAddress, credential: MongoCredential? = null) {
+        MongoClientRepository.registerNewClient(databaseName, address, credential)
     }
 
     fun jdbc(key: String?, url: String, username: String, password: String, driver: String) {

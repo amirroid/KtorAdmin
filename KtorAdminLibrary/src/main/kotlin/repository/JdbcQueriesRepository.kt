@@ -6,7 +6,7 @@ import formatters.extractTextInCurlyBraces
 import formatters.populateTemplate
 import models.ColumnSet
 import models.DataWithPrimaryKey
-import models.ReferenceItem
+import models.common.DisplayItem
 import panels.AdminJdbcTable
 import panels.getAllAllowToShowColumns
 
@@ -19,9 +19,22 @@ internal object JdbcQueriesRepository {
         return using(session(dataSource), lambda)
     }
 
-    fun getAllData(table: AdminJdbcTable, search: String?, currentPage: Int?): List<DataWithPrimaryKey> =
+    fun getAllData(
+        table: AdminJdbcTable,
+        search: String?,
+        currentPage: Int?,
+        filters: MutableList<Pair<ColumnSet, String>>
+    ): List<DataWithPrimaryKey> =
         table.usingDataSource { session ->
-            session.list(sqlQuery(table.createGetAllQuery(search = search, currentPage = currentPage))) { raw ->
+            session.list(
+                sqlQuery(
+                    table.createGetAllQuery(
+                        search = search,
+                        currentPage = currentPage,
+                        filters = filters
+                    )
+                )
+            ) { raw ->
                 DataWithPrimaryKey(
                     primaryKey = raw.any("${table.getTableName()}_${table.getPrimaryKey()}").toString(),
                     data = table.getAllAllowToShowColumns()
@@ -30,18 +43,25 @@ internal object JdbcQueriesRepository {
             }
         }
 
-    fun getCount(table: AdminJdbcTable, search: String?): Int =
+    fun getCount(
+        table: AdminJdbcTable,
+        search: String?,
+        filters: List<Pair<ColumnSet, String>>
+    ): Int =
         table.usingDataSource { session ->
-            session.count(sqlQuery(table.createGetAllQuery(search = search, null)))
+            session.count(sqlQuery(table.createGetAllQuery(search = search, null, filters)))
         }
 
-    fun getAllReferences(table: AdminJdbcTable, referenceColumn: String): List<ReferenceItem> =
+    fun getAllReferences(
+        table: AdminJdbcTable,
+        referenceColumn: String
+    ): List<DisplayItem> =
         table.usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllReferencesQuery(referenceColumn))) { raw ->
                 val referenceKey = raw.any("${table.getTableName()}_$referenceColumn").toString()
                 val displayFormat = table.getDisplayFormat()
-                ReferenceItem(
-                    referenceKey = referenceKey,
+                DisplayItem(
+                    itemKey = referenceKey,
                     item = displayFormat?.let {
                         val displayFormatValues = it.extractTextInCurlyBraces()
                         populateTemplate(
@@ -108,7 +128,11 @@ internal object JdbcQueriesRepository {
         }
     }
 
-    private fun AdminJdbcTable.createGetAllQuery(search: String?, currentPage: Int?) = buildString {
+    private fun AdminJdbcTable.createGetAllQuery(
+        search: String?,
+        currentPage: Int?,
+        filters: List<Pair<ColumnSet, String>>
+    ) = buildString {
         val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
         val selectColumns = columns.map { columnSet ->
             "${getTableName()}.${columnSet.columnName} AS ${getTableName()}_${columnSet.columnName}"
@@ -119,46 +143,91 @@ internal object JdbcQueriesRepository {
         append(" FROM ")
         append(getTableName())
 
-        if (search != null) {
+        if (search != null || filters.isNotEmpty()) {
             append(" ")
-            append(createSearchConditions(search))
+            append(createFiltersConditions(search, filters))
         }
 
         currentPage?.let {
             append(createPaginationQuery(it))
         }
-    }.also { println(it) }
+    }.also { println("QUERY : $it") }
 
-    private fun AdminJdbcTable.createSearchConditions(search: String): String {
+    private fun AdminJdbcTable.createFiltersConditions(
+        search: String?,
+        filters: List<Pair<ColumnSet, String>>
+    ): String {
         val joinConditions = mutableListOf<String>()
-        val searchConditions = getSearchColumns().map { columnPath ->
-            val pathParts = columnPath.split('.')
+        val searchConditions = if (search != null) {
+            getSearchColumns().map { columnPath ->
+                val pathParts = columnPath.split('.')
+                var currentTable = getTableName()
+                val currentColumn = pathParts.last()
+
+                pathParts.firstOrNull()?.let { part ->
+                    val columnSet = getAllColumns().find { it.columnName == part }
+                    val nextTable = columnSet?.reference?.tableName
+                    val currentReferenceColumn = columnSet?.reference?.columnName
+
+                    if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
+                        joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
+                        currentTable = nextTable
+                    }
+                }
+
+                "LOWER(${currentTable}.${currentColumn}) LIKE LOWER('%$search%')"
+            }
+        } else emptyList()
+
+        val filterConditions = if (filters.isEmpty()) emptyList() else getFilterColumns().mapNotNull { item ->
+            val pathParts = item.split('.')
             var currentTable = getTableName()
             val currentColumn = pathParts.last()
-
             pathParts.firstOrNull()?.let { part ->
+                println("filters does not exists $part")
+                if (!filters.any { it.first.columnName == part }) {
+                    return@let null
+                }
                 val columnSet = getAllColumns().find { it.columnName == part }
+                println(columnSet)
                 val nextTable = columnSet?.reference?.tableName
                 val currentReferenceColumn = columnSet?.reference?.columnName
 
-                if (nextTable != null && currentReferenceColumn != null) {
+                if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
                     joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
                     currentTable = nextTable
                 }
+                filters.filter { it.first == columnSet }
+                    .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
+                        "${currentTable}.${currentColumn} ${filterItem.second}".also { println(it) }
+                    }
             }
-
-            "LOWER(${currentTable}.${currentColumn}) LIKE LOWER('%$search%')"
         }
-
-        return joinConditions.joinToString(" ") + " WHERE " + searchConditions.joinToString(" OR ") { it }
+        println("$filterConditions , $searchConditions")
+        return if (filterConditions.isEmpty() && searchConditions.isEmpty()) {
+            ""
+        } else {
+            buildString {
+                append(
+                    joinConditions.distinct().joinToString(" ")
+                )
+                append(" WHERE ")
+                if (searchConditions.isNotEmpty()) {
+                    append(
+                        searchConditions.joinToString(
+                            " OR "
+                        ) { it })
+                    append(" AND ")
+                }
+                append(filterConditions.joinToString(" AND ") { it })
+            }
+        }
     }
-
 
     private fun createPaginationQuery(currentPage: Int) = buildString {
         append(" LIMIT ${DynamicConfiguration.maxItemsInPage}")
         append(" OFFSET ${DynamicConfiguration.maxItemsInPage * currentPage}")
     }
-
 
     private fun AdminJdbcTable.createGetAllReferencesQuery(leftReferenceColumn: String): String {
         val columns = getDisplayFormat()?.extractTextInCurlyBraces().orEmpty()
@@ -209,7 +278,6 @@ internal object JdbcQueriesRepository {
             joins.forEach { append(" $it") }
         }
     }
-
 
     private fun AdminJdbcTable.createGetOneItemQuery(primaryKey: String) = buildString {
         append("SELECT ")

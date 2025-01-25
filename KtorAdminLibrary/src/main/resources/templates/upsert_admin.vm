@@ -3,6 +3,7 @@
 <head>
     <title>Upsert Form</title>
     <link href="/static/css/upsert_admin_style.css" rel="stylesheet">
+
 </head>
 <body>
 <h2>$singularTableName</h2>
@@ -22,7 +23,7 @@
             #set($referenceValues = $references.get($column))
             <select name="$column.columnName" class="form-input" #if($column.readOnly)disabled#end>
                 #foreach($refValue in $referenceValues)
-                    <option value="$refValue.referenceKey"
+                    <option value="$refValue.itemKey"
                             #if($refValue == $!defaultValue)selected#end>$refValue.item</option>
                 #end
             </select>

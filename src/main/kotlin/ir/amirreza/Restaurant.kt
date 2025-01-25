@@ -37,7 +37,12 @@ data class Address(
 
 data class Test(
     val name: String,
-    val id: Int
+    val id: Int,
+    val bs: List<B>
+)
+
+data class B(
+    val cs: List<String>
 )
 
 data class Grade(

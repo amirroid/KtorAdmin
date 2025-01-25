@@ -20,6 +20,7 @@ enum class Priority {
 @ExposedTable("tasks", "id", "task", "tasks")
 @QueryColumns(
     searches = ["user_id.username", "description"],
+    filters = ["priority", "user_id"]
 )
 @DisplayFormat(
     format = "{id} - User: {user_id.username}",

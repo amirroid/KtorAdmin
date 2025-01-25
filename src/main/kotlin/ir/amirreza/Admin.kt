@@ -23,7 +23,7 @@ fun Application.configureAdmin(database: Database) {
             driver = JDBCDrivers.POSTGRES
         )
         mongo(
-            null,
+            "test",
             MongoServerAddress("localhost", 27017)
         )
         mediaPath = MEDIA_PATH

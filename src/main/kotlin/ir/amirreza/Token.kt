@@ -3,6 +3,7 @@ package ir.amirreza
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.limit.Limits
+import annotations.query.QueryColumns
 import annotations.references.References
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
@@ -14,6 +15,9 @@ import org.jetbrains.exposed.sql.kotlin.datetime.datetime
     "token",
     "tokens",
     groupName = "profiles"
+)
+@QueryColumns(
+    filters = ["date"]
 )
 object TokenTable : Table() {
     @ColumnInfo("user_id")

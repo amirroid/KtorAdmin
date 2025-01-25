@@ -8,17 +8,65 @@
 </head>
 <body>
 
-
 <div class="header-container">
     <h2>${pluralName}</h2>
     <button class="add-button" onclick="redirectToAdd()">Add</button>
 </div>
+
+<!-- Search Bar -->
     #if($hasSearchColumn)
     <div id="search-header">
         <label for="search-input"></label><input type="text" id="search-input" placeholder="Search..."/>
         <button type="button" id="search-button">Search</button>
     </div>
     #end
+
+<!-- Filters -->
+<div id="filters-container">
+    #foreach($filter in $filtersData)
+        #if($filter.type == "DATE")
+            <div class="filter">
+                <label for="${filter.paramName}">Select Date Range for ${filter.paramName}</label>
+                <input type="date" id="${filter.paramName}-start" name="${filter.paramName}"
+                       placeholder="Start Date">
+                <input type="date" id="${filter.paramName}-end" name="${filter.paramName}" placeholder="End Date">
+            </div>
+        #elseif($filter.type == "DATETIME")
+            <div class="filter">
+                <label for="${filter.paramName}">Select Date and Time Range for ${filter.paramName}</label>
+                <input type="datetime-local" id="${filter.paramName}-start" name="${filter.paramName}"
+                       placeholder="Start Date and Time">
+                <input type="datetime-local" id="${filter.paramName}-end" name="${filter.paramName}"
+                       placeholder="End Date and Time">
+            </div>
+        #elseif($filter.type == "ENUMERATION")
+            <div class="filter">
+                <label for="${filter.paramName}">Select ${filter.paramName}</label>
+                <select id="${filter.paramName}" name="${filter.paramName}">
+                    <option value="">-- Select --</option>
+                    #foreach($value in $filter.values)
+                        <option value="${value}">${value}</option>
+                    #end
+                </select>
+            </div>
+        #elseif($filter.type == "REFERENCE")
+            <div class="filter">
+                <label for="${filter.paramName}">Select ${filter.paramName}</label>
+                <select id="${filter.paramName}" name="${filter.paramName}">
+                    <option value="">-- Select --</option>
+                    #foreach($item in $filter.values)
+                        <option value="${item.itemKey}">${item.item}</option>
+                    #end
+                </select>
+            </div>
+        #end
+    #end
+</div>
+
+<!-- Filter Button -->
+<button type="button" id="filter-button" onclick="onFilterApply()">Apply Filters</button>
+
+<!-- Table -->
 <table>
     <thead>
     <tr>
@@ -37,6 +85,8 @@
         #end
     </tbody>
 </table>
+
+<!-- Pagination -->
 <div class="pagination">
     #set($prevPage = $currentPage - 1)
     #set($nextPage = $currentPage + 1)
