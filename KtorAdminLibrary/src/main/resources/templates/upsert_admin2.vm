@@ -34,7 +34,7 @@
                 #if($values.get($field.fieldName))
                     <p>Current file: <a href="$!values.get($field.fieldName)">$!values.get($field.fieldName)</a></p>
                 #end
-            #elseif($field.type.name == "Enumuration")
+            #elseif($field.type.name == "Enumeration")
                 <select name="$field.fieldName" class="form-input" #if($field.readOnly)disabled#end>
                     #foreach($value in $field.enumerationValues)
                         <option value="$value" #if($value == $!defaultValue)selected#end>$value</option>

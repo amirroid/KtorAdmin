@@ -55,6 +55,8 @@ private suspend fun ApplicationCall.handleNoSqlAddView(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin2.vm", model = mapOf(
                     "fields" to fields,
+                    "singularTableName" to panel.getSingularName()
+                        .replaceFirstChar { it.uppercaseChar() },
                     "collectionName" to panel.getCollectionName(),
                     "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
                 )
