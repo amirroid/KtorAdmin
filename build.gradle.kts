@@ -54,7 +54,7 @@ dependencies {
     implementation("org.jcodec:jcodec-javase:0.2.5")
 
     // MongoDB Kotlin driver dependency
-//    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$kmongoDbVersion")
-//    implementation("org.mongodb:bson-kotlinx:$kmongoDbVersion")
-//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1")
+    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$kmongoDbVersion")
+    implementation("org.mongodb:bson-kotlinx:$kmongoDbVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1")
 }

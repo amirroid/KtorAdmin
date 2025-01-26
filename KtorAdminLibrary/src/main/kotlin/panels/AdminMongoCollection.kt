@@ -11,5 +11,8 @@ interface AdminMongoCollection : AdminPanel {
 fun AdminMongoCollection.getAllAllowToShowFields() =
     getAllFields().filter { it.showInPanel }
 
+fun AdminMongoCollection.getPrimaryKeyField() =
+    getAllFields().first { it.fieldName == getPrimaryKey() }
+
 fun AdminMongoCollection.getAllAllowToShowFieldsInUpsert() =
-    getAllFields().filter { it.showInPanel && it.type != FieldType.ObjectId }
+    getAllFields().filter { it.showInPanel && it.fieldName != getPrimaryKey() }

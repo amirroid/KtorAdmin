@@ -2,18 +2,27 @@ package repository
 
 import com.mongodb.MongoClientSettings
 import com.mongodb.ServerAddress
+import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Projections.*
+import com.mongodb.client.model.Updates.combine
+import com.mongodb.client.model.Updates.set
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import models.DataWithPrimaryKey
+import models.field.FieldSet
+import models.types.FieldType
 import mongo.MongoCredential
 import mongo.MongoServerAddress
+import org.bson.BsonValue
 import org.bson.Document
+import org.bson.types.ObjectId
 import panels.AdminMongoCollection
 import panels.getAllAllowToShowFields
+import panels.getAllAllowToShowFieldsInUpsert
+import panels.getPrimaryKeyField
 
 internal object MongoClientRepository {
     private var clients: MutableMap<String, MongoClient> = mutableMapOf()
@@ -41,7 +50,7 @@ internal object MongoClientRepository {
         clients[databaseName] = MongoClient.create(settings)
     }
 
-    fun AdminMongoCollection.getCollection(): MongoCollection<Document> {
+    private fun AdminMongoCollection.getCollection(): MongoCollection<Document> {
         val databaseKey = getDatabaseKey() ?: defaultDatabaseName
         ?: throw IllegalStateException("Both database key and default database name are null.")
         val client =
@@ -49,26 +58,78 @@ internal object MongoClientRepository {
         return client.getDatabase(databaseKey).getCollection(getCollectionName())
     }
 
-    suspend fun insertData(
-        values: Map<String, Any?>,
-        table: AdminMongoCollection
-    ) {
-        val document = Document().apply {
-        }
+    private fun AdminMongoCollection.getPrimaryKeyFilter(primaryKey: String) =
+        if (getPrimaryKeyField().type == FieldType.ObjectId || getPrimaryKey() == "_id") {
+            eq(getPrimaryKey(), ObjectId(primaryKey))
+        } else eq(getPrimaryKey(), primaryKey)
 
+    private fun BsonValue.toStringId() = asObjectId()?.value?.toHexString()
+
+    suspend fun insertData(
+        values: Map<FieldSet, Any?>,
+        panel: AdminMongoCollection
+    ): String? {
+        val document = Document().apply {
+            values.forEach { (field, value) ->
+                put(field.fieldName, value)
+            }
+        }
+        return panel.getCollection().insertOne(document).insertedId?.toStringId()
     }
 
     suspend fun getAllData(table: AdminMongoCollection): List<DataWithPrimaryKey> {
+        val fields = table.getAllAllowToShowFields()
         val projection = table.getCollection().find().projection(
             fields(
-                fields(*table.getAllAllowToShowFields().map { include(it.fieldName) }.toTypedArray())
+                fields(
+                    *fields.plus(table.getPrimaryKeyField())
+                        .map { include(it.fieldName) }
+                        .distinct()
+                        .toTypedArray()
+                )
             )
         ).filterNotNull().toList()
-        return projection.map {
+        return projection.map { values ->
             DataWithPrimaryKey(
-                primaryKey = it.getString(table.getPrimaryKey()),
-                data = it.values.map { value -> value.toString() }
+                primaryKey = values[table.getPrimaryKey()]!!.toString(),
+                data = fields.map { field -> values[field.fieldName]?.toString() }
             )
+        }
+    }
+
+    suspend fun getData(panel: AdminMongoCollection, primaryKey: String): List<String?>? {
+        val projection = panel.getCollection().find(
+            panel.getPrimaryKeyFilter(primaryKey)
+        ).projection(
+            fields(
+                fields(
+                    *panel.getAllAllowToShowFieldsInUpsert()
+                        .map { include(it.fieldName) }
+                        .toTypedArray()
+                )
+            )
+        ).firstOrNull()
+        return projection?.let { values ->
+            panel.getAllAllowToShowFieldsInUpsert().map { field -> values[field.fieldName]?.toString() }
+        }
+    }
+
+    suspend fun updateChangedData(
+        panel: AdminMongoCollection,
+        parameters: Map<FieldSet, String?>,
+        primaryKey: String
+    ): String? {
+        val initialData = getData(panel, primaryKey)
+        return if (initialData == null) {
+            insertData(parameters, panel)
+        } else {
+            val updateFields = parameters.toList().filterIndexed { index, item ->
+                val initialValue = initialData.getOrNull(index)
+                initialValue != item.second && !(initialValue != null && item.second == null)
+            }.map { set(it.first.fieldName.toString(), it.second) }
+            if (updateFields.isEmpty()) return null
+            panel.getCollection()
+                .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updateFields)).upsertedId?.toStringId()
         }
     }
 }

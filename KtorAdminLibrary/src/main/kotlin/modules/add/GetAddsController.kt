@@ -34,7 +34,6 @@ private suspend fun ApplicationCall.handleJdbcAddView(
                 "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin.vm", model = mapOf(
                     "columns" to columns,
                     "tableName" to table.getTableName(),
-                    "method" to "post",
                     "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
                     "references" to referencesItems
                 )
@@ -57,7 +56,6 @@ private suspend fun ApplicationCall.handleNoSqlAddView(
                 "${Constants.TEMPLATES_PREFIX_PATH}/no_sql_upsert_admin.vm", model = mapOf(
                     "fields" to fields,
                     "collectionName" to panel.getCollectionName(),
-                    "method" to "post",
                     "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
                 )
             )

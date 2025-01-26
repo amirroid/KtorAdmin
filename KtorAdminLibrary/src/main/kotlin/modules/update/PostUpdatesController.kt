@@ -9,11 +9,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import models.ColumnSet
+import panels.*
 import repository.JdbcQueriesRepository
-import panels.AdminJdbcTable
-import panels.AdminPanel
-import panels.findWithPluralName
-import panels.getAllAllowToShowColumns
+import repository.MongoClientRepository
 
 
 private suspend fun onUpdate(
@@ -31,7 +29,7 @@ private suspend fun onUpdate(
 }
 
 
-internal suspend fun RoutingContext.handleUpdateRequest(tables: List<AdminPanel>) {
+internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>) {
     val pluralName = call.parameters["pluralName"]
     val primaryKey = call.parameters["primaryKey"]
 
@@ -39,13 +37,14 @@ internal suspend fun RoutingContext.handleUpdateRequest(tables: List<AdminPanel>
         call.notFound("Invalid table or primary key")
         return
     }
-    val table = tables.findWithPluralName(pluralName)
-    if (table == null) {
+    val panel = panels.findWithPluralName(pluralName)
+    if (panel == null) {
         call.notFound("No table found with plural name: $pluralName")
         return
     }
-    when (table) {
-        is AdminJdbcTable -> updateData(pluralName, primaryKey, table)
+    when (panel) {
+        is AdminJdbcTable -> updateData(pluralName, primaryKey, panel)
+        is AdminMongoCollection -> updateData(pluralName, primaryKey, panel)
     }
 }
 
@@ -66,6 +65,24 @@ private suspend fun RoutingContext.updateData(
             columnSets = columns,
             parametersData = parametersData
         )
+        call.respondRedirect("/admin/$pluralName")
+    }.onFailure {
+        call.serverError("Failed to update $pluralName\nReason: ${it.message}")
+    }
+}
+
+private suspend fun RoutingContext.updateData(
+    pluralName: String?, primaryKey: String, panel: AdminMongoCollection
+) {
+    val fields = panel.getAllAllowToShowFieldsInUpsert()
+
+    val parametersData = call.receiveMultipart().toTableValues(panel)
+    val parameters = parametersData.map { it?.first }
+    val fieldsWithParameter = fields.mapIndexed { index, field ->
+        field to parameters.getOrNull(index)
+    }.toMap()
+    kotlin.runCatching {
+        val changedDataAndId = MongoClientRepository.updateChangedData(panel, fieldsWithParameter, primaryKey)
         call.respondRedirect("/admin/$pluralName")
     }.onFailure {
         call.serverError("Failed to update $pluralName\nReason: ${it.message}")

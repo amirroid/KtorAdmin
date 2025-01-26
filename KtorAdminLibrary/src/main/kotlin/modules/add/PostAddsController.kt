@@ -4,7 +4,6 @@ import utils.badRequest
 import configuration.DynamicConfiguration
 import converters.toEvents
 import converters.toTableValues
-import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -12,6 +11,7 @@ import io.ktor.util.*
 import models.ColumnSet
 import panels.*
 import repository.JdbcQueriesRepository
+import repository.MongoClientRepository
 import validators.validateParameters
 
 private suspend fun onInsert(
@@ -29,15 +29,15 @@ private suspend fun onInsert(
 
 internal suspend fun RoutingContext.handleAddRequest(tables: List<AdminPanel>) {
     val pluralName = call.parameters["pluralName"]
-    val table = tables.findWithPluralName(pluralName)
-    if (table == null) {
+    val panel = tables.findWithPluralName(pluralName)
+    if (panel == null) {
         call.respondText { "No table found with plural name: $pluralName" }
         return
     }
 
-    when (table) {
-        is AdminJdbcTable -> insertData(pluralName, table)
-        is AdminMongoCollection -> call.respond(call.receiveParameters().toMap())
+    when (panel) {
+        is AdminJdbcTable -> insertData(pluralName, panel)
+        is AdminMongoCollection -> insertData(pluralName, panel)
     }
 }
 
@@ -66,4 +66,25 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
     } else {
         call.badRequest("Invalid parameters for $pluralName: $parameters")
     }
+}
+
+private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminMongoCollection) {
+    val parametersData = call.receiveMultipart().toTableValues(panel)
+    val parameters = parametersData.map { it?.first }
+    val fields = panel.getAllAllowToShowFieldsInUpsert()
+    val fieldsWithParameter = fields.mapIndexed { index, field ->
+        field to parameters.getOrNull(index)
+    }.toMap()
+//    // Validate parameters
+//    val isValidParameters = columns.validateParameters(parameters)
+//    if (isValidParameters) {
+    kotlin.runCatching {
+        val id = MongoClientRepository.insertData(fieldsWithParameter, panel)
+        call.respondRedirect("/admin/$pluralName")
+    }.onFailure {
+        call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
+    }
+//    } else {
+//        call.badRequest("Invalid parameters for $pluralName: $parameters")
+//    }
 }

@@ -34,9 +34,9 @@ fun guessFieldPropertyType(type: String): FieldType = when (type) {
     "kotlin.Float" -> FieldType.Float
     "kotlin.Boolean" -> FieldType.Boolean
     "java.util.Date" -> FieldType.Date
-    "kotlin.ByteArray" -> FieldType.Binary
     "java.math.BigDecimal" -> FieldType.Decimal128
     "org.bson.types.ObjectId" -> FieldType.ObjectId
+    "kotlinx.datetime.Instant" -> FieldType.Instant
     "kotlinx.datetime.LocalDateTime", "java.time.LocalDateTime" -> FieldType.DateTime
     "kotlinx.datetime.LocalDate", "java.time.LocalDate" -> FieldType.Date
     "kotlin.collections.List" -> FieldType.List(emptyList())

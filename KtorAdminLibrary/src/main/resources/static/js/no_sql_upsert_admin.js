@@ -26,16 +26,17 @@ function addComplexListItem(button) {
 
     const newItem = document.createElement('div');
     newItem.classList.add('dynamic-item');
-
-    // Function to recursively render fields
-    function renderField(field, path, values = {}) {
-        if (field.type === 'list') {
-            const listItemsHtml = values[field.name]?.map((item) => {
-                if (field.fields.length === 1 && !field.fields[0].name) {
-                    return `
+    function renderField(field, path) {
+        // Handle single-field lists
+        if (field.type === 'List' && field.fields.length === 1 && !field.fields[0].fieldName) {
+            return `
+        <fieldset class="nested-container" data-field-name="${field.fieldName || field.name}">
+            <legend>${field.fieldName || field.name} (List)</legend>
+            <div id="${field.fieldName || field.name}-container" data-list-container="true">
+                ${(field.values || []).map(item => `
                     <div class="dynamic-item">
                         <div class="input-with-buttons">
-                            <input type="${field.fields[0].type}" 
+                            <input type="${field.fields[0].type.fieldType}" 
                                    name="${path}[]" 
                                    value="${item}" 
                                    class="form-input"/>
@@ -45,50 +46,64 @@ function addComplexListItem(button) {
                                 </button>
                             </div>
                         </div>
-                    </div>`;
-                } else {
-                    const subFieldsHtml = field.fields.map(subField => {
-                        return renderField(subField, `${path}[${field.name}]`, item);
-                    }).join('');
-                    return `
+                    </div>
+                `).join('')}
+                <div class="list-buttons">
+                    <button type="button"
+                            data-field-name="${field.fieldName || field.name}"
+                            data-field-type="${field.fields[0].type.fieldType}"
+                            onclick="addSimpleListItem(this)">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+        </fieldset>`;
+        }
+
+        // Handle nested lists and maps
+        if (field.type === 'List' || field.type === 'Map') {
+            return `
+        <fieldset class="nested-container" data-field-name="${field.fieldName || field.name}">
+            <legend>${field.fieldName || field.name} (${field.type})</legend>
+            <div id="${field.fieldName || field.name}-container" data-${field.type.toLowerCase()}-container="true">
+                ${(field.values || []).map(item => `
                     <div class="dynamic-item">
-                        ${subFieldsHtml}
+                        ${field.fields.map(subField =>
+                renderField({
+                    ...subField,
+                    values: item
+                }, `${path}[${field.fieldName || field.name}]`)
+            ).join('')}
                         <div class="list-buttons">
                             <button type="button" onclick="removeItem(this)">
                                 <i class="material-icons">remove</i>
                             </button>
                         </div>
-                    </div>`;
-                }
-            }).join('') || '';
-
-            return `
-            <fieldset class="nested-container" data-field-name="${field.name}">
-                <legend>${field.name} (List)</legend>
-                <div id="${field.name}-container" data-list-container="true">
-                    ${listItemsHtml}
-                    <div class="list-buttons">
-                        <button type="button"
-                                data-field-name="${field.name}"
-                                data-field-type="${field.fields[0]?.type || 'text'}"
-                                onclick="${field.fields.length === 1 && !field.fields[0]?.name ? 'addSimpleListItem(this)' : 'addComplexListItem(this)'}">
-                            <i class="material-icons">add</i>
-                        </button>
                     </div>
+                `).join('')}
+                <div class="list-buttons">
+                    <button type="button"
+                            data-field-name="${field.fieldName || field.name}"
+                            data-current-path="${path}[${field.fieldName || field.name}]"
+                            data-fields='${JSON.stringify(field.fields)}'
+                            onclick="addComplexListItem(this)">
+                        <i class="material-icons">add</i>
+                    </button>
                 </div>
-            </fieldset>`;
-        } else {
-            return `
-            <div class="dynamic-item">
-                <label>${field.name}</label>
-                <input type="${field.type}" 
-                       name="${path}[][${field.name}]" 
-                       class="form-input"/>
-            </div>`;
+            </div>
+        </fieldset>`;
         }
-    }
 
-    // Render all fields
+        // Handle simple fields
+        return `
+    <div class="dynamic-item">
+        <label>${field.fieldName || field.name}</label>
+        <input type="${field.type.fieldType || field.type}" 
+               name="${path}[${field.fieldName || field.name}]" 
+               value="${field.values ? field.values[0] : ''}"
+               class="form-input"/>
+    </div>`;
+    }    // Render all fields
     const innerHTML = fields.map(field =>
         renderField(field, currentPath)
     ).join('');

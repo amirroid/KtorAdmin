@@ -3,6 +3,7 @@ package repository
 import annotations.collection.CollectionInfo
 import annotations.computed.Computed
 import annotations.enumeration.EnumerationColumn
+import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
@@ -70,7 +71,7 @@ object PropertiesRepository {
         val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
         val name = property.simpleName.asString()
         val infoAnnotation =
-            property.annotations.find { it.shortName.asString() == CollectionInfo::class.simpleName }
+            property.annotations.find { it.shortName.asString() == FieldInfo::class.simpleName }
         val fieldName = infoAnnotation?.findArgument<String>("fieldName")?.takeIf { it.isNotEmpty() } ?: name
         if (hasUploadAnnotation) {
             UploadUtils.validatePropertyType(fieldName, type)

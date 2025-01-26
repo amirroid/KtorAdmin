@@ -7,7 +7,7 @@
 </head>
 <body>
 <h2>$singularName</h2>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     #macro(renderRecursiveField $field $values $depth $parentPath $labelDisplayed)
         #set($fieldName = $field.fieldName)
         #set($fieldType = $field.type)
@@ -112,9 +112,14 @@
                 <label>$fieldName</label>
                 <input type="$fieldType.fieldType"
                        name="#evaluate("$currentPath")"
-                       value="#evaluate("$!values.get(${fieldName})")"
+                       value="$!values.get(${fieldName})"
                        class="form-input"
                        #if($field.readOnly)readonly#end/>
+                #if($field.type.name == "File")
+                    #if($values.get($field.fieldName))
+                        <p>Current file: <a href="$!values.get($field.fieldName)">$!values.get($field.fieldName)</a></p>
+                    #end
+                #end
             </div>
         #end
     #end

@@ -26,25 +26,3 @@ internal fun String.toTypedValue(columnType: ColumnType): Any {
         else -> this
     }
 }
-
-/**
- * Extension function to convert a String to LocalDate.
- */
-internal fun String.toLocalDate(): LocalDate? {
-    return try {
-        LocalDate.parse(this, DateTimeFormatter.ISO_DATE)
-    } catch (e: DateTimeParseException) {
-        null
-    }
-}
-
-/**
- * Extension function to convert a String to LocalDateTime.
- */
-internal fun String.toLocalDateTime(): LocalDateTime? {
-    return try {
-        LocalDateTime.parse(this, DateTimeFormatter.ISO_DATE_TIME)
-    } catch (e: DateTimeParseException) {
-        null
-    }
-}

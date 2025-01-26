@@ -77,7 +77,7 @@
     </thead>
     <tbody>
         #foreach($data in $rows)
-        <tr onclick="redirectToEdit($data.primaryKey)">
+        <tr onclick="redirectToEdit('$data.primaryKey')">
             #foreach($item in $data.data)
                 <td>$item</td>
             #end

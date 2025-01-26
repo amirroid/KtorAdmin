@@ -11,11 +11,9 @@ import models.ColumnSet
 import models.filters.FilterTypes
 import models.filters.FiltersData
 import models.types.ColumnType
+import panels.*
 import repository.JdbcQueriesRepository
-import panels.AdminJdbcTable
-import panels.AdminMongoCollection
-import panels.AdminPanel
-import panels.getAllAllowToShowColumns
+import repository.MongoClientRepository
 import utils.Constants
 import java.time.Instant
 import java.time.ZoneId
@@ -36,7 +34,9 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
     } else {
         when (panel) {
             is AdminJdbcTable -> handleJdbcList(panel, tables, searchParameter, currentPage, pluralName, parameters)
-            is AdminMongoCollection -> respondText { "Coming soon..." }
+            is AdminMongoCollection -> handleNoSqlList(
+                panel, pluralName, currentPage
+            )
         }
     }
 }
@@ -79,6 +79,31 @@ private suspend fun ApplicationCall.handleJdbcList(
                 "currentPage" to (currentPage?.plus(1) ?: 1),
                 "maxPages" to maxPages,
                 "filtersData" to filtersData
+            )
+        )
+    )
+}
+
+private suspend fun ApplicationCall.handleNoSqlList(
+    panel: AdminMongoCollection,
+    pluralName: String?,
+    currentPage: Int?,
+) {
+    // Fetch data
+    val data = MongoClientRepository.getAllData(panel)
+
+    // Respond with Velocity template
+    respond(
+        VelocityContent(
+            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
+            model = mapOf(
+                "columnNames" to panel.getAllAllowToShowFields().map { it.fieldName },
+                "rows" to data,
+                "pluralName" to pluralName?.replaceFirstChar { it.uppercaseChar() }.orEmpty(),
+                "hasSearchColumn" to false,
+                "currentPage" to (currentPage?.plus(1) ?: 1),
+                "maxPages" to 1,
+                "filtersData" to emptyList<FiltersData>()
             )
         )
     )

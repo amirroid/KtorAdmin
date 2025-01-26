@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import ir.amirreza.listeners.AdminListener
 import models.JDBCDrivers
 import models.forms.LoginFiled
+import mongo.MongoCredential
 import mongo.MongoServerAddress
 import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
@@ -23,8 +24,11 @@ fun Application.configureAdmin(database: Database) {
             driver = JDBCDrivers.POSTGRES
         )
         mongo(
-            "test",
-            MongoServerAddress("localhost", 27017)
+            "0@localhost",
+            MongoServerAddress("localhost", 27017),
+            MongoCredential(
+                "amirreza", "admin", "your_password"
+            ),
         )
         mediaPath = MEDIA_PATH
         mediaRoot = MEDIA_ROOT
