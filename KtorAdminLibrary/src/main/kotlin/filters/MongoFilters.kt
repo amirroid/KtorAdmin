@@ -39,6 +39,11 @@ internal object MongoFilters {
                     values = field.enumerationValues
                 )
 
+                FieldType.Boolean -> FiltersData(
+                    paramName = field.fieldName.toString(),
+                    type = FilterTypes.BOOLEAN,
+                )
+
                 else -> throw IllegalArgumentException("Filters are currently supported only for types: DATE, DATETIME, ENUMERATION, and REFERENCE")
             }
         }
@@ -64,6 +69,12 @@ internal object MongoFilters {
                         if (fieldSet.enumerationValues?.contains(value) == true) {
                             filters.add(Filters.eq(fieldSet.fieldName.toString(), value))
                         }
+                    }
+                }
+
+                FieldType.Boolean -> {
+                    parameters[fieldSet.fieldName.toString()]?.let { value ->
+                        filters.add(Filters.eq(fieldSet.fieldName.toString(), if (value == "1") "true" else "false"))
                     }
                 }
 

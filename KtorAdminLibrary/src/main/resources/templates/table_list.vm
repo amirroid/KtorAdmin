@@ -62,9 +62,11 @@
                 </div>
             #elseif($filter.type == "BOOLEAN")
                 <div class="filter">
-                    <label for="${filter.paramName}">${filter.paramName}</label>
-                    <input type="checkbox" id="${filter.paramName}" name="${filter.paramName}">
-                    <span>True/False</span>
+                    <select id="${filter.paramName}" name="${filter.paramName}">
+                        <option value="">Select a value</option>
+                        <option value="1">True</option>
+                        <option value="0">False</option>
+                    </select>
                 </div>
             #end
         #end

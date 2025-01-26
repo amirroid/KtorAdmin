@@ -35,7 +35,7 @@ import kotlinx.serialization.Serializable
     pluralName = "Files"
 )
 @AdminQueries(
-    filters = ["createdAt", "title"]
+    filters = ["createdAt", "title", "isUploaded"]
 )
 @Serializable
 data class UserFile(

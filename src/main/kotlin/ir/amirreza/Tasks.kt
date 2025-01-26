@@ -20,7 +20,7 @@ enum class Priority {
 @ExposedTable("tasks", "id", "task", "tasks")
 @AdminQueries(
     searches = ["user_id.username", "description"],
-    filters = ["priority", "user_id"]
+    filters = ["priority", "user_id", "checked"]
 )
 @DisplayFormat(
     format = "{id} - User: {user_id.username}",

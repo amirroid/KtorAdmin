@@ -79,10 +79,26 @@ internal object JdbcQueriesRepository {
             }
         }
 
-    private fun String.formatChangedItemBoolean(columnSet: ColumnSet) = when (columnSet.type) {
-        ColumnType.BOOLEAN -> if (this == "on") "true" else "false"
-        else -> this
-    }
+    private fun checkIsChangedData(columnSet: ColumnSet, initialValue: String?, currentValue: String?): Boolean =
+        when (columnSet.type) {
+            ColumnType.BOOLEAN -> when (currentValue) {
+                "on" -> initialValue?.lowercase() !in listOf(
+                    "'1'",
+                    "1",
+                    "true"
+                )
+
+                "off" -> initialValue?.lowercase() !in listOf(
+                    "'0'",
+                    "0",
+                    "false"
+                )
+
+                else -> initialValue != currentValue
+            }
+
+            else -> initialValue != currentValue
+        }
 
     fun getData(table: AdminJdbcTable, primaryKey: String): List<String?>? =
         table.usingDataSource { session ->
@@ -113,9 +129,13 @@ internal object JdbcQueriesRepository {
                 columns[index] to item
             }.filterIndexed { index, item ->
                 val initialValue = initialData.getOrNull(index)
-                initialValue != item.second?.formatChangedItemBoolean(item.first) && !(initialValue != null && item.second == null)
+                checkIsChangedData(
+                    item.first,
+                    initialValue,
+                    item.second
+                ) && !(initialValue != null && item.second == null)
             }
-
+            println("Changed data : $changedData")
             if (changedData.isNotEmpty()) {
                 table.usingDataSource { session ->
                     session.transaction { tx ->
@@ -297,7 +317,7 @@ internal object JdbcQueriesRepository {
     }
 
     private fun String?.formatParameter(columnSet: ColumnSet): String = when {
-        columnSet.type == ColumnType.BOOLEAN -> this?.let { if (it == "on") "TRUE" else "FALSE" } ?: NULL
+        columnSet.type == ColumnType.BOOLEAN -> this?.let { if (it == "on") "'1'" else "'0'" } ?: NULL
         else -> this?.addQuotationIfIsString() ?: NULL
     }
 

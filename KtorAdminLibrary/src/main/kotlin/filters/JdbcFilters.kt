@@ -90,6 +90,12 @@ internal object JdbcFilters {
                     handleDateTimeFilter(columnSet, parameters, filters)
                 }
 
+                columnSet?.type == ColumnType.BOOLEAN -> {
+                    parameters[columnSet.columnName]?.let { value ->
+                        filters.add(Pair(columnSet, "= '$value'"))
+                    }
+                }
+
                 columnSet?.type == ColumnType.ENUMERATION -> {
                     parameters[columnSet.columnName]?.let { value ->
                         filters.add(Pair(columnSet, "= '$value'"))
