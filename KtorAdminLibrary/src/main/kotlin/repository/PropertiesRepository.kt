@@ -31,6 +31,7 @@ object PropertiesRepository {
         val infoAnnotation =
             property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
         val columnName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() } ?: name
+        val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
         if (hasUploadAnnotation) {
             UploadUtils.validatePropertyType(genericArgument, columnName)
         }
@@ -51,6 +52,7 @@ object PropertiesRepository {
         return ColumnSet(
             columnName = columnName,
             type = columnType,
+            verboseName = verboseName,
             nullable = nullable,
             showInPanel = showInPanel,
             uploadTarget = uploadTarget,
@@ -71,6 +73,8 @@ object PropertiesRepository {
         val infoAnnotation =
             property.annotations.find { it.shortName.asString() == FieldInfo::class.simpleName }
         val fieldName = infoAnnotation?.findArgument<String>("fieldName")?.takeIf { it.isNotEmpty() } ?: name
+        val verboseName =
+            infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: fieldName ?: name
         if (hasUploadAnnotation) {
             UploadUtils.validatePropertyType(fieldName, type)
         }
@@ -90,6 +94,7 @@ object PropertiesRepository {
             (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) || (computedFieldInfo?.second ?: false)
         return FieldSet(
             fieldName = fieldName,
+            verboseName = verboseName,
             type = fieldType,
             nullable = nullable,
             showInPanel = showInPanel,

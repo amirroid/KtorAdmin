@@ -89,7 +89,7 @@
         #foreach($data in $rows)
         <tr onclick="redirectToEdit('$data.primaryKey')">
             #foreach($item in $data.data)
-                <td>$item</td>
+                <td>$!item</td>
             #end
         </tr>
         #end

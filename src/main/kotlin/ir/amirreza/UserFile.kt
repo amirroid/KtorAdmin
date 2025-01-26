@@ -47,6 +47,9 @@ data class UserFile(
     val title: String,
     @LocalUpload
     val file: String,
+    @FieldInfo(
+        verboseName = "Created At"
+    )
     val createdAt: Instant = Clock.System.now(),
     val isUploaded: Boolean = false,
 )

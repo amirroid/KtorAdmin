@@ -7,6 +7,7 @@ import models.types.ColumnType
  * Represents metadata and configuration details for a specific column.
  *
  * @property columnName The name of the column.
+ * @property verboseName A human-readable name for the column, often used in UI or reports.
  * @property type The type of the column (e.g., numeric, string, etc.).
  * @property showInPanel Whether this column should be displayed in the panel. Defaults to `true`.
  * @property nullable Indicates if the column can have null values. Defaults to `false`.
@@ -21,6 +22,7 @@ import models.types.ColumnType
  */
 data class ColumnSet(
     val columnName: String,
+    val verboseName: String,
     val type: ColumnType,
     val showInPanel: Boolean = true,
     val nullable: Boolean = false,

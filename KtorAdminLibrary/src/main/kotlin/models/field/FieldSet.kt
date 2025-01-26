@@ -23,6 +23,7 @@ import models.types.FieldType
  */
 data class FieldSet(
     val fieldName: String?,
+    val verboseName: String = fieldName.orEmpty(),
     val type: FieldType,
     val showInPanel: Boolean = true,
     val nullable: Boolean = false,
@@ -36,6 +37,6 @@ data class FieldSet(
     val computedField: String? = null
 ) {
     companion object {
-        val Empty = FieldSet("", FieldType.NotAvailable)
+        val Empty = FieldSet("", "", FieldType.NotAvailable)
     }
 }

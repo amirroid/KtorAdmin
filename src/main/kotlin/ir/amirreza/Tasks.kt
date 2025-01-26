@@ -47,7 +47,7 @@ object Tasks : Table("tasks") {
         { it.name }
     )
 
-    @ColumnInfo("user_id")
+    @ColumnInfo("user_id", verboseName = "User")
     @References("users", "id")
     val userId = integer("user_id").references(Users.id)
 

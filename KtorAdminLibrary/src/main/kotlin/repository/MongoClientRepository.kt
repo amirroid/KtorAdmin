@@ -67,13 +67,19 @@ internal object MongoClientRepository {
 
     private fun BsonValue.toStringId() = asObjectId()?.value?.toHexString()
 
+    private fun String.formatParameter(field: FieldSet) = when (field.type) {
+        FieldType.Boolean -> if (this == "on") "true" else "false"
+        else -> this
+    }
+
+
     suspend fun insertData(
         values: Map<FieldSet, Any?>,
         panel: AdminMongoCollection
     ): String? {
         val document = Document().apply {
             values.forEach { (field, value) ->
-                put(field.fieldName, value)
+                put(field.fieldName, value?.toString()?.formatParameter(field) ?: return@forEach)
             }
         }
         return panel.getCollection().insertOne(document).insertedId?.toStringId()
@@ -129,12 +135,9 @@ internal object MongoClientRepository {
         ).firstOrNull()
         return projection?.let { values ->
             panel.getAllAllowToShowFieldsInUpsert().map { field -> values[field.fieldName]?.toString() }
+        }.also {
+            println("Data: $it")
         }
-    }
-
-    private fun String.formatParameter(field: FieldSet) = when (field.type) {
-        FieldType.Boolean -> if (this == "on") "true" else "false"
-        else -> this
     }
 
     suspend fun updateChangedData(
@@ -149,7 +152,12 @@ internal object MongoClientRepository {
             val updateFields = parameters.toList().filterIndexed { index, item ->
                 val initialValue = initialData.getOrNull(index)
                 initialValue != item.second?.formatParameter(item.first) && !(initialValue != null && item.second == null)
-            }.map { set(it.first.fieldName.toString(), it.second?.formatParameter(it.first)) }
+            }.mapNotNull {
+                set(
+                    it.first.fieldName.toString(),
+                    it.second?.formatParameter(it.first) ?: return@mapNotNull null
+                )
+            }
             if (updateFields.isEmpty()) return null
             panel.getCollection()
                 .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updateFields)).upsertedId?.toStringId()

@@ -17,7 +17,7 @@
             #end
         #end
 
-        <label>$field.fieldName</label>
+        <label>$field.verboseName</label>
 
         #if($field.reference)
             #set($referenceValues = $references.get($field))
@@ -45,7 +45,7 @@
                     <input type="hidden" name="${field.fieldName}" value="off">
                 #end
                 <input type="checkbox" class="form-input" name="${field.fieldName}"
-                    #if($!defaultValue == "true") checked #end
+                    #if($!defaultValue == "true" || $!defaultValue == "1") checked #end
                     #if($field.readOnly) disabled #end/>
             #else
                 <input type="$field.type.fieldType" class="form-input" name="$field.fieldName" value="$!defaultValue"

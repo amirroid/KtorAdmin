@@ -10,6 +10,7 @@ import models.types.toSuitableStringForFile
 fun ColumnSet.toSuitableStringForFile() = """
     |ColumnSet(
     |    columnName = "$columnName",
+    |    verboseName = "$verboseName",
     |    type = ColumnType.${type},
     |    nullable = $nullable,
     |    showInPanel = $showInPanel,
@@ -27,6 +28,7 @@ fun ColumnSet.toSuitableStringForFile() = """
 fun FieldSet.toSuitableStringForFile() = """
     |FieldSet(
     |    fieldName = ${fieldName?.let { "\"${it}\"" }},
+    |    verboseName = "$verboseName",
     |    type = FieldType.${type.toSuitableStringForFile()},
     |    nullable = $nullable,
     |    showInPanel = $showInPanel,
