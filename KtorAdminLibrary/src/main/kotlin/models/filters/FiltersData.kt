@@ -5,6 +5,7 @@ enum class FilterTypes {
     DATE,
     DATETIME,
     REFERENCE,
+    BOOLEAN,
 }
 
 data class FiltersData(

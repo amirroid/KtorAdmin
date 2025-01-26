@@ -7,6 +7,7 @@ import formatters.populateTemplate
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.common.DisplayItem
+import models.types.ColumnType
 import panels.AdminJdbcTable
 import panels.getAllAllowToShowColumns
 
@@ -78,6 +79,11 @@ internal object JdbcQueriesRepository {
             }
         }
 
+    private fun String.formatChangedItemBoolean(columnSet: ColumnSet) = when (columnSet.type) {
+        ColumnType.BOOLEAN -> if (this == "on") "true" else "false"
+        else -> this
+    }
+
     fun getData(table: AdminJdbcTable, primaryKey: String): List<String?>? =
         table.usingDataSource { session ->
             session.first(sqlQuery(table.createGetOneItemQuery(primaryKey))) { raw ->
@@ -107,7 +113,7 @@ internal object JdbcQueriesRepository {
                 columns[index] to item
             }.filterIndexed { index, item ->
                 val initialValue = initialData.getOrNull(index)
-                initialValue != item.second && !(initialValue != null && item.second == null)
+                initialValue != item.second?.formatChangedItemBoolean(item.first) && !(initialValue != null && item.second == null)
             }
 
             if (changedData.isNotEmpty()) {
@@ -290,11 +296,15 @@ internal object JdbcQueriesRepository {
         append(primaryKey)
     }
 
+    private fun String?.formatParameter(columnSet: ColumnSet): String = when {
+        columnSet.type == ColumnType.BOOLEAN -> this?.let { if (it == "on") "TRUE" else "FALSE" } ?: NULL
+        else -> this?.addQuotationIfIsString() ?: NULL
+    }
+
     private fun AdminJdbcTable.createInsertQuery(parameters: List<String?>) = buildString {
         val columns = getAllAllowToShowColumns()
         val parametersWithNULL = parameters.mapIndexed { index, parameter ->
-            if (columns[index].nullable && parameter.isNullOrEmpty()) NULL else parameter?.addQuotationIfIsString()
-                ?: NULL
+            if (columns[index].nullable && parameter.isNullOrEmpty()) NULL else parameter.formatParameter(columns[index])
         }
         append("INSERT INTO ")
         append(getTableName())
@@ -315,7 +325,7 @@ internal object JdbcQueriesRepository {
         append(" SET ")
         val columnsWithValues = updatedColumns.mapIndexed { index, column ->
             column.columnName to parameters[index]?.let {
-                if (it.isEmpty() && column.nullable) NULL else it.addQuotationIfIsString()
+                if (it.isEmpty() && column.nullable) NULL else it.formatParameter(column)
             }
         }
         append(columnsWithValues.joinToString(", ") { (columnName, value) -> "$columnName = $value" })
@@ -323,7 +333,7 @@ internal object JdbcQueriesRepository {
         append(getPrimaryKey())
         append(" = ")
         append(primaryKey)
-    }
+    }.also { println(it) }
 
     private fun String.addQuotationIfIsString(): String =
         if (toDoubleOrNull() != null) this else "'$this'"

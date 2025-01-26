@@ -97,7 +97,7 @@ private suspend fun ApplicationCall.handleNoSqlEditView(
             }.toMap()
             respond(
                 VelocityContent(
-                    "${Constants.TEMPLATES_PREFIX_PATH}/no_sql_upsert_admin.vm", model = mapOf(
+                    "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin2.vm", model = mapOf(
                         "fields" to fields,
                         "values" to values,
                         "singularTableName" to panel.getSingularName()

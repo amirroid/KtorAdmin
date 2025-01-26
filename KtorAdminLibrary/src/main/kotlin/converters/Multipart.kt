@@ -70,7 +70,10 @@ internal suspend fun MultiPartData.toTableValues(table: AdminMongoCollection): L
 
         if (field != null && name != null) {
             when (partData) {
-                is PartData.FormItem -> items[name] = partData.value.let { it to it.toTypedValue(field.type) }
+                is PartData.FormItem -> {
+                    items[name] = partData.value.let { it to it.toTypedValue(field.type) }
+                }
+
                 is PartData.FileItem -> {
                     val targetColumn = table.getAllFields().firstOrNull { it.fieldName == name }
                     when (targetColumn?.type) {
@@ -83,6 +86,7 @@ internal suspend fun MultiPartData.toTableValues(table: AdminMongoCollection): L
                             }
                             items[name] = fileData
                         }
+
                         else -> Unit
                     }
                 }

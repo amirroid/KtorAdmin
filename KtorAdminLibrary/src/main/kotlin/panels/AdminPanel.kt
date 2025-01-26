@@ -7,6 +7,8 @@ interface AdminPanel {
     fun getDatabaseKey(): String?
     fun getPrimaryKey(): String
     fun getDisplayFormat(): String?
+    fun getSearchColumns(): List<String>
+    fun getFilterColumns(): List<String>
 }
 
 fun List<AdminPanel>.findWithPluralName(name: String?) = find { it.getPluralName() == name }

@@ -2,7 +2,7 @@ package processors.exposed
 
 import annotations.display.DisplayFormat
 import annotations.exposed.ExposedTable
-import annotations.query.QueryColumns
+import annotations.query.AdminQueries
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -184,7 +184,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
 
 
     private fun KSClassDeclaration.getQueryColumnsArguments() = annotations
-        .find { it.shortName.asString() == QueryColumns::class.simpleName }
+        .find { it.shortName.asString() == AdminQueries::class.simpleName }
         ?.arguments
 
 

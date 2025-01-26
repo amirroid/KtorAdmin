@@ -1,8 +1,7 @@
 package repository
 
-import annotations.collection.CollectionInfo
 import annotations.computed.Computed
-import annotations.enumeration.EnumerationColumn
+import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
@@ -21,7 +20,6 @@ import models.field.FieldSet
 import models.types.FieldType
 import utils.UploadUtils
 import utils.findArgument
-import utils.guessFieldPropertyType
 import utils.guessPropertyType
 
 object PropertiesRepository {
@@ -107,7 +105,7 @@ object PropertiesRepository {
     }
 
     private fun hasEnumerationColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
-        it.shortName.asString() == EnumerationColumn::class.simpleName
+        it.shortName.asString() == Enumeration::class.simpleName
     }
 
     private fun hasIgnoreColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
@@ -115,7 +113,7 @@ object PropertiesRepository {
     }
 
     private fun Sequence<KSAnnotation>.getEnumerations(): List<String>? {
-        return find { it.shortName.asString() == EnumerationColumn::class.simpleName }
+        return find { it.shortName.asString() == Enumeration::class.simpleName }
             ?.arguments
             ?.firstOrNull { it.name?.asString() == "values" }
             ?.value

@@ -1,9 +1,8 @@
 package processors.mongo
 
 import annotations.display.DisplayFormat
-import annotations.exposed.ExposedTable
 import annotations.mongo.MongoCollection
-import annotations.query.QueryColumns
+import annotations.query.AdminQueries
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -15,12 +14,10 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
-import models.ColumnSet
 import models.Limit
 import models.UploadTarget
 import models.common.Reference
 import models.field.FieldSet
-import models.types.ColumnType
 import models.types.FieldType
 import repository.PropertiesRepository
 import utils.FileUtils
@@ -195,6 +192,26 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addStatement("return %S", collectionName)
             .build()
 
+
+        val queryArguments = classDeclaration.getQueryColumnsArguments()
+        val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
+        val filterColumns = queryArguments?.findStringList("filters") ?: emptyList()
+        val getSearchColumnsFunction = FunSpec.builder("getSearchColumns")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${searchColumns.joinToString { "\"$it\"" }})")
+            .build()
+
+        val getFilterColumnsFunction = FunSpec.builder("getFilterColumns")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${filterColumns.joinToString { "\"$it\"" }})")
+            .build()
+
         val getPluralNameFunction = FunSpec.builder("getPluralName")
             .addModifiers(KModifier.OVERRIDE)
             .returns(String::class)
@@ -233,6 +250,8 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addFunction(getSingularNameFunction)
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
+            .addFunction(getFilterColumnsFunction)
+            .addFunction(getSearchColumnsFunction)
             .addFunction(getDisplayFormatFunction)
             .addFunction(getDatabaseKeyFunction)
             .build()
@@ -246,7 +265,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
 
 
     private fun KSClassDeclaration.getQueryColumnsArguments() = annotations
-        .find { it.shortName.asString() == QueryColumns::class.simpleName }
+        .find { it.shortName.asString() == AdminQueries::class.simpleName }
         ?.arguments
 
 

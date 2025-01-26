@@ -2,12 +2,12 @@ package ir.amirreza
 
 import annotations.computed.Computed
 import annotations.display.DisplayFormat
-import annotations.enumeration.EnumerationColumn
+import annotations.enumeration.Enumeration
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
-import annotations.query.QueryColumns
+import annotations.query.AdminQueries
 import annotations.references.References
 import annotations.uploads.LocalUpload
 import org.jetbrains.exposed.sql.*
@@ -18,7 +18,7 @@ enum class Priority {
 
 
 @ExposedTable("tasks", "id", "task", "tasks")
-@QueryColumns(
+@AdminQueries(
     searches = ["user_id.username", "description"],
     filters = ["priority", "user_id"]
 )
@@ -39,7 +39,7 @@ object Tasks : Table("tasks") {
     )
     val description = text("description")
 
-    @EnumerationColumn("Low", "Medium", "High")
+    @Enumeration("Low", "Medium", "High")
     val priority = customEnumeration(
         "priority",
         "VARCHAR(50)",
@@ -71,6 +71,8 @@ object Tasks : Table("tasks") {
     )
     @LocalUpload
     val videoThumbnail = varchar("thumbnail", 1000).nullable()
+
+    val checked = bool("checked").default(true)
 
     override val primaryKey = PrimaryKey(id)
 }

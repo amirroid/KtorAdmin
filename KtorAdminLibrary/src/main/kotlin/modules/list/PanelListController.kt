@@ -3,6 +3,8 @@ package modules.list
 import utils.badRequest
 import utils.notFound
 import configuration.DynamicConfiguration
+import filters.JdbcFilters
+import filters.MongoFilters
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -53,10 +55,10 @@ private suspend fun ApplicationCall.handleJdbcList(
     val hasSearchColumn = table.getSearchColumns().isNotEmpty()
 
     // Prepare filters data
-    val filtersData = findFiltersData(table, jdbcTables)
+    val filtersData = JdbcFilters.findFiltersData(table, jdbcTables)
 
     // Extract actual filters
-    val filters = extractFilters(table, jdbcTables, parameters)
+    val filters = JdbcFilters.extractFilters(table, jdbcTables, parameters)
 
     // Fetch data
     val data = JdbcQueriesRepository.getAllData(table, searchParameter, currentPage, filters)
@@ -89,8 +91,18 @@ private suspend fun ApplicationCall.handleNoSqlList(
     pluralName: String?,
     currentPage: Int?,
 ) {
+    // Prepare filters data
+    val filtersData = MongoFilters.findFiltersData(panel)
+
+
     // Fetch data
-    val data = MongoClientRepository.getAllData(panel)
+    val data = MongoClientRepository.getAllData(
+        panel,
+        (currentPage ?: 1) - 1,
+        filters = MongoFilters.extractMongoFilters(panel, parameters)
+    )
+
+    val maxPages = MongoClientRepository.getTotalPages(panel)
 
     // Respond with Velocity template
     respond(
@@ -102,127 +114,10 @@ private suspend fun ApplicationCall.handleNoSqlList(
                 "pluralName" to pluralName?.replaceFirstChar { it.uppercaseChar() }.orEmpty(),
                 "hasSearchColumn" to false,
                 "currentPage" to (currentPage?.plus(1) ?: 1),
-                "maxPages" to 1,
-                "filtersData" to emptyList<FiltersData>()
+                "maxPages" to maxPages,
+                "filtersData" to filtersData
             )
         )
     )
 }
 
-private fun findFiltersData(
-    table: AdminJdbcTable,
-    jdbcTables: List<AdminJdbcTable>
-): List<FiltersData> {
-    return table.getFilterColumns().map { filterColumn ->
-        val filterTable = if (filterColumn.contains(".")) {
-            val paths = filterColumn.split(".")
-            jdbcTables.find { it.getTableName() == paths[paths.size - 2] }
-        } else table
-
-        val columnSet = if (filterColumn.contains(".")) {
-            val paths = filterColumn.split(".")
-            filterTable?.getAllColumns()?.find { it.columnName == paths.last() }
-        } else filterTable?.getAllColumns()?.find { it.columnName == filterColumn }
-
-        when {
-            columnSet?.type == ColumnType.DATE -> FiltersData(
-                paramName = columnSet.columnName,
-                type = FilterTypes.DATE
-            )
-
-            columnSet?.type == ColumnType.DATETIME -> FiltersData(
-                paramName = columnSet.columnName,
-                type = FilterTypes.DATETIME
-            )
-
-            columnSet?.type == ColumnType.ENUMERATION -> FiltersData(
-                paramName = columnSet.columnName,
-                type = FilterTypes.ENUMERATION,
-                values = columnSet.enumerationValues
-            )
-
-            columnSet?.reference != null -> {
-                val referenceTable = jdbcTables.find {
-                    it.getTableName() == columnSet.reference.tableName
-                } ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference.tableName}")
-
-                FiltersData(
-                    paramName = columnSet.columnName,
-                    type = FilterTypes.REFERENCE,
-                    values = JdbcQueriesRepository.getAllReferences(referenceTable, columnSet.reference.columnName)
-                )
-            }
-
-            else -> throw IllegalArgumentException("Filters are currently supported only for types: DATE, DATETIME, ENUMERATION, and REFERENCE")
-        }
-    }
-}
-
-private fun extractFilters(
-    table: AdminJdbcTable,
-    jdbcTables: List<AdminJdbcTable>,
-    parameters: Parameters
-): MutableList<Pair<ColumnSet, String>> {
-    val filters = mutableListOf<Pair<ColumnSet, String>>()
-
-    table.getFilterColumns().forEach { filterColumn ->
-        val filterTable = if (filterColumn.contains(".")) {
-            val paths = filterColumn.split(".")
-            jdbcTables.find { it.getTableName() == paths[paths.size - 2] }
-        } else table
-
-        val columnSet = if (filterColumn.contains(".")) {
-            val paths = filterColumn.split(".")
-            filterTable?.getAllColumns()?.find { it.columnName == paths.last() }
-        } else filterTable?.getAllColumns()?.find { it.columnName == filterColumn }
-
-        when {
-            columnSet?.type == ColumnType.DATE || columnSet?.type == ColumnType.DATETIME -> {
-                handleDateTimeFilter(columnSet, parameters, filters)
-            }
-
-            columnSet?.type == ColumnType.ENUMERATION -> {
-                parameters[columnSet.columnName]?.let { value ->
-                    filters.add(Pair(columnSet, "= '$value'"))
-                }
-            }
-
-            columnSet?.reference != null -> {
-                parameters[columnSet.columnName]?.let { refValue ->
-                    filters.add(Pair(columnSet, "= '$refValue'"))
-                }
-            }
-        }
-    }
-
-    return filters
-}
-
-private fun handleDateTimeFilter(
-    columnSet: ColumnSet?,
-    parameters: Parameters,
-    filters: MutableList<Pair<ColumnSet, String>>
-) {
-    if (columnSet == null) return
-
-    val startParamName = "${columnSet.columnName}-start"
-    val endParamName = "${columnSet.columnName}-end"
-
-    if (parameters.contains(startParamName)) {
-        parameters[startParamName]?.let { startValue ->
-            val startTimestamp = Instant.ofEpochMilli(startValue.toLong())
-                .atZone(ZoneId.systemDefault())
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-            filters.add(Pair(columnSet, ">= '$startTimestamp'"))
-        }
-    }
-
-    if (parameters.contains(endParamName)) {
-        parameters[endParamName]?.let { endValue ->
-            val endTimestamp = Instant.ofEpochMilli(endValue.toLong())
-                .atZone(ZoneId.systemDefault())
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-            filters.add(Pair(columnSet, "<= '$endTimestamp'"))
-        }
-    }
-}

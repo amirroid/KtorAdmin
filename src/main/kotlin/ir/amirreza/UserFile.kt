@@ -1,8 +1,10 @@
 package ir.amirreza
 
+import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
 import annotations.mongo.MongoCollection
+import annotations.query.AdminQueries
 import annotations.uploads.LocalUpload
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -32,14 +34,19 @@ import kotlinx.serialization.Serializable
     singularName = "File",
     pluralName = "Files"
 )
+@AdminQueries(
+    filters = ["createdAt", "title"]
+)
 @Serializable
 data class UserFile(
     @FieldInfo("_id")
     @SerialName("_id")
 //    @Serializable(CustomObjectIdSerializer::class)
     val id: String? = null,
+    @Enumeration("Test", "Te")
     val title: String,
     @LocalUpload
     val file: String,
-    val createdAt: Instant = Clock.System.now()
+    val createdAt: Instant = Clock.System.now(),
+    val isUploaded: Boolean = false,
 )

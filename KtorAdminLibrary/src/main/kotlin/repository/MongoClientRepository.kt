@@ -8,6 +8,7 @@ import com.mongodb.client.model.Updates.combine
 import com.mongodb.client.model.Updates.set
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
+import configuration.DynamicConfiguration
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
@@ -18,6 +19,7 @@ import mongo.MongoCredential
 import mongo.MongoServerAddress
 import org.bson.BsonValue
 import org.bson.Document
+import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import panels.AdminMongoCollection
 import panels.getAllAllowToShowFields
@@ -77,18 +79,22 @@ internal object MongoClientRepository {
         return panel.getCollection().insertOne(document).insertedId?.toStringId()
     }
 
-    suspend fun getAllData(table: AdminMongoCollection): List<DataWithPrimaryKey> {
+    suspend fun getAllData(table: AdminMongoCollection, page: Int, filters: Bson): List<DataWithPrimaryKey> {
         val fields = table.getAllAllowToShowFields()
-        val projection = table.getCollection().find().projection(
-            fields(
+        val projection = table.getCollection()
+            .find(filters)
+            .skip(DynamicConfiguration.maxItemsInPage * page)
+            .limit(DynamicConfiguration.maxItemsInPage)
+            .projection(
                 fields(
-                    *fields.plus(table.getPrimaryKeyField())
-                        .map { include(it.fieldName) }
-                        .distinct()
-                        .toTypedArray()
+                    fields(
+                        *fields.plus(table.getPrimaryKeyField())
+                            .map { include(it.fieldName) }
+                            .distinct()
+                            .toTypedArray()
+                    )
                 )
-            )
-        ).filterNotNull().toList()
+            ).filterNotNull().toList()
         return projection.map { values ->
             DataWithPrimaryKey(
                 primaryKey = values[table.getPrimaryKey()]!!.toString(),
@@ -96,6 +102,18 @@ internal object MongoClientRepository {
             )
         }
     }
+
+    suspend fun getTotalPages(
+        table: AdminMongoCollection,
+    ): Long {
+        val totalCount = table.getCollection().countDocuments()
+        return if (totalCount % DynamicConfiguration.maxItemsInPage == 0L) {
+            totalCount / DynamicConfiguration.maxItemsInPage
+        } else {
+            (totalCount / DynamicConfiguration.maxItemsInPage) + 1
+        }
+    }
+
 
     suspend fun getData(panel: AdminMongoCollection, primaryKey: String): List<String?>? {
         val projection = panel.getCollection().find(
@@ -114,6 +132,11 @@ internal object MongoClientRepository {
         }
     }
 
+    private fun String.formatParameter(field: FieldSet) = when (field.type) {
+        FieldType.Boolean -> if (this == "on") "true" else "false"
+        else -> this
+    }
+
     suspend fun updateChangedData(
         panel: AdminMongoCollection,
         parameters: Map<FieldSet, String?>,
@@ -125,8 +148,8 @@ internal object MongoClientRepository {
         } else {
             val updateFields = parameters.toList().filterIndexed { index, item ->
                 val initialValue = initialData.getOrNull(index)
-                initialValue != item.second && !(initialValue != null && item.second == null)
-            }.map { set(it.first.fieldName.toString(), it.second) }
+                initialValue != item.second?.formatParameter(item.first) && !(initialValue != null && item.second == null)
+            }.map { set(it.first.fieldName.toString(), it.second?.formatParameter(it.first)) }
             if (updateFields.isEmpty()) return null
             panel.getCollection()
                 .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updateFields)).upsertedId?.toStringId()

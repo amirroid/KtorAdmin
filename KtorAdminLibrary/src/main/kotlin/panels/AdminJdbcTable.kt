@@ -5,8 +5,6 @@ import models.ColumnSet
 interface AdminJdbcTable : AdminPanel {
     fun getAllColumns(): Collection<ColumnSet>
     fun getTableName(): String
-    fun getSearchColumns(): List<String>
-    fun getFilterColumns(): List<String>
 }
 
 

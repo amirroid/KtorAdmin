@@ -55,6 +55,7 @@ private suspend fun RoutingContext.updateData(
 
     val parametersData = call.receiveMultipart().toTableValues(table)
     val parameters = parametersData.map { it?.first }
+    println("PARAMETERS : $parameters")
 
     kotlin.runCatching {
         val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parameters, primaryKey)
@@ -81,6 +82,7 @@ private suspend fun RoutingContext.updateData(
     val fieldsWithParameter = fields.mapIndexed { index, field ->
         field to parameters.getOrNull(index)
     }.toMap()
+    println("PARAMETERS : $parametersData")
     kotlin.runCatching {
         val changedDataAndId = MongoClientRepository.updateChangedData(panel, fieldsWithParameter, primaryKey)
         call.respondRedirect("/admin/$pluralName")
