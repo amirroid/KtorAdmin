@@ -1,10 +1,12 @@
 package panels
 
 import models.ColumnSet
+import models.order.Order
 
 interface AdminJdbcTable : AdminPanel {
     fun getAllColumns(): Collection<ColumnSet>
     fun getTableName(): String
+    fun getDefaultOrder(): Order?
 }
 
 

@@ -2,6 +2,7 @@ package processors.exposed
 
 import annotations.display.DisplayFormat
 import annotations.exposed.ExposedTable
+import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -17,6 +18,8 @@ import formatters.extractTextInCurlyBraces
 import models.*
 import models.common.Reference
 import models.date.AutoNowDate
+import models.order.Order
+import models.order.toFormattedString
 import models.types.ColumnType
 import repository.PropertiesRepository
 import utils.*
@@ -84,6 +87,18 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addStatement("return listOf(${columnSets.joinToString { it.toSuitableStringForFile() }})")
             .build()
 
+
+        val order = classDeclaration.getDefaultOrderFormat()
+
+        if (order != null) {
+            if (order.name !in columnSets.map { it.columnName }) {
+                throw IllegalArgumentException("The field name '${order.name}' specified in the @DefaultOrder annotation does not exist in the column set.")
+            }
+            if (order.direction.lowercase() !in listOf("asc", "desc")) {
+                throw IllegalArgumentException("The order direction '${order.direction}' specified in the @DefaultOrder annotation must be either 'asc' or 'desc'.")
+            }
+        }
+
         val queryArguments = classDeclaration.getQueryColumnsArguments()
         val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
         val filterColumns = queryArguments?.findStringList("filters") ?: emptyList()
@@ -140,6 +155,11 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .returns(String::class)
             .addStatement("return %S", primaryKey)
             .build()
+        val getDefaultOrderFunction = FunSpec.builder("getDefaultOrder")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(Order::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${order?.toFormattedString()}")
+            .build()
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminTable))
             .addFunction(getAllColumnsFunction)
@@ -150,6 +170,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addFunction(getSingularNameFunction)
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
+            .addFunction(getDefaultOrderFunction)
             .addFunction(getDisplayFormatFunction)
             .addFunction(getDatabaseKeyFunction)
             .build()
@@ -183,6 +204,17 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         ?.arguments
         ?.find { it.name?.asString() == "format" }
         ?.value as? String
+
+
+    private fun KSClassDeclaration.getDefaultOrderFormat() = annotations
+        .find { it.shortName.asString() == DefaultOrder::class.simpleName }
+        ?.arguments
+        ?.let {
+            Order(
+                name = it.find { ksValueArgument -> ksValueArgument.name?.asString() == "name" }!!.value as String,
+                direction = it.find { ksValueArgument -> ksValueArgument.name?.asString() == "direction" }!!.value as String,
+            )
+        }
 
 
     private fun KSClassDeclaration.getQueryColumnsArguments() = annotations

@@ -4,6 +4,7 @@ import annotations.display.DisplayFormat
 import annotations.exposed.ExposedTable
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
+import annotations.order.DefaultOrder
 import org.jetbrains.exposed.sql.Table
 
 @ExposedTable(
@@ -16,6 +17,7 @@ import org.jetbrains.exposed.sql.Table
 @DisplayFormat(
     format = "{id} - {username}"
 )
+@DefaultOrder("id", "DESC")
 object Users : Table() {
     @IgnoreColumn
     val id = integer("id").autoIncrement()

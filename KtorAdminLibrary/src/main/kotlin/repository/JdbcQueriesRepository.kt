@@ -306,6 +306,9 @@ internal object JdbcQueriesRepository {
             append(" FROM ")
             append(getTableName())
             joins.forEach { append(" $it") }
+            getDefaultOrder()?.let { order ->
+                append(" ORDER BY ${order.name} ${order.direction}")
+            }
         }
     }
 

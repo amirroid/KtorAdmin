@@ -7,6 +7,7 @@ import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
+import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import annotations.references.References
 import annotations.uploads.LocalUpload
@@ -24,6 +25,10 @@ enum class Priority {
 )
 @DisplayFormat(
     format = "{id} - User: {user_id.username}",
+)
+@DefaultOrder(
+    "name",
+    "DESC"
 )
 object Tasks : Table("tasks") {
     @IgnoreColumn
