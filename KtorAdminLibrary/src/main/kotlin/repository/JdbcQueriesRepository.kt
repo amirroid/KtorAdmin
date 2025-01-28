@@ -10,6 +10,7 @@ import models.common.DisplayItem
 import models.types.ColumnType
 import panels.AdminJdbcTable
 import panels.getAllAllowToShowColumns
+import panels.getAllAllowToShowFieldsInUpsert
 
 internal object JdbcQueriesRepository {
     private const val NULL = "NULL"
@@ -103,7 +104,7 @@ internal object JdbcQueriesRepository {
     fun getData(table: AdminJdbcTable, primaryKey: String): List<String?>? =
         table.usingDataSource { session ->
             session.first(sqlQuery(table.createGetOneItemQuery(primaryKey))) { raw ->
-                table.getAllAllowToShowColumns().map { raw.anyOrNull(it.columnName)?.toString() }
+                table.getAllAllowToShowFieldsInUpsert().map { raw.anyOrNull(it.columnName)?.toString() }
             }
         }
 
@@ -124,7 +125,7 @@ internal object JdbcQueriesRepository {
         return if (initialData == null) {
             insertData(table, parameters)?.let { id -> id to table.getAllAllowToShowColumns().map { it.columnName } }
         } else {
-            val columns = table.getAllAllowToShowColumns()
+            val columns = table.getAllAllowToShowFieldsInUpsert()
             val changedData = parameters.mapIndexed { index, item ->
                 columns[index] to item
             }.filterIndexed { index, item ->
@@ -243,7 +244,9 @@ internal object JdbcQueriesRepository {
                         searchConditions.joinToString(
                             " OR "
                         ) { it })
-                    append(" AND ")
+                    if (filters.isNotEmpty()) {
+                        append(" AND ")
+                    }
                 }
                 append(filterConditions.joinToString(" AND ") { it })
             }
@@ -307,7 +310,12 @@ internal object JdbcQueriesRepository {
 
     private fun AdminJdbcTable.createGetOneItemQuery(primaryKey: String) = buildString {
         append("SELECT ")
-        append(getAllAllowToShowColumns().joinToString(", ") { it.columnName })
+        append(
+            getAllAllowToShowFieldsInUpsert()
+                .plus(getPrimaryKeyColumn())
+                .distinct()
+                .joinToString(", ") { it.columnName }
+        )
         append(" FROM ")
         append(getTableName())
         append(" WHERE ")
@@ -322,7 +330,7 @@ internal object JdbcQueriesRepository {
     }
 
     private fun AdminJdbcTable.createInsertQuery(parameters: List<String?>) = buildString {
-        val columns = getAllAllowToShowColumns()
+        val columns = getAllAllowToShowFieldsInUpsert()
         val parametersWithNULL = parameters.mapIndexed { index, parameter ->
             if (columns[index].nullable && parameter.isNullOrEmpty()) NULL else parameter.formatParameter(columns[index])
         }

@@ -1,6 +1,7 @@
 package repository
 
 import annotations.computed.Computed
+import annotations.date.AutoNowDate
 import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
@@ -49,6 +50,13 @@ object PropertiesRepository {
         val computedColumnInfo = property.annotations.getComputed()
         val isReadOnly =
             (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) || (computedColumnInfo?.second ?: false)
+        val autoNowDate = hasAutoNowDateAnnotation(property.annotations)
+        if (columnType !in listOf(ColumnType.DATE, ColumnType.DATETIME) && autoNowDate) {
+            throw IllegalArgumentException(
+                "The 'autoNowDate' property can only be used with columns of type 'DATE' or 'DATETIME'. " +
+                        "Column '$columnName' has type '$columnType', which is incompatible."
+            )
+        }
         return ColumnSet(
             columnName = columnName,
             type = columnType,
@@ -62,7 +70,8 @@ object PropertiesRepository {
             limits = property.annotations.getLimits(),
             reference = property.annotations.getReferences(),
             readOnly = isReadOnly,
-            computedColumn = computedColumnInfo?.first
+            computedColumn = computedColumnInfo?.first,
+            autoNowDate = autoNowDate,
         )
     }
 
@@ -111,6 +120,10 @@ object PropertiesRepository {
 
     private fun hasEnumerationColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
         it.shortName.asString() == Enumeration::class.simpleName
+    }
+
+    private fun hasAutoNowDateAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
+        it.shortName.asString() == AutoNowDate::class.simpleName
     }
 
     private fun hasIgnoreColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {

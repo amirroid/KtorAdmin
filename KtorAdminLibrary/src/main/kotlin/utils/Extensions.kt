@@ -22,6 +22,7 @@ fun ColumnSet.toSuitableStringForFile() = """
     |    reference = ${reference?.toFormattedString()},
     |    readOnly = $readOnly,
     |    computedColumn = ${computedColumn?.let { "\"${it}\"" }},
+    |    autoNowDate = $autoNowDate,
     |)
 """.trimMargin("|")
 

@@ -19,6 +19,7 @@ import models.types.ColumnType
  * @property reference A reference to another column or data entity, if applicable.
  * @property readOnly Specifies if the column is read-only. Defaults to `false`.
  * @property computedColumn A computed value or formula for the column, if applicable.
+ * @property autoNowDate If `true`, automatically assigns the current date and time as the default value for this column. Defaults to `false`.
  */
 data class ColumnSet(
     val columnName: String,
@@ -33,5 +34,6 @@ data class ColumnSet(
     val limits: Limit? = null,
     val reference: Reference? = null,
     val readOnly: Boolean = false,
-    val computedColumn: String? = null
+    val computedColumn: String? = null,
+    val autoNowDate: Boolean = false,
 )

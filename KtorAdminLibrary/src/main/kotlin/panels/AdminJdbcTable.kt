@@ -9,3 +9,7 @@ interface AdminJdbcTable : AdminPanel {
 
 
 fun AdminJdbcTable.getAllAllowToShowColumns() = getAllColumns().filter { it.showInPanel }
+
+
+fun AdminJdbcTable.getAllAllowToShowFieldsInUpsert() =
+    getAllAllowToShowColumns().filter { it.showInPanel && it.columnName != getPrimaryKey() && !it.autoNowDate }

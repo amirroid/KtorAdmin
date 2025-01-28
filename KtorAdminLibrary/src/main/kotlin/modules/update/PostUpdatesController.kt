@@ -53,7 +53,7 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
 private suspend fun RoutingContext.updateData(
     pluralName: String?, primaryKey: String, table: AdminJdbcTable, panels: List<AdminPanel>
 ) {
-    val columns = table.getAllAllowToShowColumns()
+    val columns = table.getAllAllowToShowFieldsInUpsert()
     val initialData = JdbcQueriesRepository.getData(table, primaryKey)
     val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData)
     parametersDataResponse.onSuccess { parametersData ->

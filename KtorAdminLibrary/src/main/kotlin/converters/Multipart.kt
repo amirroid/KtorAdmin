@@ -27,7 +27,7 @@ internal suspend fun MultiPartData.toTableValues(
     initialData: List<String?>? = null
 ): Response<List<Pair<String, Any?>?>> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
-    val columns = table.getAllAllowToShowColumns()
+    val columns = table.getAllAllowToShowFieldsInUpsert()
 
     val fileBytes = mutableMapOf<ColumnSet, Pair<String?, ByteArray>>()
 

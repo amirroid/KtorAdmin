@@ -47,7 +47,7 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
     val parametersDataResponse = call.receiveMultipart().toTableValues(table)
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.map { it?.first }
-        val columns = table.getAllAllowToShowColumns()
+        val columns = table.getAllAllowToShowFieldsInUpsert()
 
         // Validate parameters
         val isValidParameters = columns.validateParameters(parameters)
