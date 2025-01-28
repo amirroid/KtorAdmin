@@ -2,11 +2,14 @@ package configuration
 
 import listener.AdminEventListener
 import models.forms.LoginFiled
+import java.time.ZoneId
 
 internal object DynamicConfiguration {
     var maxItemsInPage: Int = 20
     var loginFields: List<LoginFiled> = emptyList()
     var currentEventListener: AdminEventListener? = null
+
+    var timeZone: ZoneId = ZoneId.systemDefault()
 
     fun registerEventListener(listener: AdminEventListener) {
         if (currentEventListener != null) {
