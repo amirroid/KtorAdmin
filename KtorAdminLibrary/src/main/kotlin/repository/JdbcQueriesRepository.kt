@@ -183,7 +183,7 @@ internal object JdbcQueriesRepository {
         currentPage?.let {
             append(createPaginationQuery(it))
         }
-    }.also { println("QUERY : $it") }
+    }
 
     private fun AdminJdbcTable.createFiltersConditions(
         search: String?,
