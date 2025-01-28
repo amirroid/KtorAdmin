@@ -18,6 +18,7 @@ import formatters.extractTextInCurlyBraces
 import models.Limit
 import models.UploadTarget
 import models.common.Reference
+import models.date.AutoNowDate
 import models.field.FieldSet
 import models.order.Order
 import models.order.toFormattedString
@@ -51,6 +52,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addImport(UploadTarget::class.java.packageName, UploadTarget::class.java.simpleName)
             .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
             .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
+            .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(

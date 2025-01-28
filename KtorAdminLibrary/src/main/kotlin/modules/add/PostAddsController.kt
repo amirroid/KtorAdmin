@@ -9,6 +9,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import models.ColumnSet
+import modules.update.handleNoSqlEditView
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
@@ -80,22 +81,31 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
 }
 
 private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminMongoCollection) {
-    val parametersData = call.receiveMultipart().toTableValues(panel)
-    val parameters = parametersData.map { it?.first }
-    val fields = panel.getAllAllowToShowFieldsInUpsert()
-    val fieldsWithParameter = fields.mapIndexed { index, field ->
-        field to parameters.getOrNull(index)
-    }.toMap()
+    val parametersDataResponse = call.receiveMultipart().toTableValues(panel)
+    parametersDataResponse.onSuccess { parametersData ->
+        val parameters = parametersData.map { it?.first }
+        val fields = panel.getAllAllowToShowFieldsInUpsert()
+        val fieldsWithParameter = fields.mapIndexed { index, field ->
+            field to parameters.getOrNull(index)
+        }.toMap()
 //    // Validate parameters
 //    val isValidParameters = columns.validateParameters(parameters)
 //    if (isValidParameters) {
-    kotlin.runCatching {
-        val id = MongoClientRepository.insertData(fieldsWithParameter, panel)
-        call.respondRedirect("/admin/$pluralName")
-    }.onFailure {
-        call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
-    }
+        kotlin.runCatching {
+            val id = MongoClientRepository.insertData(fieldsWithParameter, panel)
+            call.respondRedirect("/admin/$pluralName")
+        }.onFailure {
+            call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
+        }
 //    } else {
 //        call.badRequest("Invalid parameters for $pluralName: $parameters")
 //    }
+    }.onError { errors, values ->
+        println("ERROR: $errors")
+        call.handleNoSqlAddView(
+            panel = panel,
+            errors = errors,
+            values = values
+        )
+    }
 }

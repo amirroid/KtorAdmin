@@ -8,6 +8,7 @@ import kotlinx.io.readByteArray
 import models.ColumnSet
 import models.types.ColumnType
 import models.events.FileEvent
+import models.field.FieldSet
 import models.types.FieldType
 import panels.*
 import repository.FileRepository
@@ -115,48 +116,83 @@ internal suspend fun MultiPartData.toTableValues(
     return Response.Success(columns.map { items[it.columnName] })
 }
 
-internal suspend fun MultiPartData.toTableValues(table: AdminMongoCollection): List<Pair<String, Any?>?> {
+internal suspend fun MultiPartData.toTableValues(
+    table: AdminMongoCollection,
+    initialData: List<String?>? = null
+): Response<List<Pair<String, Any?>?>> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val fields = table.getAllAllowToShowFieldsInUpsert()
 
-    // Process each part of the multipart request
-    forEachPart { partData ->
-        val name = partData.name
+    val fileBytes = mutableMapOf<FieldSet, Pair<String?, ByteArray>>()
+
+    val errors = mutableListOf<ErrorResponse?>()
+    forEachPart { part ->
+        val name = part.name
         val field = fields.firstOrNull { it.fieldName == name }
-
         if (field != null && name != null) {
-            when (partData) {
-                is PartData.FormItem -> {
-                    items[name] = partData.value.let { it to it.toTypedValue(field.type) }
-                }
-
+            when (part) {
                 is PartData.FileItem -> {
-                    val targetColumn = table.getAllFields().firstOrNull { it.fieldName == name }
-                    when (targetColumn?.type) {
+                    val bytes = part.provider().readRemaining().readByteArray()
+                    val fileName = part.originalFileName?.takeIf { it.isNotEmpty() }
+                    val partSize = bytes.size.toLong()
+                    when (field.type) {
                         FieldType.File -> {
-                            val fileData = FileRepository.uploadFile(
-                                field.uploadTarget!!,
-                                partData.provider().readRemaining().readByteArray(),
-                                partData.originalFileName
-                            )?.let {
-                                it.first to FileEvent(
-                                    fileName = it.first,
-                                    bytes = it.second
-                                )
-                            }
-                            items[name] = fileData
+                            fileBytes[field] = fileName to bytes
+                            val itemErrors = listOfNotNull(
+                                Validators.validateMimeType(fileName, field.limits),
+                                Validators.validateBytesSize(
+                                    partSize,
+                                    field.limits
+                                ),
+                            ).plus(
+                                Validators.validateFieldParameter(
+                                    field,
+                                    fileName ?: initialData?.get(fields.indexOf(field))
+                                )?.let {
+                                    listOf(it)
+                                } ?: emptyList()
+                            ).takeIf { it.isNotEmpty() }
+                                ?.let {
+                                    ErrorResponse(field.fieldName.toString(), it)
+                                }
+                            errors += itemErrors
                         }
 
                         else -> Unit
                     }
                 }
 
+                is PartData.FormItem -> {
+                    val itemErrors = Validators.validateFieldParameter(field, part.value)
+                        ?.let { ErrorResponse(field.fieldName.toString(), listOf(it)) }
+                    errors += itemErrors
+                    if (name == "createdAt") {
+                        println("DATE IS ${part.value}")
+                    }
+                    items[name] = part.value.let { it to it.toTypedValue(field.type) }
+                }
+
                 else -> Unit
             }
-            partData.dispose()
         }
     }
-
+    val errorsNotNull = errors.filterNotNull()
+    if (errorsNotNull.isNotEmpty()) {
+        return Response.Error(
+            errorsNotNull,
+            fields.associateWith { items[it.fieldName.toString()]?.first }.mapKeys { it.key.fieldName.toString() }
+        )
+    }
+    fileBytes.forEach { (field, pair) ->
+        val fileData = FileRepository.uploadFile(field.uploadTarget!!, pair.second, pair.first)
+            ?.let {
+                it.first to FileEvent(
+                    fileName = it.first,
+                    bytes = it.second
+                )
+            }
+        items[field.fieldName.toString()] = fileData
+    }
     // Return values corresponding to the columns
-    return fields.map { items[it.fieldName] }
+    return Response.Success(fields.map { items[it.fieldName] })
 }

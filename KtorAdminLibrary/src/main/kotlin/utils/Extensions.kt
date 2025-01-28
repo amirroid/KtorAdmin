@@ -42,6 +42,7 @@ fun FieldSet.toSuitableStringForFile() = """
     |    reference = ${reference?.toFormattedString()},
     |    readOnly = $readOnly,
     |    computedField = ${computedField?.let { "\"${it}\"" }},
+    |    autoNowDate = ${autoNowDate?.toFormattedString()},
     |)
 """.trimMargin("|")
 

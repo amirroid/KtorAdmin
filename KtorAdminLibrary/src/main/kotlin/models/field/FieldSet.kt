@@ -1,9 +1,17 @@
 package models.field
 
+import configuration.DynamicConfiguration
+import models.ColumnSet
 import models.Limit
 import models.UploadTarget
 import models.common.Reference
+import models.date.AutoNowDate
+import models.types.ColumnType
 import models.types.FieldType
+import utils.Constants
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Represents metadata and configuration details for a specific field.
@@ -20,6 +28,9 @@ import models.types.FieldType
  * @property reference A reference to another field or data entity, if applicable.
  * @property readOnly Specifies if the field is read-only. Defaults to `false`.
  * @property computedField A computed value or formula for the field, if applicable.
+ * @property autoNowDate If provided, this property specifies behavior for automatically assigning the current date and time:
+ * - `updateOnChange = true`: Updates the column to the current date whenever the entity is modified.
+ * - `updateOnChange = false`: Only assigns the current date when the entity is created.
  */
 data class FieldSet(
     val fieldName: String?,
@@ -34,9 +45,31 @@ data class FieldSet(
     val limits: Limit? = null,
     val reference: Reference? = null,
     val readOnly: Boolean = false,
-    val computedField: String? = null
+    val computedField: String? = null,
+    val autoNowDate: AutoNowDate? = null,
 ) {
     companion object {
         val Empty = FieldSet("", "", FieldType.NotAvailable)
     }
+}
+
+
+internal fun FieldSet.getCurrentDate() = when (type) {
+    FieldType.Date -> {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        LocalDate.now(DynamicConfiguration.timeZone).format(formatter)
+    }
+
+    FieldType.DateTime -> {
+        val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
+        LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
+    }
+
+
+    FieldType.Instant -> {
+        val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
+        LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
+    }
+
+    else -> null
 }

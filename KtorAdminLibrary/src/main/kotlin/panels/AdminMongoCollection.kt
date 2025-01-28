@@ -15,4 +15,11 @@ fun AdminMongoCollection.getPrimaryKeyField() =
     getAllFields().first { it.fieldName == getPrimaryKey() }
 
 fun AdminMongoCollection.getAllAllowToShowFieldsInUpsert() =
-    getAllFields().filter { it.showInPanel && it.fieldName != getPrimaryKey() }
+    getAllFields().filter { it.showInPanel && it.fieldName != getPrimaryKey() && it.autoNowDate == null }
+
+
+fun AdminMongoCollection.getAllAutoNowDateInsertFields() =
+    getAllFields().filter { it.autoNowDate != null }
+
+fun AdminMongoCollection.getAllAutoNowDateUpdateFields() =
+    getAllFields().filter { it.autoNowDate != null && it.autoNowDate.updateOnChange }

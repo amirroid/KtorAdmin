@@ -3,7 +3,9 @@ package validators
 import configuration.DynamicConfiguration
 import models.ColumnSet
 import models.Limit
+import models.field.FieldSet
 import models.types.ColumnType
+import models.types.FieldType
 import utils.Constants
 import java.net.URLConnection
 import java.time.Instant
@@ -49,6 +51,33 @@ internal object Validators {
             ColumnType.DURATION -> validateDuration(value!!)
             ColumnType.DATETIME -> validateDateTime(value!!, columnSet.limits)
             else -> null // No validation needed for NOT_AVAILABLE
+        }
+    }
+
+    internal fun validateFieldParameter(fieldSet: FieldSet, value: String?): String? {
+        // If the column is nullable and the value is null, no validation is needed
+        if (fieldSet.nullable && value == null) {
+            return null
+        }
+        // If the column is not nullable and the value is null, return an error
+        if (!fieldSet.nullable && value == null) {
+            return "The field cannot be null"
+        }
+
+        // Perform validation based on the column type
+        return when (fieldSet.type) {
+            FieldType.String -> validateString(value!!, fieldSet.limits)
+            FieldType.Integer -> validateInteger(value!!, fieldSet.limits)
+            FieldType.Long -> validateLong(value!!, fieldSet.limits)
+            FieldType.Double -> validateDouble(value!!, fieldSet.limits)
+            FieldType.Float -> validateFloat(value!!, fieldSet.limits)
+            FieldType.Boolean -> validateBoolean(value!!)
+            FieldType.Date -> validateDate(value!!, fieldSet.limits)
+            FieldType.DateTime -> validateDateTime(value!!, fieldSet.limits)
+            FieldType.Enumeration -> validateEnumeration(value!!, fieldSet.enumerationValues)
+            FieldType.Instant -> validateInstant(value!!, fieldSet.limits)
+            FieldType.Decimal128 -> validateDecimal128(value!!, fieldSet.limits)
+            else -> null // No validation needed for NotAvailable type
         }
     }
 
@@ -200,7 +229,8 @@ internal object Validators {
     private fun validateDate(value: String, limits: Limit?): String? {
         try {
             // Parse the input value to LocalDate
-            val date = LocalDate.parse(value)
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val date = LocalDate.parse(value, formatter)
 
             // Check if limits are provided
             limits?.let {
@@ -244,9 +274,10 @@ internal object Validators {
     private fun validateDateTime(value: String, limits: Limit?): String? {
         try {
             // Parse the input value to Instant
-            val parsedDate = LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME)
-                .atOffset(ZoneOffset.of(DynamicConfiguration.timeZone.id))
-                .toInstant()
+            val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
+            val parsedDate = LocalDateTime.parse(value, formatter)
+            val instant = parsedDate.atZone(DynamicConfiguration.timeZone).toInstant()
+
 
             // If limits are provided, validate the date against them
             if (limits != null) {
@@ -257,17 +288,17 @@ internal object Validators {
                 val maxDate = now.plusMillis(limits.maxDateRelativeToNow)
 
                 // Check if the parsed date is before the minimum allowed date
-                if (limits.minDateRelativeToNow != Long.MAX_VALUE && parsedDate.isBefore(minDate)) {
-                    return "Value should not be before ${minDate.atOffset(ZoneOffset.of(DynamicConfiguration.timeZone.id))}"
+                if (limits.minDateRelativeToNow != Long.MAX_VALUE && instant.isBefore(minDate)) {
+                    return "Value should not be before ${instant.atOffset(ZoneOffset.of(DynamicConfiguration.timeZone.id))}"
                 }
                 // Check if the parsed date is after the maximum allowed date
-                if (limits.maxDateRelativeToNow != Long.MAX_VALUE && parsedDate.isAfter(maxDate)) {
+                if (limits.maxDateRelativeToNow != Long.MAX_VALUE && instant.isAfter(maxDate)) {
                     return "Value should not be after ${maxDate.atOffset(ZoneOffset.of(DynamicConfiguration.timeZone.id))}"
                 }
             }
         } catch (e: Exception) {
             // Return an error message if the value is not a valid datetime
-            return "Value should be a valid datetime (yyyy-MM-dd'T'HH:mm:ss)"
+            return "Value should be a valid datetime-local ${Constants.LOCAL_DATETIME_FORMAT}"
         }
 
         // Return null if the value is valid
@@ -293,5 +324,50 @@ internal object Validators {
 
     private fun getMimeType(fileName: String): String {
         return URLConnection.guessContentTypeFromName(fileName) ?: "unknown"
+    }
+
+    // Validation for Instant type
+    private fun validateInstant(value: String, limits: Limit?): String? {
+//        try {
+//            // Parse the input value to Instant
+//            val parsedInstant = Instant.parse(value)
+//
+//            // If limits are provided, validate the instant against them
+//            if (limits != null) {
+//                val now = Instant.now()
+//
+//                // Calculate the minimum and maximum allowed instants
+//                val minInstant = now.plusMillis(limits.minDateRelativeToNow)
+//                val maxInstant = now.plusMillis(limits.maxDateRelativeToNow)
+//
+//                // Check if the parsed instant is before the minimum allowed instant
+//                if (limits.minDateRelativeToNow != Long.MAX_VALUE && parsedInstant.isBefore(minInstant)) {
+//                    return "Value should not be before ${minInstant}"
+//                }
+//                // Check if the parsed instant is after the maximum allowed instant
+//                if (limits.maxDateRelativeToNow != Long.MAX_VALUE && parsedInstant.isAfter(maxInstant)) {
+//                    return "Value should not be after ${maxInstant}"
+//                }
+//            }
+//        } catch (e: Exception) {
+//            // Return an error message if the value is not a valid Instant
+//            return "Value should be a valid instant (yyyy-MM-dd'T'HH:mm:ssZ)"
+//        }
+
+        // Return null if the value is valid
+        return validateDateTime(value, limits)
+    }
+
+    // Validation for Decimal28 type
+    private fun validateDecimal128(value: String, limits: Limit?): String? {
+        val decimalValue = value.toBigDecimalOrNull() ?: return "Value should be a valid decimal"
+        limits?.let {
+            val maxCount = it.maxCount.toBigDecimal()
+            val minCount = it.minCount.toBigDecimal()
+
+            if (decimalValue > maxCount) return "Value exceeds maximum count of $maxCount"
+            if (decimalValue < minCount) return "Value is less than minimum count of $minCount"
+        }
+        return null
     }
 }

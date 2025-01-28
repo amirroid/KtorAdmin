@@ -50,9 +50,11 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
     }
 }
 
-private suspend fun ApplicationCall.handleNoSqlAddView(
+internal suspend fun ApplicationCall.handleNoSqlAddView(
     panel: AdminMongoCollection,
 //    panels: List<AdminPanel>,
+    values: Map<String, String?> = emptyMap(),
+    errors: List<ErrorResponse> = emptyList()
 ) {
     runCatching {
         val fields = panel.getAllAllowToShowFieldsInUpsert()
@@ -65,6 +67,8 @@ private suspend fun ApplicationCall.handleNoSqlAddView(
                         .replaceFirstChar { it.uppercaseChar() },
                     "collectionName" to panel.getCollectionName(),
                     "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
+                    "values" to values,
+                    "errors" to errors.toMap()
                 )
             )
         )

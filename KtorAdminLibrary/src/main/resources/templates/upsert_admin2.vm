@@ -53,6 +53,14 @@
             #end
 
         #end
+
+        #if($!errors.get($field.fieldName))
+            <div class="error_message">
+                #foreach($error in $errors.get($field.fieldName).messages)
+                    $error<br/>
+                #end
+            </div>
+        #end
     #end
     <button type="submit" class="form-input">Submit</button>
 </form>

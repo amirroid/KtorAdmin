@@ -101,6 +101,13 @@ object PropertiesRepository {
         val computedFieldInfo = property.annotations.getComputed()
         val isReadOnly =
             (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) || (computedFieldInfo?.second ?: false)
+        val autoNowDate = getAutoNowDateAnnotation(property.annotations)
+        if (fieldType !in listOf(FieldType.Date, FieldType.DateTime, FieldType.Instant) && autoNowDate != null) {
+            throw IllegalArgumentException(
+                "The 'autoNowDate' property can only be used with fields of type 'DATE' or 'DATETIME'. " +
+                        "Field '$fieldName' has type '$fieldType', which is incompatible."
+            )
+        }
         return FieldSet(
             fieldName = fieldName,
             verboseName = verboseName,
@@ -114,7 +121,8 @@ object PropertiesRepository {
             limits = property.annotations.getLimits(),
             reference = property.annotations.getReferences(),
             readOnly = isReadOnly,
-            computedField = computedFieldInfo?.first
+            computedField = computedFieldInfo?.first,
+            autoNowDate = autoNowDate,
         )
     }
 

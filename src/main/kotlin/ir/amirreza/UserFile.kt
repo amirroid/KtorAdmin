@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.date.AutoNowDate
 import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
@@ -9,8 +10,12 @@ import annotations.query.AdminQueries
 import annotations.uploads.LocalUpload
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.toKotlinLocalDate
+import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 //object CustomObjectIdSerializer: KSerializer<String> {
 //    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ObjectIdSerializer", PrimitiveKind.STRING)
@@ -55,6 +60,7 @@ data class UserFile(
     @FieldInfo(
         verboseName = "Created At"
     )
-    val createdAt: Instant = Clock.System.now(),
+    @AutoNowDate(true)
+    val createdAt: kotlinx.datetime.LocalDateTime = LocalDateTime.now().toKotlinLocalDateTime(),
     val isUploaded: Boolean = false,
 )

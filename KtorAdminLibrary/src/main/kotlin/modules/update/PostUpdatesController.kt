@@ -46,7 +46,7 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
     }
     when (panel) {
         is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)
-        is AdminMongoCollection -> updateData(pluralName, primaryKey, panel)
+        is AdminMongoCollection -> updateData(pluralName, primaryKey, panel, panels)
     }
 }
 
@@ -79,20 +79,32 @@ private suspend fun RoutingContext.updateData(
 }
 
 private suspend fun RoutingContext.updateData(
-    pluralName: String?, primaryKey: String, panel: AdminMongoCollection
+    pluralName: String?, primaryKey: String, panel: AdminMongoCollection, panels: List<AdminPanel>
 ) {
+    val initialData = MongoClientRepository.getData(panel, primaryKey)
     val fields = panel.getAllAllowToShowFieldsInUpsert()
 
-    val parametersData = call.receiveMultipart().toTableValues(panel)
-    val parameters = parametersData.map { it?.first }
-    val fieldsWithParameter = fields.mapIndexed { index, field ->
-        field to parameters.getOrNull(index)
-    }.toMap()
-    println("PARAMETERS : $parametersData")
-    kotlin.runCatching {
-        val changedDataAndId = MongoClientRepository.updateChangedData(panel, fieldsWithParameter, primaryKey)
-        call.respondRedirect("/admin/$pluralName")
-    }.onFailure {
-        call.serverError("Failed to update $pluralName\nReason: ${it.message}")
+    val parametersDataResponse = call.receiveMultipart().toTableValues(panel, initialData)
+    parametersDataResponse.onSuccess { parametersData ->
+        val parameters = parametersData.map { it?.first }
+        val fieldsWithParameter = fields.mapIndexed { index, field ->
+            field to parameters.getOrNull(index)
+        }.toMap()
+        println("PARAMETERS : $parametersData")
+        kotlin.runCatching {
+            val changedDataAndId =
+                MongoClientRepository.updateChangedData(panel, fieldsWithParameter, primaryKey, initialData)
+            call.respondRedirect("/admin/$pluralName")
+        }.onFailure {
+            call.serverError("Failed to update $pluralName\nReason: ${it.message}")
+        }
+    }.onError { errors, values ->
+        call.handleNoSqlEditView(
+            primaryKey = primaryKey,
+            panel = panel,
+            panels = panels,
+            errors = errors,
+            errorValues = values
+        )
     }
 }

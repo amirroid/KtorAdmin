@@ -4,6 +4,7 @@ import configuration.DynamicConfiguration
 import models.common.Reference
 import models.date.AutoNowDate
 import models.types.ColumnType
+import utils.Constants
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -53,7 +54,7 @@ internal fun ColumnSet.getCurrentDate() = when (type) {
     }
 
     ColumnType.DATETIME -> {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
         LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
     }
 

@@ -1,5 +1,6 @@
 package getters
 
+import utils.Constants
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -12,7 +13,8 @@ import java.time.format.DateTimeParseException
  */
 internal fun String.toLocalDate(): LocalDate? {
     return try {
-        LocalDate.parse(this, DateTimeFormatter.ISO_DATE)
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        LocalDate.parse(this, formatter)
     } catch (e: DateTimeParseException) {
         null
     }
@@ -22,8 +24,9 @@ internal fun String.toLocalDate(): LocalDate? {
  * Extension function to convert a String to LocalDateTime.
  */
 internal fun String.toLocalDateTime(): LocalDateTime? {
+    val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
     return try {
-        LocalDateTime.parse(this, DateTimeFormatter.ISO_DATE_TIME)
+        LocalDateTime.parse(this, formatter)
     } catch (e: DateTimeParseException) {
         null
     }

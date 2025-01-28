@@ -78,10 +78,12 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
 }
 
 
-private suspend fun ApplicationCall.handleNoSqlEditView(
+internal suspend fun ApplicationCall.handleNoSqlEditView(
     primaryKey: String,
     panel: AdminMongoCollection,
     panels: List<AdminPanel>,
+    errors: List<ErrorResponse> = emptyList(),
+    errorValues: Map<String, String?> = emptyMap()
 ) {
     val data = MongoClientRepository.getData(panel, primaryKey)
     if (data == null) {
@@ -90,7 +92,7 @@ private suspend fun ApplicationCall.handleNoSqlEditView(
         runCatching {
             val fields = panel.getAllAllowToShowFieldsInUpsert()
 //            val referencesItems = getReferencesItems(tables.filterIsInstance<AdminJdbcTable>(), columns)
-            val values = fields.mapIndexed { index, field ->
+            val values = errorValues.takeIf { it.isNotEmpty() } ?: fields.mapIndexed { index, field ->
                 field.fieldName to data[index]?.let { item ->
                     handlePreviewValue(
                         field,
@@ -104,6 +106,7 @@ private suspend fun ApplicationCall.handleNoSqlEditView(
                     "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin2.vm", model = mapOf(
                         "fields" to fields,
                         "values" to values,
+                        "errors" to errors.toMap(),
                         "singularTableName" to panel.getSingularName()
                             .replaceFirstChar { it.uppercaseChar() },
 //                        "references" to referencesItems,

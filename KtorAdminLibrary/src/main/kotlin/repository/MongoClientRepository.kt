@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import models.DataWithPrimaryKey
 import models.field.FieldSet
+import models.field.getCurrentDate
 import models.order.Order
 import models.types.FieldType
 import mongo.MongoCredential
@@ -23,10 +24,7 @@ import org.bson.BsonValue
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
-import panels.AdminMongoCollection
-import panels.getAllAllowToShowFields
-import panels.getAllAllowToShowFieldsInUpsert
-import panels.getPrimaryKeyField
+import panels.*
 
 internal object MongoClientRepository {
     private var clients: MutableMap<String, MongoClient> = mutableMapOf()
@@ -79,10 +77,14 @@ internal object MongoClientRepository {
         values: Map<FieldSet, Any?>,
         panel: AdminMongoCollection
     ): String? {
+        val changeDates = panel.getAllAutoNowDateInsertFields().map {
+            it to it.getCurrentDate()
+        }
         val document = Document().apply {
-            values.forEach { (field, value) ->
+            values.toList().plus(changeDates).distinctBy { it.first }.forEach { (field, value) ->
                 put(field.fieldName, value?.toString()?.formatParameter(field) ?: return@forEach)
             }
+            panel.getAllAutoNowDateInsertFields()
         }
         return panel.getCollection().insertOne(document).insertedId?.toStringId()
     }
@@ -159,16 +161,19 @@ internal object MongoClientRepository {
     suspend fun updateChangedData(
         panel: AdminMongoCollection,
         parameters: Map<FieldSet, String?>,
-        primaryKey: String
+        primaryKey: String,
+        initialData: List<String?>?,
     ): String? {
-        val initialData = getData(panel, primaryKey)
         return if (initialData == null) {
             insertData(parameters, panel)
         } else {
+            val changeDates = panel.getAllAutoNowDateUpdateFields().map {
+                it to it.getCurrentDate()
+            }
             val updateFields = parameters.toList().filterIndexed { index, item ->
                 val initialValue = initialData.getOrNull(index)
                 initialValue != item.second?.formatParameter(item.first) && !(initialValue != null && item.second == null)
-            }.mapNotNull {
+            }.plus(changeDates).distinctBy { it.first }.mapNotNull {
                 set(
                     it.first.fieldName.toString(),
                     it.second?.formatParameter(it.first) ?: return@mapNotNull null
