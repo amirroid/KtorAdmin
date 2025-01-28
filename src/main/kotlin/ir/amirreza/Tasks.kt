@@ -71,6 +71,8 @@ object Tasks : Table("tasks") {
     @LocalUpload
     val videoThumbnail = varchar("thumbnail", 1000).nullable()
 
+    val data = binary("data").nullable()
+
     val checked = bool("checked").default(true)
 
     override val primaryKey = PrimaryKey(id)

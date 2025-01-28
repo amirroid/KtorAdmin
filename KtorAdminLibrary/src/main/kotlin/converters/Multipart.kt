@@ -18,7 +18,14 @@ import response.ErrorResponse
 import response.Response
 import validators.Validators
 
-internal suspend fun MultiPartData.toTableValues(table: AdminJdbcTable): Response<List<Pair<String, Any?>?>> {
+private fun ByteArray.toBinaryString(): String {
+    return joinToString("") { "%02x".format(it) }
+}
+
+internal suspend fun MultiPartData.toTableValues(
+    table: AdminJdbcTable,
+    initialData: List<String?>? = null
+): Response<List<Pair<String, Any?>?>> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val columns = table.getAllAllowToShowColumns()
 
@@ -33,10 +40,10 @@ internal suspend fun MultiPartData.toTableValues(table: AdminJdbcTable): Respons
                 is PartData.FileItem -> {
                     val bytes = part.provider().readRemaining().readByteArray()
                     val fileName = part.originalFileName?.takeIf { it.isNotEmpty() }
-                    fileBytes[column] = fileName to bytes
                     val partSize = bytes.size.toLong()
                     when (column.type) {
                         ColumnType.FILE -> {
+                            fileBytes[column] = fileName to bytes
                             val itemErrors = listOfNotNull(
                                 Validators.validateMimeType(fileName, column.limits),
                                 Validators.validateBytesSize(
@@ -44,7 +51,10 @@ internal suspend fun MultiPartData.toTableValues(table: AdminJdbcTable): Respons
                                     column.limits
                                 ),
                             ).plus(
-                                Validators.validateColumnParameter(column, fileName)?.let {
+                                Validators.validateColumnParameter(
+                                    column,
+                                    fileName ?: initialData?.get(columns.indexOf(column))
+                                )?.let {
                                     listOf(it)
                                 } ?: emptyList()
                             ).takeIf { it.isNotEmpty() }
@@ -56,14 +66,17 @@ internal suspend fun MultiPartData.toTableValues(table: AdminJdbcTable): Respons
 
                         ColumnType.BINARY -> {
                             val anotherErrors =
-                                Validators.validateColumnParameter(column, fileName)?.let {
+                                Validators.validateColumnParameter(
+                                    column,
+                                    fileName ?: initialData?.get(columns.indexOf(column))
+                                )?.let {
                                     listOf(it)
                                 } ?: emptyList()
                             val itemErrors = Validators.validateBytesSize(partSize, column.limits)
                                 ?.let { ErrorResponse(column.columnName, listOf(it) + anotherErrors) }
                             errors += itemErrors
                             if (itemErrors == null) {
-                                items[name] = bytes.let { it.decodeToString() to it }
+                                items[name] = bytes.let { it.toBinaryString() to it }
                             }
                         }
 

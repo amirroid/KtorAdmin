@@ -118,9 +118,9 @@ internal object JdbcQueriesRepository {
     fun updateChangedData(
         table: AdminJdbcTable,
         parameters: List<String?>,
-        primaryKey: String
+        primaryKey: String,
+        initialData: List<String?>? = getData(table, primaryKey)
     ): Pair<Int, List<String>>? {
-        val initialData = getData(table, primaryKey)
         return if (initialData == null) {
             insertData(table, parameters)?.let { id -> id to table.getAllAllowToShowColumns().map { it.columnName } }
         } else {

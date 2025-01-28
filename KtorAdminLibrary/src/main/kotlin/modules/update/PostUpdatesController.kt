@@ -54,13 +54,14 @@ private suspend fun RoutingContext.updateData(
     pluralName: String?, primaryKey: String, table: AdminJdbcTable, panels: List<AdminPanel>
 ) {
     val columns = table.getAllAllowToShowColumns()
-    val parametersDataResponse = call.receiveMultipart().toTableValues(table)
+    val initialData = JdbcQueriesRepository.getData(table, primaryKey)
+    val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData)
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.map { it?.first }
         println("PARAMETERS : $parameters")
 
         kotlin.runCatching {
-            val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parameters, primaryKey)
+            val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parameters, primaryKey, initialData)
             onUpdate(
                 tableName = table.getTableName(),
                 objectPrimaryKey = changedDataAndId?.first?.toString() ?: primaryKey,

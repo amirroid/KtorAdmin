@@ -61,6 +61,7 @@
                     </select>
                 </div>
             #elseif($filter.type == "BOOLEAN")
+                <label for="${filter.paramName}">Select Boolean for ${filter.paramName}</label>
                 <div class="filter">
                     <select id="${filter.paramName}" name="${filter.paramName}">
                         <option value="">Select a value</option>
