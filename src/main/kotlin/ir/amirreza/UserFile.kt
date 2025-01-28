@@ -4,6 +4,7 @@ import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
 import annotations.mongo.MongoCollection
+import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import annotations.uploads.LocalUpload
 import kotlinx.datetime.Clock
@@ -36,6 +37,10 @@ import kotlinx.serialization.Serializable
 )
 @AdminQueries(
     filters = ["createdAt", "title", "isUploaded"]
+)
+@DefaultOrder(
+    "createdAt",
+    "DESC"
 )
 @Serializable
 data class UserFile(

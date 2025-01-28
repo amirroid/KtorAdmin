@@ -57,6 +57,19 @@ private suspend fun ApplicationCall.getColumnOrder(table: AdminJdbcTable): Order
     } ?: table.getDefaultOrder()
 }
 
+private suspend fun ApplicationCall.getFieldOrder(table: AdminMongoCollection): Order? {
+    val orderDirection = parameters["orderDirection"]?.takeIf { it.isNotEmpty() } ?: "ASC"
+    if (orderDirection.lowercase() !in listOf("asc", "desc")) {
+        badRequest("Invalid order direction '$orderDirection'. Valid values are 'asc' or 'desc'.")
+    }
+    return parameters["order"]?.takeIf { it.isNotEmpty() }?.let {
+        if (it !in table.getAllFields().map { field -> field.fieldName }) {
+            badRequest("The column '$it' specified in the order does not exist in the collection. Please provide a valid field name for ordering.")
+        }
+        Order(it, orderDirection)
+    } ?: table.getDefaultOrder()
+}
+
 private suspend fun ApplicationCall.handleJdbcList(
     table: AdminJdbcTable,
     tables: List<AdminPanel>,
@@ -115,29 +128,37 @@ private suspend fun ApplicationCall.handleNoSqlList(
     // Prepare filters data
     val filtersData = MongoFilters.findFiltersData(panel)
 
+    val order = getFieldOrder(panel)
+
 
     // Fetch data
     val data = MongoClientRepository.getAllData(
         panel,
         (currentPage ?: 1) - 1,
-        filters = MongoFilters.extractMongoFilters(panel, parameters)
+        filters = MongoFilters.extractMongoFilters(panel, parameters),
+        order = order
     )
 
     val maxPages = MongoClientRepository.getTotalPages(panel)
 
     // Respond with Velocity template
+    val model = mutableMapOf(
+        "columnNames" to panel.getAllAllowToShowFields().map { it.fieldName },
+        "rows" to data,
+        "pluralName" to pluralName?.replaceFirstChar { it.uppercaseChar() }.orEmpty(),
+        "hasSearchColumn" to false,
+        "currentPage" to (currentPage?.plus(1) ?: 1),
+        "maxPages" to maxPages,
+        "filtersData" to filtersData
+    ).apply {
+        order?.let {
+            put("order", it.copy(direction = it.direction.lowercase()))
+        }
+    }.toMap()
     respond(
         VelocityContent(
             "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
-            model = mapOf(
-                "columnNames" to panel.getAllAllowToShowFields().map { it.fieldName },
-                "rows" to data,
-                "pluralName" to pluralName?.replaceFirstChar { it.uppercaseChar() }.orEmpty(),
-                "hasSearchColumn" to false,
-                "currentPage" to (currentPage?.plus(1) ?: 1),
-                "maxPages" to maxPages,
-                "filtersData" to filtersData
-            )
+            model = model
         )
     )
 }

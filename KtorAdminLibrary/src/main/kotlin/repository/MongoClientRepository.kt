@@ -4,6 +4,7 @@ import com.mongodb.MongoClientSettings
 import com.mongodb.ServerAddress
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Projections.*
+import com.mongodb.client.model.Sorts
 import com.mongodb.client.model.Updates.combine
 import com.mongodb.client.model.Updates.set
 import com.mongodb.kotlin.client.coroutine.MongoClient
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import models.DataWithPrimaryKey
 import models.field.FieldSet
+import models.order.Order
 import models.types.FieldType
 import mongo.MongoCredential
 import mongo.MongoServerAddress
@@ -85,12 +87,26 @@ internal object MongoClientRepository {
         return panel.getCollection().insertOne(document).insertedId?.toStringId()
     }
 
-    suspend fun getAllData(table: AdminMongoCollection, page: Int, filters: Bson): List<DataWithPrimaryKey> {
+    suspend fun getAllData(
+        table: AdminMongoCollection,
+        page: Int,
+        filters: Bson,
+        order: Order? = null
+    ): List<DataWithPrimaryKey> {
         val fields = table.getAllAllowToShowFields()
         val projection = table.getCollection()
             .find(filters)
             .skip(DynamicConfiguration.maxItemsInPage * page)
             .limit(DynamicConfiguration.maxItemsInPage)
+            .let {
+                if (order != null) {
+                    when (order.direction.lowercase()) {
+                        "asc" -> it.sort(Sorts.ascending(order.name))
+                        "desc" -> it.sort(Sorts.descending(order.name))
+                        else -> it
+                    }
+                } else it
+            }
             .projection(
                 fields(
                     fields(

@@ -2,6 +2,7 @@ package processors.mongo
 
 import annotations.display.DisplayFormat
 import annotations.mongo.MongoCollection
+import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.processing.Dependencies
@@ -18,6 +19,8 @@ import models.Limit
 import models.UploadTarget
 import models.common.Reference
 import models.field.FieldSet
+import models.order.Order
+import models.order.toFormattedString
 import models.types.FieldType
 import repository.PropertiesRepository
 import utils.FileUtils
@@ -186,6 +189,19 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
 
         val collectionName = classDeclaration.getCollectionName()
 
+
+        val order = classDeclaration.getDefaultOrderFormat()
+
+        if (order != null) {
+            if (order.name !in fieldSets.map { it.fieldName }) {
+                throw IllegalArgumentException("The field name '${order.name}' specified in the @DefaultOrder annotation does not exist in the column set.")
+            }
+            if (order.direction.lowercase() !in listOf("asc", "desc")) {
+                throw IllegalArgumentException("The order direction '${order.direction}' specified in the @DefaultOrder annotation must be either 'asc' or 'desc'.")
+            }
+        }
+
+
         val getCollectionNameFunction = FunSpec.builder("getCollectionName")
             .addModifiers(KModifier.OVERRIDE)
             .returns(String::class)
@@ -242,6 +258,13 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .returns(String::class)
             .addStatement("return %S", primaryKey)
             .build()
+
+        val getDefaultOrderFunction = FunSpec.builder("getDefaultOrder")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(Order::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${order?.toFormattedString()}")
+            .build()
+
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminMongoCollection))
             .addFunction(getAllFieldsFunction)
@@ -250,6 +273,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addFunction(getSingularNameFunction)
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
+            .addFunction(getDefaultOrderFunction)
             .addFunction(getFilterColumnsFunction)
             .addFunction(getSearchColumnsFunction)
             .addFunction(getDisplayFormatFunction)
@@ -268,6 +292,16 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         .find { it.shortName.asString() == AdminQueries::class.simpleName }
         ?.arguments
 
+
+    private fun KSClassDeclaration.getDefaultOrderFormat() = annotations
+        .find { it.shortName.asString() == DefaultOrder::class.simpleName }
+        ?.arguments
+        ?.let {
+            Order(
+                name = it.find { ksValueArgument -> ksValueArgument.name?.asString() == "name" }!!.value as String,
+                direction = it.find { ksValueArgument -> ksValueArgument.name?.asString() == "direction" }!!.value as String,
+            )
+        }
 
     private fun KSClassDeclaration.getCollectionName() = getAnnotationArguments()
         ?.find { it.name?.asString() == "collectionName" }

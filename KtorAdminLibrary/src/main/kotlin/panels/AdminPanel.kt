@@ -1,5 +1,7 @@
 package panels
 
+import models.order.Order
+
 interface AdminPanel {
     fun getSingularName(): String
     fun getPluralName(): String
@@ -9,6 +11,7 @@ interface AdminPanel {
     fun getDisplayFormat(): String?
     fun getSearchColumns(): List<String>
     fun getFilterColumns(): List<String>
+    fun getDefaultOrder(): Order?
 }
 
 fun List<AdminPanel>.findWithPluralName(name: String?) = find { it.getPluralName() == name }

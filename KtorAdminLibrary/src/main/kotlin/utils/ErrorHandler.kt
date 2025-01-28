@@ -22,7 +22,7 @@ suspend fun ApplicationCall.notFound(message: String) {
     }
 }
 
-fun generateErrorHtml(errorCode: String, errorMessage: String): String {
+private fun generateErrorHtml(errorCode: String, errorMessage: String): String {
     return """
         <html>
         <head>
