@@ -2,6 +2,7 @@ function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
+
 function handleFilterInputs() {
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -131,9 +132,9 @@ function onFilterApply() {
 
 const toggleButtons = document.querySelectorAll('.toggle-filter');
 
-function handleOpenFilter(){
+function handleOpenFilter() {
     toggleButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             const filterContent = button.nextElementSibling; // پیدا کردن div مربوط به محتوای فیلتر
 
             // اگر فیلتر بسته است، آن را باز کن
@@ -144,4 +145,20 @@ function handleOpenFilter(){
             }
         });
     });
+}
+
+
+function handleSortClick(columnName, currentOrder, currentDirection) {
+    const url = new URL(window.location.href);
+    if (columnName === currentOrder) {
+        if (currentDirection === "asc") {
+            url.searchParams.set('orderDirection', "desc");
+        } else {
+            url.searchParams.set('orderDirection', "asc");
+        }
+    } else {
+        url.searchParams.set('orderDirection', "asc");
+        url.searchParams.set('order', columnName);
+    }
+    window.location.replace(url);
 }

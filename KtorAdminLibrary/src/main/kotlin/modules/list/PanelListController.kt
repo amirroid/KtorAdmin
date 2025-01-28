@@ -12,6 +12,7 @@ import io.ktor.server.velocity.*
 import models.ColumnSet
 import models.filters.FilterTypes
 import models.filters.FiltersData
+import models.order.Order
 import models.types.ColumnType
 import panels.*
 import repository.JdbcQueriesRepository
@@ -43,6 +44,19 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
     }
 }
 
+private suspend fun ApplicationCall.getColumnOrder(table: AdminJdbcTable): Order? {
+    val orderDirection = parameters["orderDirection"]?.takeIf { it.isNotEmpty() } ?: "ASC"
+    if (orderDirection.lowercase() !in listOf("asc", "desc")) {
+        badRequest("Invalid order direction '$orderDirection'. Valid values are 'asc' or 'desc'.")
+    }
+    return parameters["order"]?.takeIf { it.isNotEmpty() }?.let {
+        if (it !in table.getAllColumns().map { column -> column.columnName }) {
+            badRequest("The column '$it' specified in the order does not exist in the table. Please provide a valid column name for ordering.")
+        }
+        Order(it, orderDirection)
+    } ?: table.getDefaultOrder()
+}
+
 private suspend fun ApplicationCall.handleJdbcList(
     table: AdminJdbcTable,
     tables: List<AdminPanel>,
@@ -54,6 +68,8 @@ private suspend fun ApplicationCall.handleJdbcList(
     val jdbcTables = tables.filterIsInstance<AdminJdbcTable>()
     val hasSearchColumn = table.getSearchColumns().isNotEmpty()
 
+    val order = getColumnOrder(table)
+
     // Prepare filters data
     val filtersData = JdbcFilters.findFiltersData(table, jdbcTables)
 
@@ -61,7 +77,7 @@ private suspend fun ApplicationCall.handleJdbcList(
     val filters = JdbcFilters.extractFilters(table, jdbcTables, parameters)
 
     // Fetch data
-    val data = JdbcQueriesRepository.getAllData(table, searchParameter, currentPage, filters)
+    val data = JdbcQueriesRepository.getAllData(table, searchParameter, currentPage, filters, order)
     val maxPages = JdbcQueriesRepository.getCount(table, searchParameter, filters).let {
         val calculatedValue = it / DynamicConfiguration.maxItemsInPage
         if (it % DynamicConfiguration.maxItemsInPage == 0) {
@@ -70,18 +86,23 @@ private suspend fun ApplicationCall.handleJdbcList(
     }
 
     // Respond with Velocity template
+    val model = mutableMapOf(
+        "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
+        "rows" to data,
+        "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
+        "hasSearchColumn" to hasSearchColumn,
+        "currentPage" to (currentPage?.plus(1) ?: 1),
+        "maxPages" to maxPages,
+        "filtersData" to filtersData,
+    ).apply {
+        order?.let {
+            put("order", it.copy(direction = it.direction.lowercase()))
+        }
+    }.toMap()
     respond(
         VelocityContent(
             "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
-            model = mapOf(
-                "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
-                "rows" to data,
-                "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
-                "hasSearchColumn" to hasSearchColumn,
-                "currentPage" to (currentPage?.plus(1) ?: 1),
-                "maxPages" to maxPages,
-                "filtersData" to filtersData
-            )
+            model = model
         )
     )
 }

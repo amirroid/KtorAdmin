@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grouped Tables</title>
     <link href="/static/css/amin_panel_styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
 
@@ -82,7 +83,14 @@
     <thead>
     <tr>
         #foreach($columnName in $columnNames)
-            <th>$columnName</th>
+            <th onclick="handleSortClick('$columnName', '$!order.name', '$order.direction')">
+                <span class="column-name">$columnName</span>
+                #if($!order.direction == "asc" and $!order.name == $columnName)
+                    <i class="material-icons sort-icon">keyboard_arrow_up</i>
+                #elseif($!order.direction == "desc" and $!order.name == $columnName)
+                    <i class="material-icons sort-icon">keyboard_arrow_down</i>
+                #end
+            </th>
         #end
     </tr>
     </thead>

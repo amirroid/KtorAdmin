@@ -8,10 +8,9 @@ import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.common.DisplayItem
 import models.getCurrentDate
+import models.order.Order
 import models.types.ColumnType
 import panels.*
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 internal object JdbcQueriesRepository {
     private const val NULL = "NULL"
@@ -26,7 +25,8 @@ internal object JdbcQueriesRepository {
         table: AdminJdbcTable,
         search: String?,
         currentPage: Int?,
-        filters: MutableList<Pair<ColumnSet, String>>
+        filters: MutableList<Pair<ColumnSet, String>>,
+        order: Order?
     ): List<DataWithPrimaryKey> =
         table.usingDataSource { session ->
             session.list(
@@ -34,7 +34,8 @@ internal object JdbcQueriesRepository {
                     table.createGetAllQuery(
                         search = search,
                         currentPage = currentPage,
-                        filters = filters
+                        filters = filters,
+                        order = order
                     )
                 )
             ) { raw ->
@@ -52,7 +53,7 @@ internal object JdbcQueriesRepository {
         filters: List<Pair<ColumnSet, String>>
     ): Int =
         table.usingDataSource { session ->
-            session.count(sqlQuery(table.createGetAllQuery(search = search, null, filters)))
+            session.count(sqlQuery(table.createGetAllQuery(search = search, null, filters, null)))
         }
 
     fun getAllReferences(
@@ -159,7 +160,8 @@ internal object JdbcQueriesRepository {
     private fun AdminJdbcTable.createGetAllQuery(
         search: String?,
         currentPage: Int?,
-        filters: List<Pair<ColumnSet, String>>
+        filters: List<Pair<ColumnSet, String>>,
+        order: Order? = null
     ) = buildString {
         val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
         val selectColumns = columns.map { columnSet ->
@@ -175,7 +177,9 @@ internal object JdbcQueriesRepository {
             append(" ")
             append(createFiltersConditions(search, filters))
         }
-
+        order?.let {
+            append(" ORDER BY ${it.name} ${it.direction}")
+        }
         currentPage?.let {
             append(createPaginationQuery(it))
         }
