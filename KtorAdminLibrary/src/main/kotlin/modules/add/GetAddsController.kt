@@ -31,7 +31,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
     values: Map<String, String?> = emptyMap()
 ) {
     runCatching {
-        val columns = table.getAllAllowToShowFieldsInUpsert()
+        val columns = table.getAllAllowToShowColumnsInUpsert()
         val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
         respond(
             VelocityContent(

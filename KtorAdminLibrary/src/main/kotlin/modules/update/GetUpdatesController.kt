@@ -47,7 +47,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
         notFound("No data found with primary key: $primaryKey")
     } else {
         runCatching {
-            val columns = table.getAllAllowToShowFieldsInUpsert()
+            val columns = table.getAllAllowToShowColumnsInUpsert()
             val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
             val values = errorValues.takeIf { it.isNotEmpty() } ?: columns.mapIndexed { index, column ->
                 column.columnName to data[index]?.let { item ->

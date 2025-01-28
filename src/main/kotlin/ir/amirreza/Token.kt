@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.date.AutoNowDate
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.limit.Limits
@@ -28,6 +29,7 @@ object TokenTable : Table() {
     @Limits(
         minDateRelativeToNow = 0
     )
+    @AutoNowDate(updateOnChange = true)
     val expiredAt = datetime("date")
     override val primaryKey = PrimaryKey(userId)
 }

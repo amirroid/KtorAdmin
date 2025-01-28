@@ -9,11 +9,8 @@ import models.ColumnSet
 import models.types.ColumnType
 import models.events.FileEvent
 import models.types.FieldType
+import panels.*
 import repository.FileRepository
-import panels.AdminJdbcTable
-import panels.AdminMongoCollection
-import panels.getAllAllowToShowColumns
-import panels.getAllAllowToShowFieldsInUpsert
 import response.ErrorResponse
 import response.Response
 import validators.Validators
@@ -27,7 +24,7 @@ internal suspend fun MultiPartData.toTableValues(
     initialData: List<String?>? = null
 ): Response<List<Pair<String, Any?>?>> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
-    val columns = table.getAllAllowToShowFieldsInUpsert()
+    val columns = table.getAllAllowToShowColumnsInUpsert()
 
     val fileBytes = mutableMapOf<ColumnSet, Pair<String?, ByteArray>>()
 

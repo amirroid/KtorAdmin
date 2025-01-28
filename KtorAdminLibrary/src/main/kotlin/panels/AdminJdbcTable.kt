@@ -11,5 +11,12 @@ interface AdminJdbcTable : AdminPanel {
 fun AdminJdbcTable.getAllAllowToShowColumns() = getAllColumns().filter { it.showInPanel }
 
 
-fun AdminJdbcTable.getAllAllowToShowFieldsInUpsert() =
-    getAllAllowToShowColumns().filter { it.showInPanel && it.columnName != getPrimaryKey() && !it.autoNowDate }
+fun AdminJdbcTable.getAllAllowToShowColumnsInUpsert() =
+    getAllAllowToShowColumns().filter { it.showInPanel && it.autoNowDate == null }
+
+
+fun AdminJdbcTable.getAllAutoNowDateInsertColumns() =
+    getAllAllowToShowColumns().filter { it.autoNowDate != null }
+
+fun AdminJdbcTable.getAllAutoNowDateUpdateColumns() =
+    getAllAllowToShowColumns().filter { it.autoNowDate != null && it.autoNowDate.updateOnChange }

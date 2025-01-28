@@ -7,10 +7,11 @@ import formatters.populateTemplate
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.common.DisplayItem
+import models.getCurrentDate
 import models.types.ColumnType
-import panels.AdminJdbcTable
-import panels.getAllAllowToShowColumns
-import panels.getAllAllowToShowFieldsInUpsert
+import panels.*
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 internal object JdbcQueriesRepository {
     private const val NULL = "NULL"
@@ -104,7 +105,7 @@ internal object JdbcQueriesRepository {
     fun getData(table: AdminJdbcTable, primaryKey: String): List<String?>? =
         table.usingDataSource { session ->
             session.first(sqlQuery(table.createGetOneItemQuery(primaryKey))) { raw ->
-                table.getAllAllowToShowFieldsInUpsert().map { raw.anyOrNull(it.columnName)?.toString() }
+                table.getAllAllowToShowColumnsInUpsert().map { raw.anyOrNull(it.columnName)?.toString() }
             }
         }
 
@@ -125,7 +126,7 @@ internal object JdbcQueriesRepository {
         return if (initialData == null) {
             insertData(table, parameters)?.let { id -> id to table.getAllAllowToShowColumns().map { it.columnName } }
         } else {
-            val columns = table.getAllAllowToShowFieldsInUpsert()
+            val columns = table.getAllAllowToShowColumnsInUpsert()
             val changedData = parameters.mapIndexed { index, item ->
                 columns[index] to item
             }.filterIndexed { index, item ->
@@ -137,7 +138,7 @@ internal object JdbcQueriesRepository {
                 ) && !(initialValue != null && item.second == null)
             }
             println("Changed data : $changedData")
-            if (changedData.isNotEmpty()) {
+            if (changedData.isNotEmpty() || table.getAllAutoNowDateUpdateColumns().isNotEmpty()) {
                 table.usingDataSource { session ->
                     session.transaction { tx ->
                         tx.updateGetId(
@@ -311,7 +312,7 @@ internal object JdbcQueriesRepository {
     private fun AdminJdbcTable.createGetOneItemQuery(primaryKey: String) = buildString {
         append("SELECT ")
         append(
-            getAllAllowToShowFieldsInUpsert()
+            getAllAllowToShowColumnsInUpsert()
                 .plus(getPrimaryKeyColumn())
                 .distinct()
                 .joinToString(", ") { it.columnName }
@@ -330,16 +331,19 @@ internal object JdbcQueriesRepository {
     }
 
     private fun AdminJdbcTable.createInsertQuery(parameters: List<String?>) = buildString {
-        val columns = getAllAllowToShowFieldsInUpsert()
+        val columns = getAllAllowToShowColumnsInUpsert()
+        val insertAutoDateColumns = getAllAutoNowDateInsertColumns().associateWith {
+            it.getCurrentDate()?.addQuotationIfIsString() ?: NULL
+        }
         val parametersWithNULL = parameters.mapIndexed { index, parameter ->
             if (columns[index].nullable && parameter.isNullOrEmpty()) NULL else parameter.formatParameter(columns[index])
         }
         append("INSERT INTO ")
         append(getTableName())
         append(" (")
-        append(columns.joinToString(", ") { it.columnName })
+        append(columns.plus(insertAutoDateColumns.keys).joinToString(", ") { it.columnName })
         append(") VALUES (")
-        append(parametersWithNULL.joinToString(", "))
+        append(parametersWithNULL.plus(insertAutoDateColumns.values).joinToString(", "))
         append(")")
     }
 
@@ -356,7 +360,12 @@ internal object JdbcQueriesRepository {
                 if (it.isEmpty() && column.nullable) NULL else it.formatParameter(column)
             }
         }
-        append(columnsWithValues.joinToString(", ") { (columnName, value) -> "$columnName = $value" })
+        val updateAutoDateColumns = getAllAutoNowDateUpdateColumns().map {
+            it.columnName to (it.getCurrentDate() ?: NULL).addQuotationIfIsString()
+        }
+        append(
+            columnsWithValues.plus(updateAutoDateColumns)
+                .joinToString(", ") { (columnName, value) -> "$columnName = $value" })
         append(" WHERE ")
         append(getPrimaryKey())
         append(" = ")

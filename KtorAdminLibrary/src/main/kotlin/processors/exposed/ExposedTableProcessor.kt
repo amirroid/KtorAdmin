@@ -16,6 +16,7 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
 import models.*
 import models.common.Reference
+import models.date.AutoNowDate
 import models.types.ColumnType
 import repository.PropertiesRepository
 import utils.*
@@ -43,6 +44,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addImport(UploadTarget::class.java.packageName, UploadTarget::class.java.simpleName)
             .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
             .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
+            .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(

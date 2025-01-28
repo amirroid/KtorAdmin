@@ -3,6 +3,7 @@ package utils
 import com.google.devtools.ksp.symbol.KSAnnotation
 import models.ColumnSet
 import models.common.toFormattedString
+import models.date.toFormattedString
 import models.field.FieldSet
 import models.toFormattedString
 import models.types.toSuitableStringForFile
@@ -22,7 +23,7 @@ fun ColumnSet.toSuitableStringForFile() = """
     |    reference = ${reference?.toFormattedString()},
     |    readOnly = $readOnly,
     |    computedColumn = ${computedColumn?.let { "\"${it}\"" }},
-    |    autoNowDate = $autoNowDate,
+    |    autoNowDate = ${autoNowDate?.toFormattedString()},
     |)
 """.trimMargin("|")
 

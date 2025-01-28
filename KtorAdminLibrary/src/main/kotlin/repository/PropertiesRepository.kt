@@ -50,8 +50,8 @@ object PropertiesRepository {
         val computedColumnInfo = property.annotations.getComputed()
         val isReadOnly =
             (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) || (computedColumnInfo?.second ?: false)
-        val autoNowDate = hasAutoNowDateAnnotation(property.annotations)
-        if (columnType !in listOf(ColumnType.DATE, ColumnType.DATETIME) && autoNowDate) {
+        val autoNowDate = getAutoNowDateAnnotation(property.annotations)
+        if (columnType !in listOf(ColumnType.DATE, ColumnType.DATETIME) && autoNowDate != null) {
             throw IllegalArgumentException(
                 "The 'autoNowDate' property can only be used with columns of type 'DATE' or 'DATETIME'. " +
                         "Column '$columnName' has type '$columnType', which is incompatible."
@@ -122,9 +122,9 @@ object PropertiesRepository {
         it.shortName.asString() == Enumeration::class.simpleName
     }
 
-    private fun hasAutoNowDateAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
+    private fun getAutoNowDateAnnotation(annotations: Sequence<KSAnnotation>) = annotations.firstOrNull {
         it.shortName.asString() == AutoNowDate::class.simpleName
-    }
+    }?.let { models.date.AutoNowDate(updateOnChange = it.arguments.getArgument<Boolean>("updateOnChange") == true) }
 
     private fun hasIgnoreColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
         it.shortName.asString() == IgnoreColumn::class.simpleName

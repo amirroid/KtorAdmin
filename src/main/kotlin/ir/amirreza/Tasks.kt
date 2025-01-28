@@ -26,6 +26,7 @@ enum class Priority {
     format = "{id} - User: {user_id.username}",
 )
 object Tasks : Table("tasks") {
+    @IgnoreColumn
     val id = integer("id").autoIncrement()
 
     @Limits(

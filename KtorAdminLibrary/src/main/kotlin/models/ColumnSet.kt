@@ -1,7 +1,12 @@
 package models
 
+import configuration.DynamicConfiguration
 import models.common.Reference
+import models.date.AutoNowDate
 import models.types.ColumnType
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Represents metadata and configuration details for a specific column.
@@ -19,8 +24,10 @@ import models.types.ColumnType
  * @property reference A reference to another column or data entity, if applicable.
  * @property readOnly Specifies if the column is read-only. Defaults to `false`.
  * @property computedColumn A computed value or formula for the column, if applicable.
- * @property autoNowDate If `true`, automatically assigns the current date and time as the default value for this column. Defaults to `false`.
- */
+ * @property autoNowDate If provided, this property specifies behavior for automatically assigning the current date and time:
+ * - `updateOnChange = true`: Updates the column to the current date whenever the entity is modified.
+ * - `updateOnChange = false`: Only assigns the current date when the entity is created.
+ * */
 data class ColumnSet(
     val columnName: String,
     val verboseName: String,
@@ -35,5 +42,20 @@ data class ColumnSet(
     val reference: Reference? = null,
     val readOnly: Boolean = false,
     val computedColumn: String? = null,
-    val autoNowDate: Boolean = false,
+    val autoNowDate: AutoNowDate? = null,
 )
+
+
+internal fun ColumnSet.getCurrentDate() = when (type) {
+    ColumnType.DATE -> {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        LocalDate.now(DynamicConfiguration.timeZone).format(formatter)
+    }
+
+    ColumnType.DATETIME -> {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
+    }
+
+    else -> null
+}
