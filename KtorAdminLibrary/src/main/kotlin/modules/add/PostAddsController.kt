@@ -69,11 +69,12 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
         } else {
             call.badRequest("Invalid parameters for $pluralName: $parameters")
         }
-    }.onError { errors ->
+    }.onError { errors, values ->
         call.handleJdbcAddView(
             table = table,
             panels = panels,
-            errors = errors
+            errors = errors,
+            values = values
         )
     }
 }

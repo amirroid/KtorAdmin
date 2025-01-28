@@ -27,7 +27,8 @@ internal suspend fun ApplicationCall.handleAddNewItem(tables: List<AdminPanel>) 
 internal suspend fun ApplicationCall.handleJdbcAddView(
     table: AdminJdbcTable,
     panels: List<AdminPanel>,
-    errors: List<ErrorResponse> = emptyList()
+    errors: List<ErrorResponse> = emptyList(),
+    values: Map<String, String?> = emptyMap()
 ) {
     runCatching {
         val columns = table.getAllAllowToShowColumns()
@@ -39,7 +40,8 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "tableName" to table.getTableName(),
                     "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
                     "references" to referencesItems,
-                    "errors" to errors.toMap()
+                    "errors" to errors.toMap(),
+                    "values" to values
                 )
             )
         )

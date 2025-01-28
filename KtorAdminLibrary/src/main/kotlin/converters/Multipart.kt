@@ -22,7 +22,6 @@ internal suspend fun MultiPartData.toTableValues(table: AdminJdbcTable): Respons
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val columns = table.getAllAllowToShowColumns()
 
-    // Process each part of the multipart request
     val fileBytes = mutableMapOf<ColumnSet, Pair<String?, ByteArray>>()
 
     val errors = mutableListOf<ErrorResponse?>()
@@ -87,7 +86,10 @@ internal suspend fun MultiPartData.toTableValues(table: AdminJdbcTable): Respons
     }
     val errorsNotNull = errors.filterNotNull()
     if (errorsNotNull.isNotEmpty()) {
-        return Response.Error(errorsNotNull)
+        return Response.Error(
+            errorsNotNull,
+            columns.associateWith { items[it.columnName]?.first }.mapKeys { it.key.columnName }
+        )
     }
     fileBytes.forEach { (column, pair) ->
         val fileData = FileRepository.uploadFile(column.uploadTarget!!, pair.second, pair.first)

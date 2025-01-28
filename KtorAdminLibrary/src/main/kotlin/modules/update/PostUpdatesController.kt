@@ -72,8 +72,8 @@ private suspend fun RoutingContext.updateData(
         }.onFailure {
             call.serverError("Failed to update $pluralName\nReason: ${it.message}")
         }
-    }.onError { errors ->
-        call.handleJdbcEditView(primaryKey, table, panels, errors)
+    }.onError { errors, values ->
+        call.handleJdbcEditView(primaryKey, table, panels, errors, values)
     }
 }
 

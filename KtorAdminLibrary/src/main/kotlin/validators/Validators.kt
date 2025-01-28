@@ -284,10 +284,7 @@ internal object Validators {
     // Validation for FILE mimetype
     fun validateMimeType(fileName: String?, limits: Limit?): String? {
         if (limits?.allowedMimeTypes == null) return null
-        if (fileName == null) {
-            return "File name cannot be null"
-        }
-        val mimeType = getMimeType(fileName)
+        val mimeType = getMimeType(fileName ?: return null)
         if (mimeType !in limits.allowedMimeTypes) {
             return "Invalid MIME type for file ${fileName}. Allowed types are ${limits.allowedMimeTypes.joinToString()}"
         }

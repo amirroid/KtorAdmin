@@ -3,7 +3,7 @@ package response
 
 internal sealed class Response<out D> {
     data class Success<out D>(val data: D) : Response<D>()
-    data class Error(val errors: List<ErrorResponse>) : Response<Nothing>()
+    data class Error(val errors: List<ErrorResponse>, val values: Map<String, String?>) : Response<Nothing>()
 }
 
 internal inline fun <D> Response<D>.onSuccess(action: (D) -> Unit): Response<D> {
@@ -17,10 +17,10 @@ internal inline fun <D> Response<D>.onSuccess(action: (D) -> Unit): Response<D> 
     }
 }
 
-internal inline fun <D> Response<D>.onError(action: (List<ErrorResponse>) -> Unit): Response<D> {
+internal inline fun <D> Response<D>.onError(action: (List<ErrorResponse>, values: Map<String, String?>) -> Unit): Response<D> {
     return when (this) {
         is Response.Error -> {
-            action(errors)
+            action(errors, values)
             this
         }
 
