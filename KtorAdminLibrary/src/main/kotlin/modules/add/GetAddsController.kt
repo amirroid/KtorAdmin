@@ -7,6 +7,8 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
 import panels.*
+import response.ErrorResponse
+import response.toMap
 import utils.Constants
 
 internal suspend fun ApplicationCall.handleAddNewItem(tables: List<AdminPanel>) {
@@ -16,26 +18,28 @@ internal suspend fun ApplicationCall.handleAddNewItem(tables: List<AdminPanel>) 
         notFound("No table found with plural name: $pluralName")
     } else {
         when (panel) {
-            is AdminJdbcTable -> handleJdbcAddView(table = panel, tables = tables)
+            is AdminJdbcTable -> handleJdbcAddView(table = panel, panels = tables)
             is AdminMongoCollection -> handleNoSqlAddView(panel = panel)
         }
     }
 }
 
-private suspend fun ApplicationCall.handleJdbcAddView(
+internal suspend fun ApplicationCall.handleJdbcAddView(
     table: AdminJdbcTable,
-    tables: List<AdminPanel>,
+    panels: List<AdminPanel>,
+    errors: List<ErrorResponse> = emptyList()
 ) {
     runCatching {
         val columns = table.getAllAllowToShowColumns()
-        val referencesItems = getReferencesItems(tables.filterIsInstance<AdminJdbcTable>(), columns)
+        val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin.vm", model = mapOf(
                     "columns" to columns,
                     "tableName" to table.getTableName(),
                     "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
-                    "references" to referencesItems
+                    "references" to referencesItems,
+                    "errors" to errors.toMap()
                 )
             )
         )

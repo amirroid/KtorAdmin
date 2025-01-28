@@ -12,6 +12,8 @@ import models.ColumnSet
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
+import response.onError
+import response.onSuccess
 import validators.validateParameters
 
 private suspend fun onInsert(
@@ -27,44 +29,52 @@ private suspend fun onInsert(
     )
 }
 
-internal suspend fun RoutingContext.handleAddRequest(tables: List<AdminPanel>) {
+internal suspend fun RoutingContext.handleAddRequest(panels: List<AdminPanel>) {
     val pluralName = call.parameters["pluralName"]
-    val panel = tables.findWithPluralName(pluralName)
+    val panel = panels.findWithPluralName(pluralName)
     if (panel == null) {
         call.respondText { "No table found with plural name: $pluralName" }
         return
     }
 
     when (panel) {
-        is AdminJdbcTable -> insertData(pluralName, panel)
+        is AdminJdbcTable -> insertData(pluralName, panel, panels)
         is AdminMongoCollection -> insertData(pluralName, panel)
     }
 }
 
-private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJdbcTable) {
-    val parametersData = call.receiveMultipart().toTableValues(table)
-    val parameters = parametersData.map { it?.first }
-    val columns = table.getAllAllowToShowColumns()
+private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJdbcTable, panels: List<AdminPanel>) {
+    val parametersDataResponse = call.receiveMultipart().toTableValues(table)
+    parametersDataResponse.onSuccess { parametersData ->
+        val parameters = parametersData.map { it?.first }
+        val columns = table.getAllAllowToShowColumns()
 
-    // Validate parameters
-    val isValidParameters = columns.validateParameters(parameters)
-    if (isValidParameters) {
-        kotlin.runCatching {
-            val id = JdbcQueriesRepository.insertData(table, parameters)
-            if (id != null) {
-                onInsert(
-                    tableName = table.getTableName(),
-                    columnSets = columns,
-                    objectPrimaryKey = id.toString(),
-                    parametersData = parametersData
-                )
+        // Validate parameters
+        val isValidParameters = columns.validateParameters(parameters)
+        if (isValidParameters) {
+            kotlin.runCatching {
+                val id = JdbcQueriesRepository.insertData(table, parameters)
+                if (id != null) {
+                    onInsert(
+                        tableName = table.getTableName(),
+                        columnSets = columns,
+                        objectPrimaryKey = id.toString(),
+                        parametersData = parametersData
+                    )
+                }
+                call.respondRedirect("/admin/$pluralName")
+            }.onFailure {
+                call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
             }
-            call.respondRedirect("/admin/$pluralName")
-        }.onFailure {
-            call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
+        } else {
+            call.badRequest("Invalid parameters for $pluralName: $parameters")
         }
-    } else {
-        call.badRequest("Invalid parameters for $pluralName: $parameters")
+    }.onError { errors ->
+        call.handleJdbcAddView(
+            table = table,
+            panels = panels,
+            errors = errors
+        )
     }
 }
 

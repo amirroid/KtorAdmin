@@ -20,6 +20,7 @@ form {
     max-width: 800px;
     box-sizing: border-box;
 }
+
 label {
     font-size: 14px;
     margin-bottom: 4px;
@@ -138,4 +139,11 @@ legend {
     font-size: 16px;
     color: #e0e0e0;
     margin-bottom: 8px;
+}
+
+.error_message {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+    margin-bottom: 10px;
 }

@@ -8,6 +8,7 @@ import java.io.File
 internal object LocalStorageProvider {
 
     fun uploadFile(bytes: ByteArray, fileName: String?, path: String?): String? {
+        println("UPLOAD FILE $fileName $path ${bytes.size}")
         if (fileName == null || path == null || bytes.isEmpty()) return null
         val file = File("${path}/${fileName}").requiredSave(path)
         file.writeBytes(bytes)

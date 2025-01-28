@@ -19,6 +19,7 @@
 
         <label>$column.verboseName</label>
 
+
         #if($column.reference)
             #set($referenceValues = $references.get($column))
             <select name="$column.columnName" class="form-input" #if($column.readOnly)disabled#end>
@@ -123,6 +124,13 @@
             #end
 
         #end
+        #if($!errors.get($column.columnName))
+            <div class="error_message">
+                #foreach($error in $errors.get($column.columnName).messages)
+                    $error<br/>
+                #end
+            </div>
+        #end
     #end
     <button type="submit" class="form-input">Submit</button>
 </form>
@@ -131,23 +139,23 @@
     const limitColumns = [];
         #foreach($column in $columns)
             #if($column.limits)
-                #set($allowedMimeTypes = $column.limits.allowedMimeTypes)
-            limitColumns.push({
-                columnName: "$column.columnName",
-                limits: {
-                    maxLength: $column.limits.maxLength,
-                    minLength: $column.limits.minLength,
-                regexPattern:#if($column.limits.regexPattern) "$column.limits.regexPattern" #else
-                        null #end,
-                    maxCount: $column.limits.maxCount,
-                    minCount: $column.limits.minCount,
-                    maxBytes: $column.limits.maxBytes,
-                    minDateRelativeToNow: $column.limits.minDateRelativeToNow,
-                    maxDateRelativeToNow: $column.limits.maxDateRelativeToNow,
-                allowedMimeTypes: #if($allowedMimeTypes) [#foreach($type in $allowedMimeTypes) "$type"#if($foreach.hasNext),#end#end] #else
-                        null #end
-                }
-            });
+                ##                #set($allowedMimeTypes = $column.limits.allowedMimeTypes)
+                ##            limitColumns.push({
+                ##                columnName: "$column.columnName",
+                ##                limits: {
+                ##                    maxLength: $column.limits.maxLength,
+                ##                    minLength: $column.limits.minLength,
+                ##                regexPattern:#if($column.limits.regexPattern) "$column.limits.regexPattern" #else
+                ##                        null #end,
+                ##                    maxCount: $column.limits.maxCount,
+                ##                    minCount: $column.limits.minCount,
+                ##                    maxBytes: $column.limits.maxBytes,
+                ##                    minDateRelativeToNow: $column.limits.minDateRelativeToNow,
+                ##                    maxDateRelativeToNow: $column.limits.maxDateRelativeToNow,
+                ##                allowedMimeTypes: #if($allowedMimeTypes) [#foreach($type in $allowedMimeTypes) "$type"#if($foreach.hasNext),#end#end] #else
+                ##                        null #end
+                ##                }
+                ##            });
             #end
             #if($column.computedColumn)
             computedColumns.push({

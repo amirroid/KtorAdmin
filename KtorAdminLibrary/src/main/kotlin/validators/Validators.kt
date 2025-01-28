@@ -21,7 +21,13 @@ internal object Validators {
         }
         // If the column is not nullable and the value is null, return an error
         if (!columnSet.nullable && value == null) {
-            return "${columnSet.columnName} cannot be null"
+            return "The field cannot be null"
+        }
+
+        if (columnSet.reference != null) {
+            if (value.isNullOrEmpty()) {
+                return "The field cannot be empty or null when a reference is required."
+            }
         }
 
         // Perform validation based on the column type

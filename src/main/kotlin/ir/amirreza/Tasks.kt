@@ -57,7 +57,6 @@ object Tasks : Table("tasks") {
     val slug = varchar("slug", 500)
 
     @LocalUpload
-    @ColumnInfo(nullable = true)
     @Limits(
         maxBytes = 1024 * 1024 * 20,
         allowedMimeTypes = ["video/mp4"]

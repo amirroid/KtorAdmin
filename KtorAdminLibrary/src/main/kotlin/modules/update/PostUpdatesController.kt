@@ -12,6 +12,8 @@ import models.ColumnSet
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
+import response.onError
+import response.onSuccess
 
 
 private suspend fun onUpdate(
@@ -43,32 +45,35 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
         return
     }
     when (panel) {
-        is AdminJdbcTable -> updateData(pluralName, primaryKey, panel)
+        is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)
         is AdminMongoCollection -> updateData(pluralName, primaryKey, panel)
     }
 }
 
 private suspend fun RoutingContext.updateData(
-    pluralName: String?, primaryKey: String, table: AdminJdbcTable
+    pluralName: String?, primaryKey: String, table: AdminJdbcTable, panels: List<AdminPanel>
 ) {
     val columns = table.getAllAllowToShowColumns()
+    val parametersDataResponse = call.receiveMultipart().toTableValues(table)
+    parametersDataResponse.onSuccess { parametersData ->
+        val parameters = parametersData.map { it?.first }
+        println("PARAMETERS : $parameters")
 
-    val parametersData = call.receiveMultipart().toTableValues(table)
-    val parameters = parametersData.map { it?.first }
-    println("PARAMETERS : $parameters")
-
-    kotlin.runCatching {
-        val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parameters, primaryKey)
-        onUpdate(
-            tableName = table.getTableName(),
-            objectPrimaryKey = changedDataAndId?.first?.toString() ?: primaryKey,
-            changedColumns = changedDataAndId?.second ?: emptyList(),
-            columnSets = columns,
-            parametersData = parametersData
-        )
-        call.respondRedirect("/admin/$pluralName")
-    }.onFailure {
-        call.serverError("Failed to update $pluralName\nReason: ${it.message}")
+        kotlin.runCatching {
+            val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parameters, primaryKey)
+            onUpdate(
+                tableName = table.getTableName(),
+                objectPrimaryKey = changedDataAndId?.first?.toString() ?: primaryKey,
+                changedColumns = changedDataAndId?.second ?: emptyList(),
+                columnSets = columns,
+                parametersData = parametersData
+            )
+            call.respondRedirect("/admin/$pluralName")
+        }.onFailure {
+            call.serverError("Failed to update $pluralName\nReason: ${it.message}")
+        }
+    }.onError { errors ->
+        call.handleJdbcEditView(primaryKey, table, panels, errors)
     }
 }
 

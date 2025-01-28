@@ -31,7 +31,8 @@ internal object FileRepository {
 
     suspend fun uploadFile(
         uploadTarget: UploadTarget,
-        partData: PartData.FileItem,
+        bytes: ByteArray,
+        originalFileName: String?
     ): Pair<String, ByteArray>? {
         return when (uploadTarget) {
             is UploadTarget.LocalFile -> {
@@ -40,23 +41,21 @@ internal object FileRepository {
                 }
                 val path = uploadTarget.path ?: defaultPath!!
                 createPath(path)
-                partData.saveToLocal(path)
+                saveToLocal(path, bytes, originalFileName)
             }
 
             is UploadTarget.AwsS3 -> {
-                val bytes = partData.readBytes()
                 AWSS3StorageProvider.uploadFile(
                     bytes = bytes,
-                    fileName = partData.originalFileName,
+                    fileName = originalFileName,
                     bucket = uploadTarget.bucket
                 )?.let { it to bytes }
             }
 
             is UploadTarget.Custom -> {
-                val bytes = partData.readBytes()
                 getStorageProvider(uploadTarget.key).uploadFile(
                     bytes = bytes,
-                    fileName = partData.originalFileName,
+                    fileName = originalFileName,
                 )?.let { it to bytes }
             }
         }
@@ -67,12 +66,12 @@ internal object FileRepository {
         File(path).apply { if (!exists()) mkdir() }
     }
 
-    private suspend fun PartData.FileItem.readBytes() = provider().readRemaining().readByteArray()
 
-    private suspend fun PartData.FileItem.saveToLocal(
+    private fun saveToLocal(
         path: String,
+        bytes: ByteArray,
+        originalFileName: String?
     ): Pair<String, ByteArray>? {
-        val bytes = readBytes()
         return LocalStorageProvider.uploadFile(
             bytes = bytes,
             fileName = originalFileName,

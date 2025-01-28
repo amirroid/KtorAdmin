@@ -14,6 +14,8 @@ import panels.*
 import repository.FileRepository
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
+import response.ErrorResponse
+import response.toMap
 import utils.Constants
 
 
@@ -33,10 +35,12 @@ internal suspend fun ApplicationCall.handleEditItem(panels: List<AdminPanel>) {
     }
 }
 
-private suspend fun ApplicationCall.handleJdbcEditView(
+internal suspend fun ApplicationCall.handleJdbcEditView(
     primaryKey: String,
     table: AdminJdbcTable,
-    tables: List<AdminPanel>,
+    panels: List<AdminPanel>,
+    errors: List<ErrorResponse> = emptyList(),
+    errorValues: Map<String, String?> = emptyMap()
 ) {
     val data = JdbcQueriesRepository.getData(table, primaryKey)
     if (data == null) {
@@ -44,8 +48,8 @@ private suspend fun ApplicationCall.handleJdbcEditView(
     } else {
         runCatching {
             val columns = table.getAllAllowToShowColumns()
-            val referencesItems = getReferencesItems(tables.filterIsInstance<AdminJdbcTable>(), columns)
-            val values = columns.mapIndexed { index, column ->
+            val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
+            val values = errorValues.takeIf { it.isNotEmpty() } ?: columns.mapIndexed { index, column ->
                 column.columnName to data[index]?.let { item ->
                     handlePreviewValue(
                         column,
@@ -63,7 +67,8 @@ private suspend fun ApplicationCall.handleJdbcEditView(
                         "values" to values,
                         "singularTableName" to table.getSingularName()
                             .replaceFirstChar { it.uppercaseChar() },
-                        "references" to referencesItems
+                        "references" to referencesItems,
+                        "errors" to errors.toMap()
                     )
                 )
             )
