@@ -4,11 +4,13 @@ import utils.notFound
 import utils.serverError
 import configuration.DynamicConfiguration
 import converters.toEvents
+import converters.toFieldEvents
 import converters.toTableValues
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import models.ColumnSet
+import models.field.FieldSet
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
@@ -23,10 +25,25 @@ private suspend fun onUpdate(
     columnSets: List<ColumnSet>,
     parametersData: List<Pair<String, Any?>?>
 ) {
-    DynamicConfiguration.currentEventListener?.onUpdateData(
+    DynamicConfiguration.currentEventListener?.onUpdateJdbcData(
         tableName = tableName,
         objectPrimaryKey = objectPrimaryKey,
         events = columnSets.toEvents(parametersData.map { it?.second }, changedColumns = changedColumns)
+    )
+}
+
+
+private suspend fun onMongoUpdate(
+    collectionName: String,
+    objectPrimaryKey: String,
+    changedFields: List<String>,
+    fieldSets: List<FieldSet>,
+    parametersData: List<Pair<String, Any?>?>
+) {
+    DynamicConfiguration.currentEventListener?.onUpdateMongoData(
+        collectionName = collectionName,
+        objectPrimaryKey = objectPrimaryKey,
+        events = fieldSets.toFieldEvents(parametersData.map { it?.second }, changedFields = changedFields)
     )
 }
 
@@ -58,7 +75,6 @@ private suspend fun RoutingContext.updateData(
     val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData)
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.map { it?.first }
-        println("PARAMETERS : $parameters")
 
         kotlin.runCatching {
             val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parameters, primaryKey, initialData)
@@ -90,13 +106,19 @@ private suspend fun RoutingContext.updateData(
         val fieldsWithParameter = fields.mapIndexed { index, field ->
             field to parameters.getOrNull(index)
         }.toMap()
-        println("PARAMETERS : $parametersData")
         kotlin.runCatching {
             val changedDataAndId =
                 MongoClientRepository.updateChangedData(panel, fieldsWithParameter, primaryKey, initialData)
+            onMongoUpdate(
+                collectionName = panel.getCollectionName(),
+                objectPrimaryKey = changedDataAndId?.first ?: primaryKey,
+                changedFields = changedDataAndId?.second ?: emptyList(),
+                fieldSets = fields,
+                parametersData = parametersData
+            )
             call.respondRedirect("/admin/$pluralName")
         }.onFailure {
-            call.serverError("Failed to update $pluralName\nReason: ${it.message}")
+            call.serverError("Failed to update $pluralName\nReason: ${it.message}", throwable = it)
         }
     }.onError { errors, values ->
         call.handleNoSqlEditView(

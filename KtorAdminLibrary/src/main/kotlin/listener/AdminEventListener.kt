@@ -1,48 +1,86 @@
 package listener
 
 import models.events.ColumnEvent
+import models.events.FieldEvent
 
 /**
- * This class is a generic listener for handling events related to data operations.
- * It includes methods for insert, update, and delete data operations.
- * This class can be extended to implement specific behaviors for each data operation.
+ * A generic listener for handling database-related events.
+ * This class provides methods to handle insert, update, and delete operations.
+ * It can be extended to define specific behaviors for different data operations.
  */
 open class AdminEventListener {
 
     /**
-     * Method to handle data insertion operation in a table.
+     * Handles the insertion of new data into a relational database table.
      *
-     * @param tableName the name of the table
-     * @param objectPrimaryKey the primary key of the object
-     * @param events a list of column events representing changes in the data
+     * @param tableName The name of the table where data is inserted.
+     * @param objectPrimaryKey The primary key of the inserted object.
+     * @param events A list of column events representing changes in the data.
      */
-    open suspend fun onInsertData(
+    open suspend fun onInsertJdbcData(
         tableName: String,
         objectPrimaryKey: String,
         events: List<ColumnEvent>
     ) = Unit
 
     /**
-     * Method to handle data update operation in a table.
+     * Handles the insertion of new data into a MongoDB collection.
      *
-     * @param tableName the name of the table
-     * @param objectPrimaryKey the primary key of the object
-     * @param events a list of column events representing changes in the data
+     * @param collectionName The name of the collection where data is inserted.
+     * @param objectPrimaryKey The primary key of the inserted object.
+     * @param events A list of field events representing changes in the document.
      */
-    open suspend fun onUpdateData(
+    open suspend fun onInsertMongoData(
+        collectionName: String,
+        objectPrimaryKey: String,
+        events: List<FieldEvent>
+    ) = Unit
+
+    /**
+     * Handles the update operation in a relational database table.
+     *
+     * @param tableName The name of the table where data is updated.
+     * @param objectPrimaryKey The primary key of the updated object.
+     * @param events A list of column events representing changes in the data.
+     */
+    open suspend fun onUpdateJdbcData(
         tableName: String,
         objectPrimaryKey: String,
         events: List<ColumnEvent>
     ) = Unit
 
     /**
-     * Method to handle data deletion operation from a table.
+     * Handles the update operation in a MongoDB collection.
      *
-     * @param tableName the name of the table
-     * @param objectPrimaryKey the primary key of the object
+     * @param collectionName The name of the collection where data is updated.
+     * @param objectPrimaryKey The primary key of the updated object.
+     * @param events A list of field events representing changes in the document.
      */
-    open suspend fun onDeleteObject(
+    open suspend fun onUpdateMongoData(
+        collectionName: String,
+        objectPrimaryKey: String,
+        events: List<FieldEvent>
+    ) = Unit
+
+    /**
+     * Handles the deletion of an object from a relational database table.
+     *
+     * @param tableName The name of the table where data is deleted.
+     * @param objectPrimaryKey The primary key of the deleted object.
+     */
+    open suspend fun onDeleteJdbcObject(
         tableName: String,
+        objectPrimaryKey: String,
+    ) = Unit
+
+    /**
+     * Handles the deletion of an object from a MongoDB collection.
+     *
+     * @param collectionName The name of the collection where data is deleted.
+     * @param objectPrimaryKey The primary key of the deleted object.
+     */
+    open suspend fun onDeleteMongoObject(
+        collectionName: String,
         objectPrimaryKey: String,
     ) = Unit
 }

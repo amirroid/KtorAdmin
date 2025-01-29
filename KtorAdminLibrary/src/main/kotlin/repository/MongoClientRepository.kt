@@ -165,9 +165,11 @@ internal object MongoClientRepository {
         parameters: Map<FieldSet, String?>,
         primaryKey: String,
         initialData: List<String?>?,
-    ): String? {
-        return if (initialData == null) {
-            insertData(parameters, panel)
+    ): Pair<String?, List<String>>? {
+        if (initialData == null) {
+            return insertData(parameters, panel)?.let { id ->
+                id to panel.getAllFields().map { it.fieldName.toString() }
+            }
         } else {
             val changeDates = panel.getAllAutoNowDateUpdateFields().map {
                 it to it.getCurrentDate()
@@ -175,15 +177,17 @@ internal object MongoClientRepository {
             val updateFields = parameters.toList().filterIndexed { index, item ->
                 val initialValue = initialData.getOrNull(index)
                 initialValue != item.second?.formatParameter(item.first) && !(initialValue != null && item.second == null)
-            }.plus(changeDates).distinctBy { it.first }.mapNotNull {
+            }.plus(changeDates).distinctBy { it.first }
+            val updatedFieldsBson = updateFields.mapNotNull {
                 set(
                     it.first.fieldName.toString(),
                     it.second?.formatParameter(it.first) ?: return@mapNotNull null
                 )
             }
             if (updateFields.isEmpty()) return null
-            panel.getCollection()
-                .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updateFields)).upsertedId?.toStringId()
+            val id = panel.getCollection()
+                .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updatedFieldsBson)).upsertedId?.toStringId()
+            return id to updateFields.map { it.first.fieldName.toString() }
         }
     }
 }

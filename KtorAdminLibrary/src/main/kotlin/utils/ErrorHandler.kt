@@ -10,9 +10,9 @@ suspend fun ApplicationCall.badRequest(message: String) {
     }
 }
 
-suspend fun ApplicationCall.serverError(message: String) {
+suspend fun ApplicationCall.serverError(message: String, throwable: Throwable? = null) {
     respondText(status = HttpStatusCode.InternalServerError, contentType = ContentType.Text.Html) {
-        generateErrorHtml("500 - Internal Server Error", message)
+        generateErrorHtml("500 - Internal Server Error", message, throwable?.stackTraceToString() ?: "")
     }
 }
 
@@ -22,37 +22,59 @@ suspend fun ApplicationCall.notFound(message: String) {
     }
 }
 
-private fun generateErrorHtml(errorCode: String, errorMessage: String): String {
+private fun generateErrorHtml(errorCode: String, errorMessage: String, stackTrace: String? = null): String {
     return """
         <html>
         <head>
+            <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
             <style>
-                body {
-                    background-color: black;
-                    color: white;
-                    font-family: Arial, sans-serif;
+                * {
                     margin: 0;
                     padding: 0;
-                    height: 100%;
+                    box-sizing: border-box;
+                }
+                body {
+                    background-color: #121212;
+                    color: white;
+                    font-family: Arial, sans-serif;
                     display: flex;
                     flex-direction: column;
                     justify-content: flex-start;
                     align-items: start;
                     text-align: start;
-                    padding-top: 30px;
+                    height: 100vh;
+                    width: 100vw;
+                    overflow: hidden;
+                    padding: 30px;
                 }
                 .error-container {
-                    padding-left: 30px;
+                    width: 100%;
+                    max-width: 900px;
                 }
                 .error-code {
-                    font-size: 40px; /* اندازه کوچک‌تر */
+                    font-size: 42px;
                     font-weight: bold;
-                    color: red;
-                    margin-bottom: 15px; /* فاصله بیشتر */
+                    color: #ff4c4c;
+                    margin-bottom: 15px;
                 }
                 .error-message {
-                    font-size: 22px; /* کمی بزرگ‌تر از متن قبلی */
-                    margin-top: 10px;
+                    font-size: 24px;
+                    color: #ff9f43;
+                    margin-bottom: 20px;
+                }
+                .stack-trace {
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 14px;
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 15px;
+                    border-radius: 8px;
+                    white-space: pre-wrap;
+                    overflow-wrap: break-word;
+                    max-height: 50vh;
+                    overflow: auto;
+                    opacity: 0.85;
+                    color: #c1c1c1;
+                    border-left: 4px solid #ff4c4c;
                 }
             </style>
         </head>
@@ -64,6 +86,7 @@ private fun generateErrorHtml(errorCode: String, errorMessage: String): String {
                 <div class="error-message">
                     $errorMessage
                 </div>
+                ${stackTrace?.let { "<div class='stack-trace'>$it</div>" } ?: ""}
             </div>
         </body>
         </html>

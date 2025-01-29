@@ -64,4 +64,10 @@ data class UserFile(
     @AutoNowDate(true)
     val createdAt: kotlinx.datetime.LocalDateTime = LocalDateTime.now().toKotlinLocalDateTime(),
     val isUploaded: Boolean = false,
+    @LocalUpload
+    @FieldInfo(
+        nullable = true,
+        readOnly = true
+    )
+    val thumbnail:String?
 )

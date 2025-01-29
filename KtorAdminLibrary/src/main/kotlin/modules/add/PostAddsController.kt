@@ -3,18 +3,21 @@ package modules.add
 import utils.badRequest
 import configuration.DynamicConfiguration
 import converters.toEvents
+import converters.toFieldEvents
 import converters.toTableValues
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import models.ColumnSet
+import models.field.FieldSet
 import modules.update.handleNoSqlEditView
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.onError
 import response.onSuccess
+import validators.validateFieldsParameters
 import validators.validateParameters
 
 private suspend fun onInsert(
@@ -23,10 +26,23 @@ private suspend fun onInsert(
     columnSets: List<ColumnSet>,
     parametersData: List<Pair<String, Any?>?>
 ) {
-    DynamicConfiguration.currentEventListener?.onInsertData(
+    DynamicConfiguration.currentEventListener?.onInsertJdbcData(
         tableName = tableName,
         objectPrimaryKey = objectPrimaryKey,
         events = columnSets.toEvents(parametersData.map { it?.second })
+    )
+}
+
+private suspend fun onMongoInsert(
+    collectionName: String,
+    objectPrimaryKey: String?,
+    fieldSets: List<FieldSet>,
+    parametersData: List<Pair<String, Any?>?>
+) {
+    DynamicConfiguration.currentEventListener?.onInsertMongoData(
+        collectionName = collectionName,
+        objectPrimaryKey = objectPrimaryKey ?: return,
+        events = fieldSets.toFieldEvents(parametersData.map { it?.second })
     )
 }
 
@@ -88,18 +104,24 @@ private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminM
         val fieldsWithParameter = fields.mapIndexed { index, field ->
             field to parameters.getOrNull(index)
         }.toMap()
-//    // Validate parameters
-//    val isValidParameters = columns.validateParameters(parameters)
-//    if (isValidParameters) {
-        kotlin.runCatching {
-            val id = MongoClientRepository.insertData(fieldsWithParameter, panel)
-            call.respondRedirect("/admin/$pluralName")
-        }.onFailure {
-            call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
+        // Validate parameters
+        val isValidParameters = fields.validateFieldsParameters(parameters)
+        if (isValidParameters) {
+            kotlin.runCatching {
+                val id = MongoClientRepository.insertData(fieldsWithParameter, panel)
+                onMongoInsert(
+                    collectionName = panel.getCollectionName(),
+                    objectPrimaryKey = id,
+                    fieldSets = fields,
+                    parametersData = parametersData
+                )
+                call.respondRedirect("/admin/$pluralName")
+            }.onFailure {
+                call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
+            }
+        } else {
+            call.badRequest("Invalid parameters for $pluralName: $parameters")
         }
-//    } else {
-//        call.badRequest("Invalid parameters for $pluralName: $parameters")
-//    }
     }.onError { errors, values ->
         println("ERROR: $errors")
         call.handleNoSqlAddView(
