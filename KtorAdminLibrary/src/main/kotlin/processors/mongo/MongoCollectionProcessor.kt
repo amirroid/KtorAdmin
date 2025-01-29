@@ -73,7 +73,6 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         val properties = mutableListOf<FieldSet>()
         visitedClasses.add(qualifiedName)
         classDeclaration.getDeclaredProperties().forEach { property ->
-            val propertyName = property.simpleName.asString()
             val resolvedType = property.type.resolve()
             val propertyType = resolvedType.declaration.qualifiedName?.asString() ?: property.simpleName.asString()
             when (val type = guessFieldPropertyType(propertyType)) {
@@ -214,7 +213,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         val queryArguments = classDeclaration.getQueryColumnsArguments()
         val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
         val filterColumns = queryArguments?.findStringList("filters") ?: emptyList()
-        val getSearchColumnsFunction = FunSpec.builder("getSearchColumns")
+        val getSearchColumnsFunction = FunSpec.builder("getSearches")
             .addModifiers(KModifier.OVERRIDE)
             .returns(
                 List::class.asClassName().parameterizedBy(String::class.asClassName())
@@ -222,7 +221,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addStatement("return listOf(${searchColumns.joinToString { "\"$it\"" }})")
             .build()
 
-        val getFilterColumnsFunction = FunSpec.builder("getFilterColumns")
+        val getFilterColumnsFunction = FunSpec.builder("getFilters")
             .addModifiers(KModifier.OVERRIDE)
             .returns(
                 List::class.asClassName().parameterizedBy(String::class.asClassName())

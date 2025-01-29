@@ -5,12 +5,9 @@ import io.ktor.http.*
 import models.field.FieldSet
 import models.filters.FilterTypes
 import models.filters.FiltersData
-import models.types.ColumnType
 import models.types.FieldType
 import org.bson.conversions.Bson
-import panels.AdminJdbcTable
 import panels.AdminMongoCollection
-import repository.JdbcQueriesRepository
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -19,7 +16,7 @@ internal object MongoFilters {
     fun findFiltersData(
         panel: AdminMongoCollection,
     ): List<FiltersData> {
-        return panel.getFilterColumns().map { filterField ->
+        return panel.getFilters().map { filterField ->
             val field = panel.getAllFields().find { it.fieldName == filterField }
 
             when (field?.type) {

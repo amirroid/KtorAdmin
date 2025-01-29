@@ -10,6 +10,7 @@ import com.mongodb.client.model.Updates.set
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import configuration.DynamicConfiguration
+import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
@@ -129,8 +130,9 @@ internal object MongoClientRepository {
 
     suspend fun getTotalPages(
         table: AdminMongoCollection,
+        filters: Bson,
     ): Long {
-        val totalCount = table.getCollection().countDocuments()
+        val totalCount = table.getCollection().countDocuments(filters)
         return if (totalCount % DynamicConfiguration.maxItemsInPage == 0L) {
             totalCount / DynamicConfiguration.maxItemsInPage
         } else {

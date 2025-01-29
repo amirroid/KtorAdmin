@@ -191,7 +191,7 @@ internal object JdbcQueriesRepository {
     ): String {
         val joinConditions = mutableListOf<String>()
         val searchConditions = if (search != null) {
-            getSearchColumns().map { columnPath ->
+            getSearches().map { columnPath ->
                 val pathParts = columnPath.split('.')
                 var currentTable = getTableName()
                 val currentColumn = pathParts.last()
@@ -211,7 +211,7 @@ internal object JdbcQueriesRepository {
             }
         } else emptyList()
 
-        val filterConditions = if (filters.isEmpty()) emptyList() else getFilterColumns().mapNotNull { item ->
+        val filterConditions = if (filters.isEmpty()) emptyList() else getFilters().mapNotNull { item ->
             val pathParts = item.split('.')
             var currentTable = getTableName()
             val currentColumn = pathParts.last()
@@ -253,7 +253,7 @@ internal object JdbcQueriesRepository {
                         append(" AND ")
                     }
                 }
-                append(filterConditions.joinToString(" AND ") { it })
+                append(filterConditions.joinToString(" OR ") { it })
             }
         }
     }

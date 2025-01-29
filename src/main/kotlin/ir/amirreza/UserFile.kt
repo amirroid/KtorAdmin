@@ -41,7 +41,8 @@ import java.time.LocalDateTime
     pluralName = "Files"
 )
 @AdminQueries(
-    filters = ["createdAt", "title", "isUploaded"]
+    filters = ["createdAt", "title", "isUploaded"],
+    searches = ["title"]
 )
 @DefaultOrder(
     "createdAt",

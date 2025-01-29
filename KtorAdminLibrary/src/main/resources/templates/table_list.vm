@@ -15,7 +15,7 @@
 </div>
 
 <!-- Search Bar -->
-    #if($hasSearchColumn)
+    #if($hasSearch)
     <div id="search-header">
         <label for="search-input"></label><input type="text" id="search-input" placeholder="Search..."/>
         <button type="button" id="search-button">Search</button>

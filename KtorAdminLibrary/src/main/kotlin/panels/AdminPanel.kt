@@ -9,8 +9,8 @@ interface AdminPanel {
     fun getDatabaseKey(): String?
     fun getPrimaryKey(): String
     fun getDisplayFormat(): String?
-    fun getSearchColumns(): List<String>
-    fun getFilterColumns(): List<String>
+    fun getSearches(): List<String>
+    fun getFilters(): List<String>
     fun getDefaultOrder(): Order?
 }
 

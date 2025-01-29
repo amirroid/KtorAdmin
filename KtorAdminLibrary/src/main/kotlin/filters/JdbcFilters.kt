@@ -16,7 +16,7 @@ internal object JdbcFilters {
         table: AdminJdbcTable,
         jdbcTables: List<AdminJdbcTable>
     ): List<FiltersData> {
-        return table.getFilterColumns().map { filterColumn ->
+        return table.getFilters().map { filterColumn ->
             val filterTable = if (filterColumn.contains(".")) {
                 val paths = filterColumn.split(".")
                 jdbcTables.find { it.getTableName() == paths[paths.size - 2] }
@@ -74,7 +74,7 @@ internal object JdbcFilters {
     ): MutableList<Pair<ColumnSet, String>> {
         val filters = mutableListOf<Pair<ColumnSet, String>>()
 
-        table.getFilterColumns().forEach { filterColumn ->
+        table.getFilters().forEach { filterColumn ->
             val filterTable = if (filterColumn.contains(".")) {
                 val paths = filterColumn.split(".")
                 jdbcTables.find { it.getTableName() == paths[paths.size - 2] }

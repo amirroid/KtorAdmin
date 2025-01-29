@@ -102,7 +102,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         val queryArguments = classDeclaration.getQueryColumnsArguments()
         val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
         val filterColumns = queryArguments?.findStringList("filters") ?: emptyList()
-        val getSearchColumnsFunction = FunSpec.builder("getSearchColumns")
+        val getSearchColumnsFunction = FunSpec.builder("getSearches")
             .addModifiers(KModifier.OVERRIDE)
             .returns(
                 List::class.asClassName().parameterizedBy(String::class.asClassName())
@@ -110,7 +110,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addStatement("return listOf(${searchColumns.joinToString { "\"$it\"" }})")
             .build()
 
-        val getFilterColumnsFunction = FunSpec.builder("getFilterColumns")
+        val getFilterColumnsFunction = FunSpec.builder("getFilters")
             .addModifiers(KModifier.OVERRIDE)
             .returns(
                 List::class.asClassName().parameterizedBy(String::class.asClassName())
