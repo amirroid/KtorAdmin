@@ -104,6 +104,7 @@ private suspend fun ApplicationCall.handleJdbcList(
         "currentPage" to (currentPage?.plus(1) ?: 1),
         "maxPages" to maxPages,
         "filtersData" to filtersData,
+        "actions" to table.getAllCustomActions()
     ).apply {
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))
@@ -162,7 +163,8 @@ private suspend fun ApplicationCall.handleNoSqlList(
         "hasSearch" to hasSearch,
         "currentPage" to (currentPage?.plus(1) ?: 1),
         "maxPages" to maxPages,
-        "filtersData" to filtersData
+        "filtersData" to filtersData,
+        "actions" to panel.getAllCustomActions()
     ).apply {
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))

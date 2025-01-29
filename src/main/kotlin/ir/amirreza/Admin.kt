@@ -1,6 +1,7 @@
 package ir.amirreza
 
 import io.ktor.server.application.*
+import ir.amirreza.action.MyCustomAction
 import ir.amirreza.listeners.AdminListener
 import models.JDBCDrivers
 import models.forms.LoginFiled
@@ -37,6 +38,7 @@ fun Application.configureAdmin(database: Database) {
         authenticateName = "admin"
         loginFields = adminLoginFields
         cryptoPassword = "test"
+        registerCustomAdminActionForAll(MyCustomAction())
         registerEventListener(AdminListener(database))
     }
 }

@@ -2,6 +2,7 @@ package repository
 
 import com.mongodb.MongoClientSettings
 import com.mongodb.ServerAddress
+import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Projections.*
 import com.mongodb.client.model.Sorts
@@ -26,6 +27,7 @@ import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import panels.*
+import java.util.logging.Filter
 
 internal object MongoClientRepository {
     private var clients: MutableMap<String, MongoClient> = mutableMapOf()
@@ -189,5 +191,19 @@ internal object MongoClientRepository {
                 .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updatedFieldsBson)).upsertedId?.toStringId()
             return id to updateFields.map { it.first.fieldName.toString() }
         }
+    }
+
+    private fun AdminMongoCollection.getPrimaryKeyFilters(primaryKeys: List<String>) =
+        if (getPrimaryKeyField().type == FieldType.ObjectId || getPrimaryKey() == "_id") {
+            Filters.`in`(getPrimaryKey(), primaryKeys.map { ObjectId(it) })
+        } else {
+            Filters.`in`(getPrimaryKey(), primaryKeys)
+        }
+
+
+    suspend fun deleteRows(panel: AdminMongoCollection, selectedIds: List<String>) {
+        panel.getCollection().deleteMany(
+            panel.getPrimaryKeyFilters(selectedIds)
+        )
     }
 }

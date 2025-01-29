@@ -55,10 +55,24 @@ function handleFilterInputs() {
 
 // Call the function when page loads
 
+function handleClicks() {
+    const rows = document.querySelectorAll(".row");
+
+    rows.forEach(row => {
+        row.addEventListener("click", function (event) {
+            const checkbox = row.querySelector(".row-checkbox");
+            if (checkbox && event.target !== checkbox) {
+                redirectToEdit(row.dataset.primaryKey);
+            }
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchValue = getQueryParam('search');
     handleFilterInputs()
     handleOpenFilter()
+    handleClicks()
     if (searchValue) {
         document.getElementById('search-input').value = searchValue;
     }
@@ -87,6 +101,10 @@ function performSearch() {
 
 function redirectToEdit(id) {
     window.location.href = cleanUrl().toString() + "/" + id;
+}
+
+function handleCheckboxClick(event) {
+    // جلوگیری از پخش رویداد و پیش‌فرض کلیک
 }
 
 function redirectToAdd() {
@@ -161,4 +179,42 @@ function handleSortClick(columnName, currentOrder, currentDirection) {
         url.searchParams.set('order', columnName);
     }
     window.location.replace(url);
+}
+
+let selectedItems = new Set();
+
+function toggleSelection(checkbox, event) {
+    const primaryKey = checkbox.value;
+    if (checkbox.checked) {
+        selectedItems.add(primaryKey);
+    } else {
+        selectedItems.delete(primaryKey);
+    }
+    console.log("Selected Items:", Array.from(selectedItems));
+}
+
+function performSelectedAction() {
+    const actionSelect = document.getElementById("actions-select");
+    const selectedActionKey = actionSelect.value;
+
+    // بررسی اینکه آیا عملی انتخاب شده است یا خیر
+    if (!selectedActionKey) {
+        alert("Please select an action!");
+        return;
+    }
+
+    const selectedItemsArray = Array.from(selectedItems);
+
+    if (selectedItemsArray.length === 0) {
+        alert("Please select at least one item.");
+        return;
+    }
+
+    document.getElementById("action-key").value = selectedActionKey;
+    document.getElementById("ids").value = JSON.stringify(selectedItemsArray);
+
+    // ارسال فرم
+    const form = document.getElementById("action-form");
+    form.action = `${cleanUrl()}/action/${selectedActionKey}`;
+    form.submit();
 }

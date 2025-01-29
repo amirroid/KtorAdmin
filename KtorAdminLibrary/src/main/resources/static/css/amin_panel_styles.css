@@ -33,7 +33,7 @@ button.add-button {
 button.add-button:hover {
     background-color: #8900EAFF;
 }
-#filter-button {
+.filter-button {
     background-color: #6200ea;
     color: white;
     padding: 10px 24px;
@@ -216,4 +216,50 @@ input:focus, select:focus{
     font-size: 16px;
     color: white;
     vertical-align: middle;
+}
+input[type="checkbox"] {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #2c2c2c;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    margin-right: 8px;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #6200ea;
+    border-color: #6200ea;
+}
+
+input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background-color: white;
+    border-radius: 2px;
+    transition: transform 0.2s ease-in-out;
+}
+
+input[type="checkbox"]:checked::after {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.checkbox-container label {
+    margin-left: 8px;
+    font-size: 14px;
 }

@@ -4,6 +4,7 @@ import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
 import formatters.extractTextInCurlyBraces
 import formatters.populateTemplate
+import getters.toTypedValue
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.common.DisplayItem
@@ -383,4 +384,15 @@ internal object JdbcQueriesRepository {
         if (toDoubleOrNull() != null) this else "'$this'"
 
     private fun AdminJdbcTable.getPrimaryKeyColumn() = getAllColumns().first { it.columnName == getPrimaryKey() }
+
+
+    fun deleteRows(table: AdminJdbcTable, selectedIds: List<String>) {
+        table.usingDataSource { session ->
+            session.execute(
+                sqlQuery(
+                    "DELETE FROM ${table.getTableName()} WHERE ${table.getPrimaryKey()} IN (${selectedIds.joinToString { it.addQuotationIfIsString() }})"
+                )
+            )
+        }
+    }
 }

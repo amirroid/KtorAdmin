@@ -76,12 +76,30 @@
     #end
 
 <!-- Filter Button -->
-<button type="button" id="filter-button" onclick="onFilterApply()">Apply Filters</button>
+<button type="button" class="filter-button" onclick="onFilterApply()">Apply Filters</button>
+
+
+<div class="actions-container">
+    <label for="actions-select">Select Action:</label>
+    <select id="actions-select" name="actions">
+        <option value="">-- Select Action --</option>
+        #foreach($action in $actions)
+            <option value="${action.key}">${action.displayText}</option>
+        #end
+    </select>
+    <button type="button" class="filter-button" onclick="performSelectedAction()">Apply</button>
+</div>
+
+<form id="action-form" method="POST" style="display: none;">
+    <input type="hidden" name="action_key" id="action-key">
+    <input type="hidden" name="ids" id="ids">
+</form>
 
 <!-- Table -->
 <table>
     <thead>
     <tr>
+        <th>Selected</th>
         #foreach($columnName in $columnNames)
             <th onclick="handleSortClick('$columnName', '$!order.name', '$order.direction')">
                 <span class="column-name">$columnName</span>
@@ -96,7 +114,10 @@
     </thead>
     <tbody>
         #foreach($data in $rows)
-        <tr onclick="redirectToEdit('$data.primaryKey')">
+        <tr class="row" data-primary-key="$data.primaryKey">
+            <td>
+                <input type="checkbox" class="row-checkbox" value="$data.primaryKey" onchange="toggleSelection(this)">
+            </td>
             #foreach($item in $data.data)
                 <td>$!item</td>
             #end

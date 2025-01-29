@@ -1,5 +1,6 @@
 package configuration
 
+import action.CustomAdminAction
 import com.mongodb.MongoClientSettings
 import com.vladsch.kotlin.jdbc.HikariCP
 import com.vladsch.kotlin.jdbc.SessionImpl
@@ -66,6 +67,14 @@ class KtorAdminConfiguration {
         set(value) {
             DynamicConfiguration.loginFields = value
         }
+
+    fun registerCustomAdminAction(action: CustomAdminAction) {
+        DynamicConfiguration.registerCustomAdminAction(action)
+    }
+
+    fun registerCustomAdminActionForAll(action: CustomAdminAction) {
+        DynamicConfiguration.registerCustomAdminActionForAll(action)
+    }
 
     fun registerStorageProvider(storageProvider: StorageProvider) {
         FileRepository.registerStorageProvider(storageProvider)

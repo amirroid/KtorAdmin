@@ -12,15 +12,15 @@ import response.toMap
 import utils.Constants
 import validators.checkHasRole
 
-internal suspend fun ApplicationCall.handleAddNewItem(tables: List<AdminPanel>) {
+internal suspend fun ApplicationCall.handleAddNewItem(panels: List<AdminPanel>) {
     val pluralName = parameters["pluralName"]
-    val panel = tables.find { it.getPluralName() == pluralName }
+    val panel = panels.find { it.getPluralName() == pluralName }
     if (panel == null) {
         notFound("No table found with plural name: $pluralName")
     } else {
         checkHasRole(panel) {
             when (panel) {
-                is AdminJdbcTable -> handleJdbcAddView(table = panel, panels = tables)
+                is AdminJdbcTable -> handleJdbcAddView(table = panel, panels = panels)
                 is AdminMongoCollection -> handleNoSqlAddView(panel = panel)
             }
         }
