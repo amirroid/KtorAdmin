@@ -77,10 +77,8 @@ private suspend fun RoutingContext.updateData(
     val initialData = JdbcQueriesRepository.getData(table, primaryKey)
     val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData)
     parametersDataResponse.onSuccess { parametersData ->
-        val parameters = parametersData.map { it?.first }
-
         kotlin.runCatching {
-            val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parameters, primaryKey, initialData)
+            val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parametersData, primaryKey, initialData)
             onUpdate(
                 tableName = table.getTableName(),
                 objectPrimaryKey = changedDataAndId?.first?.toString() ?: primaryKey,

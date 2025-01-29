@@ -4,11 +4,13 @@ import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
 import formatters.extractTextInCurlyBraces
 import formatters.populateTemplate
+import getters.putColumn
 import getters.toTypedValue
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.common.DisplayItem
 import models.getCurrentDate
+import models.getCurrentDateClass
 import models.order.Order
 import models.types.ColumnType
 import panels.*
@@ -111,22 +113,47 @@ internal object JdbcQueriesRepository {
             }
         }
 
-    fun insertData(table: AdminJdbcTable, parameters: List<String?>): Int? {
+    fun insertData(table: AdminJdbcTable, parameters: List<Any?>): Int {
         return table.usingDataSource { session ->
             session.transaction { tx ->
-                tx.updateGetId(sqlQuery(table.createInsertQuery(parameters)))
+                tx.prepare(sqlQuery(table.createInsertQuery().also { println("SQL QUERY $it ${parameters.size}") })).use { preparedStatement ->
+                    val columns = table.getAllAllowToShowColumnsInUpsert()
+                    val insertAutoDateColumns = table.getAllAutoNowDateInsertColumns()
+
+                    // Check if the size of parameters matches the size of allColumns
+                    if (parameters.size != columns.size) {
+                        throw IllegalArgumentException("The number of parameters does not match the number of columns")
+                    }
+
+                    // Insert the main columns
+                    columns.forEachIndexed { index, columnSet ->
+                        preparedStatement.putColumn(columnSet.type, parameters[index], index + 1)
+                    }
+
+                    // Insert the auto-now date columns
+                    insertAutoDateColumns.forEachIndexed { index, columnSet ->
+                        preparedStatement.putColumn(
+                            columnSet.type,
+                            columnSet.getCurrentDateClass(),
+                            columns.size + index + 1
+                        )
+                    }
+                    preparedStatement.executeUpdate()
+                }
             }
         }
     }
 
     fun updateChangedData(
         table: AdminJdbcTable,
-        parameters: List<String?>,
+        parameters: List<Pair<String, Any?>?>,
         primaryKey: String,
         initialData: List<String?>? = getData(table, primaryKey)
     ): Pair<Int, List<String>>? {
         return if (initialData == null) {
-            insertData(table, parameters)?.let { id -> id to table.getAllAllowToShowColumns().map { it.columnName } }
+            insertData(table, parameters.map { it?.second })?.let { id ->
+                id to table.getAllAllowToShowColumns().map { it.columnName }
+            }
         } else {
             val columns = table.getAllAllowToShowColumnsInUpsert()
             val changedData = parameters.mapIndexed { index, item ->
@@ -136,24 +163,43 @@ internal object JdbcQueriesRepository {
                 checkIsChangedData(
                     item.first,
                     initialValue,
-                    item.second
-                ) && !(initialValue != null && item.second == null)
+                    item.second?.first
+                ) && !(initialValue != null && item.second?.first == null)
             }
-            println("Changed data : $changedData")
             if (changedData.isNotEmpty() || table.getAllAutoNowDateUpdateColumns().isNotEmpty()) {
                 table.usingDataSource { session ->
                     session.transaction { tx ->
-                        tx.updateGetId(
+                        tx.prepare(
                             sqlQuery(
                                 table.createUpdateQuery(
                                     changedData.map { it.first },
-                                    changedData.map { it.second },
-                                    primaryKey
                                 )
                             )
-                        )
+                        ).use { prepareStatement ->
+                            changedData.forEachIndexed { index, item ->
+                                prepareStatement.putColumn(
+                                    item.first.type, item.second?.second, index + 1
+                                )
+                            }
+                            val autoNowDates = table.getAllAutoNowDateUpdateColumns()
+                            autoNowDates.forEachIndexed { index, columnSet ->
+                                prepareStatement.putColumn(
+                                    columnSet.type,
+                                    value = columnSet.getCurrentDateClass(),
+                                    index = index + 1 + changedData.size
+                                )
+                            }
+                            val primaryKeyColumn = table.getPrimaryKeyColumn()
+                            val primaryKeyTyped = primaryKey.toTypedValue(primaryKeyColumn.type)
+                            prepareStatement.putColumn(
+                                primaryKeyColumn.type,
+                                primaryKeyTyped,
+                                changedData.size + autoNowDates.size + 1
+                            )
+                            prepareStatement.executeUpdate()
+                        }
                     }
-                }?.let { id -> id to changedData.map { it.first.columnName } }
+                }.let { id -> id to changedData.map { it.first.columnName } }
             } else null
         }
     }
@@ -338,46 +384,32 @@ internal object JdbcQueriesRepository {
         else -> this?.addQuotationIfIsString() ?: NULL
     }
 
-    private fun AdminJdbcTable.createInsertQuery(parameters: List<String?>) = buildString {
+    private fun AdminJdbcTable.createInsertQuery() = buildString {
         val columns = getAllAllowToShowColumnsInUpsert()
-        val insertAutoDateColumns = getAllAutoNowDateInsertColumns().associateWith {
-            it.getCurrentDate()?.addQuotationIfIsString() ?: NULL
-        }
-        val parametersWithNULL = parameters.mapIndexed { index, parameter ->
-            if (columns[index].nullable && parameter.isNullOrEmpty()) NULL else parameter.formatParameter(columns[index])
-        }
+        val insertAutoDateColumns = getAllAutoNowDateInsertColumns()
+        val allColumns = (columns + insertAutoDateColumns).distinct()
         append("INSERT INTO ")
         append(getTableName())
         append(" (")
-        append(columns.plus(insertAutoDateColumns.keys).joinToString(", ") { it.columnName })
+        append(allColumns.joinToString(", ") { it.columnName })
         append(") VALUES (")
-        append(parametersWithNULL.plus(insertAutoDateColumns.values).joinToString(", "))
+        append(allColumns.joinToString(", ") { "?" })
         append(")")
     }
 
     private fun AdminJdbcTable.createUpdateQuery(
         updatedColumns: List<ColumnSet>,
-        parameters: List<String?>,
-        primaryKey: String
     ) = buildString {
         append("UPDATE ")
         append(getTableName())
         append(" SET ")
-        val columnsWithValues = updatedColumns.mapIndexed { index, column ->
-            column.columnName to parameters[index]?.let {
-                if (it.isEmpty() && column.nullable) NULL else it.formatParameter(column)
-            }
-        }
-        val updateAutoDateColumns = getAllAutoNowDateUpdateColumns().map {
-            it.columnName to (it.getCurrentDate() ?: NULL).addQuotationIfIsString()
-        }
+        val updateAutoDateColumns = getAllAutoNowDateUpdateColumns()
         append(
-            columnsWithValues.plus(updateAutoDateColumns)
-                .joinToString(", ") { (columnName, value) -> "$columnName = $value" })
+            updatedColumns.plus(updateAutoDateColumns)
+                .joinToString(", ") { column -> "${column.columnName} = ?" })
         append(" WHERE ")
         append(getPrimaryKey())
-        append(" = ")
-        append(primaryKey)
+        append(" = ?")
     }.also { println(it) }
 
     private fun String.addQuotationIfIsString(): String =
@@ -388,11 +420,18 @@ internal object JdbcQueriesRepository {
 
     fun deleteRows(table: AdminJdbcTable, selectedIds: List<String>) {
         table.usingDataSource { session ->
-            session.execute(
+            session.prepare(
                 sqlQuery(
-                    "DELETE FROM ${table.getTableName()} WHERE ${table.getPrimaryKey()} IN (${selectedIds.joinToString { it.addQuotationIfIsString() }})"
+                    "DELETE FROM ${table.getTableName()} WHERE ${table.getPrimaryKey()} IN (${selectedIds.joinToString { "?" }})"
                 )
-            )
+            ).use { preparedStatement ->
+                val primaryKeyColumn = table.getPrimaryKeyColumn()
+                selectedIds.forEachIndexed { index, id ->
+                    val item = id.toTypedValue(primaryKeyColumn.type)
+                    preparedStatement.putColumn(primaryKeyColumn.type, item, index + 1)
+                }
+                preparedStatement.executeUpdate()
+            }
         }
     }
 }

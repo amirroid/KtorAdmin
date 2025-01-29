@@ -25,6 +25,7 @@ object TokenTable : Table() {
     @References("users", "id")
     val userId = integer("user_id").references(Users.id, onDelete = ReferenceOption.CASCADE)
     val token = text("token")
+
     @ColumnInfo("date")
     @Limits(
         minDateRelativeToNow = 0

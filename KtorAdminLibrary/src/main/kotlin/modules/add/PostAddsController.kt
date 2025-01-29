@@ -66,21 +66,20 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
     val parametersDataResponse = call.receiveMultipart().toTableValues(table)
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.map { it?.first }
+        val parametersClasses = parametersData.map { it?.second }
         val columns = table.getAllAllowToShowColumnsInUpsert()
 
         // Validate parameters
         val isValidParameters = columns.validateParameters(parameters)
         if (isValidParameters) {
             kotlin.runCatching {
-                val id = JdbcQueriesRepository.insertData(table, parameters)
-                if (id != null) {
-                    onInsert(
-                        tableName = table.getTableName(),
-                        columnSets = columns,
-                        objectPrimaryKey = id.toString(),
-                        parametersData = parametersData
-                    )
-                }
+                val id = JdbcQueriesRepository.insertData(table, parametersClasses)
+                onInsert(
+                    tableName = table.getTableName(),
+                    columnSets = columns,
+                    objectPrimaryKey = id.toString(),
+                    parametersData = parametersData
+                )
                 call.respondRedirect("/admin/$pluralName")
             }.onFailure {
                 call.badRequest("Failed to insert $pluralName\nReason: ${it.message}", it)

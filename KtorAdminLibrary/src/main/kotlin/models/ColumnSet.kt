@@ -60,3 +60,16 @@ internal fun ColumnSet.getCurrentDate() = when (type) {
 
     else -> null
 }
+
+
+internal fun ColumnSet.getCurrentDateClass() = when (type) {
+    ColumnType.DATE -> {
+        LocalDate.now(DynamicConfiguration.timeZone)
+    }
+
+    ColumnType.DATETIME -> {
+        LocalDateTime.now(DynamicConfiguration.timeZone)
+    }
+
+    else -> null
+}
