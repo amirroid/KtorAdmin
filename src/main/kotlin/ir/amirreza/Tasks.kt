@@ -34,6 +34,9 @@ enum class Priority {
     "name",
     "DESC"
 )
+@AdminActions(
+    actions = [Action.DELETE, Action.ADD],
+)
 object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()

@@ -105,7 +105,8 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         }
 
         val adminActions = classDeclaration.getActionsArguments()
-        val defaultActions = adminActions?.findActionList("actions") ?: listOf(Action.ADD, Action.DELETE, Action.EDIT)
+        val defaultActions =
+            adminActions?.findActionList("actions") ?: Action.entries.map { "${Action::class.simpleName}.${it.name}" }
         val customActions = adminActions?.findStringList("customActions") ?: emptyList()
 
 
@@ -115,7 +116,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
                 List::class.asClassName().parameterizedBy(Action::class.asClassName())
             )
             .addStatement(
-                "return listOf(${defaultActions.joinToString { "${Action::class.simpleName}.$it" }})"
+                "return listOf(${defaultActions.joinToString()})"
             )
             .build()
 
@@ -313,12 +314,8 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         ?.value
         ?.let { it as? List<*> }
         ?.mapNotNull {
-            (it as? KSName)?.getEnumValue<Action>()
+            it?.toString()
         }
-
-    private inline fun <reified T : Enum<T>> KSName.getEnumValue(): T? {
-        return enumValues<T>().firstOrNull { it.name == this.asString() }
-    }
 
     companion object {
         private const val COLUMN_TYPE = "org.jetbrains.exposed.sql.Column"

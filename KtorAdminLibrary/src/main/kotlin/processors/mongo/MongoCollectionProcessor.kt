@@ -68,11 +68,166 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         )
     }
 
-
-
     private fun KSClassDeclaration.getActionsArguments() = annotations
         .find { it.shortName.asString() == AdminActions::class.simpleName }
         ?.arguments
+
+
+    private fun generateClass(
+        classDeclaration: KSClassDeclaration,
+        fileName: String,
+        fieldSets: List<FieldSet>
+    ): TypeSpec {
+        val adminMongoCollection = PackagesUtils.getAdminMongoCollectionClass()
+        val fieldSet = PackagesUtils.getFieldSetClass()
+        val primaryKey = classDeclaration.getPrimaryKey()
+        val displayFormat = classDeclaration.getDisplayFormat()
+        if (!fieldSets.any { it.fieldName == primaryKey }) {
+            throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any field in the collection.")
+        }
+        if (displayFormat != null && displayFormat.extractTextInCurlyBraces()
+                .any { it.split(".").firstOrNull() !in fieldSets.map { sets -> sets.fieldName } }
+        ) {
+            throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any field in the cllection.")
+        }
+
+        val getAllFieldsFunction = FunSpec.builder("getAllFields")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(fieldSet)
+            )
+            .addStatement("return listOf(${fieldSets.joinToString { it.toSuitableStringForFile() }})")
+            .build()
+
+
+        val collectionName = classDeclaration.getCollectionName()
+
+
+        val order = classDeclaration.getDefaultOrderFormat()
+
+        if (order != null) {
+            if (order.name !in fieldSets.map { it.fieldName }) {
+                throw IllegalArgumentException("The field name '${order.name}' specified in the @DefaultOrder annotation does not exist in the column set.")
+            }
+            if (order.direction.lowercase() !in listOf("asc", "desc")) {
+                throw IllegalArgumentException("The order direction '${order.direction}' specified in the @DefaultOrder annotation must be either 'asc' or 'desc'.")
+            }
+        }
+
+
+        val getCollectionNameFunction = FunSpec.builder("getCollectionName")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class)
+            .addStatement("return %S", collectionName)
+            .build()
+
+
+        val adminActions = classDeclaration.getActionsArguments()
+        val defaultActions = adminActions?.findActionList("actions") ?: Action.entries.map { "${Action::class.simpleName}.${it.name}" }
+        val customActions = adminActions?.findStringList("customActions") ?: emptyList()
+
+
+        val getDefaultActionsFunction = FunSpec.builder("getDefaultActions")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(Action::class.asClassName())
+            )
+            .addStatement(
+                "return listOf(${defaultActions.joinToString()})"
+            )
+            .build()
+
+        val getCustomActionsFunction = FunSpec.builder("getCustomActions")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${customActions.joinToString { "\"$it\"" }})")
+            .build()
+
+
+        val queryArguments = classDeclaration.getQueryColumnsArguments()
+        val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
+        val filterColumns = queryArguments?.findStringList("filters") ?: emptyList()
+        val getSearchColumnsFunction = FunSpec.builder("getSearches")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${searchColumns.joinToString { "\"$it\"" }})")
+            .build()
+
+        val getFilterColumnsFunction = FunSpec.builder("getFilters")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${filterColumns.joinToString { "\"$it\"" }})")
+            .build()
+
+        val getPluralNameFunction = FunSpec.builder("getPluralName")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class)
+            .addStatement("return %S", classDeclaration.getPluralName(collectionName))
+            .build()
+        val getSingularNameFunction = FunSpec.builder("getSingularName")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class)
+            .addStatement("return %S", classDeclaration.getSingularName(collectionName))
+            .build()
+        val getGroupNameFunction = FunSpec.builder("getGroupName")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${classDeclaration.getGroupName()?.let { "\"$it\"" }}")
+            .build()
+        val getDisplayFormatFunction = FunSpec.builder("getDisplayFormat")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${displayFormat?.let { "\"$it\"" }}")
+            .build()
+        val getDatabaseKeyFunction = FunSpec.builder("getDatabaseKey")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${classDeclaration.getDatabaseKey()}")
+            .build()
+        val getPrimaryKeyFunctions = FunSpec.builder("getPrimaryKey")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(String::class)
+            .addStatement("return %S", primaryKey)
+            .build()
+
+        val getDefaultOrderFunction = FunSpec.builder("getDefaultOrder")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(Order::class.asTypeName().copy(nullable = true))
+            .addStatement("return ${order?.toFormattedString()}")
+            .build()
+        val accessRoles = classDeclaration.getAccessRoles()
+        val getAccessRolesFunction = FunSpec.builder("getAccessRoles")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName()).copy(nullable = true)
+            )
+            .addStatement("return ${accessRoles?.let { roles -> "listOf(${roles.joinToString { "\"$it\"" }})" }}")
+            .build()
+
+        return TypeSpec.classBuilder(fileName)
+            .addSuperinterfaces(listOf(adminMongoCollection))
+            .addFunction(getAllFieldsFunction)
+            .addFunction(getCollectionNameFunction)
+            .addFunction(getPrimaryKeyFunctions)
+            .addFunction(getSingularNameFunction)
+            .addFunction(getPluralNameFunction)
+            .addFunction(getGroupNameFunction)
+            .addFunction(getDefaultOrderFunction)
+            .addFunction(getCustomActionsFunction)
+            .addFunction(getDefaultActionsFunction)
+            .addFunction(getFilterColumnsFunction)
+            .addFunction(getSearchColumnsFunction)
+            .addFunction(getDisplayFormatFunction)
+            .addFunction(getDatabaseKeyFunction)
+            .addFunction(getAccessRolesFunction)
+            .build()
+    }
 
     private fun collectPropertiesRecursively(
         classDeclaration: KSClassDeclaration,
@@ -171,175 +326,13 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         return properties
     }
 
-    private fun generateClass(
-        classDeclaration: KSClassDeclaration,
-        fileName: String,
-        fieldSets: List<FieldSet>
-    ): TypeSpec {
-        val adminMongoCollection = PackagesUtils.getAdminMongoCollectionClass()
-        val fieldSet = PackagesUtils.getFieldSetClass()
-        val primaryKey = classDeclaration.getPrimaryKey()
-        val displayFormat = classDeclaration.getDisplayFormat()
-        if (!fieldSets.any { it.fieldName == primaryKey }) {
-            throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any field in the collection.")
-        }
-        if (displayFormat != null && displayFormat.extractTextInCurlyBraces()
-                .any { it.split(".").firstOrNull() !in fieldSets.map { sets -> sets.fieldName } }
-        ) {
-            throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any field in the cllection.")
-        }
-
-        val getAllFieldsFunction = FunSpec.builder("getAllFields")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(
-                List::class.asClassName().parameterizedBy(fieldSet)
-            )
-            .addStatement("return listOf(${fieldSets.joinToString { it.toSuitableStringForFile() }})")
-            .build()
-
-
-        val collectionName = classDeclaration.getCollectionName()
-
-
-        val order = classDeclaration.getDefaultOrderFormat()
-
-        if (order != null) {
-            if (order.name !in fieldSets.map { it.fieldName }) {
-                throw IllegalArgumentException("The field name '${order.name}' specified in the @DefaultOrder annotation does not exist in the column set.")
-            }
-            if (order.direction.lowercase() !in listOf("asc", "desc")) {
-                throw IllegalArgumentException("The order direction '${order.direction}' specified in the @DefaultOrder annotation must be either 'asc' or 'desc'.")
-            }
-        }
-
-
-        val getCollectionNameFunction = FunSpec.builder("getCollectionName")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(String::class)
-            .addStatement("return %S", collectionName)
-            .build()
-
-
-
-        val adminActions = classDeclaration.getActionsArguments()
-        val defaultActions = adminActions?.findActionList("actions") ?: listOf(Action.ADD, Action.DELETE, Action.EDIT)
-        val customActions = adminActions?.findStringList("customActions") ?: emptyList()
-
-
-        val getDefaultActionsFunction = FunSpec.builder("getDefaultActions")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(
-                List::class.asClassName().parameterizedBy(Action::class.asClassName())
-            )
-            .addStatement(
-                "return listOf(${defaultActions.joinToString { "${Action::class.simpleName}.$it" }})"
-            )
-            .build()
-
-        val getCustomActionsFunction = FunSpec.builder("getCustomActions")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(
-                List::class.asClassName().parameterizedBy(String::class.asClassName())
-            )
-            .addStatement("return listOf(${customActions.joinToString { "\"$it\"" }})")
-            .build()
-
-
-        val queryArguments = classDeclaration.getQueryColumnsArguments()
-        val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
-        val filterColumns = queryArguments?.findStringList("filters") ?: emptyList()
-        val getSearchColumnsFunction = FunSpec.builder("getSearches")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(
-                List::class.asClassName().parameterizedBy(String::class.asClassName())
-            )
-            .addStatement("return listOf(${searchColumns.joinToString { "\"$it\"" }})")
-            .build()
-
-        val getFilterColumnsFunction = FunSpec.builder("getFilters")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(
-                List::class.asClassName().parameterizedBy(String::class.asClassName())
-            )
-            .addStatement("return listOf(${filterColumns.joinToString { "\"$it\"" }})")
-            .build()
-
-        val getPluralNameFunction = FunSpec.builder("getPluralName")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(String::class)
-            .addStatement("return %S", classDeclaration.getPluralName(collectionName))
-            .build()
-        val getSingularNameFunction = FunSpec.builder("getSingularName")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(String::class)
-            .addStatement("return %S", classDeclaration.getSingularName(collectionName))
-            .build()
-        val getGroupNameFunction = FunSpec.builder("getGroupName")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(String::class.asTypeName().copy(nullable = true))
-            .addStatement("return ${classDeclaration.getGroupName()?.let { "\"$it\"" }}")
-            .build()
-        val getDisplayFormatFunction = FunSpec.builder("getDisplayFormat")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(String::class.asTypeName().copy(nullable = true))
-            .addStatement("return ${displayFormat?.let { "\"$it\"" }}")
-            .build()
-        val getDatabaseKeyFunction = FunSpec.builder("getDatabaseKey")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(String::class.asTypeName().copy(nullable = true))
-            .addStatement("return ${classDeclaration.getDatabaseKey()}")
-            .build()
-        val getPrimaryKeyFunctions = FunSpec.builder("getPrimaryKey")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(String::class)
-            .addStatement("return %S", primaryKey)
-            .build()
-
-        val getDefaultOrderFunction = FunSpec.builder("getDefaultOrder")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(Order::class.asTypeName().copy(nullable = true))
-            .addStatement("return ${order?.toFormattedString()}")
-            .build()
-        val accessRoles = classDeclaration.getAccessRoles()
-        val getAccessRolesFunction = FunSpec.builder("getAccessRoles")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(
-                List::class.asClassName().parameterizedBy(String::class.asClassName()).copy(nullable = true)
-            )
-            .addStatement("return ${accessRoles?.let { roles -> "listOf(${roles.joinToString { "\"$it\"" }})" }}")
-            .build()
-
-        return TypeSpec.classBuilder(fileName)
-            .addSuperinterfaces(listOf(adminMongoCollection))
-            .addFunction(getAllFieldsFunction)
-            .addFunction(getCollectionNameFunction)
-            .addFunction(getPrimaryKeyFunctions)
-            .addFunction(getSingularNameFunction)
-            .addFunction(getPluralNameFunction)
-            .addFunction(getGroupNameFunction)
-            .addFunction(getDefaultOrderFunction)
-            .addFunction(getCustomActionsFunction)
-            .addFunction(getDefaultActionsFunction)
-            .addFunction(getFilterColumnsFunction)
-            .addFunction(getSearchColumnsFunction)
-            .addFunction(getDisplayFormatFunction)
-            .addFunction(getDatabaseKeyFunction)
-            .addFunction(getAccessRolesFunction)
-            .build()
-    }
-
-
 
     private fun List<KSValueArgument>.findActionList(name: String) = firstOrNull { it.name?.asString() == name }
         ?.value
         ?.let { it as? List<*> }
         ?.mapNotNull {
-            (it as? KSName)?.getEnumValue<Action>()
+            it?.toString()
         }
-
-    private inline fun <reified T : Enum<T>> KSName.getEnumValue(): T? {
-        return enumValues<T>().firstOrNull { it.name == this.asString() }
-    }
 
     private fun KSClassDeclaration.getAccessRoles(): List<String>? {
         return annotations.find { it.shortName.asString() == AccessRoles::class.simpleName }
