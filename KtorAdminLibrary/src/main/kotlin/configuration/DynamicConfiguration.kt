@@ -8,6 +8,7 @@ internal object DynamicConfiguration {
     var maxItemsInPage: Int = 20
     var loginFields: List<LoginFiled> = emptyList()
     var currentEventListener: AdminEventListener? = null
+    var cryptoPassword: String? = null
 
     var timeZone: ZoneId = ZoneId.systemDefault()
 

@@ -17,6 +17,7 @@ import repository.MongoClientRepository
 import response.ErrorResponse
 import response.toMap
 import utils.Constants
+import validators.checkHasRole
 
 
 internal suspend fun ApplicationCall.handleEditItem(panels: List<AdminPanel>) {
@@ -27,9 +28,11 @@ internal suspend fun ApplicationCall.handleEditItem(panels: List<AdminPanel>) {
         panel == null -> respondText { "No table found with plural name: $pluralName" }
         primaryKey == null -> respondText { "No primary key found: $pluralName" }
         else -> {
-            when (panel) {
-                is AdminJdbcTable -> handleJdbcEditView(primaryKey, panel, panels)
-                is AdminMongoCollection -> handleNoSqlEditView(primaryKey, panel, panels)
+            checkHasRole(panel) {
+                when (panel) {
+                    is AdminJdbcTable -> handleJdbcEditView(primaryKey, panel, panels)
+                    is AdminMongoCollection -> handleNoSqlEditView(primaryKey, panel, panels)
+                }
             }
         }
     }
@@ -72,7 +75,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                 )
             )
         }.onFailure {
-            serverError("Error: ${it.message}")
+            serverError("Error: ${it.message}", it)
         }
     }
 }
@@ -116,7 +119,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                 )
             )
         }.onFailure {
-            serverError("Error: ${it.message}")
+            serverError("Error: ${it.message}", it)
         }
     }
 }

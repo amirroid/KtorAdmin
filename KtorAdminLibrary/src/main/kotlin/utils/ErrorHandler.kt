@@ -4,15 +4,22 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 
-suspend fun ApplicationCall.badRequest(message: String) {
+suspend fun ApplicationCall.badRequest(message: String, throwable: Throwable? = null) {
     respondText(status = HttpStatusCode.BadRequest, contentType = ContentType.Text.Html) {
-        generateErrorHtml("400 - Bad Request", message)
+        generateErrorHtml("400 - Bad Request", message, throwable?.stackTraceToString())
+    }
+}
+
+
+suspend fun ApplicationCall.forbidden(message: String) {
+    respondText(status = HttpStatusCode.Forbidden, contentType = ContentType.Text.Html) {
+        generateErrorHtml("403 - Forbidden", message)
     }
 }
 
 suspend fun ApplicationCall.serverError(message: String, throwable: Throwable? = null) {
     respondText(status = HttpStatusCode.InternalServerError, contentType = ContentType.Text.Html) {
-        generateErrorHtml("500 - Internal Server Error", message, throwable?.stackTraceToString() ?: "")
+        generateErrorHtml("500 - Internal Server Error", message, throwable?.stackTraceToString())
     }
 }
 

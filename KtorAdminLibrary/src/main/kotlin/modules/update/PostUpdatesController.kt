@@ -16,6 +16,7 @@ import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.onError
 import response.onSuccess
+import validators.checkHasRole
 
 
 private suspend fun onUpdate(
@@ -61,9 +62,11 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
         call.notFound("No table found with plural name: $pluralName")
         return
     }
-    when (panel) {
-        is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)
-        is AdminMongoCollection -> updateData(pluralName, primaryKey, panel, panels)
+    call.checkHasRole(panel) {
+        when (panel) {
+            is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)
+            is AdminMongoCollection -> updateData(pluralName, primaryKey, panel, panels)
+        }
     }
 }
 
@@ -87,7 +90,7 @@ private suspend fun RoutingContext.updateData(
             )
             call.respondRedirect("/admin/$pluralName")
         }.onFailure {
-            call.serverError("Failed to update $pluralName\nReason: ${it.message}")
+            call.serverError("Failed to update $pluralName\nReason: ${it.message}", it)
         }
     }.onError { errors, values ->
         call.handleJdbcEditView(primaryKey, table, panels, errors, values)

@@ -25,12 +25,6 @@ class AdminListener(database: Database) : AdminEventListener() {
     }
 
     override suspend fun onUpdateJdbcData(tableName: String, objectPrimaryKey: String, events: List<ColumnEvent>) {
-        println(
-            "ITEM CHECK $tableName ${
-                events.map {
-                    "${it.changed} - ${it.columnSet.columnName}"
-                }
-            }")
         if (tableName == "tasks") {
             handleSaveThumbnail(objectPrimaryKey.toInt(), events)
         }

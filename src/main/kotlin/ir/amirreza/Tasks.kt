@@ -10,6 +10,7 @@ import annotations.limit.Limits
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import annotations.references.References
+import annotations.roles.AccessRoles
 import annotations.uploads.LocalUpload
 import org.jetbrains.exposed.sql.*
 
@@ -19,6 +20,7 @@ enum class Priority {
 
 
 @ExposedTable("tasks", "id", "task", "tasks")
+@AccessRoles("admin")
 @AdminQueries(
     searches = ["user_id.username", "description"],
     filters = ["priority", "user_id", "checked"]

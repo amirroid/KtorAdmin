@@ -15,6 +15,7 @@ import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import utils.Constants
+import validators.checkHasRole
 
 internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
     val pluralName = parameters["pluralName"]
@@ -22,18 +23,20 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
     val currentPage = runCatching {
         parameters["page"]?.toInt()?.minus(1) ?: 0
     }.onFailure { cause ->
-        badRequest(cause.message ?: "")
+        badRequest(cause.message ?: "", cause)
     }.getOrNull()
 
     val panel = tables.find { it.getPluralName() == pluralName }
     if (panel == null) {
         notFound("No table found with plural name: $pluralName")
     } else {
-        when (panel) {
-            is AdminJdbcTable -> handleJdbcList(panel, tables, searchParameter, currentPage, pluralName, parameters)
-            is AdminMongoCollection -> handleNoSqlList(
-                panel, pluralName, currentPage, searchParameter
-            )
+        checkHasRole(panel) {
+            when (panel) {
+                is AdminJdbcTable -> handleJdbcList(panel, tables, searchParameter, currentPage, pluralName, parameters)
+                is AdminMongoCollection -> handleNoSqlList(
+                    panel, pluralName, currentPage, searchParameter
+                )
+            }
         }
     }
 }

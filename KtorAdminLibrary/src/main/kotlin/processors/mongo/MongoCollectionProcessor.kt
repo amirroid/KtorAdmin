@@ -4,6 +4,7 @@ import annotations.display.DisplayFormat
 import annotations.mongo.MongoCollection
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
+import annotations.roles.AccessRoles
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -265,6 +266,14 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .returns(Order::class.asTypeName().copy(nullable = true))
             .addStatement("return ${order?.toFormattedString()}")
             .build()
+        val accessRoles = classDeclaration.getAccessRoles()
+        val getAccessRolesFunction = FunSpec.builder("getAccessRoles")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName()).copy(nullable = true)
+            )
+            .addStatement("return ${accessRoles?.let { roles -> "listOf(${roles.joinToString { "\"$it\"" }})" }}")
+            .build()
 
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminMongoCollection))
@@ -279,7 +288,19 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addFunction(getSearchColumnsFunction)
             .addFunction(getDisplayFormatFunction)
             .addFunction(getDatabaseKeyFunction)
+            .addFunction(getAccessRolesFunction)
             .build()
+    }
+
+
+    private fun KSClassDeclaration.getAccessRoles(): List<String>? {
+        return annotations.find { it.shortName.asString() == AccessRoles::class.simpleName }
+            ?.arguments
+            ?.firstOrNull { it.name?.asString() == "role" }
+            ?.value
+            ?.let { it as? List<*> }
+            ?.filterIsInstance<String>()
+            ?.takeIf { it.isNotEmpty() }
     }
 
     private fun KSClassDeclaration.getDisplayFormat() = annotations
@@ -332,7 +353,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         .find { it.shortName.asString() == MongoCollection::class.simpleName }
         ?.arguments
 
-    fun List<KSValueArgument>.findStringList(name: String) = firstOrNull { it.name?.asString() == name }
+    private fun List<KSValueArgument>.findStringList(name: String) = firstOrNull { it.name?.asString() == name }
         ?.value
         ?.let { it as? List<*> }
         ?.filterIsInstance<String>()

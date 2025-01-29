@@ -36,6 +36,7 @@ fun Application.configureAdmin(database: Database) {
         awsS3SignatureDuration = 1.minutes.toJavaDuration()
         authenticateName = "admin"
         loginFields = adminLoginFields
+        cryptoPassword = "test"
         registerEventListener(AdminListener(database))
     }
 }

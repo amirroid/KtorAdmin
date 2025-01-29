@@ -11,6 +11,7 @@ interface AdminPanel {
     fun getDisplayFormat(): String?
     fun getSearches(): List<String>
     fun getFilters(): List<String>
+    fun getAccessRoles(): List<String>?
     fun getDefaultOrder(): Order?
 }
 

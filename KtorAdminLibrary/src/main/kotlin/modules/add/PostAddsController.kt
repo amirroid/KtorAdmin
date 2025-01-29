@@ -17,6 +17,7 @@ import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.onError
 import response.onSuccess
+import validators.checkHasRole
 import validators.validateFieldsParameters
 import validators.validateParameters
 
@@ -53,10 +54,11 @@ internal suspend fun RoutingContext.handleAddRequest(panels: List<AdminPanel>) {
         call.respondText { "No table found with plural name: $pluralName" }
         return
     }
-
-    when (panel) {
-        is AdminJdbcTable -> insertData(pluralName, panel, panels)
-        is AdminMongoCollection -> insertData(pluralName, panel)
+    call.checkHasRole(panel) {
+        when (panel) {
+            is AdminJdbcTable -> insertData(pluralName, panel, panels)
+            is AdminMongoCollection -> insertData(pluralName, panel)
+        }
     }
 }
 
@@ -81,7 +83,7 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
                 }
                 call.respondRedirect("/admin/$pluralName")
             }.onFailure {
-                call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
+                call.badRequest("Failed to insert $pluralName\nReason: ${it.message}", it)
             }
         } else {
             call.badRequest("Invalid parameters for $pluralName: $parameters")
@@ -117,7 +119,7 @@ private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminM
                 )
                 call.respondRedirect("/admin/$pluralName")
             }.onFailure {
-                call.badRequest("Failed to insert $pluralName\nReason: ${it.message}")
+                call.badRequest("Failed to insert $pluralName\nReason: ${it.message}", it)
             }
         } else {
             call.badRequest("Invalid parameters for $pluralName: $parameters")

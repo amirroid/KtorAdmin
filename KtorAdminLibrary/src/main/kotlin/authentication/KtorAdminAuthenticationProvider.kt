@@ -1,13 +1,17 @@
 package authentication
 
+import crypto.CryptoManager
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import models.forms.UserForm
 import models.forms.toUserForm
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Str
 import utils.baseUrl
 
 /**
@@ -35,12 +39,23 @@ class KtorAdminAuthenticationProvider internal constructor(
     // Function to handle challenges for failed authentication
     private val challengeFunction: KtorAdminAuthChallengeFunction = config.challengeFunction
 
+    // Instance of CryptoManager for handling encryption and decryption of session data
+    private val cryptoManager = CryptoManager()
+
     /**
      * Retrieves the authenticated user from session storage.
      *
      * @return The user object stored in the session, or null if no user is present.
      */
-    private fun ApplicationCall.getUserFromSessions() = sessions.get<UserForm>()
+    private fun ApplicationCall.getUserFromSessions(): UserForm? {
+        return (sessions.get(USER_SESSIONS) as? String)?.let {
+            runCatching { cryptoManager.decryptData(it) }.getOrNull()?.let {
+                runCatching {
+                    Json.decodeFromString<UserForm>(it)
+                }.getOrNull()
+            }
+        }
+    }
 
     /**
      * Called during the authentication process to validate user credentials and set the principal.
@@ -70,7 +85,12 @@ class KtorAdminAuthenticationProvider internal constructor(
 
             // Update the session with new credentials if logging in
             if (inLoginUrl && formParameters != userSession) {
-                formParameters?.let { call.sessions.set(it) }
+                formParameters?.let {
+                    val cryptoData = cryptoManager.encryptData(
+                        Json.encodeToString(it)
+                    )
+                    call.sessions.set(USER_SESSIONS, cryptoData)
+                }
             }
             return
         }

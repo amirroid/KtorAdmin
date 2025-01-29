@@ -54,6 +54,12 @@ class KtorAdminConfiguration {
             DynamicConfiguration.maxItemsInPage = value
         }
 
+    var cryptoPassword: String?
+        get() = DynamicConfiguration.cryptoPassword
+        set(value) {
+            DynamicConfiguration.cryptoPassword = value
+        }
+
 
     var loginFields: List<LoginFiled>
         get() = DynamicConfiguration.loginFields

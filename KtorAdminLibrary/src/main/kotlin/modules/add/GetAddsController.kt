@@ -10,6 +10,7 @@ import panels.*
 import response.ErrorResponse
 import response.toMap
 import utils.Constants
+import validators.checkHasRole
 
 internal suspend fun ApplicationCall.handleAddNewItem(tables: List<AdminPanel>) {
     val pluralName = parameters["pluralName"]
@@ -17,9 +18,11 @@ internal suspend fun ApplicationCall.handleAddNewItem(tables: List<AdminPanel>) 
     if (panel == null) {
         notFound("No table found with plural name: $pluralName")
     } else {
-        when (panel) {
-            is AdminJdbcTable -> handleJdbcAddView(table = panel, panels = tables)
-            is AdminMongoCollection -> handleNoSqlAddView(panel = panel)
+        checkHasRole(panel) {
+            when (panel) {
+                is AdminJdbcTable -> handleJdbcAddView(table = panel, panels = tables)
+                is AdminMongoCollection -> handleNoSqlAddView(panel = panel)
+            }
         }
     }
 }
@@ -46,7 +49,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
             )
         )
     }.onFailure {
-        badRequest("Error: ${it.message}")
+        badRequest("Error: ${it.message}", it)
     }
 }
 
@@ -73,6 +76,6 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
             )
         )
     }.onFailure {
-        badRequest("Error: ${it.message}")
+        badRequest("Error: ${it.message}", it)
     }
 }
