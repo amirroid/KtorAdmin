@@ -1,5 +1,6 @@
 package processors.mongo
 
+import annotations.actions.AdminActions
 import annotations.display.DisplayFormat
 import annotations.mongo.MongoCollection
 import annotations.order.DefaultOrder
@@ -18,6 +19,7 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
 import models.Limit
 import models.UploadTarget
+import models.actions.Action
 import models.common.Reference
 import models.date.AutoNowDate
 import models.field.FieldSet
@@ -54,6 +56,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
             .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
             .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
+            .addImport(Action::class.java.packageName, Action::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(
@@ -64,6 +67,12 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             )
         )
     }
+
+
+
+    private fun KSClassDeclaration.getActionsArguments() = annotations
+        .find { it.shortName.asString() == AdminActions::class.simpleName }
+        ?.arguments
 
     private fun collectPropertiesRecursively(
         classDeclaration: KSClassDeclaration,
@@ -211,6 +220,31 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .build()
 
 
+
+        val adminActions = classDeclaration.getActionsArguments()
+        val defaultActions = adminActions?.findActionList("actions") ?: listOf(Action.ADD, Action.DELETE, Action.EDIT)
+        val customActions = adminActions?.findStringList("customActions") ?: emptyList()
+
+
+        val getDefaultActionsFunction = FunSpec.builder("getDefaultActions")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(Action::class.asClassName())
+            )
+            .addStatement(
+                "return listOf(${defaultActions.joinToString { "${Action::class.simpleName}.$it" }})"
+            )
+            .build()
+
+        val getCustomActionsFunction = FunSpec.builder("getCustomActions")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${customActions.joinToString { "\"$it\"" }})")
+            .build()
+
+
         val queryArguments = classDeclaration.getQueryColumnsArguments()
         val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
         val filterColumns = queryArguments?.findStringList("filters") ?: emptyList()
@@ -284,6 +318,8 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
             .addFunction(getDefaultOrderFunction)
+            .addFunction(getCustomActionsFunction)
+            .addFunction(getDefaultActionsFunction)
             .addFunction(getFilterColumnsFunction)
             .addFunction(getSearchColumnsFunction)
             .addFunction(getDisplayFormatFunction)
@@ -292,6 +328,18 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .build()
     }
 
+
+
+    private fun List<KSValueArgument>.findActionList(name: String) = firstOrNull { it.name?.asString() == name }
+        ?.value
+        ?.let { it as? List<*> }
+        ?.mapNotNull {
+            (it as? KSName)?.getEnumValue<Action>()
+        }
+
+    private inline fun <reified T : Enum<T>> KSName.getEnumValue(): T? {
+        return enumValues<T>().firstOrNull { it.name == this.asString() }
+    }
 
     private fun KSClassDeclaration.getAccessRoles(): List<String>? {
         return annotations.find { it.shortName.asString() == AccessRoles::class.simpleName }

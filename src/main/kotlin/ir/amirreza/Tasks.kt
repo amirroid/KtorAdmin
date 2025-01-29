@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.actions.AdminActions
 import annotations.computed.Computed
 import annotations.display.DisplayFormat
 import annotations.enumeration.Enumeration
@@ -12,6 +13,7 @@ import annotations.query.AdminQueries
 import annotations.references.References
 import annotations.roles.AccessRoles
 import annotations.uploads.LocalUpload
+import models.actions.Action
 import org.jetbrains.exposed.sql.*
 
 enum class Priority {
@@ -31,6 +33,9 @@ enum class Priority {
 @DefaultOrder(
     "name",
     "DESC"
+)
+@AdminActions(
+    actions = [Action.DELETE, Action.ADD],
 )
 object Tasks : Table("tasks") {
     @IgnoreColumn

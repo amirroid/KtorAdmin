@@ -1,5 +1,6 @@
 package processors.exposed
 
+import annotations.actions.AdminActions
 import annotations.display.DisplayFormat
 import annotations.enumeration.Enumeration
 import annotations.exposed.ExposedTable
@@ -18,6 +19,7 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
 import models.*
+import models.actions.Action
 import models.common.Reference
 import models.date.AutoNowDate
 import models.order.Order
@@ -50,6 +52,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
             .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
             .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
+            .addImport(Action::class.java.packageName, Action::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(
@@ -100,6 +103,29 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
                 throw IllegalArgumentException("The order direction '${order.direction}' specified in the @DefaultOrder annotation must be either 'asc' or 'desc'.")
             }
         }
+
+        val adminActions = classDeclaration.getActionsArguments()
+        val defaultActions = adminActions?.findActionList("actions") ?: listOf(Action.ADD, Action.DELETE, Action.EDIT)
+        val customActions = adminActions?.findStringList("customActions") ?: emptyList()
+
+
+        val getDefaultActionsFunction = FunSpec.builder("getDefaultActions")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(Action::class.asClassName())
+            )
+            .addStatement(
+                "return listOf(${defaultActions.joinToString { "${Action::class.simpleName}.$it" }})"
+            )
+            .build()
+
+        val getCustomActionsFunction = FunSpec.builder("getCustomActions")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(String::class.asClassName())
+            )
+            .addStatement("return listOf(${customActions.joinToString { "\"$it\"" }})")
+            .build()
 
         val queryArguments = classDeclaration.getQueryColumnsArguments()
         val searchColumns = queryArguments?.findStringList("searches") ?: emptyList()
@@ -182,6 +208,8 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
             .addFunction(getDefaultOrderFunction)
+            .addFunction(getCustomActionsFunction)
+            .addFunction(getDefaultActionsFunction)
             .addFunction(getDisplayFormatFunction)
             .addFunction(getDatabaseKeyFunction)
             .build()
@@ -243,6 +271,11 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         ?.arguments
 
 
+    private fun KSClassDeclaration.getActionsArguments() = annotations
+        .find { it.shortName.asString() == AdminActions::class.simpleName }
+        ?.arguments
+
+
     private fun KSClassDeclaration.getTableName() = getAnnotationArguments()
         ?.find { it.name?.asString() == "tableName" }
         ?.value as? String ?: ""
@@ -275,6 +308,17 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         ?.value
         ?.let { it as? List<*> }
         ?.filterIsInstance<String>()
+
+    private fun List<KSValueArgument>.findActionList(name: String) = firstOrNull { it.name?.asString() == name }
+        ?.value
+        ?.let { it as? List<*> }
+        ?.mapNotNull {
+            (it as? KSName)?.getEnumValue<Action>()
+        }
+
+    private inline fun <reified T : Enum<T>> KSName.getEnumValue(): T? {
+        return enumValues<T>().firstOrNull { it.name == this.asString() }
+    }
 
     companion object {
         private const val COLUMN_TYPE = "org.jetbrains.exposed.sql.Column"

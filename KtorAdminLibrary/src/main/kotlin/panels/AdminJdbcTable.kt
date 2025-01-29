@@ -1,6 +1,7 @@
 package panels
 
 import models.ColumnSet
+import models.actions.Action
 import models.order.Order
 
 interface AdminJdbcTable : AdminPanel {

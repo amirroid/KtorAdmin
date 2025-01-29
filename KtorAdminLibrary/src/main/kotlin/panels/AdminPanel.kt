@@ -1,5 +1,6 @@
 package panels
 
+import models.actions.Action
 import models.order.Order
 
 interface AdminPanel {
@@ -13,6 +14,8 @@ interface AdminPanel {
     fun getFilters(): List<String>
     fun getAccessRoles(): List<String>?
     fun getDefaultOrder(): Order?
+    fun getDefaultActions(): List<Action>
+    fun getCustomActions(): List<String>
 }
 
 fun List<AdminPanel>.findWithPluralName(name: String?) = find { it.getPluralName() == name }
