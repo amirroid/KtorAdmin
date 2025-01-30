@@ -1,5 +1,6 @@
 package modules.update
 
+import csrf.CsrfManager
 import utils.notFound
 import utils.serverError
 import getters.getReferencesItems
@@ -70,7 +71,8 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "singularTableName" to table.getSingularName()
                             .replaceFirstChar { it.uppercaseChar() },
                         "references" to referencesItems,
-                        "errors" to errors.toMap()
+                        "errors" to errors.toMap(),
+                        "csrfToken" to CsrfManager.generateToken()
                     )
                 )
             )
@@ -115,6 +117,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
 //                        "references" to referencesItems,
                         "collectionName" to panel.getCollectionName(),
                         "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
+                        "csrfToken" to CsrfManager.generateToken()
                     )
                 )
             )

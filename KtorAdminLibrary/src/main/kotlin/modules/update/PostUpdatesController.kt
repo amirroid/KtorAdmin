@@ -63,9 +63,13 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
         return
     }
     call.checkHasRole(panel) {
-        when (panel) {
-            is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)
-            is AdminMongoCollection -> updateData(pluralName, primaryKey, panel, panels)
+        kotlin.runCatching {
+            when (panel) {
+                is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)
+                is AdminMongoCollection -> updateData(pluralName, primaryKey, panel, panels)
+            }
+        }.onFailure {
+            serverError(it.message.orEmpty(), it)
         }
     }
 }
@@ -78,7 +82,8 @@ private suspend fun RoutingContext.updateData(
     val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData)
     parametersDataResponse.onSuccess { parametersData ->
         kotlin.runCatching {
-            val changedDataAndId = JdbcQueriesRepository.updateChangedData(table, parametersData, primaryKey, initialData)
+            val changedDataAndId =
+                JdbcQueriesRepository.updateChangedData(table, parametersData, primaryKey, initialData)
             onUpdate(
                 tableName = table.getTableName(),
                 objectPrimaryKey = changedDataAndId?.first?.toString() ?: primaryKey,

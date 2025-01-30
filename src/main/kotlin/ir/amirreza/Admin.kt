@@ -38,6 +38,7 @@ fun Application.configureAdmin(database: Database) {
         authenticateName = "admin"
         loginFields = adminLoginFields
         cryptoPassword = "test"
+        csrfTokenExpirationTime = 1000 * 60
         registerCustomAdminActionForAll(MyCustomAction())
         registerEventListener(AdminListener(database))
     }

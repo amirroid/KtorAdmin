@@ -6,6 +6,7 @@ import com.vladsch.kotlin.jdbc.HikariCP
 import com.vladsch.kotlin.jdbc.SessionImpl
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import csrf.CsrfManager
 import listener.AdminEventListener
 import models.forms.LoginFiled
 import mongo.MongoCredential
@@ -59,6 +60,12 @@ class KtorAdminConfiguration {
         get() = DynamicConfiguration.cryptoPassword
         set(value) {
             DynamicConfiguration.cryptoPassword = value
+        }
+
+    var csrfTokenExpirationTime: Long
+        get() = CsrfManager.tokenExpirationTime
+        set(value) {
+            CsrfManager.tokenExpirationTime = value
         }
 
 

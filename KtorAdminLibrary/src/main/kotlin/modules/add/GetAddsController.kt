@@ -1,5 +1,6 @@
 package modules.add
 
+import csrf.CsrfManager
 import utils.badRequest
 import utils.notFound
 import getters.getReferencesItems
@@ -44,7 +45,8 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
                     "references" to referencesItems,
                     "errors" to errors.toMap(),
-                    "values" to values
+                    "values" to values,
+                    "csrfToken" to CsrfManager.generateToken()
                 )
             )
         )
@@ -71,7 +73,8 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
                     "collectionName" to panel.getCollectionName(),
                     "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
                     "values" to values,
-                    "errors" to errors.toMap()
+                    "errors" to errors.toMap(),
+                    "csrfToken" to CsrfManager.generateToken()
                 )
             )
         )
