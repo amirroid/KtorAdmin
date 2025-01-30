@@ -1,5 +1,6 @@
 package filters
 
+import getters.toTypedValue
 import io.ktor.http.*
 import models.ColumnSet
 import models.filters.FilterTypes
@@ -71,8 +72,8 @@ internal object JdbcFilters {
         table: AdminJdbcTable,
         jdbcTables: List<AdminJdbcTable>,
         parameters: Parameters
-    ): MutableList<Pair<ColumnSet, String>> {
-        val filters = mutableListOf<Pair<ColumnSet, String>>()
+    ): MutableList<Triple<ColumnSet, String, Any>> {
+        val filters = mutableListOf<Triple<ColumnSet, String, Any>>()
 
         table.getFilters().forEach { filterColumn ->
             val filterTable = if (filterColumn.contains(".")) {
@@ -92,19 +93,19 @@ internal object JdbcFilters {
 
                 columnSet?.type == ColumnType.BOOLEAN -> {
                     parameters[columnSet.columnName]?.let { value ->
-                        filters.add(Pair(columnSet, "= '$value'"))
+                        filters.add(Triple(columnSet, "= ", value.toTypedValue(columnSet.type)))
                     }
                 }
 
                 columnSet?.type == ColumnType.ENUMERATION -> {
                     parameters[columnSet.columnName]?.let { value ->
-                        filters.add(Pair(columnSet, "= '$value'"))
+                        filters.add(Triple(columnSet, "= ", value.toTypedValue(columnSet.type)))
                     }
                 }
 
                 columnSet?.reference != null -> {
                     parameters[columnSet.columnName]?.let { refValue ->
-                        filters.add(Pair(columnSet, "= '$refValue'"))
+                        filters.add(Triple(columnSet, "= ", refValue.toTypedValue(columnSet.type)))
                     }
                 }
             }
@@ -116,7 +117,7 @@ internal object JdbcFilters {
     private fun handleDateTimeFilter(
         columnSet: ColumnSet?,
         parameters: Parameters,
-        filters: MutableList<Pair<ColumnSet, String>>
+        filters: MutableList<Triple<ColumnSet, String, Any>>
     ) {
         if (columnSet == null) return
 
@@ -127,8 +128,7 @@ internal object JdbcFilters {
             parameters[startParamName]?.let { startValue ->
                 val startTimestamp = Instant.ofEpochMilli(startValue.toLong())
                     .atZone(ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                filters.add(Pair(columnSet, ">= '$startTimestamp'"))
+                filters.add(Triple(columnSet, ">= ", startTimestamp.toLocalDateTime()))
             }
         }
 
@@ -136,8 +136,7 @@ internal object JdbcFilters {
             parameters[endParamName]?.let { endValue ->
                 val endTimestamp = Instant.ofEpochMilli(endValue.toLong())
                     .atZone(ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                filters.add(Pair(columnSet, "<= '$endTimestamp'"))
+                filters.add(Triple(columnSet, "<= ", endTimestamp.toLocalDateTime()))
             }
         }
     }

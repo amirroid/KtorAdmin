@@ -14,25 +14,51 @@ import models.getCurrentDateClass
 import models.order.Order
 import models.types.ColumnType
 import panels.*
+import java.sql.PreparedStatement
 
+/**
+ * Repository class for handling JDBC database operations.
+ * Provides methods for CRUD operations and data retrieval with filtering and pagination.
+ */
 internal object JdbcQueriesRepository {
     private const val NULL = "NULL"
 
+    // region Database Connection
+
+    /**
+     * Executes database operations using the specified data source.
+     * @param lambda Operation to execute within the database session
+     * @return Result of the operation
+     */
     private fun <T> AdminJdbcTable.usingDataSource(lambda: (Session) -> T): T {
         val key = getDatabaseKey()
         val dataSource = if (key == null) HikariCP.dataSource() else HikariCP.dataSource(key)
         return using(session(dataSource), lambda)
     }
 
+    // endregion
+
+    // region Data Retrieval
+
+    /**
+     * Retrieves all data from the table with optional filtering, search, pagination, and ordering.
+     * @param table Target database table
+     * @param search Search string to filter results
+     * @param currentPage Page number for pagination
+     * @param filters List of column filters
+     * @param order Sorting order
+     * @return List of data with primary keys
+     */
     fun getAllData(
         table: AdminJdbcTable,
         search: String?,
         currentPage: Int?,
-        filters: MutableList<Pair<ColumnSet, String>>,
+        filters: MutableList<Triple<ColumnSet, String, Any>>,
         order: Order?
-    ): List<DataWithPrimaryKey> =
+    ): List<DataWithPrimaryKey> {
+        val result = mutableListOf<DataWithPrimaryKey>()
         table.usingDataSource { session ->
-            session.list(
+            session.prepare(
                 sqlQuery(
                     table.createGetAllQuery(
                         search = search,
@@ -41,24 +67,128 @@ internal object JdbcQueriesRepository {
                         order = order
                     )
                 )
-            ) { raw ->
-                DataWithPrimaryKey(
-                    primaryKey = raw.any("${table.getTableName()}_${table.getPrimaryKey()}").toString(),
-                    data = table.getAllAllowToShowColumns()
-                        .map { raw.anyOrNull("${table.getTableName()}_${it.columnName}").toString() }
+            ).use { prepareStatement ->
+                prepareStatement.prepareGetAllData(
+                    table, search, filters, currentPage
+                )
+                prepareStatement.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val primaryKey =
+                            rs.getObject("${table.getTableName()}_${table.getPrimaryKey()}")?.toString() ?: "UNKNOWN"
+                        val data = table.getAllAllowToShowColumns().map { column ->
+                            rs.getObject("${table.getTableName()}_${column.columnName}")?.toString() ?: "N/A"
+                        }
+                        result.add(DataWithPrimaryKey(primaryKey, data))
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    /**
+     * Gets the total count of records matching the specified criteria.
+     * @param table Target database table
+     * @param search Search string to filter results
+     * @param filters List of column filters
+     * @return Total count of matching records
+     */
+    fun getCount(
+        table: AdminJdbcTable,
+        search: String?,
+        filters: List<Triple<ColumnSet, String, Any>>
+    ): Int {
+        return table.usingDataSource { session ->
+            session.prepare(sqlQuery(table.createGetAllCountQuery(search = search, null, filters, null)))
+                .use { preparedStatement ->
+                    preparedStatement.prepareGetAllData(table, search, filters, null)
+                    preparedStatement.executeQuery()?.use { rs ->
+                        if (rs.next()) {
+                            rs.getInt(1)
+                        } else 0
+                    }
+                }
+        } ?: 0
+    }
+
+    /**
+     * Prepares statement parameters for data retrieval operations.
+     */
+    private fun PreparedStatement.prepareGetAllData(
+        table: AdminJdbcTable,
+        search: String?,
+        filters: List<Triple<ColumnSet, String, Any>>,
+        currentPage: Int?,
+    ) {
+        val columns = table.getAllColumns()
+        val searches = table.getSearches()
+        val filtersColumns = table.getFilters()
+
+        // Process filters
+        val hasFilters = if (filters.isEmpty()) emptyList() else filtersColumns.mapNotNull { item ->
+            val pathParts = item.split('.')
+            pathParts.first().let { part ->
+                if (!filters.any { it.first.columnName == part }) {
+                    return@mapNotNull null
+                } else {
+                    return@mapNotNull columns.first { it.columnName == part }
+                }
+            }
+        }
+
+        // Process searches
+        val hasSearches = if (search == null) emptyList() else searches.mapNotNull { item ->
+            val pathParts = item.split('.')
+            pathParts.first().let { part ->
+                columns.find { it.columnName == part }
+            }
+        }
+
+        // Set search parameters
+        if (hasSearches.isNotEmpty()) {
+            hasSearches.forEachIndexed { index, _ ->
+                setString(
+                    index + 1,
+                    "%${search!!}%",
                 )
             }
         }
 
-    fun getCount(
-        table: AdminJdbcTable,
-        search: String?,
-        filters: List<Pair<ColumnSet, String>>
-    ): Int =
-        table.usingDataSource { session ->
-            session.count(sqlQuery(table.createGetAllQuery(search = search, null, filters, null)))
+        // Set filter parameters
+        if (hasFilters.isNotEmpty()) {
+            hasFilters.forEachIndexed { index, columnSet ->
+                val filter = filters.first { it.first.columnName == columnSet.columnName }
+                putColumn(
+                    columnType = columnSet.type,
+                    value = filter.third,
+                    index = index + hasSearches.size + 1
+                )
+            }
         }
 
+        // Set pagination parameters
+        if (currentPage != null) {
+            setInt(
+                hasFilters.size + hasSearches.size + 1,
+                DynamicConfiguration.maxItemsInPage
+            )
+            setInt(
+                hasFilters.size + hasSearches.size + 2,
+                DynamicConfiguration.maxItemsInPage * currentPage
+            )
+        }
+    }
+
+    // endregion
+
+    // region Reference Data
+
+    /**
+     * Retrieves reference data for a specific column.
+     * @param table Target database table
+     * @param referenceColumn Column to get references for
+     * @return List of display items
+     */
     fun getAllReferences(
         table: AdminJdbcTable,
         referenceColumn: String
@@ -85,6 +215,13 @@ internal object JdbcQueriesRepository {
             }
         }
 
+    // endregion
+
+    // region Data Modification
+
+    /**
+     * Checks if data has been changed compared to initial value.
+     */
     private fun checkIsChangedData(columnSet: ColumnSet, initialValue: String?, currentValue: String?): Boolean =
         when (columnSet.type) {
             ColumnType.BOOLEAN -> when (currentValue) {
@@ -106,31 +243,50 @@ internal object JdbcQueriesRepository {
             else -> initialValue != currentValue
         }
 
+    /**
+     * Retrieves data for a specific primary key.
+     */
     fun getData(table: AdminJdbcTable, primaryKey: String): List<String?>? =
         table.usingDataSource { session ->
-            session.first(sqlQuery(table.createGetOneItemQuery(primaryKey))) { raw ->
-                table.getAllAllowToShowColumnsInUpsert().map { raw.anyOrNull(it.columnName)?.toString() }
+            session.prepare(sqlQuery(table.createGetOneItemQuery())).use { prepareStatement ->
+                val primaryKeyType = table.getPrimaryKeyColumn().type
+                prepareStatement.putColumn(
+                    columnType = primaryKeyType,
+                    value = primaryKey.toTypedValue(primaryKeyType),
+                    index = 1
+                )
+                prepareStatement.executeQuery().use { rs ->
+                    if (rs.next()) {
+                        return@usingDataSource table.getAllAllowToShowColumnsInUpsert().map { column ->
+                            rs.getObject(column.columnName)?.toString()
+                        }
+                    }
+                    return@usingDataSource null
+                }
             }
         }
 
+    /**
+     * Inserts new data into the table.
+     */
     fun insertData(table: AdminJdbcTable, parameters: List<Any?>): Int {
         return table.usingDataSource { session ->
             session.transaction { tx ->
-                tx.prepare(sqlQuery(table.createInsertQuery().also { println("SQL QUERY $it ${parameters.size}") })).use { preparedStatement ->
+                tx.prepare(sqlQuery(table.createInsertQuery())).use { preparedStatement ->
                     val columns = table.getAllAllowToShowColumnsInUpsert()
                     val insertAutoDateColumns = table.getAllAutoNowDateInsertColumns()
 
-                    // Check if the size of parameters matches the size of allColumns
+                    // Validate parameters count
                     if (parameters.size != columns.size) {
                         throw IllegalArgumentException("The number of parameters does not match the number of columns")
                     }
 
-                    // Insert the main columns
+                    // Insert main columns
                     columns.forEachIndexed { index, columnSet ->
                         preparedStatement.putColumn(columnSet.type, parameters[index], index + 1)
                     }
 
-                    // Insert the auto-now date columns
+                    // Insert auto-now date columns
                     insertAutoDateColumns.forEachIndexed { index, columnSet ->
                         preparedStatement.putColumn(
                             columnSet.type,
@@ -144,6 +300,9 @@ internal object JdbcQueriesRepository {
         }
     }
 
+    /**
+     * Updates changed data for a specific record.
+     */
     fun updateChangedData(
         table: AdminJdbcTable,
         parameters: List<Pair<String, Any?>?>,
@@ -151,7 +310,7 @@ internal object JdbcQueriesRepository {
         initialData: List<String?>? = getData(table, primaryKey)
     ): Pair<Int, List<String>>? {
         return if (initialData == null) {
-            insertData(table, parameters.map { it?.second })?.let { id ->
+            insertData(table, parameters.map { it?.second }).let { id ->
                 id to table.getAllAllowToShowColumns().map { it.columnName }
             }
         } else {
@@ -204,10 +363,17 @@ internal object JdbcQueriesRepository {
         }
     }
 
+    // endregion
+
+    // region Query Building
+
+    /**
+     * Creates query for retrieving all data with optional filters and pagination.
+     */
     private fun AdminJdbcTable.createGetAllQuery(
         search: String?,
         currentPage: Int?,
-        filters: List<Pair<ColumnSet, String>>,
+        filters: List<Triple<ColumnSet, String, Any>>,
         order: Order? = null
     ) = buildString {
         val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
@@ -225,16 +391,54 @@ internal object JdbcQueriesRepository {
             append(createFiltersConditions(search, filters))
         }
         order?.let {
+            if (it.name !in columns.map { column -> column.columnName } && it.direction.lowercase() !in listOf(
+                    "asc",
+                    "desc"
+                )) return@let
             append(" ORDER BY ${it.name} ${it.direction}")
         }
         currentPage?.let {
-            append(createPaginationQuery(it))
+            append(createPaginationQuery())
         }
     }
 
+    /**
+     * Creates query for retrieving total count with filters.
+     */
+    private fun AdminJdbcTable.createGetAllCountQuery(
+        search: String?,
+        currentPage: Int?,
+        filters: List<Triple<ColumnSet, String, Any>>,
+        order: Order? = null
+    ) = buildString {
+        val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
+
+        append("SELECT COUNT(*)")
+        append(" FROM ")
+        append(getTableName())
+
+        if (search != null || filters.isNotEmpty()) {
+            append(" ")
+            append(createFiltersConditions(search, filters))
+        }
+        order?.let {
+            if (it.name !in columns.map { column -> column.columnName } && it.direction.lowercase() !in listOf(
+                    "asc",
+                    "desc"
+                )) return@let
+            append(" ORDER BY ${it.name} ${it.direction}")
+        }
+        currentPage?.let {
+            append(createPaginationQuery())
+        }
+    }
+
+    /**
+     * Creates filter conditions for SQL queries.
+     */
     private fun AdminJdbcTable.createFiltersConditions(
         search: String?,
-        filters: List<Pair<ColumnSet, String>>
+        filters: List<Triple<ColumnSet, String, Any>>
     ): String {
         val joinConditions = mutableListOf<String>()
         val searchConditions = if (search != null) {
@@ -243,7 +447,7 @@ internal object JdbcQueriesRepository {
                 var currentTable = getTableName()
                 val currentColumn = pathParts.last()
 
-                pathParts.firstOrNull()?.let { part ->
+                pathParts.first().let { part ->
                     val columnSet = getAllColumns().find { it.columnName == part }
                     val nextTable = columnSet?.reference?.tableName
                     val currentReferenceColumn = columnSet?.reference?.columnName
@@ -254,7 +458,7 @@ internal object JdbcQueriesRepository {
                     }
                 }
 
-                "LOWER(${currentTable}.${currentColumn}) LIKE LOWER('%$search%')"
+                "LOWER(${currentTable}.${currentColumn}) LIKE LOWER(?)"
             }
         } else emptyList()
 
@@ -262,13 +466,12 @@ internal object JdbcQueriesRepository {
             val pathParts = item.split('.')
             var currentTable = getTableName()
             val currentColumn = pathParts.last()
-            pathParts.firstOrNull()?.let { part ->
-                println("filters does not exists $part")
+
+            pathParts.first().let { part ->
                 if (!filters.any { it.first.columnName == part }) {
-                    return@let null
+                    return@mapNotNull null
                 }
                 val columnSet = getAllColumns().find { it.columnName == part }
-                println(columnSet)
                 val nextTable = columnSet?.reference?.tableName
                 val currentReferenceColumn = columnSet?.reference?.columnName
 
@@ -278,38 +481,39 @@ internal object JdbcQueriesRepository {
                 }
                 filters.filter { it.first == columnSet }
                     .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
-                        "${currentTable}.${currentColumn} ${filterItem.second}".also { println(it) }
+                        "${currentTable}.${currentColumn} ${filterItem.second} ?"
                     }
             }
         }
-        println("$filterConditions , $searchConditions")
+
         return if (filterConditions.isEmpty() && searchConditions.isEmpty()) {
             ""
         } else {
             buildString {
-                append(
-                    joinConditions.distinct().joinToString(" ")
-                )
+                append(joinConditions.distinct().joinToString(" "))
                 append(" WHERE ")
                 if (searchConditions.isNotEmpty()) {
-                    append(
-                        searchConditions.joinToString(
-                            " OR "
-                        ) { it })
+                    append(searchConditions.joinToString(" OR ") { it })
                     if (filters.isNotEmpty()) {
                         append(" AND ")
                     }
                 }
-                append(filterConditions.joinToString(" OR ") { it })
+                append(filterConditions.joinToString(" AND ") { it })
             }
         }
     }
 
-    private fun createPaginationQuery(currentPage: Int) = buildString {
-        append(" LIMIT ${DynamicConfiguration.maxItemsInPage}")
-        append(" OFFSET ${DynamicConfiguration.maxItemsInPage * currentPage}")
+    /**
+     * Creates pagination query part.
+     */
+    private fun createPaginationQuery() = buildString {
+        append(" LIMIT ?")
+        append(" OFFSET ?")
     }
 
+    /**
+     * Creates query for retrieving all references.
+     */
     private fun AdminJdbcTable.createGetAllReferencesQuery(leftReferenceColumn: String): String {
         val columns = getDisplayFormat()?.extractTextInCurlyBraces().orEmpty()
         val selectColumns = mutableSetOf<String>()
@@ -358,12 +562,17 @@ internal object JdbcQueriesRepository {
             append(getTableName())
             joins.forEach { append(" $it") }
             getDefaultOrder()?.let { order ->
+                if (order.name !in getAllColumns().map { column -> column.columnName } &&
+                    order.direction.lowercase() !in listOf("asc", "desc")) return@let
                 append(" ORDER BY ${order.name} ${order.direction}")
             }
         }
     }
 
-    private fun AdminJdbcTable.createGetOneItemQuery(primaryKey: String) = buildString {
+    /**
+     * Creates query for retrieving a single item by primary key.
+     */
+    private fun AdminJdbcTable.createGetOneItemQuery() = buildString {
         append("SELECT ")
         append(
             getAllAllowToShowColumnsInUpsert()
@@ -371,23 +580,17 @@ internal object JdbcQueriesRepository {
                 .distinct()
                 .joinToString(", ") { it.columnName }
         )
-        append(" FROM ")
-        append(getTableName())
-        append(" WHERE ")
-        append(getPrimaryKey())
-        append(" = ")
-        append(primaryKey)
+        append(" FROM ${getTableName()} WHERE ${getPrimaryKey()} = ?")
     }
 
-    private fun String?.formatParameter(columnSet: ColumnSet): String = when {
-        columnSet.type == ColumnType.BOOLEAN -> this?.let { if (it == "on") "'1'" else "'0'" } ?: NULL
-        else -> this?.addQuotationIfIsString() ?: NULL
-    }
-
+    /**
+     * Creates query for inserting new data.
+     */
     private fun AdminJdbcTable.createInsertQuery() = buildString {
         val columns = getAllAllowToShowColumnsInUpsert()
         val insertAutoDateColumns = getAllAutoNowDateInsertColumns()
         val allColumns = (columns + insertAutoDateColumns).distinct()
+
         append("INSERT INTO ")
         append(getTableName())
         append(" (")
@@ -397,6 +600,9 @@ internal object JdbcQueriesRepository {
         append(")")
     }
 
+    /**
+     * Creates query for updating existing data.
+     */
     private fun AdminJdbcTable.createUpdateQuery(
         updatedColumns: List<ColumnSet>,
     ) = buildString {
@@ -406,18 +612,21 @@ internal object JdbcQueriesRepository {
         val updateAutoDateColumns = getAllAutoNowDateUpdateColumns()
         append(
             updatedColumns.plus(updateAutoDateColumns)
-                .joinToString(", ") { column -> "${column.columnName} = ?" })
+                .joinToString(", ") { column -> "${column.columnName} = ?" }
+        )
         append(" WHERE ")
         append(getPrimaryKey())
         append(" = ?")
-    }.also { println(it) }
+    }
 
-    private fun String.addQuotationIfIsString(): String =
-        if (toDoubleOrNull() != null) this else "'$this'"
-
+    /**
+     * Gets the primary key column for the table.
+     */
     private fun AdminJdbcTable.getPrimaryKeyColumn() = getAllColumns().first { it.columnName == getPrimaryKey() }
 
-
+    /**
+     * Deletes multiple rows by their IDs.
+     */
     fun deleteRows(table: AdminJdbcTable, selectedIds: List<String>) {
         table.usingDataSource { session ->
             session.prepare(

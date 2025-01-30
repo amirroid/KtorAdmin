@@ -31,6 +31,10 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
                         return@runCatching
                     }
                     val ids = Json.decodeFromString<List<String>>(idsForm)
+                    if (ids.isEmpty()) {
+                        badRequest("Please select at least one item.")
+                        return@runCatching
+                    }
                     val name = when (panel) {
                         is AdminMongoCollection -> panel.getCollectionName()
                         is AdminJdbcTable -> panel.getTableName()

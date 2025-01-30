@@ -15,6 +15,7 @@ import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import utils.Constants
+import utils.serverError
 import validators.checkHasRole
 
 internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
@@ -31,11 +32,23 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
         notFound("No table found with plural name: $pluralName")
     } else {
         checkHasRole(panel) {
-            when (panel) {
-                is AdminJdbcTable -> handleJdbcList(panel, tables, searchParameter, currentPage, pluralName, parameters)
-                is AdminMongoCollection -> handleNoSqlList(
-                    panel, pluralName, currentPage, searchParameter
-                )
+            kotlin.runCatching {
+                when (panel) {
+                    is AdminJdbcTable -> handleJdbcList(
+                        panel,
+                        tables,
+                        searchParameter,
+                        currentPage,
+                        pluralName,
+                        parameters
+                    )
+
+                    is AdminMongoCollection -> handleNoSqlList(
+                        panel, pluralName, currentPage, searchParameter
+                    )
+                }
+            }.onFailure {
+                serverError(it.message ?: "", it)
             }
         }
     }
