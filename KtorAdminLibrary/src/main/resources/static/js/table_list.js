@@ -61,7 +61,8 @@ function handleClicks() {
     rows.forEach(row => {
         row.addEventListener("click", function (event) {
             const checkbox = row.querySelector(".row-checkbox");
-            if (checkbox && event.target !== checkbox) {
+            const checkmark = row.querySelector(".checkmark");
+            if (checkbox && event.target !== checkbox && checkmark && event.target !== checkmark) {
                 redirectToEdit(row.dataset.primaryKey);
             }
         });

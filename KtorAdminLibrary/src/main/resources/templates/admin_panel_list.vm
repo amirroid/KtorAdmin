@@ -110,7 +110,7 @@
                     <div id="actions-row">
                         <div id="actions-container">
                             <select id="actions-input">
-                                <option value="">-- Select Action --</option>
+                                <option value="">Select an action</option>
                                 #foreach($action in $actions)
                                     <option value="${action.key}">${action.displayText}</option>
                                 #end
@@ -166,7 +166,7 @@
                 </thead>
                 <tbody>
                     #foreach($row in $rows)
-                    <tr>
+                    <tr class="row" data-primary-key="$row.primaryKey">
                         <td data-col="checkbox">
                             <label class="custom-checkbox">
                                 <input type="checkbox" class="checkbox-input row-checkbox" #if($item ==

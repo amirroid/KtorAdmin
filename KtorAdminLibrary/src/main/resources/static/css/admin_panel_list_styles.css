@@ -274,7 +274,10 @@ tr {
     width: 100%;
     flex-wrap: wrap;
     display: flex;
+    transition: .1s;
 }
+
+
 
 th,
 td {
@@ -307,8 +310,15 @@ th:not([data-col="checkbox"]), td:not([data-col="checkbox"]){
     white-space: nowrap;
 }
 
+tr {
+    cursor: pointer;
+}
+
 tbody tr:nth-child(even) {
     background-color: rgba(243, 231, 203, 0.3);
+}
+tbody tr:hover{
+    background-color: rgba(154, 108, 0, 0.2);
 }
 
 td::before,
@@ -618,7 +628,6 @@ th:last-child::before {
     margin-top: 8px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
-
 
 .dropdown-content a:last-child {
     border-bottom: none;
