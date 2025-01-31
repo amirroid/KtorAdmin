@@ -132,6 +132,7 @@
             </div>
         #end
     #end
+        <input type="hidden" value="$csrfToken" name="_csrf">
     <button type="submit" class="form-input">Submit</button>
 </form>
 <script>

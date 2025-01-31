@@ -1,5 +1,6 @@
 package modules.actions
 
+import csrf.CsrfManager
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -10,6 +11,7 @@ import panels.AdminMongoCollection
 import panels.AdminPanel
 import panels.getAllCustomActions
 import utils.badRequest
+import utils.invalidateRequest
 import utils.notFound
 import validators.checkHasRole
 
@@ -25,6 +27,12 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
             call.checkHasRole(panel) {
                 runCatching {
                     val form = call.receiveParameters()
+                    val csrfToken  = form["_csrf"]
+                    println("CSRF TOKEN IS $csrfToken")
+                    if (csrfToken?.let { CsrfManager.validateToken(it) } != true) {
+                        call.invalidateRequest()
+                        return@runCatching
+                    }
                     val idsForm = form["ids"]
                     if (idsForm == null) {
                         badRequest("The 'ids' field is required but not found in the form.")

@@ -21,8 +21,6 @@ import java.sql.PreparedStatement
  * Provides methods for CRUD operations and data retrieval with filtering and pagination.
  */
 internal object JdbcQueriesRepository {
-    private const val NULL = "NULL"
-
     // region Database Connection
 
     /**

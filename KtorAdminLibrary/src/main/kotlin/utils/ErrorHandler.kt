@@ -23,6 +23,10 @@ suspend fun ApplicationCall.serverError(message: String, throwable: Throwable? =
     }
 }
 
+suspend fun ApplicationCall.invalidateRequest() {
+    badRequest("Invalidate Request")
+}
+
 suspend fun ApplicationCall.notFound(message: String) {
     respondText(status = HttpStatusCode.NotFound, contentType = ContentType.Text.Html) {
         generateErrorHtml("404 - Not Found", message)

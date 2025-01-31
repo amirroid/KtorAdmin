@@ -15,7 +15,9 @@ import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.onError
+import response.onInvalidateRequest
 import response.onSuccess
+import utils.invalidateRequest
 import validators.checkHasRole
 
 
@@ -97,6 +99,8 @@ private suspend fun RoutingContext.updateData(
         }
     }.onError { errors, values ->
         call.handleJdbcEditView(primaryKey, table, panels, errors, values)
+    }.onInvalidateRequest {
+        call.invalidateRequest()
     }
 }
 
@@ -134,5 +138,7 @@ private suspend fun RoutingContext.updateData(
             errors = errors,
             errorValues = values
         )
+    }.onInvalidateRequest {
+        call.invalidateRequest()
     }
 }

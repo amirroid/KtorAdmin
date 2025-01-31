@@ -66,7 +66,7 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
 //        val referencesItems = getReferencesItems(tables.filterIsInstance<AdminJdbcTable>(), columns)
         respond(
             VelocityContent(
-                "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin2.vm", model = mapOf(
+                "${Constants.TEMPLATES_PREFIX_PATH}/no_sql_upsert_admin.vm", model = mapOf(
                     "fields" to fields,
                     "singularTableName" to panel.getSingularName()
                         .replaceFirstChar { it.uppercaseChar() },

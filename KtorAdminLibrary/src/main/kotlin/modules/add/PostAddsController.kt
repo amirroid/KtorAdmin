@@ -16,7 +16,10 @@ import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.onError
+import response.onInvalidateRequest
 import response.onSuccess
+import utils.invalidateRequest
+import utils.serverError
 import validators.checkHasRole
 import validators.validateFieldsParameters
 import validators.validateParameters
@@ -94,6 +97,8 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
             errors = errors,
             values = values
         )
+    }.onInvalidateRequest {
+        call.invalidateRequest()
     }
 }
 
@@ -124,11 +129,12 @@ private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminM
             call.badRequest("Invalid parameters for $pluralName: $parameters")
         }
     }.onError { errors, values ->
-        println("ERROR: $errors")
         call.handleNoSqlAddView(
             panel = panel,
             errors = errors,
             values = values
         )
+    }.onInvalidateRequest {
+        call.invalidateRequest()
     }
 }

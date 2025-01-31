@@ -68,16 +68,17 @@ function handleClicks() {
     });
 }
 
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchValue = getQueryParam('search');
     handleFilterInputs()
-    handleOpenFilter()
     handleClicks()
     if (searchValue) {
         document.getElementById('search-input').value = searchValue;
     }
 });
-document.getElementById('search-button').addEventListener('click', performSearch);
+
+// document.getElementById('search-button').addEventListener('click', performSearch);
 document.getElementById('search-input').addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         performSearch();
@@ -103,9 +104,6 @@ function redirectToEdit(id) {
     window.location.href = cleanUrl().toString() + "/" + id;
 }
 
-function handleCheckboxClick(event) {
-    // جلوگیری از پخش رویداد و پیش‌فرض کلیک
-}
 
 function redirectToAdd() {
     window.location.href = cleanUrl().toString() + "/add";
@@ -148,23 +146,6 @@ function onFilterApply() {
     window.location.href = `${window.location.pathname}?${queryString}`;
 }
 
-const toggleButtons = document.querySelectorAll('.toggle-filter');
-
-function handleOpenFilter() {
-    toggleButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const filterContent = button.nextElementSibling; // پیدا کردن div مربوط به محتوای فیلتر
-
-            // اگر فیلتر بسته است، آن را باز کن
-            if (filterContent.style.display === "" || filterContent.style.display === "none") {
-                filterContent.style.display = "block"; // باز کردن فیلتر
-            } else {
-                filterContent.style.display = "none"; // بسته کردن فیلتر
-            }
-        });
-    });
-}
-
 
 function handleSortClick(columnName, currentOrder, currentDirection) {
     const url = new URL(window.location.href);
@@ -183,8 +164,7 @@ function handleSortClick(columnName, currentOrder, currentDirection) {
 
 let selectedItems = new Set();
 
-function toggleSelection(checkbox, event) {
-    const primaryKey = checkbox.value;
+function toggleSelection(checkbox, primaryKey) {
     if (checkbox.checked) {
         selectedItems.add(primaryKey);
     } else {
@@ -194,16 +174,17 @@ function toggleSelection(checkbox, event) {
 }
 
 function performSelectedAction() {
-    const actionSelect = document.getElementById("actions-select");
+    const actionSelect = document.getElementById("actions-input");
     const selectedActionKey = actionSelect.value;
 
-    // بررسی اینکه آیا عملی انتخاب شده است یا خیر
     if (!selectedActionKey) {
         alert("Please select an action!");
         return;
     }
 
-    const selectedItemsArray = Array.from(selectedItems);
+    const selectedItemsArray = Array.from(selectedItems).map(function (item) {
+        return item.toString();
+    });
 
     if (selectedItemsArray.length === 0) {
         alert("Please select at least one item.");

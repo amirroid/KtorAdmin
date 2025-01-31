@@ -26,6 +26,7 @@ function addComplexListItem(button) {
 
     const newItem = document.createElement('div');
     newItem.classList.add('dynamic-item');
+
     function renderField(field, path) {
         // Handle single-field lists
         if (field.type === 'List' && field.fields.length === 1 && !field.fields[0].fieldName) {
@@ -98,6 +99,8 @@ function addComplexListItem(button) {
         return `
     <div class="dynamic-item">
         <label>${field.fieldName || field.name}</label>
+      <br />
+        ${field.fields.length}
         <input type="${field.type.fieldType || field.type}" 
                name="${path}[${field.fieldName || field.name}]" 
                value="${field.values ? field.values[0] : ''}"

@@ -66,8 +66,8 @@
                 <div class="filter">
                     <select id="${filter.paramName}" name="${filter.paramName}">
                         <option value="">Select a value</option>
-                        <option value="1">True</option>
-                        <option value="0">False</option>
+                        <option value="on">True</option>
+                        <option value="off">False</option>
                     </select>
                 </div>
             #end
@@ -80,8 +80,8 @@
 
 
 <div class="actions-container">
-    <label for="actions-select">Select Action:</label>
-    <select id="actions-select" name="actions">
+    <label for="actions-input">Select Action:</label>
+    <select id="actions-input" name="actions">
         <option value="">-- Select Action --</option>
         #foreach($action in $actions)
             <option value="${action.key}">${action.displayText}</option>
@@ -116,7 +116,7 @@
         #foreach($data in $rows)
         <tr class="row" data-primary-key="$data.primaryKey">
             <td>
-                <input type="checkbox" class="row-checkbox" value="$data.primaryKey" onchange="toggleSelection(this)">
+                <input type="checkbox" class="row-checkbox" onchange="toggleSelection(this, $data.primaryKey)">
             </td>
             #foreach($item in $data.data)
                 <td>$!item</td>

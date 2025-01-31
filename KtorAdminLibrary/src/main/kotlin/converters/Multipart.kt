@@ -1,5 +1,6 @@
 package converters
 
+import csrf.CsrfManager
 import getters.toTypedValue
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
@@ -20,6 +21,12 @@ private fun ByteArray.toBinaryString(): String {
     return joinToString("") { "%02x".format(it) }
 }
 
+private const val CSRF_TOKEN_FIELD_NAME = "_csrf"
+
+fun checkCsrfToken(csrfToken: String?): Boolean {
+    return CsrfManager.validateToken(csrfToken)
+}
+
 internal suspend fun MultiPartData.toTableValues(
     table: AdminJdbcTable,
     initialData: List<String?>? = null
@@ -30,7 +37,15 @@ internal suspend fun MultiPartData.toTableValues(
     val fileBytes = mutableMapOf<ColumnSet, Pair<String?, ByteArray>>()
 
     val errors = mutableListOf<ErrorResponse?>()
-    forEachPart { part ->
+    val partsList = asFlow().toList()
+    partsList.firstOrNull { it.name == CSRF_TOKEN_FIELD_NAME && it is PartData.FormItem }.let {
+        val token = (it as? PartData.FormItem)?.value
+        if (!checkCsrfToken(token)) {
+            return Response.InvalidRequest
+        }
+        it?.dispose?.invoke()
+    }
+    partsList.forEach { part ->
         val name = part.name
         val column = columns.firstOrNull { it.columnName == name }
         if (column != null && name != null) {
@@ -126,7 +141,15 @@ internal suspend fun MultiPartData.toTableValues(
     val fileBytes = mutableMapOf<FieldSet, Pair<String?, ByteArray>>()
 
     val errors = mutableListOf<ErrorResponse?>()
-    forEachPart { part ->
+    val partsList = asFlow().toList()
+    partsList.firstOrNull { it.name == CSRF_TOKEN_FIELD_NAME && it is PartData.FormItem }.let {
+        val token = (it as? PartData.FormItem)?.value
+        if (!checkCsrfToken(token)) {
+            return Response.InvalidRequest
+        }
+        it?.dispose?.invoke()
+    }
+    partsList.forEach { part ->
         val name = part.name
         val field = fields.firstOrNull { it.fieldName == name }
         if (field != null && name != null) {
@@ -175,6 +198,7 @@ internal suspend fun MultiPartData.toTableValues(
                 else -> Unit
             }
         }
+        part.dispose()
     }
     val errorsNotNull = errors.filterNotNull()
     if (errorsNotNull.isNotEmpty()) {

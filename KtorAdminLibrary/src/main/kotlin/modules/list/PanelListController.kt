@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters
 import utils.badRequest
 import utils.notFound
 import configuration.DynamicConfiguration
+import csrf.CsrfManager
 import filters.JdbcFilters
 import filters.MongoFilters
 import io.ktor.http.*
@@ -110,14 +111,15 @@ private suspend fun ApplicationCall.handleJdbcList(
 
     // Respond with Velocity template
     val model = mutableMapOf(
-        "columnNames" to table.getAllAllowToShowColumns().map { it.columnName },
+        "columns" to table.getAllAllowToShowColumns(),
         "rows" to data,
         "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
         "hasSearch" to hasSearchColumn,
         "currentPage" to (currentPage?.plus(1) ?: 1),
         "maxPages" to maxPages,
         "filtersData" to filtersData,
-        "actions" to table.getAllCustomActions()
+        "actions" to table.getAllCustomActions(),
+        "csrfToken" to CsrfManager.generateToken(),
     ).apply {
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))
@@ -125,7 +127,8 @@ private suspend fun ApplicationCall.handleJdbcList(
     }.toMap()
     respond(
         VelocityContent(
-            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
+//            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
+            "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_list.vm",
             model = model
         )
     )

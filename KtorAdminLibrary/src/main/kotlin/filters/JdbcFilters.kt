@@ -93,6 +93,7 @@ internal object JdbcFilters {
 
                 columnSet?.type == ColumnType.BOOLEAN -> {
                     parameters[columnSet.columnName]?.let { value ->
+                        println("VALUE $value")
                         filters.add(Triple(columnSet, "= ", value.toTypedValue(columnSet.type)))
                     }
                 }
