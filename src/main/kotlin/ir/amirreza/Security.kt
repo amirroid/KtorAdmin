@@ -10,7 +10,7 @@ fun Application.configureSecurity() {
         ktorAdmin(name = "admin") {
             validate { credentials ->
                 if (credentials["username"] == "admin" && credentials["password"] == "password") {
-                    KtorAdminPrincipal("username", roles = listOf("admin"))
+                    KtorAdminPrincipal("Amirreza", roles = listOf("admin"))
                 } else null
             }
         }

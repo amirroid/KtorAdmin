@@ -1,5 +1,6 @@
 package modules.list
 
+import authentication.KtorAdminPrincipal
 import com.mongodb.client.model.Filters
 import utils.badRequest
 import utils.notFound
@@ -9,8 +10,10 @@ import filters.JdbcFilters
 import filters.MongoFilters
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
+import models.PanelGroup
 import models.order.Order
 import panels.*
 import repository.JdbcQueriesRepository
@@ -19,7 +22,7 @@ import utils.Constants
 import utils.serverError
 import validators.checkHasRole
 
-internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
+internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>, panelGroups: List<PanelGroup>) {
     val pluralName = parameters["pluralName"]
     val searchParameter = parameters["search"]?.takeIf { it.isNotEmpty() }
     val currentPage = runCatching {
@@ -41,7 +44,8 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>) {
                         searchParameter,
                         currentPage,
                         pluralName,
-                        parameters
+                        parameters,
+                        panelGroups
                     )
 
                     is AdminMongoCollection -> handleNoSqlList(
@@ -87,7 +91,8 @@ private suspend fun ApplicationCall.handleJdbcList(
     searchParameter: String?,
     currentPage: Int?,
     pluralName: String?,
-    parameters: Parameters
+    parameters: Parameters,
+    panelGroups: List<PanelGroup>
 ) {
     val jdbcTables = tables.filterIsInstance<AdminJdbcTable>()
     val hasSearchColumn = table.getSearches().isNotEmpty()
@@ -108,6 +113,7 @@ private suspend fun ApplicationCall.handleJdbcList(
             calculatedValue
         } else calculatedValue.plus(1)
     }
+    val user = principal<KtorAdminPrincipal>()!!
 
     // Respond with Velocity template
     val model = mutableMapOf(
@@ -120,6 +126,9 @@ private suspend fun ApplicationCall.handleJdbcList(
         "filtersData" to filtersData,
         "actions" to table.getAllCustomActions(),
         "csrfToken" to CsrfManager.generateToken(),
+        "username" to user.name,
+        "panelGroups" to panelGroups,
+        "currentPanel" to table.getPluralName(),
     ).apply {
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))

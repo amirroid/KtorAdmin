@@ -44,7 +44,7 @@
         #end
         <div id="username-container">
             <div id="username-box">
-                <h4 class="username">Amirreza Gholami</h4>
+                <h4 class="username">$!username</h4>
                 <div class="dropdown-icon">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -210,7 +210,7 @@
 </div>
 <div class="sidebar">
     <h2 class="title"><span class="istok-web-black">Ktor</span>Admin</h2>
-    <h4 class="group-text">Default</h4>
+    <h4 class="group-text"></h4>
     <button class="menu-item">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
              class="menu-icon">
@@ -233,43 +233,28 @@
         </svg>
         Dashboard
     </button>
-    <h4 class="group-text">Activities</h4>
-    <button class="menu-item selected">
-        <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"
-             class="menu-icon">
-            <path d="M10.8237 7.77H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round"/>
-            <path d="M5.58252 7.77L6.23877 8.42625L8.20752 6.4575" stroke="#9A6C00" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10.8237 13.895H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round"/>
-            <path d="M5.58252 13.895L6.23877 14.5513L8.20752 12.5825" stroke="#9A6C00" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-            <path
-                    d="M7.875 19.25H13.125C17.5 19.25 19.25 17.5 19.25 13.125V7.875C19.25 3.5 17.5 1.75 13.125 1.75H7.875C3.5 1.75 1.75 3.5 1.75 7.875V13.125C1.75 17.5 3.5 19.25 7.875 19.25Z"
-                    stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-
-        Tasks
-    </button>
-    <button class="menu-item">
-        <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"
-             class="menu-icon">
-            <path d="M10.8237 7.77H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round"/>
-            <path d="M5.58252 7.77L6.23877 8.42625L8.20752 6.4575" stroke="#9A6C00" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10.8237 13.895H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round"/>
-            <path d="M5.58252 13.895L6.23877 14.5513L8.20752 12.5825" stroke="#9A6C00" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-            <path
-                    d="M7.875 19.25H13.125C17.5 19.25 19.25 17.5 19.25 13.125V7.875C19.25 3.5 17.5 1.75 13.125 1.75H7.875C3.5 1.75 1.75 3.5 1.75 7.875V13.125C1.75 17.5 3.5 19.25 7.875 19.25Z"
-                    stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-
-        Tasks2
-    </button>
+    #foreach($group in $panelGroups)
+        <h4 class="group-text">$group.group</h4>
+        #foreach($panel in $group.panels)
+            <button class="menu-item #if($panel.pluralName == $currentPanel) selected #end">
+                <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"
+                     class="menu-icon">
+                    <path d="M10.8237 7.77H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                    <path d="M5.58252 7.77L6.23877 8.42625L8.20752 6.4575" stroke="#9A6C00" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10.8237 13.895H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                    <path d="M5.58252 13.895L6.23877 14.5513L8.20752 12.5825" stroke="#9A6C00" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                            d="M7.875 19.25H13.125C17.5 19.25 19.25 17.5 19.25 13.125V7.875C19.25 3.5 17.5 1.75 13.125 1.75H7.875C3.5 1.75 1.75 3.5 1.75 7.875V13.125C1.75 17.5 3.5 19.25 7.875 19.25Z"
+                            stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                $panel.pluralName
+            </button>
+        #end
+    #end
 </div>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/table_list.js"></script>

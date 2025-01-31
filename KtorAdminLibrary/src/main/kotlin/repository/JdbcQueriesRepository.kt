@@ -637,7 +637,7 @@ internal object JdbcQueriesRepository {
                     val item = id.toTypedValue(primaryKeyColumn.type)
                     preparedStatement.putColumn(primaryKeyColumn.type, item, index + 1)
                 }
-                preparedStatement.executeUpdate()
+                preparedStatement.execute()
             }
         }
     }

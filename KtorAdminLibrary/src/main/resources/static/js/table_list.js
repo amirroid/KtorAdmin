@@ -79,11 +79,14 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // document.getElementById('search-button').addEventListener('click', performSearch);
-document.getElementById('search-input').addEventListener('keypress', function (event) {
-    if (event.key === 'Enter') {
-        performSearch();
-    }
-});
+try {
+    document.getElementById('search-input').addEventListener('keypress', function (event) {
+        if (event.key === 'Enter') {
+            performSearch();
+        }
+    });
+} catch {
+}
 
 function performSearch() {
     const query = document.getElementById('search-input').value;

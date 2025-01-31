@@ -23,7 +23,7 @@ internal fun Routing.configureGetRouting(tables: List<AdminPanel>, authenticateN
             }
             route("/{pluralName}") {
                 get {
-                    call.handlePanelList(tables)
+                    call.handlePanelList(tables, panelGroups)
                 }
                 get("add") {
                     call.handleAddNewItem(tables)

@@ -59,5 +59,7 @@ function closeFilters() {
         topBox.classList.remove("show-filters")
         topBox.style.height = "55px"
         row.classList.remove("hide")
+    }else {
+        redirectToAdd()
     }
 }
