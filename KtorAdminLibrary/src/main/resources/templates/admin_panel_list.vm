@@ -106,7 +106,7 @@
                     <button id="filter-submit-button" onclick="onFilterApply()">Filter</button>
                 </div>
                 <div id="top-box-row-up">
-                    <h1 id="name" class="istok-web-bold">Tasks</h1>
+                    <h1 id="name" class="istok-web-bold">$pluralName</h1>
                     <div id="actions-row">
                         <div id="actions-container">
                             <select id="actions-input">

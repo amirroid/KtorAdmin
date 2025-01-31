@@ -152,6 +152,7 @@ function onFilterApply() {
 
 function handleSortClick(columnName, currentOrder, currentDirection) {
     const url = new URL(window.location.href);
+    console.log(`${columnName} ${currentDirection}`)
     if (columnName === currentOrder) {
         if (currentDirection === "asc") {
             url.searchParams.set('orderDirection', "desc");

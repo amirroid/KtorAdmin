@@ -60,16 +60,16 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>, p
 }
 
 private suspend fun ApplicationCall.getColumnOrder(table: AdminJdbcTable): Order? {
-    val orderDirection = parameters["orderDirection"]?.takeIf { it.isNotEmpty() } ?: "ASC"
-    if (orderDirection.lowercase() !in listOf("asc", "desc")) {
+    val orderDirection = parameters["orderDirection"]?.takeIf { it.isNotEmpty() }
+    if (orderDirection?.lowercase() !in listOf("asc", "desc", null)) {
         badRequest("Invalid order direction '$orderDirection'. Valid values are 'asc' or 'desc'.")
     }
     return parameters["order"]?.takeIf { it.isNotEmpty() }?.let {
         if (it !in table.getAllColumns().map { column -> column.columnName }) {
             badRequest("The column '$it' specified in the order does not exist in the table. Please provide a valid column name for ordering.")
         }
-        Order(it, orderDirection)
-    } ?: table.getDefaultOrder()
+        Order(it, orderDirection ?: "ASC")
+    } ?: table.getDefaultOrder()?.let { if (orderDirection == null) it else it.copy(direction = orderDirection) }
 }
 
 private suspend fun ApplicationCall.getFieldOrder(table: AdminMongoCollection): Order? {

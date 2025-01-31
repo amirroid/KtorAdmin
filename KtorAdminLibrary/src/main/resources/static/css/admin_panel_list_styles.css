@@ -267,12 +267,12 @@ thead::after {
     left: 16px;
     width: calc(100% - 16px);
     height: 1px;
-    bottom: 0px;
     background-color: rgba(0, 0, 0, 0.1);
 }
 
 tr {
     width: 100%;
+    flex-wrap: wrap;
     display: flex;
 }
 
@@ -295,12 +295,15 @@ th[data-col="checkbox"], td[data-col="checkbox"] {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0;
+    max-lines: 1;
 }
 
 th:not([data-col="checkbox"]), td:not([data-col="checkbox"]){
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
     white-space: nowrap;
 }
 
