@@ -9,7 +9,6 @@ import getters.toTypedValue
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.common.DisplayItem
-import models.getCurrentDate
 import models.getCurrentDateClass
 import models.order.Order
 import models.types.ColumnType
@@ -154,24 +153,31 @@ internal object JdbcQueriesRepository {
 
         // Set filter parameters
         if (hasFilters.isNotEmpty()) {
-            hasFilters.forEachIndexed { index, columnSet ->
-                val filter = filters.first { it.first.columnName == columnSet.columnName }
-                putColumn(
-                    columnType = columnSet.type,
-                    value = filter.third,
-                    index = index + hasSearches.size + 1
-                )
+            var currentIndex = hasSearches.size + 1
+            hasFilters.forEach { columnSet ->
+                val correspondFilters = filters.filter { it.first.columnName == columnSet.columnName }
+                correspondFilters.forEach {  filter ->
+                    putColumn(
+                        columnType = columnSet.type,
+                        value = filter.third,
+                        index = currentIndex
+                    )
+                    currentIndex++
+                }
             }
         }
+        val filtersNames = hasFilters.map { it.columnName }
+        val filtersCount = filters.count { it.first.columnName in filtersNames }
+
 
         // Set pagination parameters
         if (currentPage != null) {
             setInt(
-                hasFilters.size + hasSearches.size + 1,
+                filtersCount + hasSearches.size + 1,
                 DynamicConfiguration.maxItemsInPage
             )
             setInt(
-                hasFilters.size + hasSearches.size + 2,
+                filtersCount + hasSearches.size + 2,
                 DynamicConfiguration.maxItemsInPage * currentPage
             )
         }
@@ -477,13 +483,12 @@ internal object JdbcQueriesRepository {
                     joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
                     currentTable = nextTable
                 }
-                filters.filter { it.first == columnSet }
+                filters.filter { it.first.columnName == columnSet?.columnName }
                     .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
                         "${currentTable}.${currentColumn} ${filterItem.second} ?"
                     }
             }
         }
-
         return if (filterConditions.isEmpty() && searchConditions.isEmpty()) {
             ""
         } else {
@@ -492,7 +497,7 @@ internal object JdbcQueriesRepository {
                 append(" WHERE ")
                 if (searchConditions.isNotEmpty()) {
                     append(searchConditions.joinToString(" OR ") { it })
-                    if (filters.isNotEmpty()) {
+                    if (filterConditions.isNotEmpty()) {
                         append(" AND ")
                     }
                 }

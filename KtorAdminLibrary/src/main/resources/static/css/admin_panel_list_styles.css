@@ -151,8 +151,8 @@ h2 {
     visibility: hidden;
     column-gap: 16px;
     row-gap: 4px;
+    grid-template-columns: repeat(auto-fill, minmax(40vw, 1fr));
     align-items: end;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     justify-content: flex-start;
 }
 
@@ -195,16 +195,42 @@ h2 {
     font-size: 16px;
     -moz-appearance: none !important;
     -webkit-appearance: none !important;
-    min-width: 100%;
     appearance: none !important;
     padding-right: 2rem !important;
     background: url("data:image/svg+xml,%3Csvg%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M11.6199%205.22084L7.81655%209.02417C7.36738%209.47334%206.63238%209.47334%206.18322%209.02417L2.37988%205.22084%22%20stroke%3D%22%23292D32%22%20stroke-width%3D%221.5%22%20stroke-miterlimit%3D%2210%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") no-repeat;
     background-position: calc(100% - 0.75rem) center !important;
 }
 
+.filter-input-date {
+    border: 1px solid #9A6C00;
+    padding: 12px 24px;
+    color: #292D32;
+    width: calc(50% - 4px);;
+    height: 44px;
+    font-size: 16px;
+}
+
+.filter-field-parent-date .filter-input-date:nth-child(1){
+    border-radius: 16px 0px 0px 16px;
+}
+.filter-field-parent-date .filter-input-date:nth-child(2){
+    border-radius: 0px 16px 16px 0px;
+}
+
+.filter-input-date:focus {
+    border: 2px solid #9A6C00;
+    outline: none;
+}
+
 .filter-field-parent {
     border-radius: 16px;
     background-color: white;
+}
+
+.filter-field-parent-date {
+    border-radius: 16px;
+    gap: 4px;
+    width: 100%;
 }
 
 .filter-field:focus {

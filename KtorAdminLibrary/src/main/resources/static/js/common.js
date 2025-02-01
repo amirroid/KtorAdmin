@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 function toggleFilter() {
-    var topBox = document.getElementById("top-box")
+    let topBox = document.getElementById("top-box");
     let row = document.getElementById("actions-row")
     let filters = document.getElementById("filters-container")
     if (filters.classList.contains("show")) {

@@ -129,7 +129,12 @@ internal object JdbcFilters {
             parameters[startParamName]?.let { startValue ->
                 val startTimestamp = Instant.ofEpochMilli(startValue.toLong())
                     .atZone(ZoneId.systemDefault())
-                filters.add(Triple(columnSet, ">= ", startTimestamp.toLocalDateTime()))
+                val value =when(columnSet.type){
+                    ColumnType.DATETIME -> startTimestamp.toLocalDateTime()
+                    ColumnType.DATE -> startTimestamp.toLocalDate()
+                    else -> return@let
+                }
+                filters.add(Triple(columnSet, ">= ", value))
             }
         }
 
@@ -137,7 +142,12 @@ internal object JdbcFilters {
             parameters[endParamName]?.let { endValue ->
                 val endTimestamp = Instant.ofEpochMilli(endValue.toLong())
                     .atZone(ZoneId.systemDefault())
-                filters.add(Triple(columnSet, "<= ", endTimestamp.toLocalDateTime()))
+                val value =when(columnSet.type){
+                    ColumnType.DATETIME -> endTimestamp.toLocalDateTime()
+                    ColumnType.DATE -> endTimestamp.toLocalDate()
+                    else -> return@let
+                }
+                filters.add(Triple(columnSet, "<= ", value))
             }
         }
     }

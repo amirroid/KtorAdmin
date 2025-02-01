@@ -66,6 +66,25 @@
                 <div id="filters-container">
                     #foreach($filter in $filtersData)
                         #if($filter.type == "DATE")
+                            <div class="filter-field-container filter">
+                                <h4 class="filter-label">Select range of $filter.paramName</h4>
+                                <div class="filter-field-parent-date">
+                                    <input type="date" class="filter-input-date" id="${filter.paramName}-start"
+                                           name="${filter.paramName}">
+                                    <input type="date" class="filter-input-date" id="${filter.paramName}-end"
+                                           name="${filter.paramName}">
+                                </div>
+                            </div>
+                        #elseif($filter.type == "DATETIME")
+                            <div class="filter-field-container filter">
+                                <h4 class="filter-label">Select range of $filter.paramName</h4>
+                                <div class="filter-field-parent-date">
+                                    <input type="datetime-local" class="filter-input-date"
+                                           id="${filter.paramName}-start" name="${filter.paramName}">
+                                    <input type="datetime-local" class="filter-input-date" id="${filter.paramName}-end"
+                                           name="${filter.paramName}">
+                                </div>
+                            </div>
                         #elseif($filter.type == "ENUMERATION")
                             <div class="filter-field-container">
                                 <h4 class="filter-label">Select an item for $filter.paramName</h4>
