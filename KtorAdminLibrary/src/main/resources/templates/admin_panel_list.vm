@@ -224,6 +224,29 @@
                     #end
                 </tbody>
             </table>
+            <div class="pagination">
+                #set($prevPage = $currentPage - 1)
+                #set($nextPage = $currentPage + 1)
+                #if($prevPage > 1)
+                    <span class="other-pages" onclick="redirectToPage(1)">1</span>
+                    <span class="dots">...</span>
+                #end
+
+                #if($prevPage > 0)
+                    <span class="other-pages" onclick="redirectToPage($prevPage)">$prevPage</span>
+                #end
+
+                <span class="current">$currentPage</span>
+
+                #if($nextPage <= $maxPages)
+                    <span class="other-pages" onclick="redirectToPage($nextPage)">$nextPage</span>
+                #end
+
+                #if($nextPage < $maxPages)
+                    <span class="dots">...</span>
+                    <span class="other-pages" onclick="redirectToPage($maxPages)">$maxPages</span>
+                #end
+            </div>
         </div>
     </div>
 </div>

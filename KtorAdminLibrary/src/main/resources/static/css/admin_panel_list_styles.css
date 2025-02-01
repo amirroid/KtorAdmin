@@ -210,10 +210,11 @@ h2 {
     font-size: 16px;
 }
 
-.filter-field-parent-date .filter-input-date:nth-child(1){
+.filter-field-parent-date .filter-input-date:nth-child(1) {
     border-radius: 16px 0px 0px 16px;
 }
-.filter-field-parent-date .filter-input-date:nth-child(2){
+
+.filter-field-parent-date .filter-input-date:nth-child(2) {
     border-radius: 0px 16px 16px 0px;
 }
 
@@ -269,13 +270,18 @@ h2 {
     flex: 1;
     min-height: 0;
     background-color: rgba(255, 255, 255, 0.6);
-    border-radius: 20px 0px 20px 20px;
+    border-radius: 20px 0 20px 20px;
     overflow-y: auto;
     position: relative;
+    display: flex;
+    gap: 16px;
+    flex-direction: column;
+    align-items: center;
 }
 
 #bottom-box table {
     width: 100%;
+    flex-grow: 1;
     table-layout: fixed;
     border-collapse: collapse;
 }
@@ -304,7 +310,6 @@ tr {
 }
 
 
-
 th,
 td {
     padding-left: 16px;
@@ -328,7 +333,7 @@ th[data-col="checkbox"], td[data-col="checkbox"] {
     max-lines: 1;
 }
 
-th:not([data-col="checkbox"]), td:not([data-col="checkbox"]){
+th:not([data-col="checkbox"]), td:not([data-col="checkbox"]) {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -343,7 +348,8 @@ tr {
 tbody tr:nth-child(even) {
     background-color: rgba(243, 231, 203, 0.3);
 }
-tbody tr:hover{
+
+tbody tr:hover {
     background-color: rgba(154, 108, 0, 0.2);
 }
 
@@ -382,13 +388,52 @@ th:last-child::before {
     justify-content: center;
 }
 
-.custom-checkbox input:checked+.checkmark {
+.pagination {
+    margin-bottom: 16px;
+    display: flex;
+    width: auto;
+    flex-direction: row;
+    gap: 4px;
+    align-content: center;
+}
+
+.pagination .other-pages {
+    background-color: #F3E7CB;
+    border-radius: 8px;
+    color: #292D32;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: .1s;
+}
+
+
+.pagination .current {
+    background-color: #9A6C00;
+    border-radius: 8px;
+    padding: 4px 12px;
+    color: white;
+}
+
+.pagination .dots {
+    font-size: 18px;
+    color: #292D32;
+    padding: 0 8px;
+    cursor: default;
+    background: transparent;
+}
+
+.pagination .other-pages:hover {
+    background-color: #9A6C00;
+}
+
+
+.custom-checkbox input:checked + .checkmark {
     background-color: #FFB300;
     border-color: #FFB300;
 }
 
 
-.custom-checkbox .checkbox-input:checked+.checkmark .checkmark-icon {
+.custom-checkbox .checkbox-input:checked + .checkmark .checkmark-icon {
     display: block;
 
 }
@@ -413,7 +458,7 @@ th:last-child::before {
     border: 1px solid hsla(213, 10%, 18%, 0.1);
 }
 
-.menu:hover~.sidebar {
+.menu:hover ~ .sidebar {
     left: 0;
 }
 
