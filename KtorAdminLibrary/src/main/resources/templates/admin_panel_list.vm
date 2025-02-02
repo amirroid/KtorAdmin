@@ -308,7 +308,7 @@
     #foreach($group in $panelGroups)
         <h4 class="group-text">$group.group</h4>
         #foreach($panel in $group.panels)
-            <button class="menu-item #if($panel.pluralName == $currentPanel) selected #end">
+            <button class="menu-item #if($panel.pluralName == $currentPanel) selected #end" onclick="openPanel('$panel.pluralName')">
                 <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"
                      class="menu-icon">
                     <path d="M10.8237 7.77H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"

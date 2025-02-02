@@ -792,3 +792,7 @@ th:last-child::before {
     visibility: hidden;
     width: 0;
 }
+
+.no-animation {
+    transition: none !important;
+}

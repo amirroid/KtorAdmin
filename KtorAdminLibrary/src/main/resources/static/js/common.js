@@ -1,4 +1,4 @@
-function hasExpandedClassInSidebar(){
+function hasExpandedClassInSidebar() {
     const icon = document.getElementById("menu-expand-icon");
     return icon.classList.contains("expanded")
 }
@@ -31,13 +31,39 @@ function handleMenuHover() {
     });
 }
 
+const expandedSidebarValue = "expanded"
+
+function handleSidebarExpandedFromStorage() {
+    if (localStorage.getItem("sidebarExpanded") === expandedSidebarValue) {
+        const sidebar = document.getElementsByClassName("sidebar")[0];
+        const icon = document.getElementById("menu-expand-icon");
+        const container = document.getElementById("container");
+        const menuIcon = document.getElementsByClassName("menu")[0];
+        sidebar.classList.add("no-animation")
+        container.classList.add("no-animation")
+        icon.classList.add("no-animation")
+        menuIcon.classList.add("no-animation")
+        sidebar.style.left = '0';
+        expandSidebar(icon, container, sidebar, menuIcon)
+        setTimeout(
+            () => {
+                sidebar.classList.remove("no-animation")
+                container.classList.remove("no-animation")
+                icon.classList.remove("no-animation")
+                menuIcon.classList.remove("no-animation")
+            }, 500
+        )
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     handleMenuHover()
+    handleSidebarExpandedFromStorage()
 });
 
 
 function toggleFilter() {
-    var topBox = document.getElementById("top-box")
+    const topBox = document.getElementById("top-box");
     let row = document.getElementById("actions-row")
     let filters = document.getElementById("filters-container")
     if (filters.classList.contains("show")) {
@@ -77,13 +103,23 @@ function expandOrShrinkSidebar() {
         icon.classList.remove("expanded");
         container.style.width = "100%";
         container.style.marginLeft = "0";
+        localStorage.removeItem("sidebarExpanded")
         menuIcon.classList.remove("shrink");
     } else {
-        let sidebarRect = sidebar.getBoundingClientRect();
-        icon.classList.add("expanded");
-        console.log(screen.width - sidebarRect.width - 32)
-        menuIcon.classList.add("shrink");
-        container.style.marginLeft = (16 + sidebarRect.width).toString() + "px";
-        container.style.width = `${screen.width - sidebarRect.width - 48}px`;
+        localStorage.setItem("sidebarExpanded", expandedSidebarValue)
+        expandSidebar(icon, container, sidebar, menuIcon)
     }
+}
+
+function expandSidebar(icon, container, sidebar, menuIcon) {
+    let sidebarRect = sidebar.getBoundingClientRect();
+    icon.classList.add("expanded");
+    menuIcon.classList.add("shrink");
+    container.style.marginLeft = (16 + sidebarRect.width).toString() + "px";
+    container.style.width = `${screen.width - sidebarRect.width - 48}px`;
+}
+
+
+function openPanel(pluralName) {
+    window.location.href = `/admin/${pluralName}`
 }
