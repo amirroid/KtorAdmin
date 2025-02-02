@@ -3,6 +3,7 @@ package repository
 import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
 import formatters.extractTextInCurlyBraces
+import formatters.formatToDisplayInTable
 import formatters.populateTemplate
 import getters.putColumn
 import getters.toTypedValue
@@ -73,7 +74,7 @@ internal object JdbcQueriesRepository {
                         val primaryKey =
                             rs.getObject("${table.getTableName()}_${table.getPrimaryKey()}")?.toString() ?: "UNKNOWN"
                         val data = table.getAllAllowToShowColumns().map { column ->
-                            rs.getObject("${table.getTableName()}_${column.columnName}")?.toString() ?: "N/A"
+                            rs.getObject("${table.getTableName()}_${column.columnName}")?.formatToDisplayInTable(column.type)
                         }
                         result.add(DataWithPrimaryKey(primaryKey, data))
                     }
