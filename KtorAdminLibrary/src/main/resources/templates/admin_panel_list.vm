@@ -217,7 +217,7 @@
                                     </label>
                                 </td>
                             #else
-                                <td>$item</td>
+                                <td>$!item</td>
                             #end
                         #end
                     </tr>

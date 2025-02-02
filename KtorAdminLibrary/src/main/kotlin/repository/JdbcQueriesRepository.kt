@@ -74,7 +74,7 @@ internal object JdbcQueriesRepository {
                         val primaryKey =
                             rs.getObject("${table.getTableName()}_${table.getPrimaryKey()}")?.toString() ?: "UNKNOWN"
                         val data = table.getAllAllowToShowColumns().map { column ->
-                            rs.getObject("${table.getTableName()}_${column.columnName}")?.formatToDisplayInTable(column.type)
+                            rs.getObject("${table.getTableName()}_${column.columnName}").formatToDisplayInTable(column.type)
                         }
                         result.add(DataWithPrimaryKey(primaryKey, data))
                     }
