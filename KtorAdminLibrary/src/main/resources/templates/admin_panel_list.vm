@@ -55,8 +55,8 @@
                 </div>
             </div>
             <div class="dropdown-content">
-                <a href="#">First Item</a>
-                <a href="#">Logout</a>
+                <button >First Item</button>
+                <button onclick="logout()" id="logout">Logout</button>
             </div>
         </div>
     </div>

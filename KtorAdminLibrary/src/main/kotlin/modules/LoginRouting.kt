@@ -1,7 +1,9 @@
 package modules
 
+import authentication.USER_SESSIONS
 import com.vladsch.kotlin.jdbc.Session
 import configuration.DynamicConfiguration
+import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -30,6 +32,10 @@ fun Routing.configureLoginRouting(authenticatedName: String) {
         post("/admin/login") {
             val origin = call.parameters["origin"] ?: "/admin"
             call.respondRedirect(origin)
+        }
+        post("/admin/logout") {
+            call.sessions.clear(USER_SESSIONS)
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

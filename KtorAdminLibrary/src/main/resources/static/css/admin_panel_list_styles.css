@@ -687,21 +687,33 @@ th:last-child::before {
     transform: translateY(0);
 }
 
-.dropdown-content a {
-    display: block;
+.dropdown-content button {
     color: #292D32;
     height: 36px;
     margin-left: 8px;
     text-align: center;
     text-decoration: none;
     display: flex;
+    width: calc(100% - 16px);
     align-items: center;
     margin-bottom: 8px;
     margin-top: 8px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-left: none;
+    cursor: pointer;
+    border-right: none;
+    border-top: none;
+    background-color: transparent;
+    outline: none;
 }
 
-.dropdown-content a:last-child {
+.dropdown-content button:focus {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+
+
+.dropdown-content button:last-child {
     border-bottom: none;
 }
 
@@ -747,8 +759,12 @@ th:last-child::before {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 #menu-title-container {
@@ -795,4 +811,8 @@ th:last-child::before {
 
 .no-animation {
     transition: none !important;
+}
+
+#logout {
+    color: red;
 }

@@ -123,3 +123,27 @@ function expandSidebar(icon, container, sidebar, menuIcon) {
 function openPanel(pluralName) {
     window.location.href = `/admin/${pluralName}`
 }
+
+
+function logout() {
+    const loading = document.getElementById("loading");
+    loading.style.visibility = "visible";
+    const options = {
+        method: "POST",
+        body: null,
+    }
+    fetch("/admin/logout", options).then(
+        async response => {
+            if (response.ok) {
+                window.location.href = "/admin/login"
+            } else {
+                loading.style.visibility = "hidden";
+                alert(`ERROR`)
+            }
+        }
+    ).catch(error => {
+        console.log(error.message)
+    }).finally(() => {
+        loading.style.visibility = "hidden";
+    })
+}
