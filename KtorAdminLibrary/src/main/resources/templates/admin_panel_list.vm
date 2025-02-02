@@ -220,7 +220,8 @@
                                 </td>
                             #elseif($isFile)
                                 <td>
-                                    <button class="file-link" onclick="generateUrl('$item', '$pluralNameBase', '$column.columnName')">
+                                    <button class="file-link"
+                                            onclick="generateUrl('$item', '$pluralNameBase', '$column.columnName')">
                                         Link
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
@@ -315,6 +316,9 @@
             </button>
         #end
     #end
+</div>
+<div id="loading">
+    <div class="spinner"></div>
 </div>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/table_list.js"></script>

@@ -1,5 +1,6 @@
 package modules.file
 
+import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -10,18 +11,18 @@ import repository.FileRepository
 import utils.badRequest
 import utils.withAuthenticate
 
-fun Routing.handleGenerateFileUrl(panels: List<AdminPanel>, authenticateName:String?) {
+fun Routing.handleGenerateFileUrl(panels: List<AdminPanel>, authenticateName: String?) {
     withAuthenticate(authenticateName) {
         post("/admin/file_handler/generate/") {
             val parameters = call.receiveParameters()
             val fileName = parameters["fileName"]
             val field = parameters["field"]?.split(".")
             if (fileName == null) {
-                call.badRequest("File name is required")
+                call.respond(message = mapOf("error" to "File name is required"), status = HttpStatusCode.BadRequest)
                 return@post
             }
             if (field == null || field.count() != 2) {
-                call.badRequest("Field is not valid")
+                call.respond(message = mapOf("error" to "Field is not valid"), status = HttpStatusCode.BadRequest)
                 return@post
             }
             val (pluralName, itemName) = field
@@ -41,7 +42,7 @@ fun Routing.handleGenerateFileUrl(panels: List<AdminPanel>, authenticateName:Str
                 }
             }
             if (itemUploadTarget == null) {
-                call.badRequest("Field does not exist")
+                call.respond(message = mapOf("error" to "Field does not exist"), status = HttpStatusCode.BadRequest)
                 return@post
             }
             FileRepository.generateMediaUrl(

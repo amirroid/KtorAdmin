@@ -219,21 +219,31 @@ function generateUrl(fileName, pluralName, fieldName) {
     const form = new FormData()
     form.append("fileName", fileName)
     form.append("field", `${pluralName}.${fieldName}`)
+    const loading = document.getElementById("loading");
+    loading.style.visibility = "visible";
     const options = {
         method: "POST",
         body: form,
     }
     fetch("/admin/file_handler/generate/", options).then(
         async response => {
+            const json = await response.json()
             if (response.ok) {
-                const json = await response.json()
                 const url = json.url
                 if (url) {
                     window.location.href = url
+                }
+            } else {
+                const error = json.error
+                if (error) {
+                    loading.style.visibility = "hidden";
+                    alert(`ERROR: ${error}`)
                 }
             }
         }
     ).catch(error => {
         console.log(error.message)
+    }).finally(() => {
+        loading.style.visibility = "hidden";
     })
 }
