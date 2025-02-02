@@ -77,6 +77,7 @@ h2 {
     height: calc(100vh - 32px);
     display: flex;
     flex-direction: column;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #union-box {
@@ -748,4 +749,46 @@ th:last-child::before {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+#menu-title-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+}
+
+.menu-title {
+    font-size: 20px;
+}
+
+#menu-expand-icon {
+    cursor: pointer;
+}
+
+#menu-expand-icon {
+    cursor: pointer;
+    transform: rotateY(0deg);
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#menu-expand-icon.expanded {
+    transform: rotateY(180deg);
+}
+
+.menu {
+    width: 24px;
+    display: flex;
+    visibility: visible;
+    align-items: center;
+    opacity: 1;
+    justify-content: center;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu.shrink {
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
 }
