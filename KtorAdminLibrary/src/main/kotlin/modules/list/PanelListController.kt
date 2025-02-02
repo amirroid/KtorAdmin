@@ -120,6 +120,7 @@ private suspend fun ApplicationCall.handleJdbcList(
         "columns" to table.getAllAllowToShowColumns(),
         "rows" to data,
         "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
+        "pluralNameBase" to pluralName.orEmpty(),
         "hasSearch" to hasSearchColumn,
         "currentPage" to (currentPage?.plus(1) ?: 1),
         "maxPages" to maxPages,

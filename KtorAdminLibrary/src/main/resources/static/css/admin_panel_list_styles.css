@@ -703,3 +703,20 @@ th:last-child::before {
 .dropdown-content a:last-child {
     border-bottom: none;
 }
+
+
+.file-link {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    color: #9A6C00;
+}
+
+.file-link:focus {
+    border: none;
+    outline: none;
+}

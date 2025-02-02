@@ -5,7 +5,7 @@ function getQueryParam(param) {
 
 function handleFilterInputs() {
     const urlParams = new URLSearchParams(window.location.search);
-    var isAnyFilter = false
+    let isAnyFilter = false;
 
     // Iterate over all filter containers
     document.querySelectorAll('.filter').forEach(filterContainer => {
@@ -57,7 +57,7 @@ function handleFilterInputs() {
             isAnyFilter = true
         }
     });
-    if (isAnyFilter){
+    if (isAnyFilter) {
         toggleFilter()
     }
 }
@@ -71,7 +71,8 @@ function handleClicks() {
         row.addEventListener("click", function (event) {
             const checkbox = row.querySelector(".row-checkbox");
             const checkmark = row.querySelector(".checkmark");
-            if (checkbox && event.target !== checkbox && checkmark && event.target !== checkmark) {
+            const fileLink = row.querySelector(".file-link");
+            if (checkbox && event.target !== checkbox && checkmark && event.target !== checkmark && event.target !== fileLink) {
                 redirectToEdit(row.dataset.primaryKey);
             }
         });
@@ -208,8 +209,31 @@ function performSelectedAction() {
     document.getElementById("action-key").value = selectedActionKey;
     document.getElementById("ids").value = JSON.stringify(selectedItemsArray);
 
-    // ارسال فرم
     const form = document.getElementById("action-form");
     form.action = `${cleanUrl()}/action/${selectedActionKey}`;
     form.submit();
+}
+
+
+function generateUrl(fileName, pluralName, fieldName) {
+    const form = new FormData()
+    form.append("fileName", fileName)
+    form.append("field", `${pluralName}.${fieldName}`)
+    const options = {
+        method: "POST",
+        body: form,
+    }
+    fetch("/admin/file_handler/generate/", options).then(
+        async response => {
+            if (response.ok) {
+                const json = await response.json()
+                const url = json.url
+                if (url) {
+                    window.location.href = url
+                }
+            }
+        }
+    ).catch(error => {
+        console.log(error.message)
+    })
 }
