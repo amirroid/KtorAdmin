@@ -1,10 +1,12 @@
 package modules.update
 
+import authentication.KtorAdminPrincipal
 import csrf.CsrfManager
 import utils.notFound
 import utils.serverError
 import getters.getReferencesItems
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
 import models.ColumnSet
@@ -56,6 +58,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
         notFound("No data found with primary key: $primaryKey")
     } else {
         runCatching {
+            val user = principal<KtorAdminPrincipal>()!!
             val columns = table.getAllAllowToShowColumnsInUpsert()
             val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
             val values = errorValues.takeIf { it.isNotEmpty() } ?: columns.mapIndexed { index, column ->
@@ -80,6 +83,8 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "csrfToken" to CsrfManager.generateToken(),
                         "panelGroups" to panelGroups,
                         "currentPanel" to table.getPluralName(),
+                        "username" to user.name,
+                        "isUpdate" to true
                     )
                 )
             )

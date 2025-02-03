@@ -1,10 +1,12 @@
 package modules.add
 
+import authentication.KtorAdminPrincipal
 import csrf.CsrfManager
 import utils.badRequest
 import utils.notFound
 import getters.getReferencesItems
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
 import models.PanelGroup
@@ -37,6 +39,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
     panelGroups: List<PanelGroup> = emptyList(),
 ) {
     runCatching {
+        val user = principal<KtorAdminPrincipal>()!!
         val columns = table.getAllAllowToShowColumnsInUpsert()
         val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
         respond(
@@ -51,6 +54,8 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "csrfToken" to CsrfManager.generateToken(),
                     "panelGroups" to panelGroups,
                     "currentPanel" to table.getPluralName(),
+                    "username" to user.name,
+                    "isUpdate" to false
                 )
             )
         )

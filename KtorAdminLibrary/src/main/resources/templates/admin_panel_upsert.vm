@@ -27,7 +27,7 @@
         <div id="search-container"></div>
         <div id="username-container">
             <div id="username-box">
-                <h4 class="username">Amirreza Gholami</h4>
+                <h4 class="username">$username</h4>
                 <div class="dropdown-icon">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -38,14 +38,18 @@
                 </div>
             </div>
             <div class="dropdown-content">
-                <a href="#">First Item</a>
-                <a href="#">Logout</a>
+                <button>First Item</button>
+                <button onclick="logout()" id="logout">Logout</button>
             </div>
         </div>
     </div>
     <div id="union-box">
         <div id="top-box-row-up">
-            <h1 id="name" class="istok-web-bold">Add a new task</h1>
+            #if($isUpdate)
+                <h1 id="name" class="istok-web-bold">Update $singularTableName</h1>
+            #else
+                <h1 id="name" class="istok-web-bold">Add a new $singularTableName</h1>
+            #end
         </div>
         <div id="bottom-box">
             <form method="post" enctype="multipart/form-data" id="form-box">
