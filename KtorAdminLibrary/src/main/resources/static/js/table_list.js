@@ -72,7 +72,13 @@ function handleClicks() {
             const checkbox = row.querySelector(".row-checkbox");
             const checkmark = row.querySelector(".checkmark");
             const fileLink = row.querySelector(".file-link");
-            if (checkbox && event.target !== checkbox && checkmark && event.target !== checkmark && event.target !== fileLink) {
+            const icon = row.querySelector(".checkmark-icon");
+            const paths = icon ? icon.querySelectorAll("path") : [];
+            const isTargetValid = [checkbox, checkmark, fileLink, icon, ...paths].some(element =>
+                element && event.target.closest(element) === element
+            );
+
+            if (!isTargetValid) {
                 redirectToEdit(row.dataset.primaryKey);
             }
         });

@@ -12,6 +12,7 @@ import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import annotations.references.References
 import annotations.roles.AccessRoles
+import annotations.status.StatusStyle
 import annotations.uploads.LocalUpload
 import models.actions.Action
 import org.jetbrains.exposed.sql.*
@@ -52,6 +53,7 @@ object Tasks : Table("tasks") {
     val description = text("description")
 
     @Enumeration("Low", "Medium", "High")
+    @StatusStyle("#5ab071", "#493391", "#d62454")
     val priority = customEnumeration(
         "priority",
         "VARCHAR(50)",

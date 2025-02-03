@@ -8,6 +8,7 @@ import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.references.References
+import annotations.status.StatusStyle
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
@@ -33,6 +34,7 @@ object PropertiesRepository {
             property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
         val columnName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() } ?: name
         val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
+        val enumValues = property.annotations.getEnumerations()
         if (hasUploadAnnotation) {
             UploadUtils.validatePropertyType(genericArgument, columnName)
         }
@@ -40,6 +42,18 @@ object PropertiesRepository {
             hasEnumerationColumnAnnotation -> ColumnType.ENUMERATION
             hasUploadAnnotation -> ColumnType.FILE
             else -> guessPropertyType(genericArgument)
+        }
+        val statusColors = property.annotations.getStatusStyles()
+        if (columnType != ColumnType.ENUMERATION && statusColors != null) {
+            throw IllegalArgumentException("StatusStyle can only be used with ENUMERATION column types.")
+        }
+        val hexColorPattern = "^#([A-Fa-f0-9]{6})$".toRegex()
+        if ((statusColors != null && enumValues != null) && statusColors.count() != enumValues.count() || statusColors?.any {
+                !hexColorPattern.matches(
+                    it
+                )
+            } == true) {
+            throw IllegalArgumentException("($name) Invalid status colors: The number of status colors must match the number of enumeration values, and all colors must be valid hex codes (excluding #000000).")
         }
         val showInPanel = hasIgnoreColumnAnnotation(property.annotations).not()
         val nullable = infoAnnotation?.findArgument<Boolean>("nullable") ?: false
@@ -66,12 +80,13 @@ object PropertiesRepository {
             uploadTarget = uploadTarget,
             allowedMimeTypes = allowedMimeTypes,
             defaultValue = defaultValue,
-            enumerationValues = property.annotations.getEnumerations(),
+            enumerationValues = enumValues,
             limits = property.annotations.getLimits(),
             reference = property.annotations.getReferences(),
             readOnly = isReadOnly,
             computedColumn = computedColumnInfo?.first,
             autoNowDate = autoNowDate,
+            statusColors = statusColors
         )
     }
 
@@ -142,6 +157,16 @@ object PropertiesRepository {
         return find { it.shortName.asString() == Enumeration::class.simpleName }
             ?.arguments
             ?.firstOrNull { it.name?.asString() == "values" }
+            ?.value
+            ?.let { it as? List<*> }
+            ?.filterIsInstance<String>()
+            ?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun Sequence<KSAnnotation>.getStatusStyles(): List<String>? {
+        return find { it.shortName.asString() == StatusStyle::class.simpleName }
+            ?.arguments
+            ?.firstOrNull { it.name?.asString() == "color" }
             ?.value
             ?.let { it as? List<*> }
             ?.filterIsInstance<String>()

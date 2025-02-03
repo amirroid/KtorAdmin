@@ -24,9 +24,9 @@
         <div class="left-content">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                  class="menu">
-                <path d="M3 7H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" />
-                <path d="M3 12H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" />
-                <path d="M3 17H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" />
+                <path d="M3 7H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M3 12H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M3 17H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
             <h2 class="title"><span class="istok-web-black">Ktor</span>Admin</h2>
         </div>
@@ -55,7 +55,7 @@
                 </div>
             </div>
             <div class="dropdown-content">
-                <button >First Item</button>
+                <button>First Item</button>
                 <button onclick="logout()" id="logout">Logout</button>
             </div>
         </div>
@@ -235,6 +235,19 @@
                                         </svg>
                                     </button>
                                 </td>
+                            #elseif($column.type.name == "ENUMERATION" and $column.statusColors)
+                                #foreach($enumItem in $column.enumerationValues)
+                                    #if($enumItem == $!item)
+                                        #set($color = $column.statusColors.get($foreach.index))
+                                    #end
+                                #end
+                                <td>
+                                    <div class="status-container">
+                                        <div class="status-style">
+                                            <div style="background-color: $color" class="status-dot"></div> $!item</div>
+                                        <div class="status-border" style="border-color: $color;"></div>
+                                    </div>
+                                </td>
                             #else
                                 <td>$!item</td>
                             #end
@@ -271,16 +284,17 @@
 </div>
 <div class="sidebar">
     <div id="menu-title-container">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" id="menu-expand-icon" xmlns="http://www.w3.org/2000/svg" onclick="expandOrShrinkSidebar()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" id="menu-expand-icon"
+             xmlns="http://www.w3.org/2000/svg" onclick="expandOrShrinkSidebar()">
             <path
                     d="M21.97 15V9C21.97 4 19.97 2 14.97 2H8.96997C3.96997 2 1.96997 4 1.96997 9V15C1.96997 20 3.96997 22 8.96997 22H14.97C19.97 22 21.97 20 21.97 15Z"
-                    stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M14.97 2V22" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round" />
+                  stroke-linejoin="round"/>
             <path d="M7.96997 9.43994L10.53 11.9999L7.96997 14.5599" stroke="#292D32" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round" />
+                  stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <h2 class="menu-title"><span class="istok-web-black">Ktor</span>Admin</h2>
+        <h2 class="title"><span class="istok-web-black">Ktor</span>Admin</h2>
     </div>
     <h4 class="group-text"></h4>
     <button class="menu-item">
@@ -308,7 +322,8 @@
     #foreach($group in $panelGroups)
         <h4 class="group-text">$group.group</h4>
         #foreach($panel in $group.panels)
-            <button class="menu-item #if($panel.pluralName == $currentPanel) selected #end" onclick="openPanel('$panel.pluralName')">
+            <button class="menu-item #if($panel.pluralName == $currentPanel) selected #end"
+                    onclick="openPanel('$panel.pluralName')">
                 <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"
                      class="menu-icon">
                     <path d="M10.8237 7.77H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"

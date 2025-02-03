@@ -19,6 +19,7 @@ fun ColumnSet.toSuitableStringForFile() = """
     |    allowedMimeTypes = ${allowedMimeTypes?.toSuitableStringForFile()},
     |    defaultValue = ${defaultValue?.let { "\"${it}\"" }},
     |    enumerationValues = ${enumerationValues?.toSuitableStringForFile()},
+    |    statusColors = ${statusColors?.toSuitableStringForFile()},
     |    limits = ${limits?.toFormattedString()},
     |    reference = ${reference?.toFormattedString()},
     |    readOnly = $readOnly,
