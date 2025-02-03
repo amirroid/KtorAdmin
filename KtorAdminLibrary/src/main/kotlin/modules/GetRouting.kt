@@ -26,10 +26,10 @@ internal fun Routing.configureGetRouting(tables: List<AdminPanel>, authenticateN
                     call.handlePanelList(tables, panelGroups)
                 }
                 get("add") {
-                    call.handleAddNewItem(tables)
+                    call.handleAddNewItem(tables, panelGroups)
                 }
                 get("/{primaryKey}") {
-                    call.handleEditItem(tables)
+                    call.handleEditItem(tables, panelGroups)
                 }
             }
         }

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل ادمین</title>
+    <link href="/static/css/admin_panel_upsert.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Istok+Web:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+          rel="stylesheet">
+</head>
+
+<body>
+<div id="container">
+    <div id="header">
+        <div class="left-content">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                 class="menu">
+                <path d="M3 7H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M3 12H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M3 17H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <h2 class="title"><span class="istok-web-black">Ktor</span>Admin</h2>
+        </div>
+        <div id="search-container"></div>
+        <div id="username-container">
+            <div id="username-box">
+                <h4 class="username">Amirreza Gholami</h4>
+                <div class="dropdown-icon">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                                d="M11.6199 5.22083L7.81655 9.02417C7.36738 9.47333 6.63238 9.47333 6.18322 9.02417L2.37988 5.22083"
+                                stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                                stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="dropdown-content">
+                <a href="#">First Item</a>
+                <a href="#">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div id="union-box">
+        <div id="top-box-row-up">
+            <h1 id="name" class="istok-web-bold">Add a new task</h1>
+        </div>
+        <div id="bottom-box">
+            <form method="post" enctype="multipart/form-data" id="form-box">
+                #foreach($column in $columns)
+                    <div class="sidebar-input-wrapper">
+                        #if($values.get($column.columnName))
+                            #set($defaultValue = $values.get($column.columnName))
+                        #else
+                            #if ($column.defaultValue)
+                                #set($defaultValue = $column.defaultValue)
+                            #end
+                        #end
+                        #if($column.type.name != "BOOLEAN")
+                            <label class="item-label">$column.verboseName</label>
+                        #end
+                        #if($column.reference)
+                            #set($referenceValues = $references.get($column))
+                            <div class="select-input-background">
+                                <select name="$column.columnName" class="select-input"
+                                        #if($column.readOnly)disabled#end>
+                                    <option value="">Select an item</option>
+                                    #foreach($refValue in $referenceValues)
+                                        <option value="$refValue.itemKey"
+                                                #if($refValue.itemKey == $!defaultValue)selected#end>$refValue.item</option>
+                                    #end
+                                </select>
+                            </div>
+                        #else
+                            <!-- STRING -->
+                            #if($column.type.name == "STRING")
+                                <input type="text" class="form-input" name="$column.columnName" value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+                            <!-- INTEGER / UINTEGER -->
+                            #if($column.type.name == "INTEGER" || $column.type.name == "UINTEGER")
+                                <input type="number" class="form-input" name="$column.columnName" value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+                            <!-- SHORT / USHORT -->
+                            #if($column.type.name == "SHORT" || $column.type.name == "USHORT")
+                                <input type="number" class="form-input" name="$column.columnName" value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+                            <!-- LONG / ULONG -->
+                            #if($column.type.name == "LONG" || $column.type.name == "ULONG")
+                                <input type="number" class="form-input" name="$column.columnName" value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+                            <!-- DOUBLE -->
+                            #if($column.type.name == "DOUBLE")
+                                <input type="number" step="any" class="form-input" name="$column.columnName"
+                                       value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+                            <!-- FLOAT -->
+                            #if($column.type.name == "FLOAT")
+                                <input type="number" step="any" class="form-input" name="$column.columnName"
+                                       value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+                            <!-- BIG_DECIMAL -->
+                            #if($column.type.name == "BIG_DECIMAL")
+                                <input type="text" class="form-input" name="$column.columnName" value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+                            <!-- CHAR -->
+                            #if($column.type.name == "CHAR")
+                                <input type="text" maxlength="1" class="form-input" name="$column.columnName"
+                                       value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+                            <!-- BOOLEAN -->
+                            #if($column.type.name == "BOOLEAN")
+                                <label class="custom-checkbox">
+                                    #if($column.nullable == false)
+                                        <input type="hidden" name="${column.columnName}" value="off">
+                                    #end
+                                    <input type="checkbox" class="checkbox-input" name="${column.columnName}"
+                                        #if($!defaultValue == "true" || $!defaultValue == "1")
+                                           checked #end #if($column.readOnly) disabled #end>
+                                    <span class="checkmark">
+                                        <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 3.83L3.83 6.66L9.5 1" stroke="white" stroke-width="1.5"
+                                                  stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>
+                                    $column.verboseName
+                                </label>
+                            #end
+
+                            <!-- ENUMERATION -->
+                            #if($column.type.name == "ENUMERATION")
+                                <div class="select-input-background">
+                                    <select name="$column.columnName" class="select-input"
+                                            #if($column.readOnly)disabled#end>
+                                        #foreach($value in $column.enumerationValues)
+                                            <option value="$value"
+                                                    #if($value == $!defaultValue)selected#end>$value</option>
+                                        #end
+                                    </select>
+                                </div>
+                            #end
+
+                            <!-- DATE -->
+                            #if($column.type.name == "DATE")
+                                <input type="date" class="form-input" name="$column.columnName" value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+                            <!-- DATETIME -->
+                            #if($column.type.name == "DATETIME")
+                                <input type="datetime-local" class="form-input" name="$column.columnName"
+                                       value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
+
+                            <!-- BINARY -->
+                            #if($column.type.name == "BINARY")
+                                <label for="$column.columnName"
+                                       class="file-input#if($column.readOnly) readonly-field#end">Select a
+                                    file</label>
+                                <input type="file" class="file-input-field" name="$column.columnName"
+                                       id="$column.columnName"
+                                       #if($column.readOnly)disabled#end/>
+                                <p class="selected-file-label" id="selected-file-$column.columnName"></p>
+                            #end
+
+                            <!-- FILE -->
+                            #if($column.type.name == "FILE")
+                                <label for="$column.columnName"
+                                       class="file-input#if($column.readOnly) readonly-field#end">Select a
+                                    file</label>
+                                <input type="file" class="file-input-field" name="$column.columnName"
+                                       id="$column.columnName"
+                                       #if($column.readOnly)disabled#end/>
+                                <p class="selected-file-label" id="selected-file-$column.columnName"></p>
+                                #if($values.get($column.columnName))
+                                    <p class="selected-file-label">Current file: <a
+                                            href="$!values.get($column.columnName)">$!values.get($column.columnName)</a>
+                                    </p>
+                                #end
+                            #end
+
+                        #end
+                        #if($!errors.get($column.columnName))
+                            <div class="error_message">
+                                #foreach($error in $errors.get($column.columnName).messages)
+                                    $error<br/>
+                                #end
+                            </div>
+                        #end
+                    </div>
+                #end
+                <input type="hidden" value="$csrfToken" name="_csrf">
+                <button id="submit-button" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="sidebar">
+    <div id="menu-title-container">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" id="menu-expand-icon"
+             xmlns="http://www.w3.org/2000/svg" onclick="expandOrShrinkSidebar()">
+            <path
+                    d="M21.97 15V9C21.97 4 19.97 2 14.97 2H8.96997C3.96997 2 1.96997 4 1.96997 9V15C1.96997 20 3.96997 22 8.96997 22H14.97C19.97 22 21.97 20 21.97 15Z"
+                    stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14.97 2V22" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round"/>
+            <path d="M7.96997 9.43994L10.53 11.9999L7.96997 14.5599" stroke="#292D32" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h2 class="title"><span class="istok-web-black">Ktor</span>Admin</h2>
+    </div>
+    <h4 class="group-text"></h4>
+    <button class="menu-item">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
+             class="menu-icon">
+            <path
+                    d="M12.75 7.5H14.25C15.75 7.5 16.5 6.75 16.5 5.25V3.75C16.5 2.25 15.75 1.5 14.25 1.5H12.75C11.25 1.5 10.5 2.25 10.5 3.75V5.25C10.5 6.75 11.25 7.5 12.75 7.5Z"
+                    stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            <path
+                    d="M3.75 16.5H5.25C6.75 16.5 7.5 15.75 7.5 14.25V12.75C7.5 11.25 6.75 10.5 5.25 10.5H3.75C2.25 10.5 1.5 11.25 1.5 12.75V14.25C1.5 15.75 2.25 16.5 3.75 16.5Z"
+                    stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            <path
+                    d="M4.5 7.5C6.15685 7.5 7.5 6.15685 7.5 4.5C7.5 2.84315 6.15685 1.5 4.5 1.5C2.84315 1.5 1.5 2.84315 1.5 4.5C1.5 6.15685 2.84315 7.5 4.5 7.5Z"
+                    stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+            <path
+                    d="M13.5 16.5C15.1569 16.5 16.5 15.1569 16.5 13.5C16.5 11.8431 15.1569 10.5 13.5 10.5C11.8431 10.5 10.5 11.8431 10.5 13.5C10.5 15.1569 11.8431 16.5 13.5 16.5Z"
+                    stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                    stroke-linejoin="round"/>
+        </svg>
+        Dashboard
+    </button>
+    #foreach($group in $panelGroups)
+        <h4 class="group-text">$group.group</h4>
+        #foreach($panel in $group.panels)
+            <button class="menu-item #if($panel.pluralName == $currentPanel) selected #end"
+                    onclick="openPanel('$panel.pluralName')">
+                <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"
+                     class="menu-icon">
+                    <path d="M10.8237 7.77H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                    <path d="M5.58252 7.77L6.23877 8.42625L8.20752 6.4575" stroke="#9A6C00" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10.8237 13.895H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                    <path d="M5.58252 13.895L6.23877 14.5513L8.20752 12.5825" stroke="#9A6C00" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                            d="M7.875 19.25H13.125C17.5 19.25 19.25 17.5 19.25 13.125V7.875C19.25 3.5 17.5 1.75 13.125 1.75H7.875C3.5 1.75 1.75 3.5 1.75 7.875V13.125C1.75 17.5 3.5 19.25 7.875 19.25Z"
+                            stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                $panel.pluralName
+            </button>
+        #end
+    #end
+</div>
+<script>
+    const computedColumns = [];
+        #foreach($column in $columns)
+            #if($column.computedColumn)
+            computedColumns.push({
+                columnName: "$column.columnName",
+                computedColumn: "$column.computedColumn"
+            });
+            #end
+        #end
+</script>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/upsert_admin.js"></script>
+</body>
+
+</html>

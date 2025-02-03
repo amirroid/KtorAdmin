@@ -37,21 +37,23 @@ internal suspend fun MultiPartData.toTableValues(
     val fileBytes = mutableMapOf<ColumnSet, Pair<String?, ByteArray>>()
 
     val errors = mutableListOf<ErrorResponse?>()
-    val partsList = asFlow().toList()
-    partsList.firstOrNull { it.name == CSRF_TOKEN_FIELD_NAME && it is PartData.FormItem }.let {
-        val token = (it as? PartData.FormItem)?.value
-        if (!checkCsrfToken(token)) {
-            return Response.InvalidRequest
-        }
-        it?.dispose?.invoke()
-    }
-    partsList.forEach { part ->
+    var isInvalidRequest = false
+    forEachPart { part ->
         val name = part.name
         val column = columns.firstOrNull { it.columnName == name }
+        if (name == CSRF_TOKEN_FIELD_NAME && part is PartData.FormItem) {
+            val token = (part as? PartData.FormItem)?.value
+            part.dispose()
+            if (!checkCsrfToken(token)) {
+                isInvalidRequest = true
+                return@forEachPart
+            }
+        }
         if (column != null && name != null) {
             when (part) {
                 is PartData.FileItem -> {
                     val bytes = part.provider().readRemaining().readByteArray()
+                    println("BYTE SIZE ${bytes.size}")
                     val fileName = part.originalFileName?.takeIf { it.isNotEmpty() }
                     val partSize = bytes.size.toLong()
                     when (column.type) {
@@ -109,7 +111,9 @@ internal suspend fun MultiPartData.toTableValues(
                 else -> Unit
             }
         }
+        part.dispose()
     }
+    if (isInvalidRequest) return Response.InvalidRequest
     val errorsNotNull = errors.filterNotNull()
     if (errorsNotNull.isNotEmpty()) {
         return Response.Error(
@@ -141,16 +145,17 @@ internal suspend fun MultiPartData.toTableValues(
     val fileBytes = mutableMapOf<FieldSet, Pair<String?, ByteArray>>()
 
     val errors = mutableListOf<ErrorResponse?>()
-    val partsList = asFlow().toList()
-    partsList.firstOrNull { it.name == CSRF_TOKEN_FIELD_NAME && it is PartData.FormItem }.let {
-        val token = (it as? PartData.FormItem)?.value
-        if (!checkCsrfToken(token)) {
-            return Response.InvalidRequest
-        }
-        it?.dispose?.invoke()
-    }
-    partsList.forEach { part ->
+    var isInvalidRequest = false
+    forEachPart { part ->
         val name = part.name
+        if (name == CSRF_TOKEN_FIELD_NAME && part is PartData.FormItem) {
+            val token = (part as? PartData.FormItem)?.value
+            part.dispose()
+            if (!checkCsrfToken(token)) {
+                isInvalidRequest = true
+                return@forEachPart
+            }
+        }
         val field = fields.firstOrNull { it.fieldName == name }
         if (field != null && name != null) {
             when (part) {
@@ -189,9 +194,6 @@ internal suspend fun MultiPartData.toTableValues(
                     val itemErrors = Validators.validateFieldParameter(field, part.value)
                         ?.let { ErrorResponse(field.fieldName.toString(), listOf(it)) }
                     errors += itemErrors
-                    if (name == "createdAt") {
-                        println("DATE IS ${part.value}")
-                    }
                     items[name] = part.value.let { it to it.toTypedValue(field.type) }
                 }
 
@@ -200,6 +202,7 @@ internal suspend fun MultiPartData.toTableValues(
         }
         part.dispose()
     }
+    if (isInvalidRequest) return Response.InvalidRequest
     val errorsNotNull = errors.filterNotNull()
     if (errorsNotNull.isNotEmpty()) {
         return Response.Error(

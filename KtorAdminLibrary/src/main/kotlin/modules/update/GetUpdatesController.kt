@@ -8,6 +8,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
 import models.ColumnSet
+import models.PanelGroup
 import models.field.FieldSet
 import models.types.ColumnType
 import models.types.FieldType
@@ -21,7 +22,10 @@ import utils.Constants
 import validators.checkHasRole
 
 
-internal suspend fun ApplicationCall.handleEditItem(panels: List<AdminPanel>) {
+internal suspend fun ApplicationCall.handleEditItem(
+    panels: List<AdminPanel>,
+    panelGroups: List<PanelGroup>
+) {
     val pluralName = parameters["pluralName"]
     val primaryKey = parameters["primaryKey"]
     val panel = panels.find { it.getPluralName() == pluralName }
@@ -31,7 +35,7 @@ internal suspend fun ApplicationCall.handleEditItem(panels: List<AdminPanel>) {
         else -> {
             checkHasRole(panel) {
                 when (panel) {
-                    is AdminJdbcTable -> handleJdbcEditView(primaryKey, panel, panels)
+                    is AdminJdbcTable -> handleJdbcEditView(primaryKey, panel, panels, panelGroups = panelGroups)
                     is AdminMongoCollection -> handleNoSqlEditView(primaryKey, panel, panels)
                 }
             }
@@ -44,7 +48,8 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
     table: AdminJdbcTable,
     panels: List<AdminPanel>,
     errors: List<ErrorResponse> = emptyList(),
-    errorValues: Map<String, String?> = emptyMap()
+    errorValues: Map<String, String?> = emptyMap(),
+    panelGroups: List<PanelGroup> = emptyList(),
 ) {
     val data = JdbcQueriesRepository.getData(table, primaryKey)
     if (data == null) {
@@ -64,7 +69,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
             }.toMap()
             respond(
                 VelocityContent(
-                    "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin.vm", model = mapOf(
+                    "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm", model = mapOf(
                         "columns" to columns,
                         "tableName" to table.getTableName(),
                         "values" to values,
@@ -72,7 +77,9 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                             .replaceFirstChar { it.uppercaseChar() },
                         "references" to referencesItems,
                         "errors" to errors.toMap(),
-                        "csrfToken" to CsrfManager.generateToken()
+                        "csrfToken" to CsrfManager.generateToken(),
+                        "panelGroups" to panelGroups,
+                        "currentPanel" to table.getPluralName(),
                     )
                 )
             )

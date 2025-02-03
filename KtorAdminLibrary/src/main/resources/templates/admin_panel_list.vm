@@ -153,7 +153,7 @@
                 </div>
             </div>
             <div id="curved-diagonal-cut"></div>
-            <div id="top-box" onclick="closeFilters()">
+            <div id="top-box" onclick="closeFiltersOrNavigateToAdd()">
                 <div id="top-box-icon">
                     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6 12H18" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"

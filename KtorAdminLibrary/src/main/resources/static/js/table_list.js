@@ -75,9 +75,8 @@ function handleClicks() {
             const icon = row.querySelector(".checkmark-icon");
             const paths = icon ? icon.querySelectorAll("path") : [];
             const isTargetValid = [checkbox, checkmark, fileLink, icon, ...paths].some(element =>
-                element && event.target.closest(element) === element
+                element && element.contains(event.target)
             );
-
             if (!isTargetValid) {
                 redirectToEdit(row.dataset.primaryKey);
             }
@@ -252,4 +251,38 @@ function generateUrl(fileName, pluralName, fieldName) {
     }).finally(() => {
         loading.style.visibility = "hidden";
     })
+}
+
+
+function toggleFilter() {
+    const topBox = document.getElementById("top-box");
+    let row = document.getElementById("actions-row")
+    let filters = document.getElementById("filters-container")
+    if (filters.classList.contains("show")) {
+        topBox.style.height = "55px"
+        row.classList.remove("hide")
+        topBox.classList.remove("show-filters")
+        filters.classList.remove("show")
+    } else {
+        let filtersSize = filters.getBoundingClientRect();
+        row.classList.add("hide")
+        filters.classList.add("show")
+        topBox.classList.add("show-filters")
+        topBox.style.height = `${filtersSize.height + 24 + 55}px`;
+    }
+}
+
+
+function closeFiltersOrNavigateToAdd() {
+    let topBox = document.getElementById("top-box")
+    let filters = document.getElementById("filters-container")
+    let row = document.getElementById("actions-row")
+    if (filters.classList.contains("show")) {
+        filters.classList.remove("show")
+        topBox.classList.remove("show-filters")
+        topBox.style.height = "55px"
+        row.classList.remove("hide")
+    } else {
+        window.location.href = cleanUrl().toString() + "/add"
+    }
 }

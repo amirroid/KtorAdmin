@@ -129,6 +129,7 @@ private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminM
             call.badRequest("Invalid parameters for $pluralName: $parameters")
         }
     }.onError { errors, values ->
+        println("ERRORS IS $errors")
         call.handleNoSqlAddView(
             panel = panel,
             errors = errors,
