@@ -524,3 +524,21 @@ input:disabled, select:disabled, input:read-only {
 .no-animation {
     transition: none !important;
 }
+
+.file-link {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    margin-left: 16px;
+    margin-top: 6px;
+    color: #9A6C00;
+}
+
+.file-link:focus {
+    border: none;
+    outline: none;
+}

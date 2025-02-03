@@ -34,6 +34,10 @@ function handleFileInputs() {
 }
 
 
+function openFileLink(link) {
+    window.open(link, "_blank")
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     handleComputedColumns()
     handleFileInputs()
