@@ -132,6 +132,15 @@ h2 {
     padding: 24px;
 }
 
+#bottom-box::-webkit-scrollbar {
+    display: none;
+}
+
+#bottom-box {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
 .file-input-field {
     display: none;
 }
