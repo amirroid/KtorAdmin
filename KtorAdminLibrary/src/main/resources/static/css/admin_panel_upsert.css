@@ -153,6 +153,8 @@ h2 {
     color: white;
     border-radius: 12px;
     transition: .3s ease-in;
+    max-width: 200px;
+    margin-left: 0;
     cursor: pointer;
 }
 

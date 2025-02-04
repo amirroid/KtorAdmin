@@ -600,8 +600,6 @@ th:last-child::before {
     display: flex;
     align-items: center;
     flex-direction: row;
-    background-color: #F3E7CB;
-    border-radius: 16px;
     height: 40px;
     padding-left: 8px;
     gap: 8px;
@@ -609,6 +607,11 @@ th:last-child::before {
     padding-right: 8px;
     margin-right: auto;
     margin-left: auto;
+}
+
+#search-container:has(input) {
+    background-color: #F3E7CB;
+    border-radius: 16px;
 }
 
 
