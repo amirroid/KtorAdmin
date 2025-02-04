@@ -2,6 +2,8 @@ package modules.update
 
 import authentication.KtorAdminPrincipal
 import csrf.CsrfManager
+import flash.getFlashDataAndClear
+import flash.getRequestId
 import utils.notFound
 import utils.serverError
 import getters.getReferencesItems
@@ -49,8 +51,6 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
     primaryKey: String,
     table: AdminJdbcTable,
     panels: List<AdminPanel>,
-    errors: List<ErrorResponse> = emptyList(),
-    errorValues: Map<String, String?> = emptyMap(),
     panelGroups: List<PanelGroup> = emptyList(),
 ) {
     val data = JdbcQueriesRepository.getData(table, primaryKey)
@@ -61,7 +61,11 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
             val user = principal<KtorAdminPrincipal>()!!
             val columns = table.getAllAllowToShowColumnsInUpsert()
             val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
-            val values = errorValues.takeIf { it.isNotEmpty() } ?: columns.mapIndexed { index, column ->
+            val requestId = getRequestId()
+            val valuesWithErrors = getFlashDataAndClear(requestId)
+            val errorValues = valuesWithErrors.first
+            val errors = valuesWithErrors.second ?: emptyList()
+            val values = errorValues?.takeIf { it.isNotEmpty() } ?: columns.mapIndexed { index, column ->
                 column.columnName to data[index]?.let { item ->
                     handlePreviewValue(
                         column,
@@ -84,7 +88,8 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "panelGroups" to panelGroups,
                         "currentPanel" to table.getPluralName(),
                         "username" to user.name,
-                        "isUpdate" to true
+                        "isUpdate" to true,
+                        "requestId" to requestId,
                     )
                 )
             )

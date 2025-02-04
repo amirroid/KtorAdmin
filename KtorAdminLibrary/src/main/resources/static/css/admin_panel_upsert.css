@@ -66,11 +66,11 @@ h2 {
     flex-direction: row;
     align-items: center;
     margin-left: 16px;
+    gap: 12px;
 }
 
 .title {
     font-size: 20px;
-    margin-left: 16px;
 }
 
 #container {

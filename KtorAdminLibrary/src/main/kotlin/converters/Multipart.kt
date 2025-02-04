@@ -1,6 +1,8 @@
 package converters
 
 import csrf.CsrfManager
+import flash.REQUEST_ID
+import flash.REQUEST_ID_FORM
 import getters.toTypedValue
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
@@ -35,25 +37,28 @@ internal suspend fun MultiPartData.toTableValues(
     val columns = table.getAllAllowToShowColumnsInUpsert()
 
     val fileBytes = mutableMapOf<ColumnSet, Pair<String?, ByteArray>>()
-
+    var requestId: String? = null
     val errors = mutableListOf<ErrorResponse?>()
     var isInvalidRequest = false
     forEachPart { part ->
         val name = part.name
         val column = columns.firstOrNull { it.columnName == name }
         if (name == CSRF_TOKEN_FIELD_NAME && part is PartData.FormItem) {
-            val token = (part as? PartData.FormItem)?.value
+            val token = part.value
             part.dispose()
             if (!checkCsrfToken(token)) {
                 isInvalidRequest = true
                 return@forEachPart
             }
         }
+        if (name == REQUEST_ID_FORM && part is PartData.FormItem) {
+            requestId = part.value
+            part.dispose()
+        }
         if (column != null && name != null) {
             when (part) {
                 is PartData.FileItem -> {
                     val bytes = part.provider().readRemaining().readByteArray()
-                    println("BYTE SIZE ${bytes.size}")
                     val fileName = part.originalFileName?.takeIf { it.isNotEmpty() }
                     val partSize = bytes.size.toLong()
                     when (column.type) {
@@ -103,9 +108,7 @@ internal suspend fun MultiPartData.toTableValues(
                     val itemErrors = Validators.validateColumnParameter(column, part.value)
                         ?.let { ErrorResponse(column.columnName, listOf(it)) }
                     errors += itemErrors
-                    if (itemErrors == null) {
-                        items[name] = part.value.let { it to it.toTypedValue(column.type) }
-                    }
+                    items[name] = part.value.let { it to it.toTypedValue(column.type) }
                 }
 
                 else -> Unit
@@ -118,7 +121,8 @@ internal suspend fun MultiPartData.toTableValues(
     if (errorsNotNull.isNotEmpty()) {
         return Response.Error(
             errorsNotNull,
-            columns.associateWith { items[it.columnName]?.first }.mapKeys { it.key.columnName }
+            columns.associateWith { items[it.columnName]?.first }.mapKeys { it.key.columnName },
+            requestId
         )
     }
     fileBytes.forEach { (column, pair) ->
@@ -149,7 +153,7 @@ internal suspend fun MultiPartData.toTableValues(
     forEachPart { part ->
         val name = part.name
         if (name == CSRF_TOKEN_FIELD_NAME && part is PartData.FormItem) {
-            val token = (part as? PartData.FormItem)?.value
+            val token = part.value
             part.dispose()
             if (!checkCsrfToken(token)) {
                 isInvalidRequest = true

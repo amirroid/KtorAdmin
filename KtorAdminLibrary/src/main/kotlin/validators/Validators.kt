@@ -87,7 +87,7 @@ internal object Validators {
             if (value.length > it.maxLength) return "Value exceeds maximum length of ${it.maxLength}"
             if (value.length < it.minLength) return "Value is shorter than minimum length of ${it.minLength}"
             if (it.regexPattern != null && !value.matches(Regex(it.regexPattern))) {
-                return "Value does not match the required pattern"
+                return "Value does not match the required pattern (${it.regexPattern})"
             }
         }
         return null

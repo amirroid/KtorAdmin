@@ -1,5 +1,8 @@
 package response
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ErrorResponse(
     val field: String,
     val messages: List<String>

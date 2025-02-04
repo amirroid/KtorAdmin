@@ -13,6 +13,7 @@ internal object DynamicConfiguration {
     var currentEventListener: AdminEventListener? = null
     var cryptoPassword: String? = null
     var timeZone: ZoneId = ZoneId.systemDefault()
+    var formsLifetime = 1_000 * 60L
 
 
     fun registerEventListener(listener: AdminEventListener) {

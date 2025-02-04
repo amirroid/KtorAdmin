@@ -4,7 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پنل ادمین</title>
+    #if($isUpdate)
+        <title>Update $singularTableName</title>
+    #else
+        <title>Add a new $singularTableName</title>
+    #end
     <link href="/static/css/admin_panel_upsert.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,12 +59,12 @@
             <form method="post" enctype="multipart/form-data" id="form-box">
                 #foreach($column in $columns)
                     <div class="sidebar-input-wrapper">
-                        #if($values.get($column.columnName))
+                        #if($!values.get($column.columnName))
                             #set($defaultValue = $values.get($column.columnName))
+                        #elseif ($column.defaultValue)
+                            #set($defaultValue = $column.defaultValue)
                         #else
-                            #if ($column.defaultValue)
-                                #set($defaultValue = $column.defaultValue)
-                            #end
+                            #set($defaultValue = "")
                         #end
                         #if($column.type.name != "BOOLEAN")
                             <label class="item-label">$column.verboseName</label>
@@ -225,6 +229,7 @@
                     </div>
                 #end
                 <input type="hidden" value="$csrfToken" name="_csrf">
+                <input type="hidden" value="$requestId" name="requestId">
                 <button id="submit-button" type="submit">Submit</button>
             </form>
         </div>

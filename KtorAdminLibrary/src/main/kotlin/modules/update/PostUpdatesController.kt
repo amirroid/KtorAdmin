@@ -6,6 +6,7 @@ import configuration.DynamicConfiguration
 import converters.toEvents
 import converters.toFieldEvents
 import converters.toTableValues
+import flash.setFlashSessionsAndRedirect
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -67,7 +68,7 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
     call.checkHasRole(panel) {
         kotlin.runCatching {
             when (panel) {
-                is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)
+                is AdminJdbcTable -> updateData(pluralName, primaryKey, panel)
                 is AdminMongoCollection -> updateData(pluralName, primaryKey, panel, panels)
             }
         }.onFailure {
@@ -77,7 +78,7 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
 }
 
 private suspend fun RoutingContext.updateData(
-    pluralName: String?, primaryKey: String, table: AdminJdbcTable, panels: List<AdminPanel>
+    pluralName: String?, primaryKey: String, table: AdminJdbcTable
 ) {
     val columns = table.getAllAllowToShowColumnsInUpsert()
     val initialData = JdbcQueriesRepository.getData(table, primaryKey)
@@ -97,8 +98,8 @@ private suspend fun RoutingContext.updateData(
         }.onFailure {
             call.serverError("Failed to update $pluralName\nReason: ${it.message}", it)
         }
-    }.onError { errors, values ->
-        call.handleJdbcEditView(primaryKey, table, panels, errors, values)
+    }.onError { requestId, errors, values ->
+        call.setFlashSessionsAndRedirect(requestId, errors, values)
     }.onInvalidateRequest {
         call.invalidateRequest()
     }

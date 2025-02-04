@@ -2,6 +2,9 @@ package modules.add
 
 import authentication.KtorAdminPrincipal
 import csrf.CsrfManager
+import flash.KtorFlashHelper
+import flash.getFlashDataAndClear
+import flash.getRequestId
 import utils.badRequest
 import utils.notFound
 import getters.getReferencesItems
@@ -9,12 +12,14 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
+import io.ktor.util.AttributeKey
 import models.PanelGroup
 import panels.*
 import response.ErrorResponse
 import response.toMap
 import utils.Constants
 import validators.checkHasRole
+import kotlin.math.log
 
 internal suspend fun ApplicationCall.handleAddNewItem(panels: List<AdminPanel>, panelGroups: List<PanelGroup>) {
     val pluralName = parameters["pluralName"]
@@ -34,10 +39,10 @@ internal suspend fun ApplicationCall.handleAddNewItem(panels: List<AdminPanel>, 
 internal suspend fun ApplicationCall.handleJdbcAddView(
     table: AdminJdbcTable,
     panels: List<AdminPanel>,
-    errors: List<ErrorResponse> = emptyList(),
-    values: Map<String, String?> = emptyMap(),
     panelGroups: List<PanelGroup> = emptyList(),
 ) {
+    val requestId = getRequestId()
+    val valuesWithErrors = getFlashDataAndClear(requestId)
     runCatching {
         val user = principal<KtorAdminPrincipal>()!!
         val columns = table.getAllAllowToShowColumnsInUpsert()
@@ -49,13 +54,14 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "tableName" to table.getTableName(),
                     "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
                     "references" to referencesItems,
-                    "errors" to errors.toMap(),
-                    "values" to values,
+                    "errors" to (valuesWithErrors.second?.toMap() ?: emptyMap()),
+                    "values" to (valuesWithErrors.first ?: emptyMap()),
                     "csrfToken" to CsrfManager.generateToken(),
                     "panelGroups" to panelGroups,
                     "currentPanel" to table.getPluralName(),
                     "username" to user.name,
-                    "isUpdate" to false
+                    "isUpdate" to false,
+                    "requestId" to requestId,
                 )
             )
         )

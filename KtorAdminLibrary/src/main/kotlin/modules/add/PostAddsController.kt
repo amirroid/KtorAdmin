@@ -5,6 +5,7 @@ import configuration.DynamicConfiguration
 import converters.toEvents
 import converters.toFieldEvents
 import converters.toTableValues
+import flash.setFlashSessionsAndRedirect
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -90,13 +91,8 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
         } else {
             call.badRequest("Invalid parameters for $pluralName: $parameters")
         }
-    }.onError { errors, values ->
-        call.handleJdbcAddView(
-            table = table,
-            panels = panels,
-            errors = errors,
-            values = values
-        )
+    }.onError { requestId, errors, values ->
+        call.setFlashSessionsAndRedirect(requestId, errors, values)
     }.onInvalidateRequest {
         call.invalidateRequest()
     }
