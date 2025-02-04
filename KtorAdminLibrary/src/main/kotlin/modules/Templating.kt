@@ -2,6 +2,7 @@ package modules
 
 import io.ktor.server.application.*
 import io.ktor.server.velocity.*
+import org.apache.velocity.app.event.implement.IncludeRelativePath
 import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 

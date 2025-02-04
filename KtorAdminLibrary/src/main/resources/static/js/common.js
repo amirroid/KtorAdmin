@@ -31,6 +31,16 @@ function handleMenuHover() {
     });
 }
 
+function handleTitleClicks() {
+    let titles = document.getElementsByClassName("title")
+    for (let title of titles) {
+        title.style.cursor = "pointer"
+        title.onclick = function () {
+            window.location.href = "/admin"
+        }
+    }
+}
+
 const expandedSidebarValue = "expanded"
 
 function handleSidebarExpandedFromStorage() {
@@ -58,6 +68,7 @@ function handleSidebarExpandedFromStorage() {
 
 document.addEventListener('DOMContentLoaded', function () {
     handleMenuHover()
+    handleTitleClicks()
 });
 
 window.addEventListener("pageshow", function () {

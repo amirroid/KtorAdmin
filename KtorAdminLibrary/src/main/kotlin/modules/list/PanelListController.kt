@@ -30,7 +30,6 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>, p
     }.onFailure { cause ->
         badRequest(cause.message ?: "", cause)
     }.getOrNull()
-
     val panel = tables.find { it.getPluralName() == pluralName }
     if (panel == null) {
         notFound("No table found with plural name: $pluralName")
