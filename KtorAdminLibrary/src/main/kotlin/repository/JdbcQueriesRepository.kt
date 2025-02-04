@@ -526,6 +526,11 @@ internal object JdbcQueriesRepository {
 
         selectColumns.add("${getTableName()}.$leftReferenceColumn AS ${getTableName()}_$leftReferenceColumn")
 
+        val order =  getDefaultOrder()
+        order?.let {
+            selectColumns.add("${getTableName()}.${it.name} AS ${getTableName()}_${it.name}")
+        }
+
         columns.forEach { column ->
             if (column.contains('.')) {
                 var currentTable = getTableName()
@@ -566,7 +571,7 @@ internal object JdbcQueriesRepository {
             append(" FROM ")
             append(getTableName())
             joins.forEach { append(" $it") }
-            getDefaultOrder()?.let { order ->
+            order?.let { order ->
                 if (order.name !in getAllColumns().map { column -> column.columnName } &&
                     order.direction.lowercase() !in listOf("asc", "desc")) return@let
                 append(" ORDER BY ${order.name} ${order.direction}")

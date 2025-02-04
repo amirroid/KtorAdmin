@@ -1,6 +1,8 @@
 package modules
 
+import authentication.KtorAdminPrincipal
 import io.ktor.server.application.*
+import io.ktor.server.auth.principal
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.velocity.*
@@ -39,8 +41,11 @@ internal fun Routing.configureGetRouting(tables: List<AdminPanel>, authenticateN
 private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGroup>) {
     respond(
         VelocityContent(
-            "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel.vm",
-            model = mutableMapOf("tableGroups" to panelGroups)
+            "${Constants.TEMPLATES_PREFIX_PATH}/admin_dashboard.vm",
+            model = mutableMapOf(
+                "panelGroups" to panelGroups,
+                "username" to principal<KtorAdminPrincipal>()!!.name
+            )
         )
     )
 }

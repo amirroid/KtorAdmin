@@ -250,7 +250,7 @@
         <h2 class="title"><span class="istok-web-black">Ktor</span>Admin</h2>
     </div>
     <h4 class="group-text"></h4>
-    <button class="menu-item">
+    <button class="menu-item" onclick="openDashboard()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
              class="menu-icon">
             <path

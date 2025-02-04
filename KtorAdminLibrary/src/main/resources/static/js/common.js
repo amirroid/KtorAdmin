@@ -112,6 +112,10 @@ function openPanel(pluralName) {
     window.location.href = `/admin/${pluralName}`
 }
 
+function openDashboard() {
+    window.location.href = `/admin`
+}
+
 
 function logout() {
     const loading = document.getElementById("loading");
