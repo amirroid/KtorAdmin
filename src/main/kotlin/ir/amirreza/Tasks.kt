@@ -39,10 +39,10 @@ enum class Priority {
 )
 @DashboardChartConfig(
     labelField = "priority",
-    valuesFields = ["name", "checked"],
+    valuesFields = ["user_id"],
     chartStyle = AdminChartStyle.BAR,
-    borderColors = ["#FF5733", "#FF5733"],
-    fillColors = ["#FF8D1A", "#FF8D1A"],
+    borderColors = ["#FF5733"],
+    fillColors = ["#FF8D1A"],
     limitCount = 10,
     orderQuery = "priority DESC"
 )

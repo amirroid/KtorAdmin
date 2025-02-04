@@ -1,6 +1,7 @@
 package processors.exposed
 
 import annotations.actions.AdminActions
+import annotations.chart.DashboardChartConfig
 import annotations.display.DisplayFormat
 import annotations.enumeration.Enumeration
 import annotations.exposed.ExposedTable
@@ -28,6 +29,7 @@ import models.date.AutoNowDate
 import models.order.Order
 import models.order.toFormattedString
 import models.types.ColumnType
+import models.types.isNumeric
 import repository.AnnotationRepository
 import repository.PropertiesRepository
 import utils.*
@@ -90,6 +92,21 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         }
 
         val chartConfigs = AnnotationRepository.findChartConfigs(classDeclaration)
+
+        val columnNames = columnSets.map { it.columnName }
+        val tableName = classDeclaration.getTableName()
+
+        chartConfigs.forEach { config ->
+            if (config.labelField !in columnNames) {
+                throw IllegalArgumentException("($tableName @${DashboardChartConfig::class.simpleName}) Label field '${config.labelField}' not found in column names.")
+            }
+            if (config.valuesFields.any { field ->
+                    columnSets.firstOrNull { column -> column.columnName == field }
+                        .let { it == null || !it.type.isNumeric }
+                }) {
+                throw IllegalArgumentException("($tableName @${DashboardChartConfig::class.simpleName}) One or more fields in valuesFields are either not found or not numeric.")
+            }
+        }
 
         val getAllColumnsFunction = FunSpec.builder("getAllColumns")
             .addModifiers(KModifier.OVERRIDE)
@@ -154,7 +171,6 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addStatement("return listOf(${filterColumns.joinToString { "\"$it\"" }})")
             .build()
 
-        val tableName = classDeclaration.getTableName()
         val getTableNameFunction = FunSpec.builder("getTableName")
             .addModifiers(KModifier.OVERRIDE)
             .returns(String::class)
