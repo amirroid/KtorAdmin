@@ -22,15 +22,33 @@ function handleComputedColumns() {
 }
 
 function handleFileInputs() {
-    let fields = document.getElementsByClassName("file-input-field")
+    let fields = document.getElementsByClassName("file-input-field");
     for (let field of fields) {
         field.onchange = function () {
             let fileName = this.files.length > 0 ? this.files[0].name : null;
+            let labelElement = document.getElementById(`selected-file-${field.id}`);
+
             if (fileName) {
-                document.getElementById(`selected-file-${field.id}`).textContent = `Selected file: ${fileName}`
+                labelElement.innerHTML = `Selected file: ${fileName} 
+                    <span class="delete-file-icon" onclick="removeFile('${field.id}')">
+                        <svg width="12" height="12" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1.16998 6.83004L6.82998 1.17004" stroke="#9A6C00" stroke-width="1.5" 
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M6.82998 6.83004L1.16998 1.17004" stroke="#9A6C00" stroke-width="1.5" 
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>`
             }
-        }
+        };
     }
+}
+
+function removeFile(fieldId) {
+    let labelElement = document.getElementById(`selected-file-${fieldId}`);
+    let inputElement = document.getElementById(fieldId);
+    console.log(inputElement)
+    labelElement.innerHTML = "";
+    inputElement.value = null;
 }
 
 

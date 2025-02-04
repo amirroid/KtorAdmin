@@ -11,6 +11,7 @@ body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    color: #292D32;
 }
 
 h1,
@@ -240,10 +241,6 @@ label {
     border: none;
     transition: .1s linear;
     cursor: pointer;
-}
-
-.selected-file-label {
-    margin-left: 12px;
 }
 
 #submit-button:hover {
@@ -568,4 +565,25 @@ input:disabled, select:disabled, input:read-only {
 .file-link:focus {
     border: none;
     outline: none;
+}
+
+.delete-file-icon {
+    cursor: pointer;
+    transform: translateX(100%);
+    flex-shrink: 0;
+}
+
+
+.selected-file-label {
+    margin-left: 12px;
+    word-wrap: break-word;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.selected-file-label:empty {
+    display: none;
 }
