@@ -58,6 +58,10 @@ internal suspend fun RoutingContext.handleAddRequest(panels: List<AdminPanel>) {
         call.respondText { "No table found with plural name: $pluralName" }
         return
     }
+    if (panel.hasAddAction.not()) {
+        call.badRequest("Add action is disabled")
+        return
+    }
     call.checkHasRole(panel) {
         when (panel) {
             is AdminJdbcTable -> insertData(pluralName, panel, panels)

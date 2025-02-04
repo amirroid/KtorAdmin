@@ -35,3 +35,9 @@ fun AdminPanel.getAllCustomActions(): List<CustomAdminAction> {
         if (getDefaultActions().contains(Action.DELETE)) add(DeleteAction(this@getAllCustomActions))
     }
 }
+
+val AdminPanel.hasAddAction: Boolean
+    get() = getDefaultActions().contains(Action.ADD)
+
+val AdminPanel.hasEditAction: Boolean
+    get() = getDefaultActions().contains(Action.EDIT)

@@ -8,7 +8,7 @@ import models.field.FieldSet
 import models.toFormattedString
 import models.types.toSuitableStringForFile
 
-fun ColumnSet.toSuitableStringForFile() = """
+internal fun ColumnSet.toSuitableStringForFile() = """
     |ColumnSet(
     |    columnName = "$columnName",
     |    verboseName = "$verboseName",
@@ -28,7 +28,7 @@ fun ColumnSet.toSuitableStringForFile() = """
     |)
 """.trimMargin("|")
 
-fun FieldSet.toSuitableStringForFile() = """
+internal fun FieldSet.toSuitableStringForFile() = """
     |FieldSet(
     |    fieldName = ${fieldName?.let { "\"${it}\"" }},
     |    verboseName = "$verboseName",
@@ -47,20 +47,20 @@ fun FieldSet.toSuitableStringForFile() = """
     |)
 """.trimMargin("|")
 
-fun List<String>.toSuitableStringForFile(): String = joinToString(
+internal fun List<String>.toSuitableStringForFile(): String = joinToString(
     prefix = "listOf(",
     postfix = ")",
     separator = ", "
 ) { "\"$it\"" }
 
-inline fun <reified D> KSAnnotation.findArgument(property: String) =
+internal inline fun <reified D> KSAnnotation.findArgument(property: String) =
     arguments.find { it.name?.asString() == property }?.value as? D
 
-fun KSAnnotation.findArgumentIfIsNotEmpty(property: String) =
+internal fun KSAnnotation.findArgumentIfIsNotEmpty(property: String) =
     (arguments.find { it.name?.asString() == property }?.value as? String)?.takeIf { it.isNotEmpty() }
 
 
-inline fun <T> Iterable<T>.allIndexed(predicate: (index: Int, T) -> Boolean): Boolean {
+internal inline fun <T> Iterable<T>.allIndexed(predicate: (index: Int, T) -> Boolean): Boolean {
     val results = mutableListOf<Boolean>()
     forEachIndexed { index, t ->
         results += predicate.invoke(index, t)

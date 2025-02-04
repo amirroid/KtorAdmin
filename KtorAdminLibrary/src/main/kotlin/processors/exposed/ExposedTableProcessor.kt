@@ -20,11 +20,15 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
 import models.*
 import models.actions.Action
+import models.chart.AdminChartStyle
+import models.chart.ChartConfig
+import models.chart.toSuitableStringForFile
 import models.common.Reference
 import models.date.AutoNowDate
 import models.order.Order
 import models.order.toFormattedString
 import models.types.ColumnType
+import repository.AnnotationRepository
 import repository.PropertiesRepository
 import utils.*
 
@@ -53,6 +57,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
             .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
             .addImport(Action::class.java.packageName, Action::class.java.simpleName)
+            .addImport(AdminChartStyle::class.java.packageName, AdminChartStyle::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(
@@ -83,6 +88,8 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         ) {
             throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any column in the table.")
         }
+
+        val chartConfigs = AnnotationRepository.findChartConfigs(classDeclaration)
 
         val getAllColumnsFunction = FunSpec.builder("getAllColumns")
             .addModifiers(KModifier.OVERRIDE)
@@ -197,6 +204,15 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             )
             .addStatement("return ${accessRoles?.let { roles -> "listOf(${roles.joinToString { "\"$it\"" }})" }}")
             .build()
+
+        val getAllChartConfigsFunction = FunSpec.builder("getAllChartConfigs")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                List::class.asClassName().parameterizedBy(ChartConfig::class.asClassName())
+            )
+            .addStatement("return ${"listOf(${chartConfigs.joinToString(separator = ",\n") { it.toSuitableStringForFile() }})"}")
+            .build()
+
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminTable))
             .addFunction(getAllColumnsFunction)
@@ -206,6 +222,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addFunction(getPrimaryKeyFunctions)
             .addFunction(getTableNameFunction)
             .addFunction(getSingularNameFunction)
+            .addFunction(getAllChartConfigsFunction)
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
             .addFunction(getDefaultOrderFunction)

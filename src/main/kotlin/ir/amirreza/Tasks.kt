@@ -1,6 +1,7 @@
 package ir.amirreza
 
 import annotations.actions.AdminActions
+import annotations.chart.DashboardChartConfig
 import annotations.computed.Computed
 import annotations.display.DisplayFormat
 import annotations.enumeration.Enumeration
@@ -15,6 +16,7 @@ import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
 import annotations.uploads.LocalUpload
 import models.actions.Action
+import models.chart.AdminChartStyle
 import org.jetbrains.exposed.sql.*
 
 enum class Priority {
@@ -34,6 +36,15 @@ enum class Priority {
 @DefaultOrder(
     "name",
     "DESC"
+)
+@DashboardChartConfig(
+    labelField = "priority",
+    valuesFields = ["name", "checked"],
+    chartStyle = AdminChartStyle.BAR,
+    borderColors = ["#FF5733", "#FF5733"],
+    fillColors = ["#FF8D1A", "#FF8D1A"],
+    limitCount = 10,
+    orderQuery = "priority DESC"
 )
 @AdminActions(
     actions = [Action.DELETE, Action.ADD],

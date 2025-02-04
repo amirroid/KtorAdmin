@@ -18,6 +18,7 @@ import repository.MongoClientRepository
 import response.onError
 import response.onInvalidateRequest
 import response.onSuccess
+import utils.badRequest
 import utils.invalidateRequest
 import validators.checkHasRole
 
@@ -63,6 +64,10 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
     val panel = panels.findWithPluralName(pluralName)
     if (panel == null) {
         call.notFound("No table found with plural name: $pluralName")
+        return
+    }
+    if (panel.hasEditAction.not()) {
+        call.badRequest("Edit action is disabled")
         return
     }
     call.checkHasRole(panel) {
