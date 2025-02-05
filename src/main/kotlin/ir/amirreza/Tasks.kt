@@ -38,9 +38,10 @@ enum class Priority {
     "DESC"
 )
 @DashboardChartConfig(
+    sectionName = "Test Section",
     labelField = "priority",
     valuesFields = ["user_id"],
-    chartStyle = AdminChartStyle.BAR,
+    chartStyle = AdminChartStyle.LINE,
     borderColors = ["#FF5733"],
     fillColors = ["#FF8D1A"],
     limitCount = 10,

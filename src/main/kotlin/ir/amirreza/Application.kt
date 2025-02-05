@@ -11,7 +11,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 fun Application.module() {
     val database =
         Database.connect(
-            url = "jdbc:postgresql://0.0.0.0:5432/postgres",
+            url = "jdbc:postgresql://localhost:5432/postgres",
             user = "amirreza",
             driver = "org.postgresql.Driver",
             password = "your_password",

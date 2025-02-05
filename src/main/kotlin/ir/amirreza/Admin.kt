@@ -19,7 +19,7 @@ fun Application.configureAdmin(database: Database) {
     install(KtorAdmin) {
         jdbc(
             key = null,
-            url = "jdbc:postgresql://0.0.0.0:5432/postgres",
+            url = "jdbc:postgresql://localhost:5432/postgres",
             username = "amirreza",
             password = "your_password",
             driver = JDBCDrivers.POSTGRES

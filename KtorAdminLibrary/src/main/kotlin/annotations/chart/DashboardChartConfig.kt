@@ -3,48 +3,51 @@ package annotations.chart
 import models.chart.AdminChartStyle
 
 /**
- * Annotation to configure a chart for a dashboard.
+ * Annotation for configuring a chart in the admin dashboard.
  *
- * This annotation provides the configuration for rendering a chart, including the label field,
- * value fields, chart style, optional border and fill colors, as well as additional settings
- * like the maximum number of values to display and the query for sorting. This annotation is
- * used to define how the chart should be rendered based on the provided configuration.
+ * This annotation allows defining how a chart should be rendered by specifying its label field,
+ * data fields, chart style, colors, and optional configurations like data limits and sorting.
  *
- * Example:
+ * Example usage:
  * ```
  * @DashboardChartConfig(
+ *     sectionName = "Sales Overview",
  *     labelField = "category",
  *     valuesFields = ["sales", "profit"],
  *     chartStyle = AdminChartStyle.LINE,
- *     borderColors = ["#0000FF", "#FF5733"],
- *     fillColors = ["#00FF00", "#FFD700"],
+ *     borderColors = ["#0000FF", "#FF5733"], // Blue & Orange
+ *     fillColors = ["#00FF00", "#FFD700"],   // Green & Gold
  *     limitCount = 10,
- *     orderQuery = "date DESC"
+ *     orderQuery = "date DESC",
+ *     tensions = .6f,
+ *     borderWidth = 2f
  * )
  * ```
- * This configuration will generate a line chart with categories as labels, sales and profit as values,
- * a border with colors blue and orange, and a fill with green and gold. The chart will be limited to 10 data points,
- * ordered by date in descending order.
+ * This example defines a **line chart** displaying **sales** and **profit** by **category**.
+ * The chart will have **blue and orange borders**, **green and gold fill colors**, and be limited
+ * to **10 data points**, sorted by **date in descending order**.
  *
- * @param labelField The field that will be used as labels in the chart (corresponds to a column in the SQL DB or a field in a collection).
- * @param valuesFields The fields that will provide the data values for the chart (corresponds to columns in the SQL DB or fields in collections).
- * @param chartStyle The style of the chart (determines how the chart is visually rendered, e.g., line, bar, etc.).
- * @param fillColors (Optional) The fill colors of the chart. If multiple colors are provided, they will be applied in sequence.
- *                   Defaults to an empty list if not specified.
- * @param borderColors (Optional) The border colors of the chart. If multiple colors are provided, they will be applied in sequence.
- *                     Defaults to an empty list if not specified.
- * @param limitCount (Optional) The maximum number of data points to display in the chart. Defaults to `Int.MAX_VALUE` if not specified.
- * @param orderQuery (Optional) The query for sorting the data before displaying (e.g., "date DESC"). Defaults to an empty string if not specified.
+ * @param sectionName The section where the chart is displayed in the dashboard.
+ * @param labelField The field used as the labels in the chart (e.g., X-axis labels).
+ * @param valuesFields The fields representing data values to be plotted (e.g., Y-axis values).
+ * @param chartStyle The visual style of the chart (e.g., line, bar, pie).
+ * @param fillColors (Optional) The fill colors for the chart. Defaults to an empty array.
+ * @param borderColors (Optional) The border colors for the chart. Defaults to an empty array.
+ * @param limitCount (Optional) The maximum number of data points to display. Defaults to `Int.MAX_VALUE`.
+ * @param orderQuery (Optional) The sorting query for data (e.g., `"date DESC"`). Defaults to an empty string.
+ * @param tension (Optional) A value between 0 and 1 to control the smoothness of line charts. A higher value results in a smoother curve.
+ * @param borderWidth (Optional) The width of the chart's borders. If not specified, it defaults to 1f.
  *
- * Note:
- * - Fields in `labelField` and `valuesFields` correspond to column names in a SQL database or field names in a collection.
- * - Both `fillColors` and `borderColors` are optional; if not provided, they default to empty arrays.
- * - `limitCount` is useful for limiting the number of data points shown on the chart, especially for performance optimization.
- * - `orderQuery` allows for defining a sorting order for the data (e.g., by date, name, etc.).
+ * **Notes:**
+ * - `labelField` and `valuesFields` should match column names in a SQL table or fields in a collection.
+ * - If multiple colors are provided for `fillColors` and `borderColors`, they will be applied sequentially.
+ * - `limitCount` is useful for performance optimization when handling large datasets.
+ * - `orderQuery` helps in sorting data before rendering the chart.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
 annotation class DashboardChartConfig(
+    val sectionName: String,
     val labelField: String,
     val valuesFields: Array<String>,
     val chartStyle: AdminChartStyle,
@@ -52,4 +55,6 @@ annotation class DashboardChartConfig(
     val borderColors: Array<String> = [],
     val limitCount: Int = Int.MAX_VALUE,
     val orderQuery: String = "",
+    val tension: Float = 0f,
+    val borderWidth: Float = 1f,
 )

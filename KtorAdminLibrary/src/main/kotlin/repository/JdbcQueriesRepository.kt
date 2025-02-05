@@ -9,6 +9,9 @@ import getters.putColumn
 import getters.toTypedValue
 import models.ColumnSet
 import models.DataWithPrimaryKey
+import models.chart.ChartConfig
+import models.chart.ChartData
+import models.chart.ChartLabelsWithValues
 import models.common.DisplayItem
 import models.getCurrentDateClass
 import models.order.Order
@@ -108,6 +111,59 @@ internal object JdbcQueriesRepository {
                     }
                 }
         } ?: 0
+    }
+
+    /**
+     * Retrieves chart data from the specified table based on its chart configurations.
+     *
+     * This function queries the database for distinct chart data, processes label and value fields,
+     * and returns a list of ChartData objects.
+     *
+     * @param table The table containing the data and configurations.
+     * @return A list of ChartData objects containing the retrieved chart data.
+     */
+    fun getChartData(
+        table: AdminJdbcTable,
+    ): List<ChartData> {
+        val tableName = table.getTableName()
+        val allData = mutableListOf<ChartData>()
+        table.usingDataSource { session ->
+            table.getAllChartConfigs().map { config ->
+                val valuesColumns = config.valuesFields.map { columnName ->
+                    table.getAllColumns().first { it.columnName == columnName }
+                }
+                val currentValues = mutableMapOf<Int, MutableList<Double>>()
+                config.valuesFields.indices.forEach { currentValues[it] = mutableListOf() }
+                val currentLabels = mutableListOf<String>()
+                session.prepare(sqlQuery(config.createGetAllChartData(tableName))).use { prepareStatement ->
+                    config.limitCount?.let { prepareStatement.setInt(1, it) }
+                    prepareStatement.executeQuery().use { rs ->
+                        while (rs.next()) {
+                            currentLabels += rs.getObject(config.labelField)?.toString() ?: "N/A"
+                            valuesColumns.forEachIndexed { index, column ->
+                                currentValues[index]!!.add(
+                                    rs.getObject(column.columnName)?.toString()?.toDoubleOrNull() ?: 0.0
+                                )
+                            }
+                        }
+                    }
+                }
+                val values = mutableMapOf<String, MutableMap<Int, MutableList<Double>>>()
+                currentLabels.distinct().forEach {
+                    values[it] = mutableMapOf<Int, MutableList<Double>>().apply {
+                        config.valuesFields.indices.forEach { this[it] = mutableListOf() }
+                    }
+                }
+                currentValues.toList().forEachIndexed { index, (valueIndex, itemValues) ->
+                    values[currentLabels[index]]!![valueIndex]!!.addAll(itemValues)
+                }
+                allData += ChartData(
+                    values.map { ChartLabelsWithValues(it.key, it.value.map { it.value }) }, config
+                )
+            }
+        }
+        println("DATA ${allData.map { it.values.map { "${it.label} ${it.values}" } }}")
+        return allData
     }
 
     /**
@@ -526,7 +582,7 @@ internal object JdbcQueriesRepository {
 
         selectColumns.add("${getTableName()}.$leftReferenceColumn AS ${getTableName()}_$leftReferenceColumn")
 
-        val order =  getDefaultOrder()
+        val order = getDefaultOrder()
         order?.let {
             selectColumns.add("${getTableName()}.${it.name} AS ${getTableName()}_${it.name}")
         }
@@ -578,6 +634,24 @@ internal object JdbcQueriesRepository {
             }
         }
     }
+
+    /**
+     * Creates an SQL query to retrieve distinct chart data with optional ordering and limit.
+     */
+    private fun ChartConfig.createGetAllChartData(tableName: String) = buildString {
+        val orderField = orderQuery?.substringBeforeLast(" ")?.trim()
+        append("SELECT $labelField , ")
+        append(valuesFields.minus(labelField).plus(orderField).filterNotNull().distinct().joinToString(", "))
+        append(" FROM ")
+        append(tableName)
+        orderQuery?.let {
+            append(" ORDER BY $it")
+        }
+        limitCount?.let {
+            append(" LIMIT ?")
+        }
+    }
+
 
     /**
      * Creates query for retrieving a single item by primary key.

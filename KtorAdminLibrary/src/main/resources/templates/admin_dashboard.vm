@@ -4,16 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    #if($isUpdate)
-        <title>Update $singularTableName</title>
-    #else
-        <title>Add a new $singularTableName</title>
-    #end
+    <title>Dashboard</title>
     <link href="/static/css/admin_panel_dashboard.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Istok+Web:ital,wght@0,400;0,700;1,400;1,700&display=swap"
           rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -52,6 +49,12 @@
             <h1 id="name" class="istok-web-bold">Dashboard</h1>
         </div>
         <div id="bottom-box">
+            #foreach($chart in $chartData)
+                <div class="chart-section">
+                    <h2 class="chart-title">$chart.config.sectionName</h2>
+                    <canvas class="chart-canvas" id="$chart.config.sectionName"></canvas>
+                </div>
+            #end
         </div>
     </div>
 </div>
@@ -117,6 +120,52 @@
         #end
     #end
 </div>
+<script>
+        #foreach($chart in $chartData)
+        let ctx = document.getElementById('$chart.config.sectionName').getContext('2d')
+        let labels = [#foreach($label in $chart.values.labels) "$label",#end]
+        new Chart(
+                ctx,
+                {
+                    type: "$chart.config.chartStyle.chartType",
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            #foreach($values in $chart.values)
+                                #if($foreach.index < $chart.config.fillColors.size())
+                                    #set($fillColor = $chart.config.fillColors[$foreach.index])
+                                #else
+                                #end
+                                #if($foreach.index < $chart.config.borderColors.size())
+                                    #set($borderColor = $chart.config.borderColors[$foreach.index])
+                                #else
+                                #end
+                                #foreach($itemValues in $values.values)
+                                    {
+                                        label: '$values.label',
+                                        data: [#foreach($value in $itemValues) $value,#end],
+                                        #if($borderColor) borderColor: '$borderColor', #end
+                                        #if($fillColor) backgroundColor: '$fillColor', #end
+                                    fill: #if($fillColor)true #else fatal #end,
+                                        tension: $chart.config.tension,
+                                        borderWidth: $chart.config.borderWidth,
+                                    },
+                                #end
+                            #end
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                }
+        )
+        #end
+</script>
 <script src="/static/js/common.js"></script>
 </body>
 
