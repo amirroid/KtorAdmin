@@ -7,6 +7,7 @@ import com.vladsch.kotlin.jdbc.SessionImpl
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import csrf.CsrfManager
+import dashboard.KtorAdminDashboard
 import listener.AdminEventListener
 import models.forms.LoginFiled
 import mongo.MongoCredential
@@ -74,6 +75,13 @@ class KtorAdminConfiguration {
         set(value) {
             DynamicConfiguration.loginFields = value
         }
+
+    var adminDashboard: KtorAdminDashboard?
+        get() = DynamicConfiguration.dashboard
+        set(value) {
+            DynamicConfiguration.dashboard = value
+        }
+
 
     fun registerCustomAdminAction(action: CustomAdminAction) {
         DynamicConfiguration.registerCustomAdminAction(action)

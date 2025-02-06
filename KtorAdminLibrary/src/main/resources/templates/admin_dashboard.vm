@@ -51,8 +51,8 @@
         <div id="bottom-box">
             #foreach($chart in $chartData)
                 <div class="chart-section">
-                    <h2 class="chart-title">$chart.config.sectionName</h2>
-                    <canvas class="chart-canvas" id="$chart.config.sectionName"></canvas>
+                    <h2 class="chart-title">$chart.section.sectionName</h2>
+                    <canvas class="chart-canvas" id="$chart.section.sectionName"></canvas>
                 </div>
             #end
         </div>
@@ -122,22 +122,25 @@
 </div>
 <script>
         #foreach($chart in $chartData)
-        let ctx = document.getElementById('$chart.config.sectionName').getContext('2d')
-        let labels = [#foreach($label in $chart.values.labels) "$label",#end]
+        let ctx = document.getElementById('$chart.section.sectionName').getContext('2d')
+        let labels = [#foreach($label in $chart.labels) "$label",#end]
+        // Chart.defaults.font.family = 'Istok Web'
         new Chart(
                 ctx,
                 {
-                    type: "$chart.config.chartStyle.chartType",
+                    type: "$chart.section.chartStyle.chartType",
                     data: {
                         labels: labels,
                         datasets: [
                             #foreach($values in $chart.values)
-                                #if($foreach.index < $chart.config.fillColors.size())
-                                    #set($fillColor = $chart.config.fillColors[$foreach.index])
+                                #set($fillColor = $values.fillColors[0])
+                                #if($foreach.index < $values.fillColors.size())
+                                    #set($fillColor = $values.fillColors[$foreach.index])
                                 #else
                                 #end
-                                #if($foreach.index < $chart.config.borderColors.size())
-                                    #set($borderColor = $chart.config.borderColors[$foreach.index])
+                                #set($borderColor = $values.borderColors[0])
+                                #if($foreach.index < $values.borderColors.size())
+                                    #set($borderColor = $values.borderColors[$foreach.index])
                                 #else
                                 #end
                                 #foreach($itemValues in $values.values)
@@ -146,21 +149,25 @@
                                         data: [#foreach($value in $itemValues) $value,#end],
                                         #if($borderColor) borderColor: '$borderColor', #end
                                         #if($fillColor) backgroundColor: '$fillColor', #end
-                                    fill: #if($fillColor)true #else fatal #end,
-                                        tension: $chart.config.tension,
-                                        borderWidth: $chart.config.borderWidth,
+                                    fill: #if($fillColor)true #else false #end,
+                                        tension: $chart.section.tension,
+                                        borderWidth: $chart.section.borderWidth,
                                     },
                                 #end
                             #end
                         ]
                     },
                     options: {
-                        responsive: true,
+                        // responsive: true,
+                        // maintainAspectRatio: false,
                         scales: {
                             y: {
-                                beginAtZero: true
-                            }
-                        }
+                                beginAtZero: true,
+                            },
+                            x: {
+                                beginAtZero: true,
+                            },
+                        },
                     }
                 }
         )

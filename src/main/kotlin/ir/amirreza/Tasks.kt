@@ -37,19 +37,17 @@ enum class Priority {
     "name",
     "DESC"
 )
-@DashboardChartConfig(
-    sectionName = "Test Section",
-    labelField = "priority",
-    valuesFields = ["user_id"],
-    chartStyle = AdminChartStyle.LINE,
-    borderColors = ["#FF5733"],
-    fillColors = ["#FF8D1A"],
-    limitCount = 10,
-    orderQuery = "priority DESC"
-)
-@AdminActions(
-    actions = [Action.DELETE, Action.ADD],
-)
+//@DashboardChartConfig(
+//    sectionName = "Test Section",
+//    labelField = "priority",
+//    valuesFields = ["number"],
+//    chartStyle = AdminChartStyle.LINE,
+//    borderColors = ["#FF5733"],
+//    fillColors = ["transparent"],
+//    tension = 1f,
+//    limitCount = 10,
+//    orderQuery = "priority DESC"
+//)
 object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
@@ -81,6 +79,8 @@ object Tasks : Table("tasks") {
         compute = "{name}.toLowerCase().replaceAll(' ', '-')"
     )
     val slug = varchar("slug", 500)
+
+    val number = integer("number").default(1)
 
     @LocalUpload
     @Limits(

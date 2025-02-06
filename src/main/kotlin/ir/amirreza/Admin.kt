@@ -2,6 +2,7 @@ package ir.amirreza
 
 import io.ktor.server.application.*
 import ir.amirreza.action.MyCustomAction
+import ir.amirreza.dashboard.CustomDashboard
 import ir.amirreza.listeners.AdminListener
 import models.JDBCDrivers
 import models.forms.LoginFiled
@@ -33,6 +34,7 @@ fun Application.configureAdmin(database: Database) {
         )
         mediaPath = MEDIA_PATH
         mediaRoot = MEDIA_ROOT
+        adminDashboard = CustomDashboard()
         defaultAwsS3Bucket = "school-data"
         awsS3SignatureDuration = 1.minutes.toJavaDuration()
         authenticateName = "admin"

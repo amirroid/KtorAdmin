@@ -1,12 +1,15 @@
 package modules
 
 import authentication.KtorAdminPrincipal
+import configuration.DynamicConfiguration
+import dashboard.ChartDashboardSection
 import io.ktor.server.application.*
 import io.ktor.server.auth.principal
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.velocity.*
 import models.PanelGroup
+import models.chart.ChartData
 import models.toTableGroups
 import modules.add.handleAddNewItem
 import modules.list.handlePanelList
@@ -43,12 +46,7 @@ internal fun Routing.configureGetRouting(panels: List<AdminPanel>, authenticateN
 
 private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGroup>, panels: List<AdminPanel>) {
     runCatching {
-        val chartData = panels.mapNotNull { panel ->
-            when (panel) {
-                is AdminJdbcTable -> JdbcQueriesRepository.getChartData(panel).takeIf { it.isNotEmpty() }
-                else -> null
-            }
-        }.flatten()
+        val chartData = getChartData(panels)
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/admin_dashboard.vm",
@@ -62,4 +60,21 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
     }.onFailure {
         serverError(it.message.orEmpty(), it)
     }
+}
+
+
+internal fun getChartData(panels: List<AdminPanel>): List<ChartData> {
+    return DynamicConfiguration.dashboard?.sections?.let { sections ->
+        sections.mapNotNull { section ->
+            when (section) {
+                is ChartDashboardSection -> {
+                    val table =
+                        panels.filterIsInstance<AdminJdbcTable>().first { it.getTableName() == section.tableName }
+                    JdbcQueriesRepository.getChartData(table, section)
+                }
+
+                else -> null
+            }
+        }
+    } ?: emptyList()
 }

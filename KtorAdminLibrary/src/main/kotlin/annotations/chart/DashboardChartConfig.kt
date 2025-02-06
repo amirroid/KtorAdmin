@@ -5,8 +5,8 @@ import models.chart.AdminChartStyle
 /**
  * Annotation for configuring a chart in the admin dashboard.
  *
- * This annotation allows defining how a chart should be rendered by specifying its label field,
- * data fields, chart style, colors, and optional configurations like data limits and sorting.
+ * This annotation defines how a chart should be rendered, including its label, data fields, chart style, colors,
+ * and optional configurations such as data limits, sorting, and border settings.
  *
  * Example usage:
  * ```
@@ -19,30 +19,33 @@ import models.chart.AdminChartStyle
  *     fillColors = ["#00FF00", "#FFD700"],   // Green & Gold
  *     limitCount = 10,
  *     orderQuery = "date DESC",
- *     tensions = .6f,
+ *     aggregationFunction = "SUM",
+ *     tension = .6f,
  *     borderWidth = 2f
  * )
  * ```
- * This example defines a **line chart** displaying **sales** and **profit** by **category**.
- * The chart will have **blue and orange borders**, **green and gold fill colors**, and be limited
- * to **10 data points**, sorted by **date in descending order**.
+ * This example creates a **line chart** for **sales** and **profit** by **category**, with **blue and orange borders**,
+ * **green and gold fill colors**, limited to **10 data points**, and sorted by **date in descending order**.
+ * The **aggregation function** is set to **SUM**, aggregating data points by summing their values.
  *
- * @param sectionName The section where the chart is displayed in the dashboard.
- * @param labelField The field used as the labels in the chart (e.g., X-axis labels).
- * @param valuesFields The fields representing data values to be plotted (e.g., Y-axis values).
- * @param chartStyle The visual style of the chart (e.g., line, bar, pie).
- * @param fillColors (Optional) The fill colors for the chart. Defaults to an empty array.
- * @param borderColors (Optional) The border colors for the chart. Defaults to an empty array.
- * @param limitCount (Optional) The maximum number of data points to display. Defaults to `Int.MAX_VALUE`.
- * @param orderQuery (Optional) The sorting query for data (e.g., `"date DESC"`). Defaults to an empty string.
- * @param tension (Optional) A value between 0 and 1 to control the smoothness of line charts. A higher value results in a smoother curve.
- * @param borderWidth (Optional) The width of the chart's borders. If not specified, it defaults to 1f.
+ * @param sectionName The section name where the chart is displayed.
+ * @param labelField The field used as the X-axis labels.
+ * @param valuesFields The fields representing the Y-axis data.
+ * @param chartStyle The chart type (e.g., line, bar, pie).
+ * @param fillColors (Optional) The chart's fill colors. Default is an empty array.
+ * @param borderColors (Optional) The chart's border colors. Default is an empty array.
+ * @param limitCount (Optional) Maximum number of data points. Default is 100.
+ * @param orderQuery (Optional) Data sorting query (e.g., `"date DESC"`). Default is empty.
+ * @param aggregationFunction (Optional) Aggregation function for data points (e.g., "AVG", "SUM"). Default is empty.
+ * @param tension (Optional) Line smoothness for line charts (0.0f to 1.0f). Default is 0.5f.
+ * @param borderWidth (Optional) Border width. Default is 1f.
  *
  * **Notes:**
- * - `labelField` and `valuesFields` should match column names in a SQL table or fields in a collection.
- * - If multiple colors are provided for `fillColors` and `borderColors`, they will be applied sequentially.
- * - `limitCount` is useful for performance optimization when handling large datasets.
- * - `orderQuery` helps in sorting data before rendering the chart.
+ * - `labelField` and `valuesFields` should correspond to valid column names or field names.
+ * - Multiple `fillColors` and `borderColors` will be applied sequentially.
+ * - `limitCount` optimizes performance for large datasets.
+ * - `orderQuery` allows sorting data before chart rendering.
+ * - `aggregationFunction` limits to valid options like "AVG" or "SUM" to prevent invalid inputs.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
@@ -51,10 +54,11 @@ annotation class DashboardChartConfig(
     val labelField: String,
     val valuesFields: Array<String>,
     val chartStyle: AdminChartStyle,
+    val aggregationFunction: String = "",
     val fillColors: Array<String> = [],
     val borderColors: Array<String> = [],
     val limitCount: Int = Int.MAX_VALUE,
     val orderQuery: String = "",
-    val tension: Float = 0f,
+    val tension: Float = 0.5f,
     val borderWidth: Float = 1f,
 )

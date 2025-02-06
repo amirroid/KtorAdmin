@@ -12,6 +12,7 @@ import utils.toSuitableStringForFile
  * @param labelField The field name that will be used as labels in the chart (e.g., the X-axis labels).
  * @param valuesFields A list of field names that represent the data values to be plotted in the chart (e.g., the Y-axis values).
  * @param chartStyle The style of the chart (e.g., line, bar, pie, etc.), defined by the `AdminChartStyle` enum.
+ * @param aggregationFunction (Optional) Aggregation function for data points (e.g., "AVG", "SUM"). Default is empty.
  * @param fillColors (Optional) A list of colors used to fill the chart area. If not specified, it defaults to an empty list.
  * @param borderColors (Optional) A list of colors for the chart's borders. If not specified, it defaults to an empty list.
  * @param limitCount (Optional) The maximum number of data points to display in the chart. If not specified, it defaults to null (no limit).
@@ -24,6 +25,7 @@ data class ChartConfig(
     val labelField: String,
     val valuesFields: List<String>,
     val chartStyle: AdminChartStyle,
+    val aggregationFunction: String? = null,
     val fillColors: List<String> = emptyList(),
     val borderColors: List<String> = emptyList(),
     val limitCount: Int? = null,
@@ -45,5 +47,6 @@ internal fun ChartConfig.toSuitableStringForFile() = """
     |    orderQuery = ${orderQuery?.let { "\"$it\"" }},
     |    tension = ${tension}f,
     |    borderWidth = ${borderWidth}f,
+    |    aggregationFunction = ${aggregationFunction?.let { "\"$it\"" }},
     |)
 """.trimMargin("|")

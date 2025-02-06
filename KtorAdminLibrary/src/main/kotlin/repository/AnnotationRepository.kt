@@ -16,6 +16,7 @@ internal object AnnotationRepository {
                 labelField = annotation.arguments.findString("labelField")!!,
                 valuesFields = annotation.arguments.findStringList("valuesFields")!!,
                 chartStyle = annotation.arguments.findEnum<AdminChartStyle>("chartStyle")!!,
+                aggregationFunction = annotation.arguments.findString("aggregationFunction")?.takeIf { it.isNotEmpty() },
                 borderColors = annotation.arguments.findStringList("borderColors") ?: emptyList(),
                 fillColors = annotation.arguments.findStringList("fillColors") ?: emptyList(),
                 orderQuery = annotation.arguments.findString("orderQuery")?.takeIf { it.isNotEmpty() },

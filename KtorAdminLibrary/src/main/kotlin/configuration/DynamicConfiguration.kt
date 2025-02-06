@@ -1,6 +1,7 @@
 package configuration
 
 import action.CustomAdminAction
+import dashboard.KtorAdminDashboard
 import listener.AdminEventListener
 import models.forms.LoginFiled
 import java.time.ZoneId
@@ -14,6 +15,7 @@ internal object DynamicConfiguration {
     var cryptoPassword: String? = null
     var timeZone: ZoneId = ZoneId.systemDefault()
     var formsLifetime = 1_000 * 60L
+    var dashboard: KtorAdminDashboard? = null
 
 
     fun registerEventListener(listener: AdminEventListener) {

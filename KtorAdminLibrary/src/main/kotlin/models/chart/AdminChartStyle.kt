@@ -1,5 +1,7 @@
 package models.chart
 
+import dashboard.DashboardAggregationFunction
+
 /**
  * Enum class to define the available chart styles for the admin dashboard.
  *
