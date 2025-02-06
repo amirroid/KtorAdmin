@@ -101,7 +101,7 @@ function expandSidebar(icon, container, sidebar, menuIcon) {
     icon.classList.add("expanded");
     menuIcon.classList.add("shrink");
     container.style.marginLeft = (16 + sidebarRect.width).toString() + "px";
-    container.style.width = `${screen.width - sidebarRect.width - 48}px`;
+    container.style.width = `calc(100vw - ${sidebarRect.width + 48}px)`;
     sidebar.style.backgroundColor = "rgba(255, 255, 255, 0.6)"
     sidebar.style.backdropFilter = "none"
     sidebar.style.border = "none"

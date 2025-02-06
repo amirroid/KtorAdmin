@@ -1,9 +1,7 @@
 package processors.exposed
 
 import annotations.actions.AdminActions
-import annotations.chart.DashboardChartConfig
 import annotations.display.DisplayFormat
-import annotations.enumeration.Enumeration
 import annotations.exposed.ExposedTable
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
@@ -19,20 +17,20 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
-import models.*
+import models.ColumnSet
+import models.Limit
+import models.UploadTarget
 import models.actions.Action
 import models.chart.AdminChartStyle
-import models.chart.ChartConfig
-import models.chart.toSuitableStringForFile
 import models.common.Reference
 import models.date.AutoNowDate
 import models.order.Order
 import models.order.toFormattedString
 import models.types.ColumnType
-import models.types.isNumeric
-import repository.AnnotationRepository
 import repository.PropertiesRepository
-import utils.*
+import utils.FileUtils
+import utils.PackagesUtils
+import utils.toSuitableStringForFile
 
 class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -91,22 +89,9 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             throw IllegalArgumentException("(${classDeclaration.simpleName.asString()}) The provided primary key does not match any column in the table.")
         }
 
-        val chartConfigs = AnnotationRepository.findChartConfigs(classDeclaration)
 
         val columnNames = columnSets.map { it.columnName }
         val tableName = classDeclaration.getTableName()
-
-        chartConfigs.forEach { config ->
-            if (config.labelField !in columnNames) {
-                throw IllegalArgumentException("($tableName @${DashboardChartConfig::class.simpleName}) Label field '${config.labelField}' not found in column names.")
-            }
-            if (config.valuesFields.any { field ->
-                    columnSets.firstOrNull { column -> column.columnName == field }
-                        .let { it == null || !it.type.isNumeric }
-                }) {
-                throw IllegalArgumentException("($tableName @${DashboardChartConfig::class.simpleName}) One or more fields in valuesFields are either not found or not numeric.")
-            }
-        }
 
         val getAllColumnsFunction = FunSpec.builder("getAllColumns")
             .addModifiers(KModifier.OVERRIDE)
@@ -221,14 +206,6 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addStatement("return ${accessRoles?.let { roles -> "listOf(${roles.joinToString { "\"$it\"" }})" }}")
             .build()
 
-        val getAllChartConfigsFunction = FunSpec.builder("getAllChartConfigs")
-            .addModifiers(KModifier.OVERRIDE)
-            .returns(
-                List::class.asClassName().parameterizedBy(ChartConfig::class.asClassName())
-            )
-            .addStatement("return ${"listOf(${chartConfigs.joinToString(separator = ",\n") { it.toSuitableStringForFile() }})"}")
-            .build()
-
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminTable))
             .addFunction(getAllColumnsFunction)
@@ -238,7 +215,6 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addFunction(getPrimaryKeyFunctions)
             .addFunction(getTableNameFunction)
             .addFunction(getSingularNameFunction)
-            .addFunction(getAllChartConfigsFunction)
             .addFunction(getPluralNameFunction)
             .addFunction(getGroupNameFunction)
             .addFunction(getDefaultOrderFunction)

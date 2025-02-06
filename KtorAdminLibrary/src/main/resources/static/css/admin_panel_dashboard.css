@@ -160,17 +160,17 @@ h2 {
     width: 100%;
     background-color: rgba(255, 255, 255, 0.6);
     border-radius: 20px;
-    height: 300px;
+    height: 350px;
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
 }
 
 .chart-canvas {
-    flex-grow: 1;
+    flex: 1;
     width: 100%;
-    margin-bottom: 12px;
+    max-width: 100%;
+    max-height: 264px;
 }
 
 .chart-title {

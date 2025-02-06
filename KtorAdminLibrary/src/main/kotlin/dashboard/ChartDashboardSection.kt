@@ -1,28 +1,34 @@
 package dashboard
 
 import models.chart.AdminChartStyle
+import models.chart.ChartField
 
 /**
  * Base class for configuring a chart in the dashboard section.
  *
- * This class provides an abstraction for defining the chart's configuration, including the aggregation function,
- * table name, label and data fields, chart style, optional colors, and additional chart settings like data limits,
- * sorting, and border customization.
+ * This class defines the structure for configuring a chart, including its data source, visualization style,
+ * and additional customization options.
  *
- * The following properties are required:
- * - `aggregationFunction`: The aggregation function for the chart (e.g., AVERAGE, SUM).
- * - `tableName`: The name of the table that contains the data.
- * - `labelField`: The field to be used as the X-axis labels.
- * - `valuesFields`: A list of fields that will represent the data values on the Y-axis.
+ * ### **Required Properties:**
+ * - **`aggregationFunction`** → Determines how data is aggregated (e.g., SUM, AVERAGE).
+ * - **`tableName`** → The name of the table from which data is fetched.
+ * - **`labelField`** → The field used as labels on the X-axis.
+ * - **`valuesFields`** → A list of fields representing values plotted on the Y-axis.
+ * - **`chartStyle`** → The visual representation style of the chart (e.g., LINE, BAR, PIE).
  *
- * The following properties are optional and have default values:
- * - `limitCount`: The maximum number of data points to display. Defaults to null.
- * - `orderQuery`: The sorting query for data (e.g., `"date DESC"`). Defaults to null.
- * - `tension`: The smoothness of line charts, ranging from `0.0f` (no smoothness) to `1.0f` (maximum smoothness). Defaults to `0.5f`.
- * - `borderWidth`: The width of the chart's borders. Defaults to `1f`.
+ * ### **Optional Properties (with Defaults):**
+ * - **`limitCount`** → Maximum number of data points to display (default: `null`).
+ * - **`orderQuery`** → SQL-style sorting condition (default: `null`).
+ * - **`tension`** → Defines line smoothness (range: `0.0f` to `1.0f`, default: `0.5f`).
+ * - **`borderWidth`** → Thickness of chart borders (default: `1f`).
+ * - **`borderRadius`** → Corner radius for border styling (default: `0f`).
  *
- * Example usage:
- * ```
+ * ### **Customization Methods:**
+ * - `provideBorderColor(label, valueField)`: Returns a custom border color based on the label and value field.
+ * - `provideFillColor(label, valueField)`: Returns a custom fill color based on the label and value field.
+ *
+ * ### **Example Usage:**
+ * ```kotlin
  * class SalesChart : ChartDashboardSection() {
  *     override val aggregationFunction = DashboardAggregationFunction.SUM
  *     override val tableName = "sales_data"
@@ -40,41 +46,63 @@ abstract class ChartDashboardSection : DashboardSection {
     override val sectionType: String
         get() = SECTION_TYPE
 
-    // Aggregation function for the chart (e.g., SUM, AVG)
+    /** Defines how the chart data is aggregated (e.g., SUM, AVERAGE). */
     abstract val aggregationFunction: DashboardAggregationFunction
 
-    // The table from which the chart's data will be fetched
+    /** The database table that provides the chart's data. */
     abstract val tableName: String
 
-    // The field used as the X-axis labels
+    /** The field used for labeling data points on the X-axis. */
     abstract val labelField: String
 
-    // A list of fields representing the Y-axis data
-    abstract val valuesFields: List<String>
+    /** The fields representing data values plotted on the Y-axis. */
+    abstract val valuesFields: List<ChartField>
 
-    // Method for providing a custom border color for a given label and value field
-    abstract fun provideBorderColor(label: String, valueField: String): String?
-
-    // Method for providing a custom fill color for a given label and value field
-    abstract fun provideFillColor(label: String, valueField: String): String?
-
-    // The visual style of the chart (e.g., line, bar, pie)
+    /** Determines the chart's visual style (e.g., LINE, BAR, PIE). */
     abstract val chartStyle: AdminChartStyle
 
-    // The maximum number of data points to be displayed. Defaults to null.
+    /**
+     * Returns a custom border color for a given label and value field.
+     * @param label The label associated with the data point.
+     * @param valueField The field representing the data value.
+     * @return The border color as a string (e.g., hex code or predefined color name).
+     */
+    abstract fun provideBorderColor(label: String, valueField: String): String?
+
+    /**
+     * Returns a custom fill color for a given label and value field.
+     * @param label The label associated with the data point.
+     * @param valueField The field representing the data value.
+     * @return The fill color as a string (e.g., hex code or predefined color name).
+     */
+    abstract fun provideFillColor(label: String, valueField: String): String?
+
+    /** Maximum number of data points to display (null for unlimited). */
     open val limitCount: Int? = null
 
-    // Sorting query for data. Defaults to null.
+    /** Sorting condition for data retrieval (e.g., `"date DESC"`). */
     open val orderQuery: String? = null
 
-    // The smoothness of line charts. Ranges from 0.0f to 1.0f. Defaults to 0.5f.
+    /** Defines line smoothness in line charts (range: `0.0f` to `1.0f`, default: `0.5f`). */
     open val tension: Float = 0.5f
 
-    // The width of the chart's borders. Defaults to 1f.
+    /** The thickness of chart borders (default: `1f`). */
     open val borderWidth: Float = 1f
 
+    /** The corner radius for border styling (default: `0f`). */
+    open val borderRadius: Float = 0f
+
+    /**
+     * Defines the format for displaying the tooltip in the chart.
+     *
+     * @property tooltipFormat A template string used for formatting the tooltip.
+     *                          `{field}` is replaced with the display name of the field,
+     *                          and `{value}` is replaced with the corresponding value for that field.
+     */
+    open val tooltipFormat: String = "{field}: {value}"
+
     companion object {
-        // Constant for the chart section type
+        /** Constant representing the section type as `"chart"`. */
         private const val SECTION_TYPE = "chart"
     }
 }

@@ -1,14 +1,10 @@
 package panels
 
 import models.ColumnSet
-import models.actions.Action
-import models.chart.ChartConfig
-import models.order.Order
 
 interface AdminJdbcTable : AdminPanel {
     fun getAllColumns(): Collection<ColumnSet>
     fun getTableName(): String
-    fun getAllChartConfigs(): List<ChartConfig>
 }
 
 

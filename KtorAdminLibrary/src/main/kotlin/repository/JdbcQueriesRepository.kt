@@ -13,7 +13,6 @@ import getters.putColumn
 import getters.toTypedValue
 import models.ColumnSet
 import models.DataWithPrimaryKey
-import models.chart.ChartConfig
 import models.chart.ChartData
 import models.chart.ChartLabelsWithValues
 import models.common.DisplayItem
@@ -138,8 +137,9 @@ internal object JdbcQueriesRepository {
     fun getChartData(table: AdminJdbcTable, section: ChartDashboardSection): ChartData {
         val tableName = table.getTableName()
         val groupedData = mutableMapOf<String, MutableList<MutableList<Double>>>() // Store lists separately for "ALL"
-        val labelsSet = mutableSetOf<String>()
         val aggregationFunction = section.aggregationFunction
+        val labelsSet =
+            if (aggregationFunction == DashboardAggregationFunction.ALL) mutableListOf() else mutableSetOf<String>()
 
         return table.usingDataSource { session ->
             session.prepare(sqlQuery(section.createGetAllChartData(tableName))).use { preparedStatement ->
@@ -150,8 +150,13 @@ internal object JdbcQueriesRepository {
                         val label = rs.getLabelOrDefault(section.labelField)
                         labelsSet.add(label)
 
-                        val values = section.valuesFields.map { column ->
-                            rs.getDoubleOrDefault(getFieldNameBasedOnAggregationFunction(aggregationFunction, column))
+                        val values = section.valuesFields.map { field ->
+                            rs.getDoubleOrDefault(
+                                getFieldNameBasedOnAggregationFunction(
+                                    aggregationFunction,
+                                    field.fieldName
+                                )
+                            )
                         }
 
                         // If ALL, store values separately without aggregation
@@ -175,28 +180,32 @@ internal object JdbcQueriesRepository {
                 }
 
                 val labels = labelsSet.toList()
-                val values = labels.map { label ->
-                    section.valuesFields.mapIndexed { index, field ->
-                        ChartLabelsWithValues(
-                            values = groupedData[label]?.get(index) ?: emptyList(),
-                            fillColor = section.provideFillColor(label, field),
-                            borderColor = section.provideBorderColor(label, field)
-                        )
+                val values = section.valuesFields.mapIndexed { index, field ->
+                    val currentValues = mutableListOf<Double>()
+                    val currentIndexes = mutableMapOf<String, Int>()
+                    labels.distinct().forEach { currentIndexes[it] = 0 }
+                    labels.forEach { label ->
+                        groupedData[label]?.get(index)?.get(currentIndexes[label]!!)?.let { currentValues.add(it) }
+                        currentIndexes[label] = currentIndexes[label]!! + 1
                     }
-                }.flatten()
+
+                    // Create ChartLabelsWithValues with the correct values, colors, and labels
+                    ChartLabelsWithValues(
+                        displayName = field.displayName,
+                        values = currentValues,
+                        fillColors = labels.map { section.provideFillColor(it, field.displayName) },
+                        borderColors = labels.map { section.provideBorderColor(it, field.displayName) }
+                    )
+                }
 
                 ChartData(
                     labels = labels,
                     values = values,
-                    config = null,
                     section = section
                 )
             }
         }
     }
-
-    // Extension functions for cleaner code
-    private fun AdminJdbcTable.getColumnByName(name: String) = getAllColumns().first { it.columnName == name }
 
     private fun ResultSet.getLabelOrDefault(field: String) = getObject(field)?.toString() ?: "N/A"
 
@@ -687,11 +696,14 @@ internal object JdbcQueriesRepository {
      */
     private fun ChartDashboardSection.createGetAllChartData(tableName: String) = buildString {
         val orderField = orderQuery?.substringBeforeLast(" ")?.trim()
-        append("SELECT $labelField , ")
-        append(valuesFields.minus(labelField).plus(orderField).filterNotNull().distinct().joinToString(", ") {
-            if (it == orderField && orderField !in valuesFields) return@joinToString it
-            getFieldFunctionBasedOnAggregationFunction(aggregationFunction, it)
-        })
+        append("SELECT $labelField, ")
+        if (orderField!= null){
+            append("$orderField, ")
+        }
+        append(valuesFields.map {
+            if (it.fieldName == orderField && orderField !in valuesFields.map { it.fieldName }) return@map it
+            getFieldFunctionBasedOnAggregationFunction(aggregationFunction, it.fieldName)
+        }.distinct().joinToString(", "))
         append(" FROM ")
         append(tableName)
         if (aggregationFunction != DashboardAggregationFunction.ALL) {
@@ -703,7 +715,7 @@ internal object JdbcQueriesRepository {
         limitCount?.let {
             append(" LIMIT ?")
         }
-    }
+    }.also { println("QUERY IS $it") }
 
 
     /**

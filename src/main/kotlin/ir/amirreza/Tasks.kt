@@ -1,7 +1,5 @@
 package ir.amirreza
 
-import annotations.actions.AdminActions
-import annotations.chart.DashboardChartConfig
 import annotations.computed.Computed
 import annotations.display.DisplayFormat
 import annotations.enumeration.Enumeration
@@ -15,9 +13,7 @@ import annotations.references.References
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
 import annotations.uploads.LocalUpload
-import models.actions.Action
-import models.chart.AdminChartStyle
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Table
 
 enum class Priority {
     Low, Medium, High

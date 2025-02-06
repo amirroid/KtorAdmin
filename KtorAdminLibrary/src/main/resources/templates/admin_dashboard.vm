@@ -52,7 +52,12 @@
             #foreach($chart in $chartData)
                 <div class="chart-section">
                     <h2 class="chart-title">$chart.section.sectionName</h2>
-                    <canvas class="chart-canvas" id="$chart.section.sectionName"></canvas>
+                    <div class="legend-container" id="legend-container-$chart.section.index"></div>
+                    <canvas class="chart-canvas" id="chart-canvas-$chart.section.index"
+                            aria-label="Dashboard Chart"
+                            role="img">Your browser does not support the
+                        canvas element.
+                    </canvas>
                 </div>
             #end
         </div>
@@ -121,56 +126,139 @@
     #end
 </div>
 <script>
+    Chart.defaults.font.family = 'Istok Web';
+    Chart.defaults.font.weight = 'normal';
+    const htmlLegendPlugin = {
+        id: 'customLegend',
+        afterUpdate(chart, args, options) {
+            const legendContainer = document.getElementById(options.containerID);
+            legendContainer.innerHTML = '';
+
+            const list = document.createElement('ul');
+            list.style.listStyle = 'none';
+            list.style.display = 'flex';
+            list.style.gap = '10px';
+            list.style.padding = '0';
+            list.style.margin = '10px 0';
+
+            chart.data.datasets.forEach((dataset, index) => {
+                const item = document.createElement('li');
+                item.style.display = 'flex';
+                item.style.alignItems = 'center';
+                item.style.cursor = 'pointer';
+
+                // Outer circle (Border)
+                const outerCircle = document.createElement('span');
+                outerCircle.style.width = '16px';
+                outerCircle.style.height = '16px';
+                outerCircle.style.borderRadius = '50%';
+                outerCircle.style.border = '1px solid #292D32';
+                outerCircle.style.display = 'flex';
+                outerCircle.style.alignItems = 'center';
+                outerCircle.style.justifyContent = 'center';
+                outerCircle.style.marginRight = '6px';
+                outerCircle.style.transition = 'background-color 0.3s ease';
+
+                // Inner circle (Filled when active)
+                const innerCircle = document.createElement('span');
+                innerCircle.style.width = chart.getDatasetMeta(index).hidden ? '0px' : '8px';
+                innerCircle.style.height = chart.getDatasetMeta(index).hidden ? '0px' : '8px';
+                innerCircle.style.borderRadius = '50%';
+                innerCircle.style.backgroundColor = '#292D32';
+                innerCircle.style.transition = 'width 0.3s ease, height 0.3s ease';
+
+                outerCircle.appendChild(innerCircle);
+
+                // Add label text
+                const text = document.createElement('span');
+                text.style.fontFamily = 'Istok Web, sans-serif';
+                text.style.fontSize = '14px';
+                text.style.color = '#333';
+                text.textContent = dataset.label;
+                text.style.cursor = 'pointer';
+
+                const toggleVisibility = () => {
+                    const meta = chart.getDatasetMeta(index);
+                    meta.hidden = !meta.hidden;
+                    innerCircle.style.width = meta.hidden ? '0px' : '8px';
+                    innerCircle.style.height = meta.hidden ? '0px' : '8px';
+                    chart.update();
+                };
+
+                item.appendChild(outerCircle);
+                item.appendChild(text);
+
+                // Toggle visibility when clicking on the circle or label
+                outerCircle.onclick = toggleVisibility;
+                text.onclick = toggleVisibility;
+
+                list.appendChild(item);
+            });
+
+            legendContainer.appendChild(list);
+        }
+    };
         #foreach($chart in $chartData)
-        let ctx = document.getElementById('$chart.section.sectionName').getContext('2d')
-        let labels = [#foreach($label in $chart.labels) "$label",#end]
-        // Chart.defaults.font.family = 'Istok Web'
-        new Chart(
-                ctx,
-                {
-                    type: "$chart.section.chartStyle.chartType",
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            #foreach($values in $chart.values)
-                                #set($fillColor = $values.fillColors[0])
-                                #if($foreach.index < $values.fillColors.size())
-                                    #set($fillColor = $values.fillColors[$foreach.index])
-                                #else
-                                #end
-                                #set($borderColor = $values.borderColors[0])
-                                #if($foreach.index < $values.borderColors.size())
-                                    #set($borderColor = $values.borderColors[$foreach.index])
-                                #else
-                                #end
-                                #foreach($itemValues in $values.values)
-                                    {
-                                        label: '$values.label',
-                                        data: [#foreach($value in $itemValues) $value,#end],
-                                        #if($borderColor) borderColor: '$borderColor', #end
-                                        #if($fillColor) backgroundColor: '$fillColor', #end
-                                    fill: #if($fillColor)true #else false #end,
-                                        tension: $chart.section.tension,
-                                        borderWidth: $chart.section.borderWidth,
-                                    },
-                                #end
-                            #end
-                        ]
-                    },
-                    options: {
-                        // responsive: true,
-                        // maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                            },
-                            x: {
-                                beginAtZero: true,
-                            },
+            #if($chart.section.sectionType == "chart")
+            let ctx$chart.section.index = document.getElementById('chart-canvas-$chart.section.index').getContext('2d')
+            let labels$chart.section.index = [#foreach($label in $chart.labels) "$label",#end]
+            let data$chart.section.index = {
+                labels: labels$chart.section.index,
+                datasets: [
+                    #foreach($values in $chart.values)
+                        {
+                            label: '$values.displayName',
+                            data: [#foreach($value in $values.values) $value,#end],
+                            borderColor: [#foreach($color in $values.borderColors) "$color",#end],
+                            backgroundColor: [#foreach($color in $values.fillColors)"$color",#end],
+                            fill: true,
+                            tension: $chart.section.tension,
+                            borderWidth: $chart.section.borderWidth,
+                            borderRadius: $chart.section.borderRadius
                         },
+                    #end
+                ]
+            }
+            let options$chart.section.index = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                    x: {
+                        beginAtZero: true,
+                    },
+                },
+                plugins: {
+                    legend: {display: false},
+                    customLegend: {
+                        containerID: 'legend-container-$chart.section.index',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                const dataset = tooltipItem.dataset;
+                                const value = tooltipItem.raw;
+                                const fieldName = dataset.fieldName || dataset.label;
+                                const tooltipFormat = '$chart.section.tooltipFormat';
+                                return tooltipFormat.replaceAll('{field}', fieldName).replaceAll('{value}', value);
+                            }
+                        }
                     }
-                }
-        )
+                },
+            }
+            let config$chart.section.index = {
+                type: "$chart.section.chartStyle.chartType",
+                data: data$chart.section.index,
+                options: options$chart.section.index,
+                plugins: [#if($chart.section.valuesFields.size != 1) htmlLegendPlugin,#end]
+            }
+                #if($chart.section.valuesFields.size == 1)
+                    document.getElementById('chart-canvas-$chart.section.index').style.maxHeight = "304px"
+                #end
+            new Chart(ctx$chart.section.index, config$chart.section.index)
+            #end
         #end
 </script>
 <script src="/static/js/common.js"></script>

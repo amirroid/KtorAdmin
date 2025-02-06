@@ -1,19 +1,20 @@
 package models.chart
 
-import dashboard.DashboardAggregationFunction
-
 /**
- * Enum class to define the available chart styles for the admin dashboard.
+ * Enum class defining the available chart styles for the admin dashboard.
  *
- * This enum defines various types of charts that can be used in the admin dashboard for visualizing data.
- * Each chart type corresponds to a specific style of data presentation.
+ * This enum represents various chart types that can be used for visualizing data in the admin dashboard.
+ * Each type corresponds to a specific way of presenting data.
  *
- * - `LINE`: Represents a line chart, which is typically used to display trends over time. It’s ideal for showing continuous data and patterns.
- * - `BAR`: Represents a bar chart, commonly used to compare different categories or groups. It uses rectangular bars to display data.
- * - `PIE`: Represents a pie chart, which is used to show parts of a whole. Each slice of the pie represents a proportional part of the total data.
- * - `DOUGHNUT`: Represents a doughnut chart, a variation of the pie chart with a hole in the center. It is often used for similar purposes as pie charts, but with a different visual style.
- * - `RADAR`: Represents a radar chart, used to display multivariate data in a circular format. It is useful for showing how different variables compare to each other in a single view.
- * - `POLAR_AREA`: Represents a polar area chart, which is similar to a radar chart but with each section having a fixed angular width. It’s suitable for representing cyclical data.
+ * ### **Chart Types:**
+ * - **`LINE`** → Displays data as a connected line, ideal for showing trends over time.
+ * - **`BAR`** → Uses rectangular bars to compare values across different categories.
+ * - **`PIE`** → Divides data into proportional slices to show parts of a whole.
+ * - **`DOUGHNUT`** → A variation of the pie chart with a hollow center, offering a different visual representation.
+ * - **`RADAR`** → Displays multivariate data in a circular layout, useful for comparing multiple variables.
+ * - **`POLAR_AREA`** → Similar to a radar chart but with fixed angular widths, effective for cyclical data.
+ * - **`BUBBLE`** → Represents data with circles where position and size encode values, suitable for multi-dimensional analysis.
+ * - **`SCATTER`** → Plots data points on a Cartesian plane to show relationships between variables.
  */
 enum class AdminChartStyle(val chartType: String) {
     LINE("line"),
@@ -21,5 +22,7 @@ enum class AdminChartStyle(val chartType: String) {
     PIE("pie"),
     DOUGHNUT("doughnut"),
     RADAR("radar"),
-    POLAR_AREA("polarArea")
+    POLAR_AREA("polarArea"),
+    BUBBLE("bubble"),
+    SCATTER("scatter")
 }
