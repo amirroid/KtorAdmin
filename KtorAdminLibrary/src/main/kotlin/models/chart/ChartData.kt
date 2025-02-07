@@ -5,7 +5,7 @@ import dashboard.ChartDashboardSection
 internal class ChartData(
     val labels: List<String>,
     val values: List<ChartLabelsWithValues>,
-    val section: ChartDashboardSection? = null,
+    val section: ChartDashboardSection,
 )
 
 internal class ChartLabelsWithValues(

@@ -49,15 +49,20 @@
             <h1 id="name" class="istok-web-bold">Dashboard</h1>
         </div>
         <div id="bottom-box">
-            #foreach($chart in $chartData)
-                <div class="chart-section">
-                    <h2 class="chart-title">$chart.section.sectionName</h2>
-                    <div class="legend-container" id="legend-container-$chart.section.index"></div>
-                    <canvas class="chart-canvas" id="chart-canvas-$chart.section.index"
-                            aria-label="Dashboard Chart"
-                            role="img">Your browser does not support the
-                        canvas element.
-                    </canvas>
+            #foreach($row in $rowData)
+                <div class="row-container">
+                    #foreach($item in $row)
+                        #set($chart = $chartData[$item.itemIndex])
+                        <div class="chart-section" style="flex: $item.weight">
+                            <h2 class="chart-title">$chart.section.sectionName</h2>
+                            <div class="legend-container" id="legend-container-$chart.section.index"></div>
+                            <canvas class="chart-canvas" id="chart-canvas-$chart.section.index"
+                                    aria-label="Dashboard Chart"
+                                    role="img">Your browser does not support the
+                                canvas element.
+                            </canvas>
+                        </div>
+                    #end
                 </div>
             #end
         </div>
@@ -255,7 +260,7 @@
                 plugins: [#if($chart.section.valuesFields.size != 1) htmlLegendPlugin,#end]
             }
                 #if($chart.section.valuesFields.size == 1)
-                    document.getElementById('chart-canvas-$chart.section.index').style.maxHeight = "304px"
+                document.getElementById('chart-canvas-$chart.section.index').style.maxHeight = "304px"
                 #end
             new Chart(ctx$chart.section.index, config$chart.section.index)
             #end

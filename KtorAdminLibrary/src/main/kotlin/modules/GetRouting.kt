@@ -3,6 +3,7 @@ package modules
 import authentication.KtorAdminPrincipal
 import configuration.DynamicConfiguration
 import dashboard.ChartDashboardSection
+import dashboard.RowData
 import io.ktor.server.application.*
 import io.ktor.server.auth.principal
 import io.ktor.server.response.*
@@ -47,13 +48,15 @@ internal fun Routing.configureGetRouting(panels: List<AdminPanel>, authenticateN
 private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGroup>, panels: List<AdminPanel>) {
     runCatching {
         val chartData = getChartData(panels)
+        val rowData = getRowData()
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/admin_dashboard.vm",
                 model = mutableMapOf(
                     "panelGroups" to panelGroups,
                     "username" to principal<KtorAdminPrincipal>()!!.name,
-                    "chartData" to chartData
+                    "chartData" to chartData.associateBy { it.section.index },
+                    "rowData" to rowData,
                 )
             )
         )
@@ -64,8 +67,8 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
 
 
 internal fun getChartData(panels: List<AdminPanel>): List<ChartData> {
-    return DynamicConfiguration.dashboard?.sections?.let { sections ->
-        sections.mapNotNull { section ->
+    return DynamicConfiguration.dashboard?.rows?.map { row ->
+        row.sections.mapNotNull { section ->
             when (section) {
                 is ChartDashboardSection -> {
                     val table =
@@ -76,5 +79,12 @@ internal fun getChartData(panels: List<AdminPanel>): List<ChartData> {
                 else -> null
             }
         }
+    }?.flatten() ?: emptyList()
+}
+
+
+internal fun getRowData(): List<List<RowData>> {
+    return DynamicConfiguration.dashboard?.rows?.map { row ->
+        row.toRowData()
     } ?: emptyList()
 }

@@ -9,8 +9,13 @@ import models.chart.ChartField
 
 class CustomDashboard : KtorAdminDashboard() {
     override fun KtorAdminDashboard.configure() {
-        addSection(TaskChartSection())
-        addSection(Task2ChartSection())
+        addRow {
+            addSection(2f, TaskChartSection())
+            addSection(Task2ChartSection(2))
+        }
+        addRow {
+            addSection(Task2ChartSection(3))
+        }
     }
 }
 
@@ -55,7 +60,8 @@ class TaskChartSection : ChartDashboardSection() {
     override val borderWidth: Float
         get() = 2f
 }
-class Task2ChartSection : ChartDashboardSection() {
+
+class Task2ChartSection(override val index: Int) : ChartDashboardSection() {
     override val aggregationFunction: DashboardAggregationFunction
         get() = DashboardAggregationFunction.SUM
     override val tableName: String
@@ -86,8 +92,6 @@ class Task2ChartSection : ChartDashboardSection() {
         get() = AdminChartStyle.PIE
     override val sectionName: String
         get() = "Tasks 2"
-    override val index: Int
-        get() = 2
 
 
     override val borderWidth: Float

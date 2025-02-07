@@ -1,7 +1,7 @@
 package dashboard
 
 abstract class KtorAdminDashboard {
-    internal val sections = mutableListOf<DashboardSection>()
+    internal val rows = mutableListOf<Row>()
 
     init {
         configure()
@@ -9,7 +9,9 @@ abstract class KtorAdminDashboard {
 
     abstract fun KtorAdminDashboard.configure()
 
-    open fun addSection(section: DashboardSection) {
-        sections.add(section)
+    fun addRow(builder: Row.() -> Unit): Row {
+        val builder = Row().apply(builder)
+        rows += builder
+        return builder
     }
 }
