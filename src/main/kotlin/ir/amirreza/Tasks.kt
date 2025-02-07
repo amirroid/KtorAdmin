@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.actions.AdminActions
 import annotations.computed.Computed
 import annotations.display.DisplayFormat
 import annotations.enumeration.Enumeration
@@ -13,6 +14,7 @@ import annotations.references.References
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
 import annotations.uploads.LocalUpload
+import models.actions.Action
 import org.jetbrains.exposed.sql.Table
 
 enum class Priority {
@@ -22,6 +24,9 @@ enum class Priority {
 
 @ExposedTable("tasks", "id", "task", "tasks", iconFile = "/static/images/tasks.png")
 @AccessRoles("admin")
+@AdminActions(
+    actions = [Action.ADD]
+)
 @AdminQueries(
     searches = ["user_id.username", "description"],
     filters = ["priority", "user_id", "checked"]

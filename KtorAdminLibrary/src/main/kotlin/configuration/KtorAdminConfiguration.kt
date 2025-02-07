@@ -57,10 +57,11 @@ class KtorAdminConfiguration {
             DynamicConfiguration.maxItemsInPage = value
         }
 
-    var cryptoPassword: String?
-        get() = DynamicConfiguration.cryptoPassword
+
+    var authenticationSessionMaxAge: kotlin.time.Duration
+        get() = DynamicConfiguration.authenticationSessionMaxAge
         set(value) {
-            DynamicConfiguration.cryptoPassword = value
+            DynamicConfiguration.authenticationSessionMaxAge = value
         }
 
     var csrfTokenExpirationTime: Long

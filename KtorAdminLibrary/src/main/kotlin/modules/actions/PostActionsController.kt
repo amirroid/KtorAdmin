@@ -4,7 +4,6 @@ import csrf.CsrfManager
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.*
 import kotlinx.serialization.json.Json
 import panels.AdminJdbcTable
 import panels.AdminMongoCollection
@@ -27,8 +26,7 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
             call.checkHasRole(panel) {
                 runCatching {
                     val form = call.receiveParameters()
-                    val csrfToken  = form["_csrf"]
-                    println("CSRF TOKEN IS $csrfToken")
+                    val csrfToken = form["_csrf"]
                     if (csrfToken?.let { CsrfManager.validateToken(it) } != true) {
                         call.invalidateRequest()
                         return@runCatching

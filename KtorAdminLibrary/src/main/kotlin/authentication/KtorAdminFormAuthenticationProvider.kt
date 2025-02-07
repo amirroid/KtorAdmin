@@ -11,35 +11,34 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import models.forms.UserForm
 import models.forms.toUserForm
-import software.amazon.awssdk.services.s3.endpoints.internal.Value.Str
 import utils.baseUrl
 
 /**
- * Key used to identify the admin authentication challenge.
- * This is used internally to handle authentication failures for admin routes.
+ * Key used to identify the authentication challenge for admin form authentication.
+ * This is used internally to handle authentication failures for admin-related routes.
  */
-private const val adminAuthenticationChallengeKey = "AdminAuthenticationChallenge"
+private const val adminFormAuthenticationChallengeKey = "AdminFormAuthenticationChallenge"
 
 /**
- * Custom authentication provider for admin-specific authentication in Ktor.
+ * Custom authentication provider for admin form-based authentication in KtorAdmin.
  *
- * This class is designed to handle authentication for admin routes. It validates user credentials,
- * handles session-based authentication, and provides a customizable challenge function for failed authentication.
+ * This provider handles authentication for admin routes, validates user credentials,
+ * manages session-based authentication, and provides a configurable challenge function for failed authentication.
  *
- * @property authenticateFunction A function responsible for validating the authentication credentials.
- * @property challengeFunction A function invoked when authentication fails to handle the challenge process.
+ * @property authenticateFunction Function responsible for validating authentication credentials.
+ * @property challengeFunction Function invoked when authentication fails to handle the challenge process.
  */
-class KtorAdminAuthenticationProvider internal constructor(
-    config: KtorAdminAuthenticationConfig
+class KtorAdminFormAuthProvider internal constructor(
+    config: KtorAdminFormAuthConfig
 ) : AuthenticationProvider(config) {
 
     // Function to validate authentication credentials
     private val authenticateFunction: AuthenticationFunction<UserForm> = config.authenticationFunction
 
-    // Function to handle challenges for failed authentication
+    // Function to handle authentication failure challenges
     private val challengeFunction: KtorAdminAuthChallengeFunction = config.challengeFunction
 
-    // Instance of CryptoManager for handling encryption and decryption of session data
+    // Instance of CryptoManager for handling session encryption and decryption
     private val cryptoManager = CryptoManager()
 
     /**
@@ -50,9 +49,7 @@ class KtorAdminAuthenticationProvider internal constructor(
     private fun ApplicationCall.getUserFromSessions(): UserForm? {
         return (sessions.get(USER_SESSIONS) as? String)?.let {
             runCatching { cryptoManager.decryptData(it) }.getOrNull()?.let {
-                runCatching {
-                    Json.decodeFromString<UserForm>(it)
-                }.getOrNull()
+                runCatching { Json.decodeFromString<UserForm>(it) }.getOrNull()
             }
         }
     }
@@ -71,7 +68,8 @@ class KtorAdminAuthenticationProvider internal constructor(
         // Check if the request is for "/admin/login" with the POST method
         val inLoginUrl =
             call.request.uri.substringBefore("?") == "/admin/login" && call.request.httpMethod == HttpMethod.Post
-        // Extract user parameters from the session or the request body
+
+        // Extract user credentials from the session or the request body
         val formParameters = call.takeIf { inLoginUrl }?.receiveParameters()?.toUserForm()
         val userSession = call.getUserFromSessions()
         val parameters = userSession ?: formParameters
@@ -86,15 +84,14 @@ class KtorAdminAuthenticationProvider internal constructor(
             // Update the session with new credentials if logging in
             if (inLoginUrl && formParameters != userSession) {
                 formParameters?.let {
-                    val cryptoData = cryptoManager.encryptData(
-                        Json.encodeToString(it)
-                    )
-                    call.sessions.set(USER_SESSIONS, cryptoData)
+                    val encryptedData = cryptoManager.encryptData(Json.encodeToString(it))
+                    call.sessions.set(USER_SESSIONS, encryptedData)
                 }
             }
             return
         }
 
+        // Clear session if authentication fails
         if (userSession != null) {
             call.sessions.clear<UserForm>()
         }
@@ -106,7 +103,7 @@ class KtorAdminAuthenticationProvider internal constructor(
         }
 
         // Handle authentication failure with the configured challenge function
-        context.challenge(adminAuthenticationChallengeKey, cause) { challenge, challengeCall ->
+        context.challenge(adminFormAuthenticationChallengeKey, cause) { challenge, challengeCall ->
             challengeFunction.invoke(KtorAdminAuthChallengeContext(challengeCall), parameters)
             if (!challenge.completed && challengeCall.response.status() != null) {
                 challenge.complete()
@@ -115,31 +112,21 @@ class KtorAdminAuthenticationProvider internal constructor(
     }
 
     /**
-     * Configuration class for the custom admin authentication provider.
+     * Configuration class for the custom admin form authentication provider.
      *
-     * This class allows customization of the authentication and challenge logic for the admin
-     * authentication provider.
+     * This class allows customization of the authentication and challenge logic for admin routes.
      *
-     * @property authenticationFunction A validation function to authenticate the credentials.
-     * @property challengeFunction A function that handles challenges when authentication fails.
+     * @property authenticationFunction Function to validate the credentials.
+     * @property challengeFunction Function that handles challenges when authentication fails.
      */
-    class KtorAdminAuthenticationConfig internal constructor(name: String? = null) : Config(name) {
+    class KtorAdminFormAuthConfig internal constructor(name: String? = null) : Config(name) {
 
         // Function to validate user credentials
         internal var authenticationFunction: AuthenticationFunction<UserForm> = { null }
 
         // Default challenge function to redirect to the admin login page
         internal var challengeFunction: KtorAdminAuthChallengeFunction = {
-            val originUrl = if (call.request.uri.startsWith("/admin/login")) {
-                URLBuilder(call.request.uri).parameters["origin"].orEmpty()
-            } else {
-                URLBuilder(call.baseUrl + call.request.uri).apply {
-                    if (parameters.contains("origin")) {
-                        parameters.remove("origin")
-                    }
-                }.buildString()
-            }
-            call.respondRedirect("${call.baseUrl}/admin/login?origin=$originUrl")
+            redirectToLogin(call)
         }
 
         /**
@@ -172,16 +159,16 @@ class KtorAdminAuthenticationProvider internal constructor(
         }
 
         /**
-         * Builds the admin authentication provider using the current configuration.
+         * Builds the admin form authentication provider using the current configuration.
          *
-         * @return A configured instance of [KtorAdminAuthenticationProvider].
+         * @return A configured instance of [KtorAdminFormAuthProvider].
          */
-        internal fun build() = KtorAdminAuthenticationProvider(this)
+        internal fun build() = KtorAdminFormAuthProvider(this)
     }
 }
 
 /**
- * Context for handling authentication challenges specific to the admin authentication provider.
+ * Context for handling authentication challenges specific to the admin form authentication provider.
  *
  * This provides access to the [ApplicationCall] during challenge execution.
  *
@@ -190,24 +177,24 @@ class KtorAdminAuthenticationProvider internal constructor(
 class KtorAdminAuthChallengeContext(val call: ApplicationCall)
 
 /**
- * A type alias for the admin authentication challenge function.
+ * A type alias for the admin form authentication challenge function.
  *
  * The function takes a [KtorAdminAuthChallengeContext] and optional credentials as parameters.
  */
 typealias KtorAdminAuthChallengeFunction = suspend KtorAdminAuthChallengeContext.(UserForm?) -> Unit
 
 /**
- * Registers the custom admin authentication provider in the Ktor [AuthenticationConfig].
+ * Registers the custom admin form authentication provider in the Ktor [AuthenticationConfig].
  *
- * This extension function allows you to easily add and configure the `ktorAdmin` authentication provider.
+ * This extension function allows you to easily add and configure the `ktorAdminFormAuth` authentication provider.
  *
  * @param name The name of the authentication provider.
  * @param configure A configuration block for customizing the admin authentication behavior.
  */
-fun AuthenticationConfig.ktorAdmin(
+fun AuthenticationConfig.ktorAdminFormAuth(
     name: String,
-    configure: KtorAdminAuthenticationProvider.KtorAdminAuthenticationConfig.() -> Unit
+    configure: KtorAdminFormAuthProvider.KtorAdminFormAuthConfig.() -> Unit
 ) {
-    val provider = KtorAdminAuthenticationProvider.KtorAdminAuthenticationConfig(name).apply(configure).build()
+    val provider = KtorAdminFormAuthProvider.KtorAdminFormAuthConfig(name).apply(configure).build()
     register(provider)
 }

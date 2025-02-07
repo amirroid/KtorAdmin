@@ -62,6 +62,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "username" to user.name,
                     "isUpdate" to false,
                     "requestId" to requestId,
+                    "hasAction" to table.hasAddAction
                 )
             )
         )

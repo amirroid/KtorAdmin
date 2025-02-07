@@ -11,6 +11,7 @@ import mongo.MongoServerAddress
 import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 const val MEDIA_ROOT = "files"
@@ -39,7 +40,6 @@ fun Application.configureAdmin(database: Database) {
         awsS3SignatureDuration = 1.minutes.toJavaDuration()
         authenticateName = "admin"
         loginFields = adminLoginFields
-        cryptoPassword = "test"
         csrfTokenExpirationTime = 1000 * 60
         registerCustomAdminActionForAll(MyCustomAction())
         registerEventListener(AdminListener(database))

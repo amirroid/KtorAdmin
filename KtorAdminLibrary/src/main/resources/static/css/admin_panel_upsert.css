@@ -536,6 +536,12 @@ input:disabled, select:disabled, input:read-only {
     border-bottom: none;
 }
 
+#submit-button:disabled {
+    background-color: #dfdfdf;
+    color: rgba(0, 0, 0, 0.4);
+    cursor: default;
+}
+
 
 #logout {
     color: red;

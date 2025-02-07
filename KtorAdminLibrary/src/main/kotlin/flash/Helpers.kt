@@ -18,7 +18,6 @@ internal suspend fun ApplicationCall.setFlashSessionsAndRedirect(
     values: Map<String, String?>
 ) {
     val referer = request.headers["Referer"]
-    println("REQUEST ID $requestId")
     if (referer != null && requestId != null) {
         response.cookies.append(
             "${requestId}-data",

@@ -90,6 +90,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "username" to user.name,
                         "isUpdate" to true,
                         "requestId" to requestId,
+                        "hasAction" to table.hasEditAction
                     )
                 )
             )
