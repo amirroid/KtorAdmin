@@ -52,16 +52,23 @@
             #foreach($row in $rowData)
                 <div class="row-container">
                     #foreach($item in $row)
-                        #set($chart = $chartData[$item.itemIndex])
+                    #set($section = $sectionsData[$item.itemIndex])
+                    #if($section.section.sectionType == "chart")
                         <div class="chart-section" style="flex: $item.weight">
-                            <h2 class="chart-title">$chart.section.sectionName</h2>
-                            <div class="legend-container" id="legend-container-$chart.section.index"></div>
-                            <canvas class="chart-canvas" id="chart-canvas-$chart.section.index"
+                            <h2 class="chart-title">$section.section.sectionName</h2>
+                            <div class="legend-container" id="legend-container-$section.section.index"></div>
+                            <canvas class="chart-canvas" id="chart-canvas-$section.section.index"
                                     aria-label="Dashboard Chart"
                                     role="img">Your browser does not support the
                                 canvas element.
                             </canvas>
                         </div>
+                    #else
+                        <div class="text-section" style="flex: $item.weight">
+                            <h1 class="text-section-title">$section.value</h1>
+                            <h3 class="text-section-hint">$section.section.hintText</h3>
+                        </div>
+                    #end
                     #end
                 </div>
             #end
@@ -203,7 +210,7 @@
             legendContainer.appendChild(list);
         }
     };
-        #foreach($chart in $chartData)
+        #foreach($chart in $sectionsData)
             #if($chart.section.sectionType == "chart")
             let ctx$chart.section.index = document.getElementById('chart-canvas-$chart.section.index').getContext('2d')
             let labels$chart.section.index = [#foreach($label in $chart.labels) "$label",#end]
@@ -250,7 +257,7 @@
                                 return tooltipFormat.replaceAll('{field}', fieldName).replaceAll('{value}', value);
                             }
                         }
-                    }
+                    },
                 },
             }
             let config$chart.section.index = {

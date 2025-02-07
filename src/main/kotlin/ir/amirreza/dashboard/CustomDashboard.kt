@@ -3,9 +3,11 @@ package ir.amirreza.dashboard
 import dashboard.chart.ChartDashboardSection
 import models.chart.ChartDashboardAggregationFunction
 import dashboard.KtorAdminDashboard
+import dashboard.simple.TextDashboardSection
 import ir.amirreza.Priority
 import models.chart.AdminChartStyle
 import models.chart.ChartField
+import models.chart.TextDashboardAggregationFunction
 
 class CustomDashboard : KtorAdminDashboard() {
     override fun KtorAdminDashboard.configure() {
@@ -14,6 +16,7 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(Task2ChartSection(2))
         }
         addRow {
+            addSection(TaskTextSection())
             addSection(Task2ChartSection(3))
         }
     }
@@ -62,6 +65,24 @@ class TaskChartSection : ChartDashboardSection() {
 
     override val borderWidth: Float
         get() = 2f
+}
+
+class TaskTextSection : TextDashboardSection() {
+    override val tableName: String
+        get() = "tasks"
+    override val fieldName: String
+        get() = "number"
+    override val aggregationFunction: TextDashboardAggregationFunction
+        get() = TextDashboardAggregationFunction.LAST_ITEM
+
+    override val orderQuery: String?
+        get() = "id DESC"
+    override val sectionName: String
+        get() = "Sample Section"
+    override val index: Int
+        get() = 5
+    override val hintText: String
+        get() = "The data of numbers"
 }
 
 class Task2ChartSection(override val index: Int) : ChartDashboardSection() {

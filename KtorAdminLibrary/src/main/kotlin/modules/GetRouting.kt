@@ -4,6 +4,7 @@ import authentication.KtorAdminPrincipal
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
 import dashboard.row.RowData
+import dashboard.simple.TextDashboardSection
 import io.ktor.server.application.*
 import io.ktor.server.auth.principal
 import io.ktor.server.response.*
@@ -11,6 +12,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.velocity.*
 import models.PanelGroup
 import models.chart.ChartData
+import models.chart.TextData
 import models.toTableGroups
 import modules.add.handleAddNewItem
 import modules.list.handlePanelList
@@ -47,7 +49,7 @@ internal fun Routing.configureGetRouting(panels: List<AdminPanel>, authenticateN
 
 private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGroup>, panels: List<AdminPanel>) {
     runCatching {
-        val chartData = getChartData(panels)
+        val sectionsData = getSectionsData(panels)
         val rowData = getRowData()
         respond(
             VelocityContent(
@@ -55,7 +57,11 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
                 model = mutableMapOf(
                     "panelGroups" to panelGroups,
                     "username" to principal<KtorAdminPrincipal>()!!.name,
-                    "chartData" to chartData.associateBy { it.section.index },
+                    "sectionsData" to sectionsData.associateBy {
+                        if (it is TextData) {
+                            it.section.index
+                        } else (it as ChartData).section.index
+                    },
                     "rowData" to rowData,
                 )
             )
@@ -66,7 +72,7 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
 }
 
 
-internal fun getChartData(panels: List<AdminPanel>): List<ChartData> {
+internal fun getSectionsData(panels: List<AdminPanel>): List<Any> {
     return DynamicConfiguration.dashboard?.rows?.map { row ->
         row.sections.mapNotNull { section ->
             when (section) {
@@ -74,6 +80,12 @@ internal fun getChartData(panels: List<AdminPanel>): List<ChartData> {
                     val table =
                         panels.filterIsInstance<AdminJdbcTable>().first { it.getTableName() == section.tableName }
                     JdbcQueriesRepository.getChartData(table, section)
+                }
+
+                is TextDashboardSection -> {
+                    val table =
+                        panels.filterIsInstance<AdminJdbcTable>().first { it.getTableName() == section.tableName }
+                    JdbcQueriesRepository.getTextData(table, section)
                 }
 
                 else -> null

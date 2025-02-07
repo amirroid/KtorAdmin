@@ -67,3 +67,7 @@ internal inline fun <T> Iterable<T>.allIndexed(predicate: (index: Int, T) -> Boo
     }
     return results.all { it }
 }
+
+internal fun Double.formatAsIntegerIfPossible(): String {
+    return if (this % 1.0 == 0.0) toLong().toString() else toString()
+}

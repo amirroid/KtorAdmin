@@ -9,6 +9,10 @@ abstract class TextDashboardSection : DashboardSection {
 
     abstract val tableName: String
     abstract val fieldName: String
+    abstract val hintText: String
+
+    /** Sorting condition for data retrieval (e.g., `"date DESC"`). */
+    open val orderQuery: String? = null
 
     abstract val aggregationFunction: TextDashboardAggregationFunction
 

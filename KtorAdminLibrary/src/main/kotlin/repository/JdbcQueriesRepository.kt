@@ -3,6 +3,7 @@ package repository
 import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
+import dashboard.simple.TextDashboardSection
 import models.chart.ChartDashboardAggregationFunction
 import models.chart.getFieldFunctionBasedOnAggregationFunction
 import models.chart.getFieldNameBasedOnAggregationFunction
@@ -15,11 +16,14 @@ import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.chart.ChartData
 import models.chart.ChartLabelsWithValues
+import models.chart.TextDashboardAggregationFunction
+import models.chart.TextData
 import models.common.DisplayItem
 import models.getCurrentDateClass
 import models.order.Order
 import models.types.ColumnType
 import panels.*
+import utils.formatAsIntegerIfPossible
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
@@ -135,14 +139,13 @@ internal object JdbcQueriesRepository {
      * @return A `ChartData` object containing labels and their corresponding values.
      */
     fun getChartData(table: AdminJdbcTable, section: ChartDashboardSection): ChartData {
-        val tableName = table.getTableName()
         val groupedData = mutableMapOf<String, MutableList<MutableList<Double>>>() // Store lists separately for "ALL"
         val aggregationFunction = section.aggregationFunction
         val labelsSet =
             if (aggregationFunction == ChartDashboardAggregationFunction.ALL) mutableListOf() else mutableSetOf<String>()
 
         return table.usingDataSource { session ->
-            session.prepare(sqlQuery(section.createGetAllChartData(tableName))).use { preparedStatement ->
+            session.prepare(sqlQuery(section.createGetAllChartData())).use { preparedStatement ->
                 section.limitCount?.let { preparedStatement.setInt(1, it) }
 
                 preparedStatement.executeQuery().use { rs ->
@@ -203,6 +206,52 @@ internal object JdbcQueriesRepository {
                     values = values,
                     section = section
                 )
+            }
+        }
+    }
+
+    fun getTextData(table: AdminJdbcTable, section: TextDashboardSection): TextData {
+        return table.usingDataSource { session ->
+            session.prepare(sqlQuery(section.createGetAllData())).use { prepareStatement ->
+                prepareStatement.executeQuery().use { rs ->
+                    var value = ""
+                    value = when (section.aggregationFunction) {
+                        TextDashboardAggregationFunction.LAST_ITEM -> {
+                            if (rs.next()) {
+                                rs.getDouble(
+                                    section.fieldName
+                                ).formatAsIntegerIfPossible().toString()
+                            } else ""
+                        }
+
+                        TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
+                            var nextItem = 0.0
+                            var previewsItem = 0.0
+                            if (rs.next()) {
+                                nextItem = rs.getDouble(
+                                    section.fieldName
+                                )
+                            }
+                            if (rs.next()) {
+                                previewsItem = rs.getDouble(
+                                    section.fieldName
+                                )
+                            }
+                            runCatching { ((nextItem - previewsItem).div(previewsItem) * 100).formatAsIntegerIfPossible() }.getOrNull()
+                                .toString() + "%"
+                        }
+
+                        else -> {
+                            if (rs.next()) {
+                                rs.getDouble("aggregationFunctionValue").formatAsIntegerIfPossible().toString()
+                            } else ""
+                        }
+                    }
+                    TextData(
+                        value = value,
+                        section = section
+                    )
+                }
             }
         }
     }
@@ -691,13 +740,12 @@ internal object JdbcQueriesRepository {
      * - Optional row limiting (`LIMIT ?`) if a limit is provided.
      * - If aggregation is applied (excluding `ALL`), the query includes `GROUP BY labelField`.
      *
-     * @param tableName The name of the table from which data is retrieved.
      * @return A dynamically generated SQL query string.
      */
-    private fun ChartDashboardSection.createGetAllChartData(tableName: String) = buildString {
+    private fun ChartDashboardSection.createGetAllChartData() = buildString {
         val orderField = orderQuery?.substringBeforeLast(" ")?.trim()
         append("SELECT $labelField, ")
-        if (orderField!= null){
+        if (orderField != null) {
             append("$orderField, ")
         }
         append(valuesFields.map {
@@ -715,8 +763,45 @@ internal object JdbcQueriesRepository {
         limitCount?.let {
             append(" LIMIT ?")
         }
-    }.also { println("QUERY IS $it") }
+    }
 
+    /**
+     * Constructs an SQL query to retrieve data based on the specified configuration for a text dashboard.
+     *
+     * This function dynamically builds an SQL `SELECT` query based on:
+     * - The field to aggregate (`fieldName`), applying the appropriate aggregation function (`COUNT`, `AVG`, `SUM`).
+     * - Optional sorting (`ORDER BY`), if specified through `orderQuery`.
+     * - Optional row limiting (`LIMIT ?`), if a limit is provided through `limitCount`.
+     * - If aggregation is applied, the query will return the aggregated result using an alias (`aggregationFunctionValue`).
+     *
+     * @return A dynamically generated SQL query string.
+     */
+
+    private fun TextDashboardSection.createGetAllData() = buildString {
+        when (aggregationFunction) {
+            TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
+                // Generates a query to select field values for the last 2 records, sorted by date
+                append("SELECT $fieldName FROM $tableName ${orderQuery?.let { "ORDER BY $it" }.orEmpty()} LIMIT 2")
+            }
+
+            TextDashboardAggregationFunction.LAST_ITEM -> {
+                // Generates a query to select the field value for the last record, sorted by date
+                append("SELECT $fieldName FROM $tableName ${orderQuery?.let { "ORDER BY $it" }.orEmpty()} LIMIT 1")
+            }
+
+            else -> {
+                // Generates a query with the appropriate aggregation function (e.g., COUNT, AVG, SUM)
+                val aggregationFunctionQuery = when (aggregationFunction) {
+                    TextDashboardAggregationFunction.COUNT -> "COUNT"  // Count the number of records
+                    TextDashboardAggregationFunction.AVERAGE -> "AVG"  // Calculate the average value
+                    TextDashboardAggregationFunction.SUM -> "SUM"      // Calculate the sum of the field
+                    else -> ""  // Fallback case if no aggregation function is specified
+                }
+                // Constructs the query to apply the aggregation function and provide a result alias
+                append("SELECT $aggregationFunctionQuery($fieldName) as aggregationFunctionValue FROM $tableName")
+            }
+        }
+    }
 
     /**
      * Creates query for retrieving a single item by primary key.
