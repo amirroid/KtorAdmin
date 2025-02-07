@@ -11,6 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Istok+Web:ital,wght@0,400;0,700;1,400;1,700&display=swap"
           rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #bottom-box {
+        grid-template-columns: #foreach($item in $gridTemplate) ${item}fr #end;
+        }
+            #foreach($template in $mediaTemplates)
+            @media (max-width: $template.maxWidth) {
+                #bottom-box {
+                grid-template-columns: #foreach($item in $template.template) ${item}fr #end;
+                }
+            #end
+    </style>
 </head>
 
 <body>
@@ -49,31 +60,29 @@
             <h1 id="name" class="istok-web-bold">Dashboard</h1>
         </div>
         <div id="bottom-box">
-            #foreach($row in $rowData)
-                <div class="row-container">
-                    #foreach($item in $row)
-                        #set($section = $sectionsData[$item.itemIndex])
-                        #if($section.section.sectionType == "chart")
-                            <div class="chart-section" style="flex: ${item.weight}; height: ${item.height};">
-                                <h2 class="chart-title">$section.section.sectionName</h2>
-                                <div class="chart-section-container">
-                                    <div class="legend-container" id="legend-container-$section.section.index"></div>
-                                    <canvas class="chart-canvas#if($section.section.valuesFields.size != 1) has-multiple-value#end"
-                                            id="chart-canvas-$section.section.index"
-                                            aria-label="Dashboard Chart"
-                                            role="img">Your browser does not support the
-                                        canvas element.
-                                    </canvas>
-                                </div>
-                            </div>
-                        #else
-                            <div class="text-section" style="flex: ${item.weight}; height: ${item.height};">
-                                <h1 class="text-section-title">$section.value</h1>
-                                <h3 class="text-section-hint">$section.section.hintText</h3>
-                            </div>
-                        #end
-                    #end
-                </div>
+            #foreach($sectionInfo in $sectionsInfo)
+                #set($section = $sectionsData[$sectionInfo.itemIndex])
+                #if($section.section.sectionType == "chart")
+                    <div class="chart-section"
+                         style="grid-column: span ${sectionInfo.span}; height: ${sectionInfo.height};">
+                        <h2 class="chart-title">$section.section.sectionName</h2>
+                        <div class="chart-section-container">
+                            <div class="legend-container" id="legend-container-$section.section.index"></div>
+                            <canvas class="chart-canvas#if($section.section.valuesFields.size != 1) has-multiple-value#end"
+                                    id="chart-canvas-$section.section.index"
+                                    aria-label="Dashboard Chart"
+                                    role="img">Your browser does not support the
+                                canvas element.
+                            </canvas>
+                        </div>
+                    </div>
+                #else
+                    <div class="text-section"
+                         style="grid-column: span ${sectionInfo.span}; height: ${sectionInfo.height};">
+                        <h1 class="text-section-title">$section.value</h1>
+                        <h3 class="text-section-hint">$section.section.hintText</h3>
+                    </div>
+                #end
             #end
         </div>
     </div>

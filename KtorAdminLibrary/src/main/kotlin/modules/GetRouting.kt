@@ -3,7 +3,7 @@ package modules
 import authentication.KtorAdminPrincipal
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
-import dashboard.row.RowData
+import dashboard.grid.SectionInfo
 import dashboard.simple.TextDashboardSection
 import io.ktor.server.application.*
 import io.ktor.server.auth.principal
@@ -50,7 +50,9 @@ internal fun Routing.configureGetRouting(panels: List<AdminPanel>, authenticateN
 private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGroup>, panels: List<AdminPanel>) {
     runCatching {
         val sectionsData = getSectionsData(panels)
-        val rowData = getRowData()
+        val sectionsInfo = getSectionsInfo()
+        val gridTemplate = DynamicConfiguration.dashboard?.grid?.gridTemplate ?: emptyList()
+        val mediaTemplates = DynamicConfiguration.dashboard?.grid?.mediaTemplates ?: emptyList()
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/admin_dashboard.vm",
@@ -62,7 +64,9 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
                             it.section.index
                         } else (it as ChartData).section.index
                     },
-                    "rowData" to rowData,
+                    "sectionsInfo" to sectionsInfo,
+                    "gridTemplate" to gridTemplate,
+                    "mediaTemplates" to mediaTemplates,
                 )
             )
         )
@@ -73,8 +77,8 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
 
 
 internal fun getSectionsData(panels: List<AdminPanel>): List<Any> {
-    return DynamicConfiguration.dashboard?.rows?.map { row ->
-        row.sections.mapNotNull { section ->
+    return DynamicConfiguration.dashboard?.grid?.let { grid ->
+        grid.sections.mapNotNull { section ->
             when (section) {
                 is ChartDashboardSection -> {
                     val table =
@@ -91,12 +95,10 @@ internal fun getSectionsData(panels: List<AdminPanel>): List<Any> {
                 else -> null
             }
         }
-    }?.flatten() ?: emptyList()
+    } ?: emptyList()
 }
 
 
-internal fun getRowData(): List<List<RowData>> {
-    return DynamicConfiguration.dashboard?.rows?.map { row ->
-        row.toRowData()
-    } ?: emptyList()
+internal fun getSectionsInfo(): List<SectionInfo> {
+    return DynamicConfiguration.dashboard?.grid?.toSectionInfo() ?: emptyList()
 }

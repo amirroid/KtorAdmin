@@ -218,9 +218,9 @@ internal object JdbcQueriesRepository {
                     value = when (section.aggregationFunction) {
                         TextDashboardAggregationFunction.LAST_ITEM -> {
                             if (rs.next()) {
-                                rs.getDouble(
-                                    section.fieldName
-                                ).formatAsIntegerIfPossible().toString()
+                                val itemObject = rs.getObject(section.fieldName)
+                                itemObject?.toString()?.toDoubleOrNull()?.formatAsIntegerIfPossible()?.toString()
+                                    ?: itemObject.toString()
                             } else ""
                         }
 

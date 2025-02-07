@@ -8,28 +8,24 @@ import ir.amirreza.Priority
 import models.chart.AdminChartStyle
 import models.chart.ChartField
 import models.chart.TextDashboardAggregationFunction
+import kotlin.math.max
 
 class CustomDashboard : KtorAdminDashboard() {
     override fun KtorAdminDashboard.configure() {
-        addRow("100px") {
-            addSection(TaskTextSection())
-            addSection(Task2TextSection())
-            addSection(Task3TextSection())
-            addSection(Task4TextSection())
+        configureLayout {
+            addSection(TaskTextSection(), "200px")
+            addSection(Task2TextSection(), "200px")
+            addSection(Task3TextSection(), "200px")
+            addSection(Task4TextSection(), "200px")
             addSection(Task5TextSection())
-        }
-        addRow {
-            addSection(2f, TaskChartSection())
+            addSection(2, TaskChartSection())
             addSection(Task2ChartSection(2))
-        }
-        addRow {
             addSection(Task2ChartSection(3))
             addSection(Task3ChartSection())
             addSection(Task4ChartSection())
-        }
-        addRow {
             addSection(Task5ChartSection())
             addSection(Task6ChartSection())
+            media(maxWidth = "600px", template = listOf(1, 1))
         }
     }
 }
@@ -82,7 +78,7 @@ class TaskTextSection : TextDashboardSection() {
     override val tableName: String
         get() = "tasks"
     override val fieldName: String
-        get() = "number"
+        get() = "priority"
     override val aggregationFunction: TextDashboardAggregationFunction
         get() = TextDashboardAggregationFunction.LAST_ITEM
 
@@ -93,7 +89,7 @@ class TaskTextSection : TextDashboardSection() {
     override val index: Int
         get() = 5
     override val hintText: String
-        get() = "The last item of numbers"
+        get() = "The last item of priorities"
 }
 
 class Task2TextSection : TextDashboardSection() {
