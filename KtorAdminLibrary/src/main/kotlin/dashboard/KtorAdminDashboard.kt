@@ -1,5 +1,7 @@
 package dashboard
 
+import dashboard.row.Row
+
 abstract class KtorAdminDashboard {
     internal val rows = mutableListOf<Row>()
 

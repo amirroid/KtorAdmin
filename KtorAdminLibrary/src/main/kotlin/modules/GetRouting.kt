@@ -2,8 +2,8 @@ package modules
 
 import authentication.KtorAdminPrincipal
 import configuration.DynamicConfiguration
-import dashboard.ChartDashboardSection
-import dashboard.RowData
+import dashboard.chart.ChartDashboardSection
+import dashboard.row.RowData
 import io.ktor.server.application.*
 import io.ktor.server.auth.principal
 import io.ktor.server.response.*

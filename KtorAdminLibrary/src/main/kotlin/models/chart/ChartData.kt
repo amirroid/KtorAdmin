@@ -1,6 +1,6 @@
 package models.chart
 
-import dashboard.ChartDashboardSection
+import dashboard.chart.ChartDashboardSection
 
 internal class ChartData(
     val labels: List<String>,

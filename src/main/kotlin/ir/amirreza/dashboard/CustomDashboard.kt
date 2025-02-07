@@ -1,7 +1,7 @@
 package ir.amirreza.dashboard
 
-import dashboard.ChartDashboardSection
-import dashboard.DashboardAggregationFunction
+import dashboard.chart.ChartDashboardSection
+import models.chart.ChartDashboardAggregationFunction
 import dashboard.KtorAdminDashboard
 import ir.amirreza.Priority
 import models.chart.AdminChartStyle
@@ -20,8 +20,8 @@ class CustomDashboard : KtorAdminDashboard() {
 }
 
 class TaskChartSection : ChartDashboardSection() {
-    override val aggregationFunction: DashboardAggregationFunction
-        get() = DashboardAggregationFunction.ALL
+    override val aggregationFunction: ChartDashboardAggregationFunction
+        get() = ChartDashboardAggregationFunction.ALL
     override val tableName: String
         get() = "tasks"
     override val labelField: String
@@ -56,14 +56,17 @@ class TaskChartSection : ChartDashboardSection() {
     override val index: Int
         get() = 1
 
+    override val tension: Float
+        get() = 0.5f
+
 
     override val borderWidth: Float
         get() = 2f
 }
 
 class Task2ChartSection(override val index: Int) : ChartDashboardSection() {
-    override val aggregationFunction: DashboardAggregationFunction
-        get() = DashboardAggregationFunction.SUM
+    override val aggregationFunction: ChartDashboardAggregationFunction
+        get() = ChartDashboardAggregationFunction.SUM
     override val tableName: String
         get() = "tasks"
     override val labelField: String

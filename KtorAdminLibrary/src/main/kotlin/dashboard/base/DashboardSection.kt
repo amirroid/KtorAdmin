@@ -1,4 +1,4 @@
-package dashboard
+package dashboard.base
 
 interface DashboardSection {
     val sectionType: String

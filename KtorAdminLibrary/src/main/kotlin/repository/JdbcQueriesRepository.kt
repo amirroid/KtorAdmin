@@ -2,10 +2,10 @@ package repository
 
 import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
-import dashboard.ChartDashboardSection
-import dashboard.DashboardAggregationFunction
-import dashboard.getFieldFunctionBasedOnAggregationFunction
-import dashboard.getFieldNameBasedOnAggregationFunction
+import dashboard.chart.ChartDashboardSection
+import models.chart.ChartDashboardAggregationFunction
+import models.chart.getFieldFunctionBasedOnAggregationFunction
+import models.chart.getFieldNameBasedOnAggregationFunction
 import formatters.extractTextInCurlyBraces
 import formatters.formatToDisplayInTable
 import formatters.populateTemplate
@@ -139,7 +139,7 @@ internal object JdbcQueriesRepository {
         val groupedData = mutableMapOf<String, MutableList<MutableList<Double>>>() // Store lists separately for "ALL"
         val aggregationFunction = section.aggregationFunction
         val labelsSet =
-            if (aggregationFunction == DashboardAggregationFunction.ALL) mutableListOf() else mutableSetOf<String>()
+            if (aggregationFunction == ChartDashboardAggregationFunction.ALL) mutableListOf() else mutableSetOf<String>()
 
         return table.usingDataSource { session ->
             session.prepare(sqlQuery(section.createGetAllChartData(tableName))).use { preparedStatement ->
@@ -160,7 +160,7 @@ internal object JdbcQueriesRepository {
                         }
 
                         // If ALL, store values separately without aggregation
-                        if (aggregationFunction == DashboardAggregationFunction.ALL) {
+                        if (aggregationFunction == ChartDashboardAggregationFunction.ALL) {
                             groupedData.computeIfAbsent(label) { MutableList(section.valuesFields.size) { mutableListOf() } }
                                 .forEachIndexed { index, list -> list.add(values[index]) }
                         } else {
@@ -706,7 +706,7 @@ internal object JdbcQueriesRepository {
         }.distinct().joinToString(", "))
         append(" FROM ")
         append(tableName)
-        if (aggregationFunction != DashboardAggregationFunction.ALL) {
+        if (aggregationFunction != ChartDashboardAggregationFunction.ALL) {
             append(" GROUP BY $labelField")
         }
         orderQuery?.let {

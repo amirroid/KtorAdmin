@@ -1,4 +1,6 @@
-package dashboard
+package dashboard.row
+
+import dashboard.base.DashboardSection
 
 class Row {
     internal val sections = mutableListOf<DashboardSection>()

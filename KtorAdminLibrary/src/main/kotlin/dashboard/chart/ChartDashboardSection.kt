@@ -1,5 +1,7 @@
-package dashboard
+package dashboard.chart
 
+import models.chart.ChartDashboardAggregationFunction
+import dashboard.base.DashboardSection
 import models.chart.AdminChartStyle
 import models.chart.ChartField
 
@@ -47,7 +49,7 @@ abstract class ChartDashboardSection : DashboardSection {
         get() = SECTION_TYPE
 
     /** Defines how the chart data is aggregated (e.g., SUM, AVERAGE). */
-    abstract val aggregationFunction: DashboardAggregationFunction
+    abstract val aggregationFunction: ChartDashboardAggregationFunction
 
     /** The database table that provides the chart's data. */
     abstract val tableName: String
