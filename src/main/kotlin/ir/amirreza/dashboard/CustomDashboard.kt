@@ -11,7 +11,7 @@ import models.chart.TextDashboardAggregationFunction
 
 class CustomDashboard : KtorAdminDashboard() {
     override fun KtorAdminDashboard.configure() {
-        addRow("200px") {
+        addRow("100px") {
             addSection(TaskTextSection())
             addSection(Task2TextSection())
             addSection(Task3TextSection())

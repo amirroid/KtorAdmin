@@ -85,8 +85,8 @@ abstract class ChartDashboardSection : DashboardSection {
     /** Sorting condition for data retrieval (e.g., `"date DESC"`). */
     open val orderQuery: String? = null
 
-    /** Defines line smoothness in line charts (range: `0.0f` to `1.0f`, default: `0.5f`). */
-    open val tension: Float = 0.5f
+    /** Defines line smoothness in line charts (range: `0.0f` to `1.0f`, default: `0f`). */
+    open val tension: Float = 0f
 
     /** The thickness of chart borders (default: `1f`). */
     open val borderWidth: Float = 1f

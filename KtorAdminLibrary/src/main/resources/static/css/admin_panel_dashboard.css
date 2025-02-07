@@ -166,7 +166,7 @@ h2 {
 .chart-section {
     background-color: rgba(255, 255, 255, 0.6);
     border-radius: 20px;
-    height: 100%;
+    min-height: 100%;
     padding: 16px;
     display: flex;
     gap: 6px;
@@ -176,7 +176,6 @@ h2 {
 .text-section {
     background-color: rgba(255, 255, 255, 0.6);
     border-radius: 20px;
-    height: 100%;
     padding: 16px;
     display: flex;
     gap: 8px;
