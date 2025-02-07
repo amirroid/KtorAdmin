@@ -50,25 +50,28 @@
         </div>
         <div id="bottom-box">
             #foreach($row in $rowData)
-                <div class="row-container">
+                <div class="row-container" style="height: $row[0].height;">
                     #foreach($item in $row)
-                    #set($section = $sectionsData[$item.itemIndex])
-                    #if($section.section.sectionType == "chart")
-                        <div class="chart-section" style="flex: $item.weight">
-                            <h2 class="chart-title">$section.section.sectionName</h2>
-                            <div class="legend-container" id="legend-container-$section.section.index"></div>
-                            <canvas class="chart-canvas" id="chart-canvas-$section.section.index"
-                                    aria-label="Dashboard Chart"
-                                    role="img">Your browser does not support the
-                                canvas element.
-                            </canvas>
-                        </div>
-                    #else
-                        <div class="text-section" style="flex: $item.weight">
-                            <h1 class="text-section-title">$section.value</h1>
-                            <h3 class="text-section-hint">$section.section.hintText</h3>
-                        </div>
-                    #end
+                        #set($section = $sectionsData[$item.itemIndex])
+                        #if($section.section.sectionType == "chart")
+                            <div class="chart-section" style="flex: $item.weight">
+                                <h2 class="chart-title">$section.section.sectionName</h2>
+                                <div class="chart-section-container">
+                                    <div class="legend-container" id="legend-container-$section.section.index"></div>
+                                    <canvas class="chart-canvas#if($section.section.valuesFields.size != 1) has-multiple-value#end"
+                                            id="chart-canvas-$section.section.index"
+                                            aria-label="Dashboard Chart"
+                                            role="img">Your browser does not support the
+                                        canvas element.
+                                    </canvas>
+                                </div>
+                            </div>
+                        #else
+                            <div class="text-section" style="flex: $item.weight">
+                                <h1 class="text-section-title">$section.value</h1>
+                                <h3 class="text-section-hint">$section.section.hintText</h3>
+                            </div>
+                        #end
                     #end
                 </div>
             #end
@@ -136,6 +139,9 @@
             </button>
         #end
     #end
+</div>
+<div id="loading">
+    <div class="spinner"></div>
 </div>
 <script>
     Chart.defaults.font.family = 'Istok Web';
@@ -212,7 +218,8 @@
     };
         #foreach($chart in $sectionsData)
             #if($chart.section.sectionType == "chart")
-            let ctx$chart.section.index = document.getElementById('chart-canvas-$chart.section.index').getContext('2d')
+            let chart$chart.section.index = document.getElementById('chart-canvas-$chart.section.index');
+            let ctx$chart.section.index = (chart$chart.section.index).getContext('2d')
             let labels$chart.section.index = [#foreach($label in $chart.labels) "$label",#end]
             let data$chart.section.index = {
                 labels: labels$chart.section.index,
@@ -266,9 +273,6 @@
                 options: options$chart.section.index,
                 plugins: [#if($chart.section.valuesFields.size != 1) htmlLegendPlugin,#end]
             }
-                #if($chart.section.valuesFields.size == 1)
-                document.getElementById('chart-canvas-$chart.section.index').style.maxHeight = "304px"
-                #end
             new Chart(ctx$chart.section.index, config$chart.section.index)
             #end
         #end

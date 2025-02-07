@@ -127,7 +127,7 @@ function logout() {
     fetch("/admin/logout", options).then(
         async response => {
             if (response.ok) {
-                window.location.href = "/admin/login"
+                window.location.replace("/admin/login")
             } else {
                 loading.style.visibility = "hidden";
                 alert(`ERROR`)

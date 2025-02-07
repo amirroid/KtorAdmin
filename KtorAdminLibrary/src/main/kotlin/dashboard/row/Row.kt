@@ -2,7 +2,7 @@ package dashboard.row
 
 import dashboard.base.DashboardSection
 
-class Row {
+class Row(val height: String) {
     internal val sections = mutableListOf<DashboardSection>()
     internal var totalWeight = 0f
     internal val weights = mutableMapOf<Int, Float>()
@@ -26,7 +26,8 @@ class Row {
     internal fun toRowData() = sections.map {
         RowData(
             weight = weights[it.index] ?: 1f,
-            itemIndex = it.index
+            itemIndex = it.index,
+            height = height
         )
     }
 }

@@ -13,8 +13,6 @@ package models.chart
  * - **`DOUGHNUT`** → A variation of the pie chart with a hollow center, offering a different visual representation.
  * - **`RADAR`** → Displays multivariate data in a circular layout, useful for comparing multiple variables.
  * - **`POLAR_AREA`** → Similar to a radar chart but with fixed angular widths, effective for cyclical data.
- * - **`BUBBLE`** → Represents data with circles where position and size encode values, suitable for multi-dimensional analysis.
- * - **`SCATTER`** → Plots data points on a Cartesian plane to show relationships between variables.
  */
 enum class AdminChartStyle(val chartType: String) {
     LINE("line"),
@@ -23,6 +21,4 @@ enum class AdminChartStyle(val chartType: String) {
     DOUGHNUT("doughnut"),
     RADAR("radar"),
     POLAR_AREA("polarArea"),
-    BUBBLE("bubble"),
-    SCATTER("scatter")
 }

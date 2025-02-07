@@ -139,7 +139,7 @@
                                         <input type="hidden" name="${column.columnName}" value="off">
                                     #end
                                     <input type="checkbox" class="checkbox-input" name="${column.columnName}"
-                                        #if($!defaultValue == "true" || $!defaultValue == "1")
+                                        #if($!defaultValue == "true" || $!defaultValue == "1" || $!defaultValue == "on")
                                            checked #end #if($column.readOnly) disabled #end>
                                     <span class="checkmark">
                                         <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
@@ -296,6 +296,9 @@
             </button>
         #end
     #end
+</div>
+<div id="loading">
+    <div class="spinner"></div>
 </div>
 <script>
     const computedColumns = [];
