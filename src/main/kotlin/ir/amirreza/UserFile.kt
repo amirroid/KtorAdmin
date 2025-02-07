@@ -38,7 +38,7 @@ import java.time.LocalDateTime
     "user_files",
     "_id",
     singularName = "File",
-    pluralName = "Files"
+    pluralName = "Files",
 )
 @AdminQueries(
     filters = ["createdAt", "title", "isUploaded"],
@@ -69,5 +69,5 @@ data class UserFile(
         nullable = true,
         readOnly = true
     )
-    val thumbnail:String?
+    val thumbnail: String?
 )

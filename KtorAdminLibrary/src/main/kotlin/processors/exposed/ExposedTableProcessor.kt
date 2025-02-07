@@ -205,6 +205,13 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             )
             .addStatement("return ${accessRoles?.let { roles -> "listOf(${roles.joinToString { "\"$it\"" }})" }}")
             .build()
+        val getIconFileFunction = FunSpec.builder("getIconFile")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                String::class.asClassName().copy(nullable = true)
+            )
+            .addStatement("return ${classDeclaration.getIconFile()?.let { "\"$it\"" }}")
+            .build()
 
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminTable))
@@ -222,6 +229,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addFunction(getDefaultActionsFunction)
             .addFunction(getDisplayFormatFunction)
             .addFunction(getDatabaseKeyFunction)
+            .addFunction(getIconFileFunction)
             .build()
     }
 
@@ -289,6 +297,11 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
     private fun KSClassDeclaration.getTableName() = getAnnotationArguments()
         ?.find { it.name?.asString() == "tableName" }
         ?.value as? String ?: ""
+
+
+    private fun KSClassDeclaration.getIconFile() = (getAnnotationArguments()
+        ?.find { it.name?.asString() == "iconFile" }
+        ?.value as? String)?.takeIf { it.isNotEmpty() }
 
     private fun KSClassDeclaration.getPrimaryKey() = getAnnotationArguments()
         ?.find { it.name?.asString() == "primaryKey" }

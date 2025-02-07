@@ -574,9 +574,20 @@ th:last-child::before {
     transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.menu-item .menu-icon path {
+.menu-item .menu-icon:not(svg) {
+    background-color: #292D32;
+    width: 21px;
+    height: 21px;
+    transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-item .menu-icon:is(svg) path {
     stroke: #292D32;
     transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-item.selected .menu-icon:is(svg) path {
+    stroke: #9A6C00;
 }
 
 .menu-item.selected {
@@ -584,8 +595,8 @@ th:last-child::before {
     color: #9A6C00;
 }
 
-.menu-item.selected .menu-icon path {
-    stroke: #9A6C00;
+.menu-item.selected .menu-icon:not(svg) {
+    background-color: #9A6C00;
 }
 
 .menu-item:not(.selected) {
@@ -600,7 +611,11 @@ th:last-child::before {
     left: 12px;
 }
 
-.menu-item:hover .menu-icon path {
+.menu-item:hover .menu-icon:not(svg) {
+    background-color: #9A6C00;
+}
+
+.menu-item:hover .menu-icon:is(svg) path {
     stroke: #9A6C00;
 }
 

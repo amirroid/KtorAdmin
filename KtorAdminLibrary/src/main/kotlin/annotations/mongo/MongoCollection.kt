@@ -17,6 +17,7 @@ package annotations.mongo
  * @param groupName (Optional) The group name for organizing collections.
  * @param databaseKey (Optional) A custom key used for identifying the table in queries or settings.
  *                   This refers to a database key defined in the plugin configuration.
+ * @param iconFile (Optional) The file name or path of an icon representing the table in UI components.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
@@ -26,5 +27,6 @@ annotation class MongoCollection(
     val singularName: String = "",
     val pluralName: String = "",
     val groupName: String = "",
-    val databaseKey: String = ""
+    val databaseKey: String = "",
+    val iconFile: String = "",
 )

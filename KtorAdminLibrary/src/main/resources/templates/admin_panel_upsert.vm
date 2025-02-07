@@ -278,20 +278,10 @@
             #set($capitalizedPanel = $panel.pluralName.substring(0,1).toUpperCase() + $panel.pluralName.substring(1))
             <button class="menu-item #if($panel.pluralName == $currentPanel) selected #end"
                     onclick="openPanel('$panel.pluralName')">
-                <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"
-                     class="menu-icon">
-                    <path d="M10.8237 7.77H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
-                          stroke-linejoin="round"/>
-                    <path d="M5.58252 7.77L6.23877 8.42625L8.20752 6.4575" stroke="#9A6C00" stroke-width="1.5"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M10.8237 13.895H15.4175" stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
-                          stroke-linejoin="round"/>
-                    <path d="M5.58252 13.895L6.23877 14.5513L8.20752 12.5825" stroke="#9A6C00" stroke-width="1.5"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                    <path
-                            d="M7.875 19.25H13.125C17.5 19.25 19.25 17.5 19.25 13.125V7.875C19.25 3.5 17.5 1.75 13.125 1.75H7.875C3.5 1.75 1.75 3.5 1.75 7.875V13.125C1.75 17.5 3.5 19.25 7.875 19.25Z"
-                            stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                #if($panel.iconFile)
+                    <div class="menu-icon"
+                         style="-webkit-mask: url('$panel.iconFile') no-repeat center / contain; mask: url('$panel.iconFile') no-repeat center / contain;"></div>
+                #end
                 $capitalizedPanel
             </button>
         #end

@@ -123,7 +123,8 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
 
 
         val adminActions = classDeclaration.getActionsArguments()
-        val defaultActions = adminActions?.findActionList("actions") ?: Action.entries.map { "${Action::class.simpleName}.${it.name}" }
+        val defaultActions =
+            adminActions?.findActionList("actions") ?: Action.entries.map { "${Action::class.simpleName}.${it.name}" }
         val customActions = adminActions?.findStringList("customActions") ?: emptyList()
 
 
@@ -210,6 +211,14 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addStatement("return ${accessRoles?.let { roles -> "listOf(${roles.joinToString { "\"$it\"" }})" }}")
             .build()
 
+        val getIconFileFunction = FunSpec.builder("getIconFile")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(
+                String::class.asClassName().copy(nullable = true)
+            )
+            .addStatement("return ${classDeclaration.getIconFile()?.let { "\"$it\"" }}")
+            .build()
+
         return TypeSpec.classBuilder(fileName)
             .addSuperinterfaces(listOf(adminMongoCollection))
             .addFunction(getAllFieldsFunction)
@@ -226,6 +235,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addFunction(getDisplayFormatFunction)
             .addFunction(getDatabaseKeyFunction)
             .addFunction(getAccessRolesFunction)
+            .addFunction(getIconFileFunction)
             .build()
     }
 
@@ -343,6 +353,11 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             ?.filterIsInstance<String>()
             ?.takeIf { it.isNotEmpty() }
     }
+
+
+    private fun KSClassDeclaration.getIconFile() = (getAnnotationArguments()
+        ?.find { it.name?.asString() == "iconFile" }
+        ?.value as? String)?.takeIf { it.isNotEmpty() }
 
     private fun KSClassDeclaration.getDisplayFormat() = annotations
         .find { it.shortName.asString() == DisplayFormat::class.simpleName }

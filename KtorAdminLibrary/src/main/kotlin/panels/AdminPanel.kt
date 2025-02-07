@@ -19,6 +19,7 @@ interface AdminPanel {
     fun getDefaultOrder(): Order?
     fun getDefaultActions(): List<Action>
     fun getCustomActions(): List<String>
+    fun getIconFile(): String?
 }
 
 fun List<AdminPanel>.findWithPluralName(name: String?) = find { it.getPluralName() == name }

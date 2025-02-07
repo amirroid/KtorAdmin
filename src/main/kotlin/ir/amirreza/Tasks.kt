@@ -20,7 +20,7 @@ enum class Priority {
 }
 
 
-@ExposedTable("tasks", "id", "task", "tasks")
+@ExposedTable("tasks", "id", "task", "tasks", iconFile = "/static/images/tasks.png")
 @AccessRoles("admin")
 @AdminQueries(
     searches = ["user_id.username", "description"],
@@ -33,17 +33,6 @@ enum class Priority {
     "name",
     "DESC"
 )
-//@DashboardChartConfig(
-//    sectionName = "Test Section",
-//    labelField = "priority",
-//    valuesFields = ["number"],
-//    chartStyle = AdminChartStyle.LINE,
-//    borderColors = ["#FF5733"],
-//    fillColors = ["transparent"],
-//    tension = 1f,
-//    limitCount = 10,
-//    orderQuery = "priority DESC"
-//)
 object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
