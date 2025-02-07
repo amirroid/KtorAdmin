@@ -184,6 +184,12 @@ h2 {
     align-items: center;
 }
 
+@media (max-width: 850px) {
+    #menu-expand-icon {
+        display: none;
+    }
+}
+
 .text-section-title {
     font-weight: bold;
     text-align: center;

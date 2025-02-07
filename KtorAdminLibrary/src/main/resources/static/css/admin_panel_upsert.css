@@ -69,6 +69,12 @@ h2 {
     gap: 12px;
 }
 
+@media (max-width: 850px) {
+    #menu-expand-icon {
+        display: none;
+    }
+}
+
 .title {
     font-size: 20px;
 }
