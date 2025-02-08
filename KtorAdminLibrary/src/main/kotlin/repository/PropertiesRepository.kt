@@ -8,6 +8,7 @@ import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.references.References
+import annotations.rich_editor.RichEditor
 import annotations.status.StatusStyle
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
@@ -86,7 +87,8 @@ object PropertiesRepository {
             readOnly = isReadOnly,
             computedColumn = computedColumnInfo?.first,
             autoNowDate = autoNowDate,
-            statusColors = statusColors
+            statusColors = statusColors,
+            hasRichEditor = hasRichEditorAnnotation(property.annotations)
         )
     }
 
@@ -143,6 +145,10 @@ object PropertiesRepository {
 
     private fun hasEnumerationColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
         it.shortName.asString() == Enumeration::class.simpleName
+    }
+
+    private fun hasRichEditorAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any {
+        it.shortName.asString() == RichEditor::class.simpleName
     }
 
     private fun getAutoNowDateAnnotation(annotations: Sequence<KSAnnotation>) = annotations.firstOrNull {

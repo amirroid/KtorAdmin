@@ -11,6 +11,7 @@ import annotations.limit.Limits
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import annotations.references.References
+import annotations.rich_editor.RichEditor
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
 import annotations.uploads.LocalUpload
@@ -50,6 +51,7 @@ object Tasks : Table("tasks") {
     @Limits(
         maxLength = 500
     )
+    @RichEditor
     val description = text("description")
 
     @Enumeration("Low", "Medium", "High")

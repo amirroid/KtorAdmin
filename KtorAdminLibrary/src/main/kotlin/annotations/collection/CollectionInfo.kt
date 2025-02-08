@@ -9,5 +9,5 @@ annotation class CollectionInfo(
     val defaultValue: String = "",
     val nullable: Boolean = false,
     val limits: String = "",
-    val readOnly: Boolean = false
+    val readOnly: Boolean = false,
 )

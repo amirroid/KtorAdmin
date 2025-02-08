@@ -18,6 +18,7 @@ import panels.*
 import response.ErrorResponse
 import response.toMap
 import utils.Constants
+import utils.addCommonUpsertModels
 import validators.checkHasRole
 import kotlin.math.log
 
@@ -63,7 +64,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "isUpdate" to false,
                     "requestId" to requestId,
                     "hasAction" to table.hasAddAction
-                )
+                ).addCommonUpsertModels(table)
             )
         )
     }.onFailure {

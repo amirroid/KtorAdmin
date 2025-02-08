@@ -23,6 +23,7 @@ import repository.MongoClientRepository
 import response.ErrorResponse
 import response.toMap
 import utils.Constants
+import utils.addCommonUpsertModels
 import validators.checkHasRole
 
 
@@ -91,7 +92,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "isUpdate" to true,
                         "requestId" to requestId,
                         "hasAction" to table.hasEditAction
-                    )
+                    ).addCommonUpsertModels(table)
                 )
             )
         }.onFailure {

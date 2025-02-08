@@ -4,6 +4,7 @@ import action.CustomAdminAction
 import dashboard.KtorAdminDashboard
 import listener.AdminEventListener
 import models.forms.LoginFiled
+import tiny.TinyMCEConfig
 import java.time.ZoneId
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -17,7 +18,8 @@ internal object DynamicConfiguration {
     var timeZone: ZoneId = ZoneId.systemDefault()
     var formsLifetime = 1_000 * 60L
     var dashboard: KtorAdminDashboard? = null
-    var authenticationSessionMaxAge : Duration = 10.days
+    var authenticationSessionMaxAge: Duration = 10.days
+    var tinyMCEConfig = TinyMCEConfig()
 
 
     fun registerEventListener(listener: AdminEventListener) {

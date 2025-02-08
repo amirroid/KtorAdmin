@@ -12,6 +12,9 @@ import java.time.format.DateTimeFormatter
 /**
  * Holds metadata and configuration details for a database column.
  *
+ * This data class provides configuration options for managing how columns are displayed,
+ * stored, and processed in the system.
+ *
  * @property columnName The technical name of the column.
  * @property verboseName A user-friendly name for display in UI or reports.
  * @property type The data type of the column (e.g., numeric, string, etc.).
@@ -30,6 +33,8 @@ import java.time.format.DateTimeFormatter
  * - `updateOnChange = false`: Assigns the current date only when the entity is created.
  * @property statusColors A list of colors used for styling status-based values in the column,
  *                        typically applied when using enumerations.
+ * @property hasRichEditor Determines whether this column should be displayed as a rich text editor in the admin panel.
+ *                        Defaults to `false`.
  */
 data class ColumnSet(
     val columnName: String,
@@ -46,7 +51,8 @@ data class ColumnSet(
     val readOnly: Boolean = false,
     val computedColumn: String? = null,
     val autoNowDate: AutoNowDate? = null,
-    val statusColors: List<String>? = null
+    val statusColors: List<String>? = null,
+    val hasRichEditor: Boolean = false,
 )
 
 

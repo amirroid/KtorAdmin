@@ -25,6 +25,7 @@ internal fun ColumnSet.toSuitableStringForFile() = """
     |    readOnly = $readOnly,
     |    computedColumn = ${computedColumn?.let { "\"${it}\"" }},
     |    autoNowDate = ${autoNowDate?.toFormattedString()},
+    |    hasRichEditor = ${hasRichEditor},
     |)
 """.trimMargin("|")
 
