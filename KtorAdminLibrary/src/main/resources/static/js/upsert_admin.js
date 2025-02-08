@@ -60,3 +60,19 @@ document.addEventListener('DOMContentLoaded', function () {
     handleComputedColumns()
     handleFileInputs()
 });
+
+
+function handleRichInputs() {
+    tinymce.init({
+        selector: '.rich-editor-area',
+        height: 400,
+        plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak ' +
+            'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime ' +
+            'media nonbreaking table emoticons template help',
+        toolbar: 'undo redo | styleselect | bold italic underline | alignleft aligncenter alignright alignjustify | ' +
+            'bullist numlist outdent indent | link image media | preview fullscreen | help',
+        branding: false,
+    });
+}
+
+handleRichInputs()

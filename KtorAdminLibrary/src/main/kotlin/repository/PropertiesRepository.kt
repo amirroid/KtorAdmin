@@ -72,6 +72,10 @@ object PropertiesRepository {
                         "Column '$columnName' has type '$columnType', which is incompatible."
             )
         }
+        val hasRichEditor = hasRichEditorAnnotation(property.annotations)
+        if (hasRichEditor && columnType != ColumnType.STRING) {
+            throw IllegalArgumentException("Rich editor can only be used with columns of type STRING.")
+        }
         return ColumnSet(
             columnName = columnName,
             type = columnType,
@@ -88,7 +92,7 @@ object PropertiesRepository {
             computedColumn = computedColumnInfo?.first,
             autoNowDate = autoNowDate,
             statusColors = statusColors,
-            hasRichEditor = hasRichEditorAnnotation(property.annotations)
+            hasRichEditor = hasRichEditor,
         )
     }
 

@@ -87,8 +87,14 @@
                         #else
                             <!-- STRING -->
                             #if($column.type.name == "STRING")
-                                <input type="text" class="form-input" name="$column.columnName" value="$!defaultValue"
-                                       #if($column.readOnly)readonly#end/>
+                                #if($column.hasRichEditor)
+                                    <textarea name="$column.columnName" class="rich-editor-area"
+                                              #if($column.readOnly)readonly#end>$!defaultValue</textarea><br><br>
+                                #else
+                                    <input type="text" class="form-input" name="$column.columnName"
+                                           value="$!defaultValue"
+                                           #if($column.readOnly)readonly#end/>
+                                #end
                             #end
 
                             <!-- INTEGER / UINTEGER -->
