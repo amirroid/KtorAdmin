@@ -6,41 +6,78 @@ import kotlinx.serialization.Transient
 import models.UploadTarget
 
 /**
- * Data class representing the configuration options for TinyMCE.
- * This class includes all standard settings except error handlers.
+ * Configuration for TinyMCE editor with basic and professional presets.
+ * Developers can modify these presets as needed.
  *
- * @property height The height of the editor in pixels.
- * @property language The language of the editor interface.
+ * @property height Editor height in pixels.
+ * @property language UI language of the editor.
  * @property directionality Text direction ("ltr" or "rtl").
- * @property plugins A comma-separated list of plugins to enable.
- * @property toolbar A space-separated list of toolbar buttons.
- * @property branding Whether to display the TinyMCE branding.
- * @property menubar Whether to display the menu bar.
- * @property statusbar Whether to display the status bar at the bottom.
- * @property resize Whether the editor can be resized.
- * @property contentCss Custom CSS file for styling content inside the editor.
- * @property fontFormats Custom font families for the editor.
- * @property uploadTarget The target for file uploads.
+ * @property plugins Comma-separated list of enabled plugins.
+ * @property toolbar Space-separated list of toolbar buttons.
+ * @property branding Shows or hides TinyMCE branding.
+ * @property menubar Enables or disables the menu bar.
+ * @property statusbar Enables or disables the status bar.
+ * @property contentCss Custom CSS file for editor content.
+ * @property fontFormats Defines available font families.
+ * @property uploadTarget Defines the file upload target.
  */
 @Serializable
 data class TinyMCEConfig(
-    val height: Int = 400,
-    val language: String? = "fa",
-    val directionality: String? = "rtl",
-    val plugins: String? = "advlist autolink lists link image charmap print preview hr anchor " +
-            "pagebreak searchreplace wordcount visualblocks visualchars code fullscreen " +
-            "insertdatetime media nonbreaking table emoticons template help",
-    val toolbar: String? = "undo redo | styleselect | bold italic underline | alignleft aligncenter alignright alignjustify | " +
-            "bullist numlist outdent indent | link image media | preview fullscreen | help",
-    val branding: Boolean = false,
-    val menubar: Boolean = true,
-    val statusbar: Boolean = true,
-    val resize: String? = "both",
+    val height: Int,
+    val language: String,
+    val directionality: String,
+    val plugins: String,
+    val toolbar: String,
+    val branding: Boolean,
+    val menubar: Boolean,
+    val statusbar: Boolean,
     @SerialName("content_css")
-    val contentCss: String? = null,
+    val contentCss: String?,
     @SerialName("font_formats")
-    val fontFormats: String? = null,
-
+    val fontFormats: String?,
     @Transient
     val uploadTarget: UploadTarget? = null
-)
+) {
+    companion object {
+        /**
+         * Basic configuration with minimal features.
+         */
+        val Basic = TinyMCEConfig(
+            height = 400,
+            language = "en",
+            directionality = "ltr",
+            plugins = "lists link image code table hr charmap preview",
+            toolbar = "undo redo | styleselect | bold italic underline | alignleft aligncenter alignright | " +
+                    "bullist numlist | table | link image | code preview",
+            branding = false,
+            menubar = true,
+            statusbar = true,
+            contentCss = null,
+            fontFormats = null,
+            uploadTarget = null
+        )
+
+        /**
+         * Professional configuration with all advanced features enabled.
+         */
+        val Professional = TinyMCEConfig(
+            height = 500,
+            language = "en",
+            directionality = "ltr",
+            plugins = "advlist autolink lists link image charmap print preview hr anchor " +
+                    "pagebreak searchreplace wordcount visualblocks visualchars code fullscreen " +
+                    "insertdatetime media nonbreaking save table directionality emoticons template " +
+                    "paste textpattern help autosave",
+            toolbar = "undo redo | styleselect | bold italic underline strikethrough | " +
+                    "alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | " +
+                    "link image media table | code preview fullscreen | charmap emoticons | " +
+                    "forecolor backcolor | removeformat",
+            branding = false,
+            menubar = true,
+            statusbar = true,
+            contentCss = null,
+            fontFormats = "Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times,serif; Courier New=courier new,courier,monospace;",
+            uploadTarget = null
+        )
+    }
+}

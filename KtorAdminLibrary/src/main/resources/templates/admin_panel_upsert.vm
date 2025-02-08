@@ -89,7 +89,7 @@
                             #if($column.type.name == "STRING")
                                 #if($column.hasRichEditor)
                                     <textarea name="$column.columnName" class="rich-editor-area"
-                                              #if($column.readOnly)readonly#end>$!defaultValue</textarea><br><br>
+                                              #if($column.readOnly)readonly#end>$!defaultValue</textarea>
                                 #else
                                     <input type="text" class="form-input" name="$column.columnName"
                                            value="$!defaultValue"
@@ -300,6 +300,7 @@
     <div class="spinner"></div>
 </div>
 <script>
+    const tinyConfig = JSON.parse(`$tinyMCEConfig`);
     const computedColumns = [];
         #foreach($column in $columns)
             #if($column.computedColumn)

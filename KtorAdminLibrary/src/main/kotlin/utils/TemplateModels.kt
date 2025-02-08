@@ -9,7 +9,10 @@ import panels.getAllAllowToShowColumnsInUpsert
 fun Map<String, Any>.addCommonUpsertModels(table: AdminJdbcTable): Map<String, Any> {
     return toMutableMap().apply {
         if (table.getAllAllowToShowColumnsInUpsert().any { it.hasRichEditor }) {
-            val config = Json.encodeToString(DynamicConfiguration.tinyMCEConfig)
+            val json = Json {
+                encodeDefaults = true
+            }
+            val config = json.encodeToString(DynamicConfiguration.tinyMCEConfig)
             set("tinyMCEConfig", config)
         }
     }.toMap()

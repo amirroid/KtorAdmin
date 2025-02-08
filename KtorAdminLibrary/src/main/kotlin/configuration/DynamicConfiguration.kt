@@ -19,7 +19,7 @@ internal object DynamicConfiguration {
     var formsLifetime = 1_000 * 60L
     var dashboard: KtorAdminDashboard? = null
     var authenticationSessionMaxAge: Duration = 10.days
-    var tinyMCEConfig = TinyMCEConfig()
+    var tinyMCEConfig = TinyMCEConfig.Basic
 
 
     fun registerEventListener(listener: AdminEventListener) {

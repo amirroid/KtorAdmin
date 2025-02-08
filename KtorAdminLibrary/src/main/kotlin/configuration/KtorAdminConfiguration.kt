@@ -16,6 +16,7 @@ import providers.StorageProvider
 import providers.AWSS3StorageProvider
 import repository.FileRepository
 import repository.MongoClientRepository
+import tiny.TinyMCEConfig
 import java.time.Duration
 
 class KtorAdminConfiguration {
@@ -57,6 +58,11 @@ class KtorAdminConfiguration {
             DynamicConfiguration.maxItemsInPage = value
         }
 
+    var tinyMCEConfig: TinyMCEConfig
+        get() = DynamicConfiguration.tinyMCEConfig
+        set(value) {
+            DynamicConfiguration.tinyMCEConfig = value
+        }
 
     var authenticationSessionMaxAge: kotlin.time.Duration
         get() = DynamicConfiguration.authenticationSessionMaxAge
