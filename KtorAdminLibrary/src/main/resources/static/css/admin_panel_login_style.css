@@ -1,0 +1,81 @@
+body {
+    height: 100vh;
+    background: linear-gradient(to top left, #F3E7CB 60%, #E3E5E6 100%);
+    overflow-y: hidden;
+    font-family: 'Istok Web', sans-serif;
+    margin: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+* {
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+#login-container {
+    padding: 24px;
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    width: 85vw;
+    max-width: 500px;
+}
+
+.field-input {
+    width: 100%;
+    margin-top: 4px;
+    background-color: #F3E7CB;
+    height: 48px;
+    border-radius: 16px;
+    outline: none;
+    transition: .2s linear;
+    border: none;
+    padding: 0px 12px;
+}
+
+#submit-button {
+    color: white;
+    background-color: #9A6C00;
+    border-radius: 16px;
+    padding: 12px 40px;
+    height: 44px;
+    margin-top: 20px;
+    width: 100%;
+    outline: none;
+    border: none;
+    transition: .1s linear;
+    cursor: pointer;
+}
+
+#submit-button:hover {
+    background-color: #896001;
+}
+
+.field-input:focus {
+    outline: 2px solid #9A6C00;
+}
+
+.field-input::placeholder {
+    color: hsla(0, 0%, 0%, 0.4);
+}
+
+label {
+    opacity: .8;
+    margin-left: 12px;
+}
+
+#title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}

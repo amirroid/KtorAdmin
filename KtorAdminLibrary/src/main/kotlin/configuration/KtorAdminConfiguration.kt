@@ -119,6 +119,7 @@ class KtorAdminConfiguration {
             SessionImpl.defaultDataSource = { HikariCP.dataSource() }
         } else {
             HikariCP.custom(key, dataSource)
+            jdbcDataSources.add(key)
         }
     }
 
@@ -136,7 +137,12 @@ class KtorAdminConfiguration {
     }
 
     internal fun closeDatabase() {
-        HikariCP.dataSource().closeIfIsNot()
+        SessionImpl.defaultDataSource = null
+        runCatching {
+            HikariCP.dataSource().also {
+                println("IS CLOSED ${it.isClosed}")
+            }.closeIfIsNot()
+        }
         jdbcDataSources.forEach { HikariCP.dataSource(it).closeIfIsNot() }
     }
 

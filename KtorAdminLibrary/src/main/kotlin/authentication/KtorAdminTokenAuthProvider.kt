@@ -1,6 +1,8 @@
 package authentication
 
 import crypto.CryptoManager
+import csrf.CSRF_TOKEN_FIELD_NAME
+import csrf.CsrfManager
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -8,6 +10,7 @@ import io.ktor.server.request.*
 import io.ktor.server.sessions.*
 import models.forms.UserForm
 import models.forms.toUserForm
+import utils.invalidateRequest
 
 /**
  * Key used to identify the authentication challenge for admin token authentication.
@@ -92,7 +95,12 @@ class KtorAdminTokenAuthProvider internal constructor(
         val inLoginUrl =
             call.request.uri.substringBefore("?") == "/admin/login" && call.request.httpMethod == HttpMethod.Post
         if (inLoginUrl) {
-            val parameters = call.receiveParameters().toUserForm()
+            val parameters = call.receiveParameters().apply {
+                val csrfToken = get(CSRF_TOKEN_FIELD_NAME)
+                if (CsrfManager.validateToken(csrfToken).not()) {
+                    return call.invalidateRequest()
+                }
+            }.toUserForm()
             val token = parameters.let { formAuthenticateFunction.invoke(call, it) }
 
             if (token is String) {

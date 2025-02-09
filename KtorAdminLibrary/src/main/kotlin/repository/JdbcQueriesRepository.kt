@@ -40,9 +40,11 @@ internal object JdbcQueriesRepository {
      * @return Result of the operation
      */
     private fun <T> AdminJdbcTable.usingDataSource(lambda: (Session) -> T): T {
-        val key = getDatabaseKey()
-        val dataSource = if (key == null) HikariCP.dataSource() else HikariCP.dataSource(key)
-        return using(session(dataSource), lambda)
+        val dataSource = getDatabaseKey()?.let { HikariCP.dataSource(it) } ?: HikariCP.dataSource()
+        val session = session(dataSource)
+        val invoke = using(session, lambda)
+        session.close()
+        return invoke
     }
 
     // endregion

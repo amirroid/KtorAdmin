@@ -1,6 +1,8 @@
 package authentication
 
 import crypto.CryptoManager
+import csrf.CSRF_TOKEN_FIELD_NAME
+import csrf.CsrfManager
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -11,7 +13,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import models.forms.UserForm
 import models.forms.toUserForm
-import utils.baseUrl
+import utils.invalidateRequest
 
 /**
  * Key used to identify the authentication challenge for admin form authentication.
@@ -70,7 +72,13 @@ class KtorAdminFormAuthProvider internal constructor(
             call.request.uri.substringBefore("?") == "/admin/login" && call.request.httpMethod == HttpMethod.Post
 
         // Extract user credentials from the session or the request body
-        val formParameters = call.takeIf { inLoginUrl }?.receiveParameters()?.toUserForm()
+        val formParameters = call.takeIf { inLoginUrl }?.receiveParameters()?.apply {
+            val csrfToken = get(CSRF_TOKEN_FIELD_NAME)
+            if (CsrfManager.validateToken(csrfToken).not()) {
+                return call.invalidateRequest()
+            }
+        }?.toUserForm()
+
         val userSession = call.getUserFromSessions()
         val parameters = userSession ?: formParameters
 
