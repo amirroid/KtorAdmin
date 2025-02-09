@@ -136,9 +136,9 @@ class KtorAdminConfiguration {
     }
 
     internal fun closeDatabase() {
-        runCatching {
-            HikariCP.dataSource().close()
-        }
-        jdbcDataSources.forEach { HikariCP.dataSource(it).close() }
+        HikariCP.dataSource().closeIfIsNot()
+        jdbcDataSources.forEach { HikariCP.dataSource(it).closeIfIsNot() }
     }
+
+    private fun HikariDataSource.closeIfIsNot() = if (isClosed.not()) close() else Unit
 }

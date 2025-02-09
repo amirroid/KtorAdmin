@@ -60,10 +60,79 @@ function handleRichInputs() {
     console.log(tinyConfig)
     tinymce.init({
         selector: '.rich-editor-area',
-        ...tinyConfig
+        ...tinyConfig,
+        file_picker_callback: handleFilePicker,
+        images_upload_handler: (blobInfo, progress) => {
+            return new Promise((resolve, reject) => {
+                handleFileUpload(blobInfo, resolve, reject).then(_ => {
+                });
+            });
+        }
     });
 }
 
+function handleFilePicker(callback, value, meta) {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+
+    if (meta.filetype === "image") {
+        input.setAttribute("accept", "image/*");
+    } else if (meta.filetype === "media") {
+        input.setAttribute("accept", "video/*,audio/*");
+    }
+
+    input.onchange = async function () {
+        const file = this.files[0];
+        if (file) {
+            const loading = document.getElementById("loading");
+            loading.style.visibility = "visible";
+            try {
+                const fileUrl = await uploadFile(file);
+                callback(fileUrl);
+            } catch (error) {
+                alert(error.message);
+            }
+            loading.style.visibility = "hidden";
+        }
+    };
+
+    input.click();
+}
+
+async function handleFileUpload(blobInfo, success, failure) {
+    const loading = document.getElementById("loading");
+    loading.style.visibility = "visible";
+    try {
+        const fileUrl = await uploadFile(blobInfo.blob());
+        success(fileUrl);
+    } catch (error) {
+        console.log(error.message)
+        failure(error.message);
+    }
+    loading.style.visibility = "hidden";
+}
+
+async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("_csrf", getCsrfToken());
+    const response = await fetch("/admin/rich_editor/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Upload failed.");
+    }
+
+    const data = await response.json();
+    return data.file;
+}
+
+function getCsrfToken() {
+    return document.querySelector('input[name="_csrf"]')?.value;
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     handleComputedColumns()

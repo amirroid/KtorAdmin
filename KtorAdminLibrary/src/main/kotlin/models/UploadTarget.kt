@@ -11,19 +11,19 @@ sealed class UploadTarget {
      * Uploads the file to a local directory.
      * @property path The path where the file should be stored locally. If `null`, a default path should be used.
      */
-    data class LocalFile(val path: String?) : UploadTarget()
+    data class LocalFile(val path: String? = null) : UploadTarget()
 
     /**
      * Uploads the file to an AWS S3 bucket.
      * @property bucket The name of the S3 bucket where the file should be uploaded. If `null`, a default bucket should be used.
      */
-    data class AwsS3(val bucket: String?) : UploadTarget()
+    data class AwsS3(val bucket: String? = null) : UploadTarget()
 
     /**
      * Uploads the file to a custom storage solution.
      * @property key The key or identifier for the custom storage location. If `null`, a default key should be used.
      */
-    data class Custom(val key: String?) : UploadTarget()
+    data class Custom(val key: String? = null) : UploadTarget()
 }
 
 fun UploadTarget.toFormattedString(): String {

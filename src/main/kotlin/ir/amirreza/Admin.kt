@@ -5,11 +5,13 @@ import ir.amirreza.action.MyCustomAction
 import ir.amirreza.dashboard.CustomDashboard
 import ir.amirreza.listeners.AdminListener
 import models.JDBCDrivers
+import models.UploadTarget
 import models.forms.LoginFiled
 import mongo.MongoCredential
 import mongo.MongoServerAddress
 import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
+import tiny.TinyMCEConfig
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
@@ -43,6 +45,7 @@ fun Application.configureAdmin(database: Database) {
         csrfTokenExpirationTime = 1000 * 60
         registerCustomAdminActionForAll(MyCustomAction())
         registerEventListener(AdminListener(database))
+        tinyMCEConfig = TinyMCEConfig.Professional.copy(uploadTarget = UploadTarget.LocalFile(null))
     }
 }
 
