@@ -64,6 +64,12 @@ class KtorAdminConfiguration {
             MongoClientRepository.defaultDatabaseName = value
         }
 
+    var rateLimitPerMinutes: Int
+        get() = DynamicConfiguration.rateLimitPerMinutes
+        set(value) {
+            DynamicConfiguration.rateLimitPerMinutes = value
+        }
+
     /**
      * Authentication name (if required).
      */
