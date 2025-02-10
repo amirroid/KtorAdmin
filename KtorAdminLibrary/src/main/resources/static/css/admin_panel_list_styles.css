@@ -917,7 +917,7 @@ th:last-child::before {
 .dialog-box {
     background: rgba(255, 255, 255, 0.8);
     padding: 20px;
-    width: 80vw;
+    width: 90vw;
     max-width: 500px;
     border-radius: 20px;
     display: flex;
@@ -933,6 +933,7 @@ th:last-child::before {
 .dialog-box h2 {
     margin-bottom: 10px;
     font-size: 20px;
+    font-weight: bold;
 }
 
 .dialog-actions-container {
@@ -941,7 +942,7 @@ th:last-child::before {
 }
 
 .dialog-box button {
-    padding: 10px 15px;
+    padding: 10px 20px;
     border: none;
     color: white;
     border-radius: 5px;
