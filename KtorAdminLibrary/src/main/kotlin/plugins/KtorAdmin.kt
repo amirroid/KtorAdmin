@@ -6,6 +6,8 @@ import io.ktor.util.*
 import modules.configureRouting
 import modules.configureSessions
 import modules.configureTemplating
+import modules.error.configureErrorHandler
+import rate_limiting.configureRateLimit
 import repository.AdminTableRepository
 
 class KtorAdmin {
@@ -18,8 +20,10 @@ class KtorAdmin {
             val configuration = KtorAdminConfiguration().apply(configure)
             val authenticateName = configuration.authenticateName
             pipeline.configureTemplating()
-            pipeline.configureRouting(authenticateName, tables)
+            pipeline.configureRateLimit()
+            pipeline.configureErrorHandler()
             pipeline.configureSessions()
+            pipeline.configureRouting(authenticateName, tables)
             pipeline.monitor.subscribe(ApplicationStopping) { configuration.closeDatabase() }
             return KtorAdmin()
         }

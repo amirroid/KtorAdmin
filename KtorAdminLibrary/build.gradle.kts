@@ -44,6 +44,9 @@ dependencies {
 
     // MongoDB Kotlin driver dependency
     implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.10.1")
+
+    // Rate Limiting
+    implementation("io.ktor:ktor-server-rate-limit:$ktorVersion")
 }
 tasks.test {
     useJUnitPlatform()

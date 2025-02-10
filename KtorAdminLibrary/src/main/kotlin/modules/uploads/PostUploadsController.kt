@@ -43,7 +43,10 @@ fun Routing.configureUploadFileRouting(authenticationName: String?) {
             }
 
             val uploadTarget = DynamicConfiguration.tinyMCEConfig.uploadTarget
-                ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Upload target is not set."))
+                ?: return@post call.respond(
+                    HttpStatusCode.BadRequest,
+                    mapOf("error" to "Upload target is not set.")
+                )
 
             val generatedFileName = FileRepository.uploadFile(uploadTarget, fileBytes, fileName)
             if (generatedFileName == null) {

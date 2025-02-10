@@ -11,6 +11,14 @@ suspend fun ApplicationCall.badRequest(message: String, throwable: Throwable? = 
 }
 
 
+suspend fun ApplicationCall.tooManyRequests() {
+    response.headers.append("Retry-After", "60")
+    respondText(status = HttpStatusCode.TooManyRequests, contentType = ContentType.Text.Html) {
+        generateErrorHtml("429 - Too Many Requests", "Please try again later")
+    }
+}
+
+
 suspend fun ApplicationCall.forbidden(message: String) {
     respondText(status = HttpStatusCode.Forbidden, contentType = ContentType.Text.Html) {
         generateErrorHtml("403 - Forbidden", message)

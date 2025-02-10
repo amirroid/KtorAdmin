@@ -8,7 +8,6 @@ import panels.AdminJdbcTable
 import panels.AdminMongoCollection
 import panels.AdminPanel
 import repository.FileRepository
-import utils.badRequest
 import utils.withAuthenticate
 
 fun Routing.handleGenerateFileUrl(panels: List<AdminPanel>, authenticateName: String?) {
@@ -18,7 +17,10 @@ fun Routing.handleGenerateFileUrl(panels: List<AdminPanel>, authenticateName: St
             val fileName = parameters["fileName"]
             val field = parameters["field"]?.split(".")
             if (fileName == null) {
-                call.respond(message = mapOf("error" to "File name is required"), status = HttpStatusCode.BadRequest)
+                call.respond(
+                    message = mapOf("error" to "File name is required"),
+                    status = HttpStatusCode.BadRequest
+                )
                 return@post
             }
             if (field == null || field.count() != 2) {

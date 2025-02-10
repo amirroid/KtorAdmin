@@ -42,6 +42,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     implementation("io.ktor:ktor-server-auth")
+    implementation("io.ktor:ktor-server-status-pages")
 
 
     // Postgres
