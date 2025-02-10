@@ -182,16 +182,11 @@ function handleSortClick(columnName, currentOrder, currentDirection) {
     window.location.replace(url);
 }
 
-let selectedItems = new Set();
-
-function toggleSelection(checkbox, primaryKey) {
-    if (checkbox.checked) {
-        selectedItems.add(primaryKey);
-    } else {
-        selectedItems.delete(primaryKey);
-    }
-    console.log("Selected Items:", Array.from(selectedItems));
+function getSelectedItems() {
+    return Array.from(document.querySelectorAll('.select-field-checkbox:checked'))
+        .map(checkbox => checkbox.dataset.primaryKey)
 }
+
 
 function performSelectedAction() {
     const actionSelect = document.getElementById("actions-input");
@@ -202,9 +197,7 @@ function performSelectedAction() {
         return;
     }
 
-    const selectedItemsArray = Array.from(selectedItems).map(function (item) {
-        return item.toString();
-    });
+    const selectedItemsArray = getSelectedItems();
 
     if (selectedItemsArray.length === 0) {
         alert("Please select at least one item.");
@@ -294,7 +287,7 @@ function openActionDialog() {
         alert("Please select an action!");
         return;
     }
-    if (selectedItems.size === 0) {
+    if (getSelectedItems().length === 0) {
         alert("Please select at least one item.");
         return;
     }

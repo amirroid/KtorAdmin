@@ -203,9 +203,9 @@
                     <tr class="row" data-primary-key="$row.primaryKey">
                         <td data-col="checkbox">
                             <label class="custom-checkbox">
-                                <input type="checkbox" class="checkbox-input row-checkbox" #if($item ==
-                                    "true" || $item == "1") checked #end
-                                       onchange="toggleSelection(this, $row.primaryKey)">
+                                <input type="checkbox"
+                                       class="checkbox-input row-checkbox select-field-checkbox" #if($item ==
+                                    "true" || $item == "1") checked #end data-primary-key="$row.primaryKey">
                                 <span class="checkmark">
                         <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
                              xmlns="http://www.w3.org/2000/svg">

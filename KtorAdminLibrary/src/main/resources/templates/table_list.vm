@@ -116,7 +116,7 @@
         #foreach($data in $rows)
         <tr class="row" data-primary-key="$data.primaryKey">
             <td>
-                <input type="checkbox" class="row-checkbox" onchange="toggleSelection(this, $data.primaryKey)">
+                <input type="checkbox" class="row-checkbox">
             </td>
             #foreach($item in $data.data)
                 <td>$!item</td>
