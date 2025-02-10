@@ -135,7 +135,7 @@
                                 #end
                             </select>
                         </div>
-                        <button id="perform-action" onclick="performSelectedAction()">Perform</button>
+                        <button id="perform-action" onclick="openActionDialog()">Perform</button>
                         <div id="filter-button" onclick="toggleFilter()">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
@@ -352,6 +352,16 @@
 </div>
 <div id="loading">
     <div class="spinner"></div>
+</div>
+<div class="dialog-overlay" id="dialog">
+    <div class="dialog-box">
+        <h2 id="action-dialog-title">Delete all items</h2>
+        <p>By confirming this action, you acknowledge that it is irreversible and cannot be undone.</p>
+        <div class="dialog-actions-container">
+            <button onclick="closeActionDialog()" class="close-dialog">No</button>
+            <button class="confirm-dialog" onclick="performSelectedAction()">Yes</button>
+        </div>
+    </div>
 </div>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/table_list.js"></script>

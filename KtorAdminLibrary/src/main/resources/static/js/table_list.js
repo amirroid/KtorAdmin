@@ -286,3 +286,22 @@ function closeFiltersOrNavigateToAdd() {
         window.location.href = cleanUrl().toString() + "/add"
     }
 }
+
+function openActionDialog() {
+    const actionSelect = document.getElementById("actions-input");
+    const selectedActionKey = actionSelect.value;
+    if (!selectedActionKey) {
+        alert("Please select an action!");
+        return;
+    }
+    if (selectedItems.size === 0) {
+        alert("Please select at least one item.");
+        return;
+    }
+    document.getElementById('dialog').classList.add('active');
+    document.getElementById('action-dialog-title').textContent = `Are you sure to confirm '${selectedActionKey}' action?`;
+}
+
+function closeActionDialog() {
+    document.getElementById('dialog').classList.remove('active');
+}
