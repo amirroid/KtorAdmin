@@ -17,6 +17,7 @@
     #if($tinyMCEConfig)
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.7.1/tinymce.min.js"></script>
     #end
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 </head>
 
 <body>
