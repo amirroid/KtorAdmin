@@ -19,7 +19,9 @@
         #foreach($field in $fields)
             <div>
                 <label>$field.name</label>
-                <input type="text" class="field-input" name="$field.key">
+                <input type="$field.type"#if($field.autoComplete) autocomplete="$field.autoComplete"#end
+                       class="field-input" required
+                       name="$field.key">
             </div>
         #end
         <input type="hidden" name="_csrf" value="$csrfToken">

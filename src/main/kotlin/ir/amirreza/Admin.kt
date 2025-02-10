@@ -52,10 +52,13 @@ fun Application.configureAdmin(database: Database) {
 private val adminLoginFields = listOf(
     LoginFiled(
         name = "Username",
-        key = "username"
+        key = "username",
+        autoComplete = "username"
     ),
     LoginFiled(
         name = "Password",
-        key = "password"
+        key = "password",
+        autoComplete = "current-password",
+        type = "password"
     )
 )
