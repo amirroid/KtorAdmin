@@ -124,6 +124,28 @@ internal object JdbcQueriesRepository {
         } ?: 0
     }
 
+
+    /**
+     * Generates a CSV representation of all data from the given [AdminJdbcTable].
+     * Retrieves all rows from the table and converts them into a CSV format,
+     * where columns are separated by commas and rows are separated by new lines.
+     * If a column value is null, it is replaced with "N/A".
+     *
+     * @param table The database table to retrieve data from.
+     * @return A string containing the CSV representation of the table data.
+     */
+    fun getAllDataAsCsvFile(table: AdminJdbcTable): String {
+        return table.usingDataSource { session ->
+            session.list(
+                sqlQuery(table.createGetAllDataAsCsvQuery())
+            ) { row ->
+                table.getAllColumns().joinToString(", ") {
+                    row.anyOrNull(it.columnName)?.toString() ?: "N/A"
+                }
+            }.joinToString("\n")
+        }
+    }
+
     /**
      * Retrieves and processes chart data from the specified table based on the provided chart configuration.
      *
@@ -338,6 +360,14 @@ internal object JdbcQueriesRepository {
             )
         }
     }
+
+    /**
+     * Creates a SQL query to select all data from the table.
+     *
+     * @receiver The [AdminJdbcTable] instance.
+     * @return A SQL query string to fetch all rows from the table.
+     */
+    fun AdminJdbcTable.createGetAllDataAsCsvQuery() = "SELECT * FROM ${getTableName()}"
 
     // endregion
 

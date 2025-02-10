@@ -263,7 +263,8 @@ private fun buildTemplateModel(
         "csrfToken" to CsrfManager.generateToken(),
         "username" to username,
         "panelGroups" to panelGroups,
-        "currentPanel" to panel.getPluralName()
+        "currentPanel" to panel.getPluralName(),
+        "canDownload" to DynamicConfiguration.canDownloadDataAsCsv
     ).apply {
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))

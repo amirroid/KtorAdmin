@@ -56,7 +56,9 @@
                 </div>
             </div>
             <div class="dropdown-content">
-                <button>First Item</button>
+                #if($canDownload)
+                    <button onclick="downloadFile('$pluralNameBase', '$csrfToken')">Download as CSV</button>
+                #end
                 <button onclick="logout()" id="logout">Logout</button>
             </div>
         </div>

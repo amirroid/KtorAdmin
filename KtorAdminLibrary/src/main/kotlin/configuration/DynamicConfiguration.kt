@@ -21,6 +21,7 @@ internal object DynamicConfiguration {
     var authenticationSessionMaxAge: Duration = 10.days
     var tinyMCEConfig = TinyMCEConfig.Basic
     var rateLimitPerMinutes = 20
+    var canDownloadDataAsCsv = false
 
 
     fun registerEventListener(listener: AdminEventListener) {

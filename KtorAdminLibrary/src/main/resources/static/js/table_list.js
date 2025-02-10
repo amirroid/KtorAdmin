@@ -298,3 +298,13 @@ function openActionDialog() {
 function closeActionDialog() {
     document.getElementById('dialog').classList.remove('active');
 }
+
+async function downloadFile(pluralName, csrfToken) {
+    const url = `/admin/download/${pluralName}/csv?_csrf=${encodeURIComponent(csrfToken)}`;
+
+    const link = document.createElement("a");
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}

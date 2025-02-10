@@ -84,6 +84,12 @@ class KtorAdminConfiguration {
             AWSS3StorageProvider.signatureDuration = value
         }
 
+    var canDownloadDataAsCsv: Boolean
+        get() = DynamicConfiguration.canDownloadDataAsCsv
+        set(value) {
+            DynamicConfiguration.canDownloadDataAsCsv = value
+        }
+
     /**
      * Maximum items per page in pagination.
      */
