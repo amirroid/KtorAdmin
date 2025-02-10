@@ -45,6 +45,7 @@ fun Application.configureAdmin(database: Database) {
         csrfTokenExpirationTime = 1000 * 60
         registerCustomAdminActionForAll(MyCustomAction())
         registerEventListener(AdminListener(database))
+        canDownloadDataAsCsv = true
         tinyMCEConfig = TinyMCEConfig.Professional.copy(uploadTarget = UploadTarget.LocalFile(null))
     }
 }
