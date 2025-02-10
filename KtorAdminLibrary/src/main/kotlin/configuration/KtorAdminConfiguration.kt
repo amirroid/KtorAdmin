@@ -1,13 +1,12 @@
 package configuration
 
 import action.CustomAdminAction
-import com.mongodb.MongoClientSettings
-import com.vladsch.kotlin.jdbc.HikariCP
 import com.vladsch.kotlin.jdbc.SessionImpl
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import csrf.CsrfManager
 import dashboard.KtorAdminDashboard
+import hikra.KtorAdminHikariCP
 import listener.AdminEventListener
 import models.forms.LoginFiled
 import mongo.MongoCredential
@@ -112,13 +111,15 @@ class KtorAdminConfiguration {
             this.password = password
             this.username = username
             this.jdbcUrl = url
+            addDataSourceProperty("cachePrepStmts", "true")
+            addDataSourceProperty("prepStmtCacheSize", "250")
+            addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
         }
         val dataSource = HikariDataSource(config)
         if (key == null) {
-            HikariCP.defaultCustom(dataSource)
-            SessionImpl.defaultDataSource = { HikariCP.dataSource() }
+            KtorAdminHikariCP.defaultCustom(dataSource)
         } else {
-            HikariCP.custom(key, dataSource)
+            KtorAdminHikariCP.custom(key, dataSource)
             jdbcDataSources.add(key)
         }
     }
@@ -137,14 +138,6 @@ class KtorAdminConfiguration {
     }
 
     internal fun closeDatabase() {
-        SessionImpl.defaultDataSource = null
-        runCatching {
-            HikariCP.dataSource().also {
-                println("IS CLOSED ${it.isClosed}")
-            }.closeIfIsNot()
-        }
-        jdbcDataSources.forEach { HikariCP.dataSource(it).closeIfIsNot() }
+        KtorAdminHikariCP.closeAllConnections()
     }
-
-    private fun HikariDataSource.closeIfIsNot() = if (isClosed.not()) close() else Unit
 }

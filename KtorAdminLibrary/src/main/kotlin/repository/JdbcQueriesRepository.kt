@@ -12,6 +12,7 @@ import formatters.formatToDisplayInTable
 import formatters.populateTemplate
 import getters.putColumn
 import getters.toTypedValue
+import hikra.KtorAdminHikariCP
 import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.chart.ChartData
@@ -40,7 +41,7 @@ internal object JdbcQueriesRepository {
      * @return Result of the operation
      */
     private fun <T> AdminJdbcTable.usingDataSource(lambda: (Session) -> T): T {
-        val dataSource = getDatabaseKey()?.let { HikariCP.dataSource(it) } ?: HikariCP.dataSource()
+        val dataSource = getDatabaseKey()?.let { KtorAdminHikariCP.dataSource(it) } ?: KtorAdminHikariCP.dataSource()
         val session = session(dataSource)
         val invoke = using(session, lambda)
         session.close()
@@ -109,14 +110,14 @@ internal object JdbcQueriesRepository {
         table: AdminJdbcTable,
         search: String?,
         filters: List<Triple<ColumnSet, String, Any>>
-    ): Int {
+    ): Long {
         return table.usingDataSource { session ->
             session.prepare(sqlQuery(table.createGetAllCountQuery(search = search, null, filters, null)))
                 .use { preparedStatement ->
                     preparedStatement.prepareGetAllData(table, search, filters, null)
                     preparedStatement.executeQuery()?.use { rs ->
                         if (rs.next()) {
-                            rs.getInt(1)
+                            rs.getLong(1)
                         } else 0
                     }
                 }

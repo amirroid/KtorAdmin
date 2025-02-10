@@ -169,15 +169,30 @@
                 <thead>
                 <tr>
                     <th data-col="checkbox">Selected</th>
-                    #foreach($column in $columns)
-                        #set($isCheckBox = $column.type.name == "BOOLEAN")
+                    #foreach($field in $fields)
+                        #set($isCheckBox = $field.type.name == "BOOLEAN")
+                        #if($field.columnName)
+                            #set($name = $field.columnName)
+                        #else
+                            #set($name = $field.fieldName)
+                        #end
                         <th #if($isCheckBox) data-col="checkbox" #end class="istok-web-bold"
-                                             onclick="handleSortClick('$column.columnName', '$!order.name', '$order.direction')">
-                            <span class="column-name">$column.columnName</span>
-                            #if($!order.direction == "asc" and $!order.name == $column.columnName)
-                                <i class="material-icons sort-icon">keyboard_arrow_up</i>
-                            #elseif($!order.direction == "desc" and $!order.name == $column.columnName)
-                                <i class="material-icons sort-icon">keyboard_arrow_down</i>
+                                             onclick="handleSortClick('$name', '$!order.name', '$order.direction')">
+                            <span class="column-name">$name</span>
+                            #if($!order.direction == "asc" and $!order.name == $name)
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19.9201 15.0499L13.4001 8.52989C12.6301 7.75989 11.3701 7.75989 10.6001 8.52989L4.08008 15.0499"
+                                          stroke="#292D32" stroke-width="2.5" stroke-miterlimit="10"
+                                          stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            #elseif($!order.direction == "desc" and $!order.name == $name)
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19.9201 8.94995L13.4001 15.47C12.6301 16.24 11.3701 16.24 10.6001 15.47L4.08008 8.94995"
+                                          stroke="#292D32" stroke-width="2.5" stroke-miterlimit="10"
+                                          stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
                             #end
                         </th>
                     #end
@@ -192,36 +207,36 @@
                                     "true" || $item == "1") checked #end
                                        onchange="toggleSelection(this, $row.primaryKey)">
                                 <span class="checkmark">
-                                        <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
-                                             xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M1 3.83L3.83 6.66L9.5 1" stroke="white" stroke-width="1.5"
-                                                  stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </span>
+                        <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 3.83L3.83 6.66L9.5 1" stroke="white" stroke-width="1.5"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
                             </label>
                         </td>
                         #foreach($item in $row.data)
-                            #set($isCheckBox = $columns.get($foreach.index).type.name == "BOOLEAN")
-                            #set($column = $columns.get($foreach.index))
-                            #set($isFile = $column.type.name == "FILE" and $item and $item !="N/A")
+                            #set($field = $fields.get($foreach.index))
+                            #set($isCheckBox = $field.type.name == "BOOLEAN")
+                            #set($isFile = $field.type.name == "FILE" and $item and $item != "N/A")
                             #if($isCheckBox)
                                 <td data-col="checkbox">
                                     <label class="custom-checkbox">
                                         <input type="checkbox" class="checkbox-input" #if($item == "true" || $item ==
                                             "1") checked #end disabled>
                                         <span class="checkmark">
-                                        <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
-                                             xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M1 3.83L3.83 6.66L9.5 1" stroke="white" stroke-width="1.5"
-                                                  stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </span>
+                                <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 3.83L3.83 6.66L9.5 1" stroke="white" stroke-width="1.5"
+                                          stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
                                     </label>
                                 </td>
                             #elseif($isFile)
                                 <td>
                                     <button class="file-link"
-                                            onclick="generateUrl('$item', '$pluralNameBase', '$column.columnName')">
+                                            onclick="generateUrl('$item', '$pluralNameBase', '$field.columnName')">
                                         Link
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
@@ -235,16 +250,17 @@
                                         </svg>
                                     </button>
                                 </td>
-                            #elseif($column.type.name == "ENUMERATION" and $column.statusColors)
-                                #foreach($enumItem in $column.enumerationValues)
+                            #elseif($field.type.name == "ENUMERATION" and $field.statusColors)
+                                #foreach($enumItem in $field.enumerationValues)
                                     #if($enumItem == $!item)
-                                        #set($color = $column.statusColors.get($foreach.index))
+                                        #set($color = $field.statusColors.get($foreach.index))
                                     #end
                                 #end
                                 <td>
                                     <div class="status-container">
                                         <div class="status-style">
-                                            <div style="background-color: $color" class="status-dot"></div> $!item</div>
+                                            <div style="background-color: $color" class="status-dot"></div> $!item
+                                        </div>
                                         <div class="status-border" style="border-color: $color;"></div>
                                     </div>
                                 </td>

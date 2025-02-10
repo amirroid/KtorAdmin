@@ -25,9 +25,6 @@ enum class Priority {
 
 @ExposedTable("tasks", "id", "task", "tasks", iconFile = "/static/images/tasks.png")
 @AccessRoles("admin")
-@AdminActions(
-    actions = [Action.ADD]
-)
 @AdminQueries(
     searches = ["user_id.username", "description"],
     filters = ["priority", "user_id", "checked"]

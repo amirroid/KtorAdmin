@@ -13,8 +13,10 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
+import models.ColumnSet
 import models.PanelGroup
 import models.order.Order
+import org.bson.conversions.Bson
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
@@ -22,35 +24,36 @@ import utils.Constants
 import utils.serverError
 import validators.checkHasRole
 
+// Base interface for common panel functionality
+private interface PanelHandler {
+    suspend fun handleList(
+        call: ApplicationCall,
+        panel: AdminPanel,
+        pluralName: String,
+        currentPage: Int?,
+        searchParameter: String?,
+        panelGroups: List<PanelGroup>
+    )
+}
+
 internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>, panelGroups: List<PanelGroup>) {
     val pluralName = parameters["pluralName"]
     val searchParameter = parameters["search"]?.takeIf { it.isNotEmpty() }
-    val currentPage = runCatching {
-        parameters["page"]?.toInt()?.minus(1) ?: 0
-    }.onFailure { cause ->
-        badRequest(cause.message ?: "", cause)
-    }.getOrNull()
-    val panel = tables.find { it.getPluralName() == pluralName }
-    if (panel == null) {
-        notFound("No table found with plural name: $pluralName")
-    } else {
-        checkHasRole(panel) {
-            kotlin.runCatching {
-                when (panel) {
-                    is AdminJdbcTable -> handleJdbcList(
-                        panel,
-                        tables,
-                        searchParameter,
-                        currentPage,
-                        pluralName,
-                        parameters,
-                        panelGroups
-                    )
+    val currentPage = getValidatedCurrentPage()
 
-                    is AdminMongoCollection -> handleNoSqlList(
-                        panel, pluralName, currentPage, searchParameter
-                    )
+    val panel = tables.find { it.getPluralName() == pluralName }
+
+    when {
+        panel == null -> notFound("No table found with plural name: $pluralName")
+        else -> checkHasRole(panel) {
+            kotlin.runCatching {
+                val handler = when (panel) {
+                    is AdminJdbcTable -> JdbcPanelHandler(tables.filterIsInstance<AdminJdbcTable>())
+                    is AdminMongoCollection -> MongoPanelHandler()
+                    else -> throw IllegalArgumentException("Unsupported panel type")
                 }
+
+                handler.handleList(this, panel, pluralName!!, currentPage, searchParameter, panelGroups)
             }.onFailure {
                 serverError(it.message ?: "", it)
             }
@@ -58,17 +61,124 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>, p
     }
 }
 
+private suspend fun ApplicationCall.getValidatedCurrentPage(): Int? {
+    return runCatching {
+        parameters["page"]?.toInt()?.minus(1) ?: 0
+    }.onFailure { cause ->
+        badRequest(cause.message ?: "", cause)
+    }.getOrNull()
+}
+
+private class JdbcPanelHandler(private val jdbcTables: List<AdminJdbcTable>) : PanelHandler {
+    override suspend fun handleList(
+        call: ApplicationCall,
+        panel: AdminPanel,
+        pluralName: String,
+        currentPage: Int?,
+        searchParameter: String?,
+        panelGroups: List<PanelGroup>
+    ) {
+        panel as AdminJdbcTable
+
+        val order = call.getColumnOrder(panel)
+        val filtersData = JdbcFilters.findFiltersData(panel, jdbcTables)
+        val filters = JdbcFilters.extractFilters(panel, jdbcTables, call.parameters)
+
+        val data = JdbcQueriesRepository.getAllData(panel, searchParameter, currentPage, filters, order)
+        val maxPages = calculateMaxPages(panel, searchParameter, filters)
+
+        call.respondWithTemplate(
+            panel = panel,
+            data = data,
+            pluralName = pluralName,
+            maxPages = maxPages,
+            currentPage = currentPage,
+            filtersData = filtersData,
+            order = order,
+            panelGroups = panelGroups,
+            hasSearch = panel.getSearches().isNotEmpty()
+        )
+    }
+
+    private fun calculateMaxPages(
+        table: AdminJdbcTable,
+        searchParameter: String?,
+        filters: MutableList<Triple<ColumnSet, String, Any>>
+    ): Long {
+        val totalCount = JdbcQueriesRepository.getCount(table, searchParameter, filters)
+        val pages = totalCount / DynamicConfiguration.maxItemsInPage
+        return if (totalCount % DynamicConfiguration.maxItemsInPage == 0L) pages else pages + 1
+    }
+}
+
+private class MongoPanelHandler : PanelHandler {
+    override suspend fun handleList(
+        call: ApplicationCall,
+        panel: AdminPanel,
+        pluralName: String,
+        currentPage: Int?,
+        searchParameter: String?,
+        panelGroups: List<PanelGroup>
+    ) {
+        panel as AdminMongoCollection
+
+        val searchFilters = createSearchFilters(panel, searchParameter)
+        val fieldFilters = MongoFilters.extractMongoFilters(panel, call.parameters)
+        val combinedFilters = combineFilters(searchFilters, fieldFilters)
+
+        val order = call.getFieldOrder(panel)
+        val filtersData = MongoFilters.findFiltersData(panel)
+
+        val data = MongoClientRepository.getAllData(
+            panel,
+            (currentPage ?: 1) - 1,
+            filters = combinedFilters,
+            order = order
+        )
+
+        val maxPages = MongoClientRepository.getTotalPages(panel, combinedFilters)
+
+        call.respondWithTemplate(
+            panel = panel,
+            data = data,
+            pluralName = pluralName,
+            maxPages = maxPages,
+            currentPage = currentPage,
+            filtersData = filtersData,
+            order = order,
+            panelGroups = panelGroups,
+            hasSearch = panel.getSearches().isNotEmpty()
+        )
+    }
+
+    private fun createSearchFilters(panel: AdminMongoCollection, searchParameter: String?): Bson {
+        return if (searchParameter != null && panel.getSearches().isNotEmpty()) {
+            Filters.or(panel.getSearches().map { Filters.regex(it, ".*$searchParameter.*", "i") })
+        } else Filters.empty()
+    }
+
+    private fun combineFilters(searchFilters: Bson, fieldFilters: Bson): Bson {
+        return when {
+            fieldFilters == Filters.empty() && searchFilters == Filters.empty() -> Filters.empty()
+            fieldFilters == Filters.empty() -> searchFilters
+            searchFilters == Filters.empty() -> fieldFilters
+            else -> Filters.and(fieldFilters, searchFilters)
+        }
+    }
+}
+
 private suspend fun ApplicationCall.getColumnOrder(table: AdminJdbcTable): Order? {
     val orderDirection = parameters["orderDirection"]?.takeIf { it.isNotEmpty() }
-    if (orderDirection?.lowercase() !in listOf("asc", "desc", null)) {
-        badRequest("Invalid order direction '$orderDirection'. Valid values are 'asc' or 'desc'.")
-    }
-    return parameters["order"]?.takeIf { it.isNotEmpty() }?.let {
-        if (it !in table.getAllColumns().map { column -> column.columnName }) {
-            badRequest("The column '$it' specified in the order does not exist in the table. Please provide a valid column name for ordering.")
+    validateOrderDirection(orderDirection)
+
+    return parameters["order"]?.takeIf { it.isNotEmpty() }?.let { orderColumn ->
+        if (orderColumn !in table.getAllColumns().map { it.columnName }) {
+            badRequest("The column '$orderColumn' specified in the order does not exist in the table. Please provide a valid column name for ordering.")
         }
-        Order(it, orderDirection ?: "ASC")
-    } ?: table.getDefaultOrder()?.let { if (orderDirection == null) it else it.copy(direction = orderDirection) }
+        Order(orderColumn, orderDirection ?: "ASC")
+    } ?: table.getDefaultOrder()?.let {
+        if (orderDirection == null) it else it.copy(direction = orderDirection)
+    }
 }
 
 private suspend fun ApplicationCall.getFieldOrder(table: AdminMongoCollection): Order? {
@@ -76,130 +186,87 @@ private suspend fun ApplicationCall.getFieldOrder(table: AdminMongoCollection): 
     if (orderDirection.lowercase() !in listOf("asc", "desc")) {
         badRequest("Invalid order direction '$orderDirection'. Valid values are 'asc' or 'desc'.")
     }
-    return parameters["order"]?.takeIf { it.isNotEmpty() }?.let {
-        if (it !in table.getAllFields().map { field -> field.fieldName }) {
-            badRequest("The column '$it' specified in the order does not exist in the collection. Please provide a valid field name for ordering.")
+
+    return parameters["order"]?.takeIf { it.isNotEmpty() }?.let { orderField ->
+        if (orderField !in table.getAllFields().map { it.fieldName }) {
+            badRequest("The column '$orderField' specified in the order does not exist in the collection. Please provide a valid field name for ordering.")
         }
-        Order(it, orderDirection)
+        Order(orderField, orderDirection)
     } ?: table.getDefaultOrder()
 }
 
-private suspend fun ApplicationCall.handleJdbcList(
-    table: AdminJdbcTable,
-    tables: List<AdminPanel>,
-    searchParameter: String?,
-    currentPage: Int?,
-    pluralName: String?,
-    parameters: Parameters,
-    panelGroups: List<PanelGroup>
-) {
-    val jdbcTables = tables.filterIsInstance<AdminJdbcTable>()
-    val hasSearchColumn = table.getSearches().isNotEmpty()
-
-    val order = getColumnOrder(table)
-
-    // Prepare filters data
-    val filtersData = JdbcFilters.findFiltersData(table, jdbcTables)
-
-    // Extract actual filters
-    val filters = JdbcFilters.extractFilters(table, jdbcTables, parameters)
-
-    // Fetch data
-    val data = JdbcQueriesRepository.getAllData(table, searchParameter, currentPage, filters, order)
-    val maxPages = JdbcQueriesRepository.getCount(table, searchParameter, filters).let {
-        val calculatedValue = it / DynamicConfiguration.maxItemsInPage
-        if (it % DynamicConfiguration.maxItemsInPage == 0) {
-            calculatedValue
-        } else calculatedValue.plus(1)
+private suspend fun ApplicationCall.validateOrderDirection(orderDirection: String?) {
+    if (orderDirection?.lowercase() !in listOf("asc", "desc", null)) {
+        badRequest("Invalid order direction '$orderDirection'. Valid values are 'asc' or 'desc'.")
     }
-    val user = principal<KtorAdminPrincipal>()!!
+}
 
-    // Respond with Velocity template
-    val model = mutableMapOf(
-        "columns" to table.getAllAllowToShowColumns(),
-        "rows" to data,
-        "pluralName" to pluralName.orEmpty().replaceFirstChar { it.uppercaseChar() },
-        "pluralNameBase" to pluralName.orEmpty(),
-        "hasSearch" to hasSearchColumn,
-        "currentPage" to (currentPage?.plus(1) ?: 1),
-        "maxPages" to maxPages,
-        "filtersData" to filtersData,
-        "actions" to table.getAllCustomActions(),
-        "csrfToken" to CsrfManager.generateToken(),
-        "username" to user.name,
-        "panelGroups" to panelGroups,
-        "currentPanel" to table.getPluralName(),
-    ).apply {
-        order?.let {
-            put("order", it.copy(direction = it.direction.lowercase()))
-        }
-    }.toMap()
+private suspend fun ApplicationCall.respondWithTemplate(
+    panel: AdminPanel,
+    data: Any,
+    pluralName: String,
+    maxPages: Long,
+    currentPage: Int?,
+    filtersData: Any,
+    order: Order?,
+    panelGroups: List<PanelGroup>,
+    hasSearch: Boolean
+) {
+    val user = principal<KtorAdminPrincipal>()!!
+    val model = buildTemplateModel(
+        panel = panel,
+        data = data,
+        pluralName = pluralName,
+        maxPages = maxPages,
+        currentPage = currentPage,
+        filtersData = filtersData,
+        order = order,
+        panelGroups = panelGroups,
+        hasSearch = hasSearch,
+        username = user.name
+    )
+
     respond(
         VelocityContent(
-//            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
             "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_list.vm",
             model = model
         )
     )
 }
 
-private suspend fun ApplicationCall.handleNoSqlList(
-    panel: AdminMongoCollection,
-    pluralName: String?,
+private fun buildTemplateModel(
+    panel: AdminPanel,
+    data: Any,
+    pluralName: String,
+    maxPages: Long,
     currentPage: Int?,
-    searchParameter: String?,
-) {
-    val searchFilters = if (searchParameter != null && panel.getSearches().isNotEmpty()) {
-        Filters.or(
-            panel.getSearches().map { Filters.regex(it, ".*$searchParameter.*", "i") },
-        )
-    } else Filters.empty()
-
-    // Prepare filters data
-    val filtersData = MongoFilters.findFiltersData(panel)
-
-    val order = getFieldOrder(panel)
-
-
-    val fieldFilters = MongoFilters.extractMongoFilters(panel, parameters)
-    val filters = when {
-        fieldFilters == Filters.empty() && searchFilters == Filters.empty() -> Filters.empty()
-        fieldFilters == Filters.empty() -> searchFilters
-        searchFilters == Filters.empty() -> fieldFilters
-        else -> Filters.and(fieldFilters, searchFilters)
-    }
-
-    // Fetch data
-    val data = MongoClientRepository.getAllData(
-        panel,
-        (currentPage ?: 1) - 1,
-        filters = filters,
-        order = order
-    )
-
-    val maxPages = MongoClientRepository.getTotalPages(panel, filters)
-    val hasSearch = panel.getSearches().isNotEmpty()
-
-    // Respond with Velocity template
-    val model = mutableMapOf(
-        "columnNames" to panel.getAllAllowToShowFields().map { it.fieldName },
+    filtersData: Any,
+    order: Order?,
+    panelGroups: List<PanelGroup>,
+    hasSearch: Boolean,
+    username: String
+): Map<String, Any> {
+    return mutableMapOf(
+        "fields" to when (panel) {
+            is AdminJdbcTable -> panel.getAllAllowToShowColumns()
+            is AdminMongoCollection -> panel.getAllAllowToShowFields()
+            else -> emptyList<Any>()
+        },
         "rows" to data,
-        "pluralName" to pluralName?.replaceFirstChar { it.uppercaseChar() }.orEmpty(),
+        "pluralName" to pluralName.replaceFirstChar { it.uppercaseChar() },
+        "pluralNameBase" to pluralName,
         "hasSearch" to hasSearch,
         "currentPage" to (currentPage?.plus(1) ?: 1),
         "maxPages" to maxPages,
         "filtersData" to filtersData,
-        "actions" to panel.getAllCustomActions()
+        "actions" to panel.getAllCustomActions(),
+        "csrfToken" to CsrfManager.generateToken(),
+        "username" to username,
+        "panelGroups" to panelGroups,
+        "currentPanel" to panel.getPluralName()
     ).apply {
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))
         }
     }.toMap()
-    respond(
-        VelocityContent(
-            "${Constants.TEMPLATES_PREFIX_PATH}/table_list.vm",
-            model = model
-        )
-    )
 }
-

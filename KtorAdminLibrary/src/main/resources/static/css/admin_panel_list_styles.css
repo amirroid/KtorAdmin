@@ -176,6 +176,7 @@ h2 {
     padding: 12px 40px;
     height: 44px;
     outline: none;
+    margin-top: 12px;
     border: none;
     transition: .1s linear;
     cursor: pointer;
@@ -340,6 +341,10 @@ th[data-col="checkbox"], td[data-col="checkbox"] {
     white-space: nowrap;
     min-width: 100px;
     max-lines: 1;
+}
+
+th {
+    gap: 4px;
 }
 
 th:not([data-col="checkbox"]), td:not([data-col="checkbox"]) {

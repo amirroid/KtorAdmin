@@ -20,7 +20,7 @@ class KtorAdmin {
             pipeline.configureTemplating()
             pipeline.configureRouting(authenticateName, tables)
             pipeline.configureSessions()
-            pipeline.monitor.subscribe(ApplicationStopPreparing) { configuration.closeDatabase() }
+            pipeline.monitor.subscribe(ApplicationStopping) { configuration.closeDatabase() }
             return KtorAdmin()
         }
     }
