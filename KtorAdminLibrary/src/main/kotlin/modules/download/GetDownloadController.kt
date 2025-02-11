@@ -46,6 +46,9 @@ fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: Lis
 
         // Route for downloading a specific record as a PDF file
         get("/admin/download/{pluralName}/{primaryKey}/pdf") {
+            if (DynamicConfiguration.canDownloadDataAsPdf.not()) {
+                return@get call.badRequest("To use this feature, please enable this option in the configuration.")
+            }
             val pluralName = call.parameters["pluralName"]
             val primaryKey = call.parameters["primaryKey"] ?: return@get call.badRequest("Primary key is missing")
             val csrfToken = call.parameters[CSRF_TOKEN_FIELD_NAME]
