@@ -139,3 +139,14 @@ document.addEventListener('DOMContentLoaded', function () {
     handleFileInputs()
     handleRichInputs()
 });
+
+
+async function downloadFile(pluralName, csrfToken, primaryKey) {
+    const url = `/admin/download/${pluralName}/${primaryKey}/pdf?_csrf=${encodeURIComponent(csrfToken)}`;
+
+    const link = document.createElement("a");
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}

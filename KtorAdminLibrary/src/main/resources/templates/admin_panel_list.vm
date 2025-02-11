@@ -361,8 +361,8 @@
         <h2 id="action-dialog-title">Delete all items</h2>
         <p>By confirming this action, you acknowledge that it is irreversible and cannot be undone.</p>
         <div class="dialog-actions-container">
-            <button onclick="closeActionDialog()" class="close-dialog">No</button>
             <button class="confirm-dialog" onclick="performSelectedAction()">Yes</button>
+            <button onclick="closeActionDialog()" class="close-dialog">No</button>
         </div>
     </div>
 </div>

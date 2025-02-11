@@ -90,6 +90,12 @@ class KtorAdminConfiguration {
             DynamicConfiguration.canDownloadDataAsCsv = value
         }
 
+    var canDownloadDataAsPdf: Boolean
+        get() = DynamicConfiguration.canDownloadDataAsPdf
+        set(value) {
+            DynamicConfiguration.canDownloadDataAsPdf = value
+        }
+
     /**
      * Maximum items per page in pagination.
      */

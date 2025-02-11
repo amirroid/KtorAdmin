@@ -1,6 +1,7 @@
 package modules.update
 
 import authentication.KtorAdminPrincipal
+import configuration.DynamicConfiguration
 import csrf.CsrfManager
 import flash.getFlashDataAndClear
 import flash.getRequestId
@@ -80,10 +81,13 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm", model = mapOf(
                         "columns" to columns,
                         "tableName" to table.getTableName(),
+                        "primaryKey" to primaryKey,
+                        "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
                         "values" to values,
                         "singularTableName" to table.getSingularName()
                             .replaceFirstChar { it.uppercaseChar() },
                         "references" to referencesItems,
+                        "pluralNameBase" to table.getPluralName(),
                         "errors" to errors.toMap(),
                         "csrfToken" to CsrfManager.generateToken(),
                         "panelGroups" to panelGroups,

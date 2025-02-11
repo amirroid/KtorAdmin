@@ -46,6 +46,7 @@ fun Application.configureAdmin(database: Database) {
         registerCustomAdminActionForAll(MyCustomAction())
         registerEventListener(AdminListener(database))
         canDownloadDataAsCsv = true
+        canDownloadDataAsPdf = true
         tinyMCEConfig = TinyMCEConfig.Professional.copy(uploadTarget = UploadTarget.LocalFile(null))
     }
 }

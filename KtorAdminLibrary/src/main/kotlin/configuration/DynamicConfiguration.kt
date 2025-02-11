@@ -22,6 +22,7 @@ internal object DynamicConfiguration {
     var tinyMCEConfig = TinyMCEConfig.Basic
     var rateLimitPerMinutes = 20
     var canDownloadDataAsCsv = false
+    var canDownloadDataAsPdf = false
 
 
     fun registerEventListener(listener: AdminEventListener) {

@@ -950,21 +950,18 @@ th:last-child::before {
     transition: 0.3s;
 }
 
-.close-dialog {
+.confirm-dialog {
     background: red;
 }
 
-.close-dialog:hover {
+.confirm-dialog:hover {
     background: #ca0202;
 }
 
-.confirm-dialog {
-    background: transparent;
-    border: 1px solid #9A6C00 !important;
-    color: black !important;
+.close-dialog {
+    background: #9A6C00;
 }
 
-.confirm-dialog:hover {
-    color: white !important;
+.close-dialog:hover {
     background: #896001;
 }

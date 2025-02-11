@@ -47,6 +47,9 @@ dependencies {
 
     // Rate Limiting
     implementation("io.ktor:ktor-server-rate-limit:$ktorVersion")
+
+    // IText
+    implementation("com.itextpdf:itext7-core:7.2.3")
 }
 tasks.test {
     useJUnitPlatform()
