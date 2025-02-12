@@ -4,6 +4,7 @@ import annotations.date.AutoNowDate
 import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
+import annotations.limit.Limits
 import annotations.mongo.MongoCollection
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
@@ -57,6 +58,9 @@ data class UserFile(
     @Enumeration("Test", "Te")
     val title: String,
     @LocalUpload
+    @Limits(
+        allowedMimeTypes = ["image/png"]
+    )
     val file: String,
     @FieldInfo(
         verboseName = "Created At"

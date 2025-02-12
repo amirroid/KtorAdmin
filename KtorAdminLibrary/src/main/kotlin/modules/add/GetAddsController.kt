@@ -1,6 +1,7 @@
 package modules.add
 
 import authentication.KtorAdminPrincipal
+import configuration.DynamicConfiguration
 import csrf.CsrfManager
 import flash.KtorFlashHelper
 import flash.getFlashDataAndClear
@@ -19,6 +20,7 @@ import response.ErrorResponse
 import response.toMap
 import utils.Constants
 import utils.addCommonUpsertModels
+import utils.serverError
 import validators.checkHasRole
 import kotlin.math.log
 
@@ -31,7 +33,7 @@ internal suspend fun ApplicationCall.handleAddNewItem(panels: List<AdminPanel>, 
         checkHasRole(panel) {
             when (panel) {
                 is AdminJdbcTable -> handleJdbcAddView(table = panel, panels = panels, panelGroups = panelGroups)
-                is AdminMongoCollection -> handleNoSqlAddView(panel = panel)
+                is AdminMongoCollection -> handleNoSqlAddView(panel = panel, panelGroups = panelGroups)
             }
         }
     }
@@ -73,28 +75,35 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
 }
 
 internal suspend fun ApplicationCall.handleNoSqlAddView(
-    panel: AdminMongoCollection,
-    values: Map<String, String?> = emptyMap(),
-    errors: List<ErrorResponse> = emptyList()
+    panel: AdminMongoCollection, panelGroups: List<PanelGroup>
 ) {
     runCatching {
+        val user = principal<KtorAdminPrincipal>()!!
         val fields = panel.getAllAllowToShowFieldsInUpsert()
-//        val referencesItems = getReferencesItems(tables.filterIsInstance<AdminJdbcTable>(), columns)
+        val requestId = getRequestId()
+        val valuesWithErrors = getFlashDataAndClear(requestId)
+        val errors = valuesWithErrors.second ?: emptyList()
+        val errorValues = valuesWithErrors.first
+        val values = errorValues?.takeIf { it.isNotEmpty() } ?: emptyMap()
         respond(
             VelocityContent(
-                "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin2.vm", model = mapOf(
+                "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mapOf(
                     "fields" to fields,
-                    "singularTableName" to panel.getSingularName()
-                        .replaceFirstChar { it.uppercaseChar() },
                     "collectionName" to panel.getCollectionName(),
                     "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
                     "values" to values,
                     "errors" to errors.toMap(),
-                    "csrfToken" to CsrfManager.generateToken()
+                    "csrfToken" to CsrfManager.generateToken(),
+                    "requestId" to requestId,
+                    "hasAction" to panel.hasAddAction,
+                    "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
+                    "panelGroups" to panelGroups,
+                    "currentPanel" to panel.getPluralName(),
+                    "username" to user.name,
                 )
             )
         )
     }.onFailure {
-        badRequest("Error: ${it.message}", it)
+        serverError("Error: ${it.message}", it)
     }
 }

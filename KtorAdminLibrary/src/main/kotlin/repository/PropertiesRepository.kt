@@ -124,7 +124,6 @@ object PropertiesRepository {
         val fieldName = infoAnnotation?.findArgument<String>("fieldName")?.takeIf { it.isNotEmpty() } ?: name
         val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() }
             ?: fieldName
-            ?: name
 
         if (hasUploadAnnotation) {
             UploadUtils.validatePropertyType(fieldName, type)

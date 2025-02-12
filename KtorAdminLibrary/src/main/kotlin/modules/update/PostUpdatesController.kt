@@ -136,14 +136,8 @@ private suspend fun RoutingContext.updateData(
         }.onFailure {
             call.serverError("Failed to update $pluralName\nReason: ${it.message}", throwable = it)
         }
-    }.onError { errors, values ->
-        call.handleNoSqlEditView(
-            primaryKey = primaryKey,
-            panel = panel,
-            panels = panels,
-            errors = errors,
-            errorValues = values
-        )
+    }.onError { requestId, errors, values ->
+        call.setFlashSessionsAndRedirect(requestId, errors, values)
     }.onInvalidateRequest {
         call.invalidateRequest()
     }

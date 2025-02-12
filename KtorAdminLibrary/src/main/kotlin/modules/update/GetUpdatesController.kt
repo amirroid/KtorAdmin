@@ -26,6 +26,7 @@ import response.toMap
 import utils.Constants
 import utils.addCommonUpsertModels
 import validators.checkHasRole
+import kotlin.collections.toMap
 
 
 internal suspend fun ApplicationCall.handleEditItem(
@@ -42,7 +43,7 @@ internal suspend fun ApplicationCall.handleEditItem(
             checkHasRole(panel) {
                 when (panel) {
                     is AdminJdbcTable -> handleJdbcEditView(primaryKey, panel, panels, panelGroups = panelGroups)
-                    is AdminMongoCollection -> handleNoSqlEditView(primaryKey, panel, panels)
+                    is AdminMongoCollection -> handleNoSqlEditView(primaryKey, panel, panelGroups = panelGroups)
                 }
             }
         }
@@ -109,18 +110,20 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
 internal suspend fun ApplicationCall.handleNoSqlEditView(
     primaryKey: String,
     panel: AdminMongoCollection,
-    panels: List<AdminPanel>,
-    errors: List<ErrorResponse> = emptyList(),
-    errorValues: Map<String, String?> = emptyMap()
+    panelGroups: List<PanelGroup>
 ) {
     val data = MongoClientRepository.getData(panel, primaryKey)
     if (data == null) {
         notFound("No data found with primary key: $primaryKey")
     } else {
         runCatching {
+            val user = principal<KtorAdminPrincipal>()!!
             val fields = panel.getAllAllowToShowFieldsInUpsert()
-//            val referencesItems = getReferencesItems(tables.filterIsInstance<AdminJdbcTable>(), columns)
-            val values = errorValues.takeIf { it.isNotEmpty() } ?: fields.mapIndexed { index, field ->
+            val requestId = getRequestId()
+            val valuesWithErrors = getFlashDataAndClear(requestId)
+            val errors = valuesWithErrors.second ?: emptyList()
+            val errorValues = valuesWithErrors.first
+            val values = errorValues?.takeIf { it.isNotEmpty() } ?: fields.mapIndexed { index, field ->
                 field.fieldName to data[index]?.let { item ->
                     handlePreviewValue(
                         field,
@@ -131,16 +134,20 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
             }.toMap()
             respond(
                 VelocityContent(
-                    "${Constants.TEMPLATES_PREFIX_PATH}/upsert_admin2.vm", model = mapOf(
+                    "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mapOf(
                         "fields" to fields,
                         "values" to values,
                         "errors" to errors.toMap(),
-                        "singularTableName" to panel.getSingularName()
-                            .replaceFirstChar { it.uppercaseChar() },
-//                        "references" to referencesItems,
                         "collectionName" to panel.getCollectionName(),
                         "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
-                        "csrfToken" to CsrfManager.generateToken()
+                        "csrfToken" to CsrfManager.generateToken(),
+                        "panelGroups" to panelGroups,
+                        "currentPanel" to panel.getPluralName(),
+                        "username" to user.name,
+                        "isUpdate" to true,
+                        "requestId" to requestId,
+                        "hasAction" to panel.hasEditAction,
+                        "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
                     )
                 )
             )

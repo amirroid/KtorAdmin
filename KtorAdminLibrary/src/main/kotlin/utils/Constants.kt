@@ -2,7 +2,7 @@ package utils
 
 object Constants {
     const val PACKAGE_NAME = "ir.amirreza"
-    const val TEMPLATES_PREFIX_PATH = "/templates"
+    const val TEMPLATES_PREFIX_PATH = "/templates/ktor_admin"
 
     // VALUES
     const val TRUE_FORM = "on"

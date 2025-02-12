@@ -1,6 +1,5 @@
 package modules.add
 
-import utils.badRequest
 import configuration.DynamicConfiguration
 import converters.toEvents
 import converters.toFieldEvents
@@ -9,18 +8,16 @@ import flash.setFlashSessionsAndRedirect
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.*
 import models.ColumnSet
 import models.field.FieldSet
-import modules.update.handleNoSqlEditView
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.onError
 import response.onInvalidateRequest
 import response.onSuccess
+import utils.badRequest
 import utils.invalidateRequest
-import utils.serverError
 import validators.checkHasRole
 import validators.validateFieldsParameters
 import validators.validateParameters
@@ -128,12 +125,8 @@ private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminM
         } else {
             call.badRequest("Invalid parameters for $pluralName: $parameters")
         }
-    }.onError { errors, values ->
-        call.handleNoSqlAddView(
-            panel = panel,
-            errors = errors,
-            values = values
-        )
+    }.onError { requestId, errors, values ->
+        call.setFlashSessionsAndRedirect(requestId, errors, values)
     }.onInvalidateRequest {
         call.invalidateRequest()
     }

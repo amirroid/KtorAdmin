@@ -9,7 +9,7 @@ sealed class FieldType(val name: kotlin.String, val fieldType: kotlin.String) {
     data object Long : FieldType("LONG", "number")
     data object Double : FieldType("DOUBLE", "number")
     data object Float : FieldType("FLOAT", "number")
-    data object Boolean : FieldType("Boolean", "checkbox")
+    data object Boolean : FieldType("BOOLEAN", "checkbox")
     data object Date : FieldType("DATE", "date")
     data object DateTime : FieldType("DATETIME", "datetime-local")
     data object Enumeration : FieldType("ENUMERATION", "select")

@@ -150,6 +150,8 @@ internal suspend fun MultiPartData.toTableValues(
 
     val errors = mutableListOf<ErrorResponse?>()
     var isInvalidRequest = false
+
+    var requestId: String? = null
     forEachPart { part ->
         val name = part.name
         if (name == CSRF_TOKEN_FIELD_NAME && part is PartData.FormItem) {
@@ -159,6 +161,10 @@ internal suspend fun MultiPartData.toTableValues(
                 isInvalidRequest = true
                 return@forEachPart
             }
+        }
+        if (name == REQUEST_ID_FORM && part is PartData.FormItem) {
+            requestId = part.value
+            part.dispose()
         }
         val field = fields.firstOrNull { it.fieldName == name }
         if (field != null && name != null) {
@@ -210,8 +216,10 @@ internal suspend fun MultiPartData.toTableValues(
     val errorsNotNull = errors.filterNotNull()
     if (errorsNotNull.isNotEmpty()) {
         return Response.Error(
-            errorsNotNull,
-            fields.associateWith { items[it.fieldName.toString()]?.first }.mapKeys { it.key.fieldName.toString() }
+            requestId = requestId,
+            errors = errorsNotNull,
+            values = fields.associateWith { items[it.fieldName.toString()]?.first }
+                .mapKeys { it.key.fieldName.toString() }
         )
     }
     fileBytes.forEach { (field, pair) ->

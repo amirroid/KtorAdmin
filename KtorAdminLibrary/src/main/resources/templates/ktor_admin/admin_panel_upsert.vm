@@ -304,7 +304,9 @@
     <div class="spinner"></div>
 </div>
 <script>
-    const tinyConfig = JSON.parse(`$tinyMCEConfig`);
+        #if($tinyMCEConfig)
+        const tinyConfig = JSON.parse(`$tinyMCEConfig`);
+        #end
     const computedColumns = [];
         #foreach($column in $columns)
             #if($column.computedColumn)

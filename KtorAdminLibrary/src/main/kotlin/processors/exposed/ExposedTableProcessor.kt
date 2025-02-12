@@ -32,6 +32,20 @@ import utils.FileUtils
 import utils.PackagesUtils
 import utils.toSuitableStringForFile
 
+/**
+ * A Kotlin Symbol Processing (KSP) processor that generates classes for Exposed table definitions.
+ * This processor scans classes annotated with `@ExposedTable`, validates their structure, extracts
+ * relevant metadata, and generates a corresponding class with properties, queries, and actions.
+ *
+ * Key functionalities:
+ * - Extracts column sets and validates primary keys.
+ * - Generates default and custom actions for admin interactions.
+ * - Handles search and filter query parameters.
+ * - Generates table metadata, including display formats and access roles.
+ *
+ * @property environment The KSP environment providing code generation capabilities.
+ */
+
 class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver
