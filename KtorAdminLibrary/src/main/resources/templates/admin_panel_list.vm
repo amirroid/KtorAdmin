@@ -181,7 +181,7 @@
                         #end
                         <th #if($isCheckBox) data-col="checkbox" #end class="istok-web-bold"
                                              onclick="handleSortClick('$name', '$!order.name', '$order.direction')">
-                            <span class="column-name">$name</span>
+                            <span class="column-name">$field.verboseName</span>
                             #if($!order.direction == "asc" and $!order.name == $name)
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
