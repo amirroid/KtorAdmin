@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.computed.Computed
 import annotations.date.AutoNowDate
 import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
@@ -73,5 +74,9 @@ data class UserFile(
         nullable = true,
         readOnly = true
     )
-    val thumbnail: String?
+    val thumbnail: String?,
+    @Computed(
+        compute = "{title}.toLowerCase().replaceAll(' ', '-')"
+    )
+    val slug: String
 )

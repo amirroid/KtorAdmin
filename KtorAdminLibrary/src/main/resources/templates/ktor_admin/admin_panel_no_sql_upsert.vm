@@ -221,7 +221,7 @@
         const tinyConfig = JSON.parse(`$tinyMCEConfig`);
         #end
     const computedColumns = [];
-        #foreach($field in $fileds)
+        #foreach($field in $fields)
             #if($field.computedField)
             computedColumns.push({
                 columnName: "$field.fieldName",
