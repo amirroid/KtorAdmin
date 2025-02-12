@@ -1,22 +1,37 @@
 function handleComputedColumns() {
     computedColumns.forEach(function (item) {
-        console.log(item.columnName)
-        const sourceSelector = `[name="${item.computedColumn.match(/\{(.+?)}/)[1]}"].form-input`
+        // Select the source field based on the computed column reference
+        const sourceSelector = `[name="${item.computedColumn.match(/\{(.+?)}/)[1]}"].form-input`;
         const sourceField = document.querySelector(sourceSelector);
         const targetField = document.querySelector(`[name="${item.columnName}"].form-input`);
-        if (sourceField && targetField) {
-            sourceField.addEventListener("input", function () {
+
+        /**
+         * Function to compute and set the value for the target field
+         * - Extracts the value from the source field
+         * - Replaces the placeholder in the computed expression
+         * - Evaluates the expression safely
+         * - Updates the target field value
+         */
+        function computeAndSetValue() {
+            if (sourceField && targetField) {
                 const value = sourceField.value;
                 const quotedValue = `"${value}"`;
                 const computedExpression = item.computedColumn.replace(/{(.+?)}/g, quotedValue);
-                console.log(computedExpression)
+                console.log(computedExpression);
+
+                // Create a function to evaluate the computed expression
                 const computeFunction = new Function('return ' + computedExpression);
                 try {
-                    targetField.value = computeFunction();
+                    targetField.value = computeFunction(); // Set the computed value
                 } catch (e) {
                     console.error("Error computing value:", e);
                 }
-            });
+            }
+        }
+
+        if (sourceField && targetField) {
+            computeAndSetValue(); // Initialize the target field on page load
+            sourceField.addEventListener("input", computeAndSetValue); // Update value on input change
         }
     });
 }
