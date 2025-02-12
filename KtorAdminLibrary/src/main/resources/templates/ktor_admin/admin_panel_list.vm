@@ -237,9 +237,14 @@
                                     </label>
                                 </td>
                             #elseif($isFile)
+                                #if($field.columnName)
+                                    #set($fieldName = $field.columnName)
+                                #else
+                                    #set($fieldName = $field.fieldName)
+                                #end
                                 <td>
                                     <button class="file-link"
-                                            onclick="generateUrl('$item', '$pluralNameBase', '$field.columnName')">
+                                            onclick="generateUrl('$item', '$pluralNameBase', '$fieldName')">
                                         Link
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
