@@ -84,6 +84,12 @@ class TaskListChartSection : ListDashboardSection() {
         get() = "TASKS"
     override val index: Int
         get() = 25
+
+    override val limitCount: Int?
+        get() = 2
+
+    override val orderQuery: String?
+        get() = "id DESC"
 }
 
 class TaskTextSection : TextDashboardSection() {
