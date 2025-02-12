@@ -11,3 +11,43 @@
     font-weight: bold;
     font-style: normal;
 }
+
+:root {
+    --primary-color: #292D32;
+    --secondary-color: #9A6C00;
+    --background-gradient-start: #F3E7CB;
+    --background-gradient-end: #E3E5E6;
+    --white-transparent-60: rgba(255, 255, 255, 0.6);
+    --white-transparent-70: rgba(255, 255, 255, 0.7);
+    --white-transparent-80: rgba(255, 255, 255, 0.8);
+    --highlight-color: #ffb300;
+    --border-color: hsla(213, 10%, 18%, 0.1);
+    --transparent-black-50: rgba(0, 0, 0, 0.5);
+    --transparent-black-10: rgba(0, 0, 0, 0.1);
+    --transparent-black-20: rgba(0, 0, 0, 0.2);
+    --white: #fff;
+    --error-color: red;
+    --background-color-f4: #F4F4F4;
+    --background-gradient-start-30: rgba(243, 231, 203, 0.3);
+    --secondary-color-20: rgba(154, 108, 0, 0.2);
+}
+
+:root.theme-dark {
+    --primary-color: #E1E1E1;
+    --secondary-color: #FFB84D;
+    --background-gradient-start: #1A1D21;
+    --background-gradient-end: #2A2D32;
+    --white-transparent-60: rgba(40, 44, 52, 0.6);
+    --white-transparent-70: rgba(40, 44, 52, 0.7);
+    --white-transparent-80: rgba(40, 44, 52, 0.8);
+    --highlight-color: #FFD700;
+    --border-color: hsla(213, 10%, 80%, 0.1);
+    --transparent-black-50: rgba(0, 0, 0, 0.5);
+    --transparent-black-10: rgba(255, 255, 255, 0.1);
+    --transparent-black-20: rgba(255, 255, 255, 0.2);
+    --white: #2A2D32;
+    --error-color: #FF453A;
+    --background-color-f4: #2C2C2C;
+    --background-gradient-start-30: rgba(255, 184, 77, 0.15);
+    --secondary-color-20: rgba(255, 184, 77, 0.2);
+}

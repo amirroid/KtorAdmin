@@ -48,7 +48,7 @@
                 </div>
             </div>
             <div class="dropdown-content">
-                <button>First Item</button>
+                <button onclick="changeTheme()">Change theme</button>
                 <button onclick="logout()" id="logout">Logout</button>
             </div>
         </div>

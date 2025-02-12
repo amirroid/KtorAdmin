@@ -42,6 +42,30 @@ function handleTitleClicks() {
 }
 
 const expandedSidebarValue = "expanded"
+const themeKey = "theme"
+
+
+function changeTheme() {
+    const sidebar = document.getElementsByClassName("sidebar")[0];
+    if (localStorage.getItem(themeKey) === "dark") {
+        localStorage.setItem(themeKey, "light")
+        document.querySelector(":root").classList.remove("theme-dark")
+    } else {
+        localStorage.setItem(themeKey, "dark")
+        document.querySelector(":root").classList.add("theme-dark")
+    }
+    sidebar.style.backgroundColor = getCSSVariable("--white-transparent-60")
+}
+
+function initTheme() {
+    if (localStorage.getItem(themeKey) === "dark") {
+        document.querySelector(":root").classList.add("theme-dark")
+    }
+}
+
+function getCSSVariable(variableName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+}
 
 function handleSidebarExpandedFromStorage() {
     if (localStorage.getItem("sidebarExpanded") === expandedSidebarValue) {
@@ -66,14 +90,19 @@ function handleSidebarExpandedFromStorage() {
     }
 }
 
+
+function runInitialFunctions() {
+    initTheme();
+    handleSidebarExpandedFromStorage();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     handleMenuHover()
     handleTitleClicks()
+    runInitialFunctions()
 });
 
-window.addEventListener("pageshow", function () {
-    handleSidebarExpandedFromStorage()
-})
+window.addEventListener("pageshow", runInitialFunctions);
 
 
 function expandOrShrinkSidebar() {
@@ -87,7 +116,7 @@ function expandOrShrinkSidebar() {
         container.style.marginLeft = "0";
         localStorage.removeItem("sidebarExpanded")
         menuIcon.classList.remove("shrink");
-        sidebar.style.backgroundColor = "rgba(255, 255, 255, 0.7)"
+        sidebar.style.backgroundColor = getCSSVariable("--white-transparent-70")
         sidebar.style.backdropFilter = "blur(8px)"
         sidebar.style.border = "1px solid hsla(213, 10%, 18%, 0.1)"
     } else {
@@ -102,7 +131,7 @@ function expandSidebar(icon, container, sidebar, menuIcon) {
     menuIcon.classList.add("shrink");
     container.style.marginLeft = (16 + sidebarRect.width).toString() + "px";
     container.style.width = `calc(100vw - ${sidebarRect.width + 48}px)`;
-    sidebar.style.backgroundColor = "rgba(255, 255, 255, 0.6)"
+    sidebar.style.backgroundColor = getCSSVariable("--white-transparent-60")
     sidebar.style.backdropFilter = "none"
     sidebar.style.border = "none"
 }

@@ -52,6 +52,7 @@
                 </div>
             </div>
             <div class="dropdown-content">
+                <button onclick="changeTheme()">Change theme</button>
                 #if($canDownload)
                     <button onclick="downloadFile('$pluralNameBase', '$csrfToken')">Download as CSV</button>
                 #end
