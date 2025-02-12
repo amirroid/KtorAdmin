@@ -87,44 +87,68 @@
                     <div class="table-section"
                          style="grid-column: span ${sectionInfo.span}; height: ${sectionInfo.height};">
                         <h2 class="table-title">$section.section.sectionName</h2>
-                        <table>
-                            <thead>
-                            <tr>
-                                #foreach($field in $section.fields)
-                                    #set($isCheckBox = $field.type == "BOOLEAN")
-                                    <th  #if($isCheckBox) data-col="checkbox" #end >$field.name</th>
-                                #end
-                            </tr>
-                            </thead>
-                            <tbody>
-                                #foreach($row in $section.values)
+                        <div class="table-container">
+                            <table>
+                                <thead>
                                 <tr>
-                                    #foreach($value in $row)
-                                        #set($field = $section.fields.get($foreach.index))
+                                    #foreach($field in $section.fields)
                                         #set($isCheckBox = $field.type == "BOOLEAN")
-                                        #if($isCheckBox)
-                                            <td data-col="checkbox">
-                                                <label class="custom-checkbox">
-                                                    <input type="checkbox" class="checkbox-input" #if($item ==
-                                                        "true" || $item ==
-                                                        "1") checked #end disabled>
-                                                    <span class="checkmark">
+                                        <th  #if($isCheckBox) data-col="checkbox" #end >$field.name</th>
+                                    #end
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    #foreach($row in $section.values)
+                                    <tr class="row" data-primary-key="$row.primaryKey"
+                                        data-plural-name="$section.pluralName">
+                                        #foreach($value in $row.data)
+                                            #set($field = $section.fields.get($foreach.index))
+                                            #set($isCheckBox = $field.type == "BOOLEAN")
+                                            #set($isFile = $field.type == "FILE" and $value and $value != "N/A")
+                                            #if($isCheckBox)
+                                                <td data-col="checkbox">
+                                                    <label class="custom-checkbox">
+                                                        <input type="checkbox" class="checkbox-input" #if($item ==
+                                                            "true" || $item ==
+                                                            "1") checked #end disabled>
+                                                        <span class="checkmark">
                                 <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
                                     <path d="M1 3.83L3.83 6.66L9.5 1" stroke="white" stroke-width="1.5"
                                           stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </span>
-                                                </label>
-                                            </td>
-                                        #else
-                                            <td>$value</td>
+                                                    </label>
+                                                </td>
+
+                                            #elseif($isFile)
+                                                <td>
+                                                    <button class="file-link"
+                                                            onclick="generateUrl('$value', '$section.pluralName', '$field.fieldName')">
+                                                        Link
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                             xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M13 11L21.2 2.80005" stroke="#9A6C00"
+                                                                  stroke-width="1.5"
+                                                                  stroke-linecap="round" stroke-linejoin="round"/>
+                                                            <path d="M22 6.8V2H17.2" stroke="#9A6C00" stroke-width="1.5"
+                                                                  stroke-linecap="round" stroke-linejoin="round"/>
+                                                            <path d="M11 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V13"
+                                                                  stroke="#9A6C00" stroke-width="1.5"
+                                                                  stroke-linecap="round"
+                                                                  stroke-linejoin="round"/>
+                                                        </svg>
+                                                    </button>
+                                                </td>
+                                            #else
+                                                <td>$value</td>
+                                            #end
                                         #end
+                                    </tr>
                                     #end
-                                </tr>
-                                #end
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 #end
             #end
@@ -187,6 +211,7 @@
     <div class="spinner"></div>
 </div>
 <script src="/static/js/common.js"></script>
+<script src="/static/js/admin_dashboard.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         Chart.defaults.font.family = 'Istok Web';

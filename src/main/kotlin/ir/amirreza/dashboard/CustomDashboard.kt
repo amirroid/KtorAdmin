@@ -14,18 +14,18 @@ import kotlin.math.max
 class CustomDashboard : KtorAdminDashboard() {
     override fun KtorAdminDashboard.configure() {
         configureLayout {
-            addSection(4, TaskListChartSection())
             addSection(TaskTextSection(), "200px")
             addSection(Task2TextSection(), "200px")
             addSection(Task3TextSection(), "200px")
             addSection(Task4TextSection(), "200px")
-            addSection(Task5TextSection())
             addSection(2, TaskChartSection())
+            addSection(2, TaskListChartSection())
+            addSection(Task5TextSection())
             addSection(Task2ChartSection(2))
             addSection(Task2ChartSection(3))
-            addSection(Task3ChartSection())
             addSection(Task4ChartSection())
             addSection(Task5ChartSection())
+            addSection(Task3ChartSection())
             addSection(2, Task6ChartSection())
             media(maxWidth = "600px", template = listOf(1, 1))
         }

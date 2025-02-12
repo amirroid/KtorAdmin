@@ -519,14 +519,26 @@ input:disabled, select:disabled, input:read-only {
     }
 }
 
-table {
+.table-container {
     width: 100%;
+    overflow: auto;
+    border-radius: 20px;
     flex-grow: 1;
+    background-color: rgba(255, 255, 255, 0.6);
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Firefox */
+    scroll-behavior: smooth;
+}
+
+.table-container table {
+    min-width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
-    background-color: rgba(255, 255, 255, 0.6);
-    border-radius: 20px;
     overflow: hidden;
+}
+
+.table-container ::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
 }
 
 thead,
@@ -570,6 +582,10 @@ td {
 th {
     background-color: #9A6C00;
     color: white;
+}
+
+td {
+    cursor: pointer;
 }
 
 th[data-col="checkbox"], td[data-col="checkbox"] {
@@ -651,4 +667,21 @@ th:last-child::before {
 
 .custom-checkbox .checkmark-icon {
     display: none;
+}
+
+
+.file-link {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    color: #9A6C00;
+}
+
+.file-link:focus {
+    border: none;
+    outline: none;
 }

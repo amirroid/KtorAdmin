@@ -301,30 +301,38 @@ internal object JdbcQueriesRepository {
         val columns = section.fields?.mapNotNull { fieldName ->
             tableColumns.firstOrNull { it.columnName == fieldName }
         } ?: tableColumns
-
-        val rows = mutableListOf<List<String>>()
+        val primaryKeyColumn = table.getPrimaryKey()
+        val rows = mutableListOf<DataWithPrimaryKey>()
 
         table.usingDataSource { session ->
-            session.prepare(sqlQuery(section.createGetDataQuery(columns))).use { preparedStatement ->
-                section.limitCount?.let { preparedStatement.setInt(1, it) }
-                preparedStatement.executeQuery().use { resultSet ->
-                    while (resultSet.next()) {
-                        val data = columns.map { column ->
-                            resultSet.getObject(column.columnName)?.formatToDisplayInTable(column.type) ?: ""
+            session.prepare(sqlQuery(section.createGetDataQuery(columns, primaryKeyColumn)))
+                .use { preparedStatement ->
+                    section.limitCount?.let { preparedStatement.setInt(1, it) }
+                    preparedStatement.executeQuery().use { resultSet ->
+                        while (resultSet.next()) {
+                            val primaryKey = resultSet.getObject(primaryKeyColumn)?.toString() ?: "N/A"
+                            val data = columns.map { column ->
+                                resultSet.getObject(column.columnName)?.formatToDisplayInTable(column.type) ?: "N/A"
+                            }
+                            rows.add(
+                                DataWithPrimaryKey(
+                                    primaryKey = primaryKey, data = data
+                                )
+                            )
                         }
-                        rows.add(data)
                     }
                 }
-            }
         }
 
         return ListData(
             section = section,
             values = rows,
+            pluralName = table.getPluralName(),
             fields = columns.map {
                 FieldData(
-                    name = it.columnName,
-                    type = it.type.name
+                    name = it.verboseName,
+                    type = it.type.name,
+                    fieldName = it.columnName
                 )
             }
         )
@@ -845,15 +853,16 @@ internal object JdbcQueriesRepository {
 
     /**
      * Generates an SQL query string to fetch data for the given dashboard section.
-     * It includes selected columns and optional ordering and limiting clauses.
+     * It includes selected columns, the primary key, and optional ordering and limiting clauses.
      * @param columns The list of ColumnSet objects representing selected table columns.
+     * @param primaryKey The primary key column to ensure uniqueness in selection.
      * @return A formatted SQL query string.
      */
-    fun ListDashboardSection.createGetDataQuery(columns: List<ColumnSet>): String = buildString {
+    fun ListDashboardSection.createGetDataQuery(columns: List<ColumnSet>, primaryKey: String): String = buildString {
         val orderField = orderQuery?.substringBeforeLast(" ")?.trim()
         append("SELECT ")
 
-        val columnNames = columns.map { it.columnName }.plus(orderField).filterNotNull().distinct()
+        val columnNames = columns.map { it.columnName }.plus(orderField).plus(primaryKey).filterNotNull().distinct()
         append(columnNames.joinToString(", "))
 
         append(" FROM ").append(tableName)
@@ -861,6 +870,7 @@ internal object JdbcQueriesRepository {
         orderQuery?.let { append(" ORDER BY ").append(it) }
         limitCount?.let { append(" LIMIT ?") }
     }
+
 
     /**
      * Constructs an SQL query to retrieve data based on the specified configuration for a text dashboard.
