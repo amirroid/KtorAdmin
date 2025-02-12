@@ -66,21 +66,21 @@ open class AdminEventListener {
      * Handles the deletion of an object from a relational database table.
      *
      * @param tableName The name of the table where data is deleted.
-     * @param objectPrimaryKey The primary key of the deleted object.
+     * @param objectPrimaryKeys The primary keys of the deleted object.
      */
-    open suspend fun onDeleteJdbcObject(
+    open suspend fun onDeleteJdbcObjects(
         tableName: String,
-        objectPrimaryKey: String,
+        objectPrimaryKeys: List<String>,
     ) = Unit
 
     /**
      * Handles the deletion of an object from a MongoDB collection.
      *
      * @param collectionName The name of the collection where data is deleted.
-     * @param objectPrimaryKey The primary key of the deleted object.
+     * @param objectPrimaryKeys The primary keys of the deleted object.
      */
-    open suspend fun onDeleteMongoObject(
+    open suspend fun onDeleteMongoObjects(
         collectionName: String,
-        objectPrimaryKey: String,
+        objectPrimaryKeys: List<String>,
     ) = Unit
 }
