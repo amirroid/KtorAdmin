@@ -3,6 +3,7 @@ package error
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.application.hooks.*
+import io.ktor.server.request.uri
 import io.ktor.util.*
 
 /**
@@ -33,13 +34,13 @@ internal val KtorAdminErrorHandler = createApplicationPlugin("KtorAdminErrorHand
     /**
      * An attribute key to prevent multiple executions for the same request.
      */
-    val handledAttributeKey = AttributeKey<Boolean>("HandledStatus")
+    val handledAttributeKey = AttributeKey<Boolean>("KtorAdminHandledStatus")
 
     /**
      * Intercepts the response before it is sent to apply custom status handlers if defined.
      */
     on(ResponseBodyReadyForSend) { call, content ->
-        if (call.attributes.getOrNull(handledAttributeKey) == true) return@on
+        if (call.attributes.getOrNull(handledAttributeKey) == true || !call.request.uri.startsWith("/admin")) return@on
         val status = content.status ?: call.response.status() ?: return@on
         pluginConfig.statusHandlers[status]?.let { handler ->
             call.attributes.put(handledAttributeKey, true)

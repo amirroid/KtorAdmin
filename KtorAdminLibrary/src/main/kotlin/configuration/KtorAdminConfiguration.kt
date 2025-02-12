@@ -64,6 +64,9 @@ class KtorAdminConfiguration {
             MongoClientRepository.defaultDatabaseName = value
         }
 
+    /**
+     * Rate limit per minute for API requests.
+     */
     var rateLimitPerMinutes: Int
         get() = DynamicConfiguration.rateLimitPerMinutes
         set(value) {
@@ -84,12 +87,18 @@ class KtorAdminConfiguration {
             AWSS3StorageProvider.signatureDuration = value
         }
 
+    /**
+     * Determines if data can be downloaded as CSV.
+     */
     var canDownloadDataAsCsv: Boolean
         get() = DynamicConfiguration.canDownloadDataAsCsv
         set(value) {
             DynamicConfiguration.canDownloadDataAsCsv = value
         }
 
+    /**
+     * Determines if data can be downloaded as PDF.
+     */
     var canDownloadDataAsPdf: Boolean
         get() = DynamicConfiguration.canDownloadDataAsPdf
         set(value) {
