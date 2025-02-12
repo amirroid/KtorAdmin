@@ -3,6 +3,7 @@ package repository
 import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
+import dashboard.list.ListDashboardSection
 import dashboard.simple.TextDashboardSection
 import models.chart.ChartDashboardAggregationFunction
 import models.chart.getFieldFunctionBasedOnAggregationFunction
@@ -17,6 +18,8 @@ import models.ColumnSet
 import models.DataWithPrimaryKey
 import models.chart.ChartData
 import models.chart.ChartLabelsWithValues
+import models.chart.FieldData
+import models.chart.ListData
 import models.chart.TextDashboardAggregationFunction
 import models.chart.TextData
 import models.common.DisplayItem
@@ -285,6 +288,47 @@ internal object JdbcQueriesRepository {
 
     private fun ResultSet.getDoubleOrDefault(field: String) = getObject(field)?.toString()?.toDoubleOrNull() ?: 0.0
 
+
+    /**
+     * Retrieves a list of data for the given dashboard section from the specified table.
+     * It filters the columns based on the section's field settings and fetches the corresponding rows.
+     * @param table The AdminJdbcTable from which data is retrieved.
+     * @param section The ListDashboardSection containing query settings.
+     * @return A ListData object containing the fetched rows and field names.
+     */
+    fun getListSectionData(table: AdminJdbcTable, section: ListDashboardSection): ListData {
+        val tableColumns = table.getAllAllowToShowColumns()
+        val columns = section.fields?.mapNotNull { fieldName ->
+            tableColumns.firstOrNull { it.columnName == fieldName }
+        } ?: tableColumns
+
+        val rows = mutableListOf<List<String>>()
+
+        table.usingDataSource { session ->
+            session.prepare(sqlQuery(section.createGetDataQuery(columns))).use { preparedStatement ->
+                section.limitCount?.let { preparedStatement.setInt(1, it) }
+                preparedStatement.executeQuery().use { resultSet ->
+                    while (resultSet.next()) {
+                        val data = columns.map { column ->
+                            resultSet.getObject(column.columnName)?.formatToDisplayInTable(column.type) ?: ""
+                        }
+                        rows.add(data)
+                    }
+                }
+            }
+        }
+
+        return ListData(
+            section = section,
+            values = rows,
+            fields = columns.map {
+                FieldData(
+                    name = it.columnName,
+                    type = it.type.name
+                )
+            }
+        )
+    }
 
     /**
      * Prepares statement parameters for data retrieval operations.
@@ -796,6 +840,26 @@ internal object JdbcQueriesRepository {
         limitCount?.let {
             append(" LIMIT ?")
         }
+    }
+
+
+    /**
+     * Generates an SQL query string to fetch data for the given dashboard section.
+     * It includes selected columns and optional ordering and limiting clauses.
+     * @param columns The list of ColumnSet objects representing selected table columns.
+     * @return A formatted SQL query string.
+     */
+    fun ListDashboardSection.createGetDataQuery(columns: List<ColumnSet>): String = buildString {
+        val orderField = orderQuery?.substringBeforeLast(" ")?.trim()
+        append("SELECT ")
+
+        val columnNames = columns.map { it.columnName }.plus(orderField).filterNotNull().distinct()
+        append(columnNames.joinToString(", "))
+
+        append(" FROM ").append(tableName)
+
+        orderQuery?.let { append(" ORDER BY ").append(it) }
+        limitCount?.let { append(" LIMIT ?") }
     }
 
     /**

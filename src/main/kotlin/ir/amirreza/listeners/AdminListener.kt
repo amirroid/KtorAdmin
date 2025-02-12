@@ -45,6 +45,11 @@ class AdminListener(database: Database) : AdminEventListener() {
         super.onInsertMongoData(collectionName, objectPrimaryKey, events)
     }
 
+    override suspend fun onDeleteJdbcObjects(tableName: String, objectPrimaryKeys: List<String>) {
+        println("DELETED OBJECTS $objectPrimaryKeys $tableName")
+        super.onDeleteJdbcObjects(tableName, objectPrimaryKeys)
+    }
+
     private suspend fun handleSaveThumbnail(objectId: Int, events: List<ColumnEvent>) {
         events.find { it.columnSet.columnName == "file" }?.let {
             if (it.changed.not()) return

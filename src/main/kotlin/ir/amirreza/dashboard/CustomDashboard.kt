@@ -3,6 +3,7 @@ package ir.amirreza.dashboard
 import dashboard.chart.ChartDashboardSection
 import models.chart.ChartDashboardAggregationFunction
 import dashboard.KtorAdminDashboard
+import dashboard.list.ListDashboardSection
 import dashboard.simple.TextDashboardSection
 import ir.amirreza.Priority
 import models.chart.AdminChartStyle
@@ -13,6 +14,7 @@ import kotlin.math.max
 class CustomDashboard : KtorAdminDashboard() {
     override fun KtorAdminDashboard.configure() {
         configureLayout {
+            addSection(4, TaskListChartSection())
             addSection(TaskTextSection(), "200px")
             addSection(Task2TextSection(), "200px")
             addSection(Task3TextSection(), "200px")
@@ -29,6 +31,7 @@ class CustomDashboard : KtorAdminDashboard() {
         }
     }
 }
+
 
 class TaskChartSection : ChartDashboardSection() {
     override val aggregationFunction: ChartDashboardAggregationFunction
@@ -72,6 +75,15 @@ class TaskChartSection : ChartDashboardSection() {
 
     override val borderWidth: Float
         get() = 2f
+}
+
+class TaskListChartSection : ListDashboardSection() {
+    override val tableName: String
+        get() = "tasks"
+    override val sectionName: String
+        get() = "TASKS"
+    override val index: Int
+        get() = 25
 }
 
 class TaskTextSection : TextDashboardSection() {

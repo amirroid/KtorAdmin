@@ -4,6 +4,7 @@ import authentication.KtorAdminPrincipal
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
 import dashboard.grid.SectionInfo
+import dashboard.list.ListDashboardSection
 import dashboard.simple.TextDashboardSection
 import io.ktor.server.application.*
 import io.ktor.server.auth.principal
@@ -12,6 +13,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.velocity.*
 import models.PanelGroup
 import models.chart.ChartData
+import models.chart.ListData
 import models.chart.TextData
 import models.toTableGroups
 import modules.add.handleAddNewItem
@@ -60,9 +62,12 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
                     "panelGroups" to panelGroups,
                     "username" to principal<KtorAdminPrincipal>()!!.name,
                     "sectionsData" to sectionsData.associateBy {
-                        if (it is TextData) {
-                            it.section.index
-                        } else (it as ChartData).section.index
+                        when (it) {
+                            is TextData -> it.section.index
+                            is ChartData -> it.section.index
+                            is ListData -> it.section.index
+                            else -> 0
+                        }
                     },
                     "sectionsInfo" to sectionsInfo,
                     "gridTemplate" to gridTemplate,
@@ -90,6 +95,12 @@ internal fun getSectionsData(panels: List<AdminPanel>): List<Any> {
                     val table =
                         panels.filterIsInstance<AdminJdbcTable>().first { it.getTableName() == section.tableName }
                     JdbcQueriesRepository.getTextData(table, section)
+                }
+
+                is ListDashboardSection -> {
+                    val table =
+                        panels.filterIsInstance<AdminJdbcTable>().first { it.getTableName() == section.tableName }
+                    JdbcQueriesRepository.getListSectionData(table, section)
                 }
 
                 else -> null
