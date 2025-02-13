@@ -131,3 +131,7 @@
 .menu-item:hover .menu-icon:is(svg) path {
     stroke: var(--secondary-color);
 }
+
+.no-animation {
+    transition: none !important;
+}

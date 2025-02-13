@@ -58,9 +58,12 @@ function changeTheme() {
 }
 
 function initTheme() {
+    let allNodes = document.querySelectorAll("*")
+    allNodes.forEach(node => node.classList.add("no-animation"));
     if (localStorage.getItem(themeKey) === "dark") {
         document.querySelector(":root").classList.add("theme-dark")
     }
+    allNodes.forEach(node => node.classList.remove("no-animation"));
 }
 
 function getCSSVariable(variableName) {

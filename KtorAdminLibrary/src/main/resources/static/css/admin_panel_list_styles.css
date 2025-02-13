@@ -499,7 +499,7 @@ th:last-child::before {
 }
 
 #perform-action:hover {
-    background-color: var(--highlight-color);
+    opacity: .9;
 }
 
 #actions-input {
@@ -755,10 +755,6 @@ th:last-child::before {
     opacity: 0;
     visibility: hidden;
     width: 0;
-}
-
-.no-animation {
-    transition: none !important;
 }
 
 #logout {
