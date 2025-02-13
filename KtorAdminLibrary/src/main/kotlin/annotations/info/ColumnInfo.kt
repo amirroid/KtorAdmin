@@ -1,9 +1,5 @@
 package annotations.info
 
-
-/**
- * You can also specify an SQL query as the default value.
- */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
 annotation class ColumnInfo(
