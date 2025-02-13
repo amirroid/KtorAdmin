@@ -1,44 +1,28 @@
 # KtorAdmin
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
+![KtorAdmin Banner](/art/banner.jpg)
 
-Here are some useful links to get you started:
+**KtorAdmin** is a powerful and customizable admin panel generator for **Ktor** applications. Unlike traditional
+solutions that rely on **database schemas**, KtorAdmin dynamically **analyzes database structures** for popular ORM
+frameworks, including **Hibernate, Exposed, and MongoDB**.
 
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need
-  to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
+### Features:
 
-## Features
+- 🚀 **Automatic & Customizable Admin Panel** – Generate an admin panel effortlessly and fully customize it to fit your
+  needs.
+- 🔍 **Schema-Free Structure Detection** – Works without requiring predefined database schemas.
+- 🔗 **Supports Multiple ORMs** – Compatible with **Hibernate, Exposed, and MongoDB**.
+- 🔐 **Multiple Authentication Providers** – Supports different authentication mechanisms.
+- 📂 **Export Data** – Easily export data to various formats.
+- ⚡ **Scalable & Lightweight** – Designed for performance and production use.
+- 🎨 **Full Customization** – Control how data is displayed and how entities interact with each other.
+- 🛠 **Custom & Default Actions** – Define custom actions alongside built-in default actions.
+- 🔎 **Default Filters** – Predefined filters to enhance search and management.
+- 📝 **Rich Text Editor** – Built-in support for rich content editing.
+- ☁️ **Upload Providers** – Supports **Local, S3, and Custom Upload Providers**.
+- 📊 **Easy & Extensible** – Simple setup with flexible customization options.
 
-Here's a list of features included in this project:
+With **KtorAdmin**, you can quickly set up a powerful, fully customizable, and scalable admin panel for your **Ktor**
+backend.
 
-| Name                                                                   | Description                                                                        |
-| ------------------------------------------------------------------------|------------------------------------------------------------------------------------ |
-| [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
-| [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
-| [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
-| [Exposed](https://start.ktor.io/p/exposed)                             | Adds Exposed database to your application                                          |
-| [Thymeleaf](https://start.ktor.io/p/thymeleaf)                         | Serves HTML content, templated using Thymeleaf                                     |
-
-## Building & Running
-
-To build or run the project, use one of the following tasks:
-
-| Task                          | Description                                                          |
-| -------------------------------|---------------------------------------------------------------------- |
-| `./gradlew test`              | Run the tests                                                        |
-| `./gradlew build`             | Build everything                                                     |
-| `buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `publishImageToLocalRegistry` | Publish the docker image locally                                     |
-| `run`                         | Run the server                                                       |
-| `runDocker`                   | Run using the local docker image                                     |
-
-If the server starts successfully, you'll see the following output:
-
-```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
-```
-
+📖 **Documentation:** [Read the Docs](https://your-docs-url.com)

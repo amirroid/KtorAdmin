@@ -7,6 +7,5 @@ annotation class FieldInfo(
     val verboseName: String = "",
     val defaultValue: String = "",
     val nullable: Boolean = false,
-    val limits: String = "",
     val readOnly: Boolean = false
 )

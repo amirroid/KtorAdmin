@@ -36,7 +36,7 @@ import models.chart.ChartField
  *     override val tableName = "sales_data"
  *     override val labelField = "category"
  *     override val valuesFields = listOf("sales", "profit")
- *     override val chartStyle = AdminChartStyle.LINE
+ *     override val chartStyle = AdminChartStyle.PIE
  *     override val limitCount = 10
  *     override val orderQuery = "date DESC"
  *     override val tension = 0.6f
