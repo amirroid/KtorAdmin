@@ -57,10 +57,15 @@ function changeTheme() {
     sidebar.style.backgroundColor = getCSSVariable("--white-transparent-60")
 }
 
+function getDefaultTheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light"
+}
+
 function initTheme() {
     let allNodes = document.querySelectorAll("*")
     allNodes.forEach(node => node.classList.add("no-animation"));
-    if (localStorage.getItem(themeKey) === "dark") {
+    let theme = localStorage.getItem(themeKey) ?? getDefaultTheme();
+    if (theme === "dark") {
         document.querySelector(":root").classList.add("theme-dark")
     }
     allNodes.forEach(node => node.classList.remove("no-animation"));
