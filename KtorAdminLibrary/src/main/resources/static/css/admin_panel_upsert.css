@@ -492,6 +492,14 @@ input:disabled, select:disabled, input:read-only {
     transition: none !important;
 }
 
+.file-link path {
+    stroke: var(--secondary-color);
+}
+
+.custom-checkbox .checkmark-icon path {
+    stroke: var(--white);
+}
+
 .file-link {
     display: flex;
     flex-direction: row;

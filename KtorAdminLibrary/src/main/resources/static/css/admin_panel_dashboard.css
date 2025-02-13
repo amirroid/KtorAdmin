@@ -502,6 +502,14 @@ td {
     cursor: pointer;
 }
 
+.file-link path {
+    stroke: var(--secondary-color);
+}
+
+.custom-checkbox .checkmark-icon path {
+    stroke: var(--white);
+}
+
 th[data-col="checkbox"], td[data-col="checkbox"] {
     width: 100px;
     overflow: hidden;

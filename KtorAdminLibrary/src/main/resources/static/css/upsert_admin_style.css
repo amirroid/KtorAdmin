@@ -45,6 +45,8 @@ input:focus, select:focus, button:focus, input[type="file"]:focus {
     box-shadow: 0 0 5px rgba(98, 0, 234, 0.6);
 }
 
+
+
 input[type="checkbox"] {
     position: relative;
     width: 20px;

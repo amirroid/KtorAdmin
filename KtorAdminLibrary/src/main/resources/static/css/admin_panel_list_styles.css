@@ -402,6 +402,10 @@ th:last-child::before {
     justify-content: center;
 }
 
+.custom-checkbox .checkmark-icon path {
+    stroke: var(--white);
+}
+
 .pagination {
     margin-bottom: 16px;
     display: flex;
@@ -672,6 +676,10 @@ th:last-child::before {
     cursor: pointer;
     border: none;
     color: var(--secondary-color);
+}
+
+.file-link path {
+    stroke: var(--secondary-color);
 }
 
 .file-link:focus {
