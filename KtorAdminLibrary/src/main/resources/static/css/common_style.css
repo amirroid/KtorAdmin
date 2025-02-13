@@ -183,7 +183,7 @@
     transform: translateY(-10px);
     right: 0;
     width: 100%;
-    background-color: var(--white-transparent-60);
+    background-color: var(--white-transparent-80);
     transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(8px);
     z-index: 10;
