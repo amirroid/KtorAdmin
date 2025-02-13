@@ -137,6 +137,16 @@ h2 {
     gap: 12px;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    -webkit-mask-image: -webkit-linear-gradient(to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    black 4px,
+    black calc(100% - 4px),
+    rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    black 4px,
+    black calc(100% - 4px),
+    rgba(0, 0, 0, 0) 100%);
 }
 
 #bottom-box::-webkit-scrollbar {
