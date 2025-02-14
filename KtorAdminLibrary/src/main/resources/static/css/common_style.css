@@ -226,6 +226,20 @@
     outline: none;
 }
 
+body {
+    height: 100dvh;
+    background: linear-gradient(to top left, var(--background-gradient-start) 60%, var(--background-gradient-end) 100%);
+    font-family: 'Istok Web', sans-serif;
+    margin: 16px;
+}
+
+* {
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: var(--primary-color);
+}
 
 
 .dropdown-content button:last-child {

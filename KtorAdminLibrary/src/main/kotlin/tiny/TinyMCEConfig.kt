@@ -17,7 +17,6 @@ import models.UploadTarget
  * @property branding Shows or hides TinyMCE branding.
  * @property menubar Enables or disables the menu bar.
  * @property statusbar Enables or disables the status bar.
- * @property contentCss Custom CSS file for editor content.
  * @property fontFormats Defines available font families.
  * @property uploadTarget Defines the file upload target.
  */
@@ -31,8 +30,6 @@ data class TinyMCEConfig(
     val branding: Boolean,
     val menubar: Boolean,
     val statusbar: Boolean,
-    @SerialName("content_css")
-    val contentCss: String?,
     @SerialName("font_formats")
     val fontFormats: String?,
     @Transient
@@ -52,7 +49,6 @@ data class TinyMCEConfig(
             branding = false,
             menubar = true,
             statusbar = true,
-            contentCss = null,
             fontFormats = null,
             uploadTarget = null
         )
@@ -75,7 +71,6 @@ data class TinyMCEConfig(
             branding = false,
             menubar = true,
             statusbar = true,
-            contentCss = null,
             fontFormats = "Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times,serif; Courier New=courier new,courier,monospace;",
             uploadTarget = null
         )

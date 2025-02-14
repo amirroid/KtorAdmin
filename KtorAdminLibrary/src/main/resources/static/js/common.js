@@ -55,6 +55,10 @@ function changeTheme() {
         document.querySelector(":root").classList.add("theme-dark")
     }
     sidebar.style.backgroundColor = getCSSVariable("--white-transparent-60")
+    try {
+        handleRichInputs()
+    } catch (_) {
+    }
 }
 
 function getDefaultTheme() {

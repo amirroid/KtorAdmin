@@ -72,7 +72,9 @@ function openFileLink(link) {
 }
 
 function handleRichInputs() {
-    console.log(tinyConfig)
+    let theme = localStorage.getItem(themeKey) ?? getDefaultTheme();
+    let isDark = theme === "dark";
+    tinymce.remove()
     tinymce.init({
         selector: '.rich-editor-area',
         ...tinyConfig,
@@ -82,7 +84,9 @@ function handleRichInputs() {
                 handleFileUpload(blobInfo, resolve, reject).then(_ => {
                 });
             });
-        }
+        },
+        skin: isDark ? "oxide-dark" : "oxide",
+        content_css: isDark ? "dark" : "default",
     });
 }
 
