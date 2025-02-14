@@ -238,6 +238,19 @@
                             </div>
                         #end
                     </div>
+                    #if($column.hasConfirmation and $column.type.name=="STRING")
+                        <div class="sidebar-input-wrapper">
+                            <label class="item-label" style="padding-top: 12px">Confirm $column.verboseName</label>
+                            #if($column.hasRichEditor)
+                                <textarea name="${column.columnName}.confirmation" class="rich-editor-area"
+                                          #if($column.readOnly)readonly#end>$!defaultValue</textarea>
+                            #else
+                                <input type="text" class="form-input"
+                                       name="${column.columnName}.confirmation"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+                        </div>
+                    #end
                 #end
                 <input type="hidden" value="$csrfToken" name="_csrf">
                 <input type="hidden" value="$requestId" name="requestId">

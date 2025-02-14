@@ -5,6 +5,9 @@ package annotations.confirmation
  * This is typically used for fields such as passwords, email addresses, or phone numbers.
  * The actual validation is handled by the library and does not require a separate confirmation field to be stored.
  *
+ * ⚠ **Only text-based fields are allowed.**
+ * This annotation should not be used for non-text fields like numbers, dates, or booleans.
+ *
  * **Usage Example:**
  * ```kotlin
  * @Confirmation
