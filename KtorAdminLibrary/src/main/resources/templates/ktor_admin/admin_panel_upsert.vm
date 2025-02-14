@@ -93,9 +93,10 @@
                                     <textarea name="$column.columnName" class="rich-editor-area"
                                               #if($column.readOnly)readonly#end>$!defaultValue</textarea>
                                 #else
-                                    <input type="text" class="form-input" name="$column.columnName"
-                                           value="$!defaultValue"
-                                           #if($column.readOnly)readonly#end/>
+                                        <input type=#if($column.hasConfirmation) "password" #else "text" #end
+                                    class="form-input" name="$column.columnName"
+                                    value="$!defaultValue"
+                                    #if($column.readOnly)readonly#end/>
                                 #end
                             #end
 
@@ -241,14 +242,9 @@
                     #if($column.hasConfirmation and $column.type.name=="STRING")
                         <div class="sidebar-input-wrapper">
                             <label class="item-label" style="padding-top: 12px">Confirm $column.verboseName</label>
-                            #if($column.hasRichEditor)
-                                <textarea name="${column.columnName}.confirmation" class="rich-editor-area"
-                                          #if($column.readOnly)readonly#end>$!defaultValue</textarea>
-                            #else
-                                <input type="text" class="form-input"
-                                       name="${column.columnName}.confirmation"
-                                       #if($column.readOnly)readonly#end/>
-                            #end
+                            <input type="password" class="form-input"
+                                   name="${column.columnName}.confirmation"
+                                   #if($column.readOnly)readonly#end/>
                         </div>
                     #end
                 #end
