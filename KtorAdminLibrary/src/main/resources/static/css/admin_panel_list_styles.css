@@ -124,7 +124,7 @@ h2 {
     width: 100%;
 }
 
-#actions-row {
+.actions-row {
     transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateX(0);
     display: flex;
@@ -132,7 +132,7 @@ h2 {
     align-items: center;
 }
 
-#actions-row.hide {
+.actions-row.hide {
     transform: translateX(60px);
     opacity: 0;
     visibility: hidden;
@@ -519,6 +519,7 @@ th:last-child::before {
 
 #actions-input {
     display: flex;
+    width: 100%;
     align-items: center;
     flex-direction: row;
     background-color: var(--background-gradient-start);
@@ -591,13 +592,49 @@ th:last-child::before {
     width: 100%;
 }
 
+.mobile-action {
+    display: none;
+    margin-top: 12px;
+    width: 100%;
+    max-height: 48px;
+    transform: scaleY(1);
+}
+
+.mobile-action.hide {
+    transform: scaleY(0);
+    max-height: 0;
+}
+
 @media (max-width: 500px) {
     .search-container:not(.mobile-search) {
         visibility: hidden;
     }
 
+    .actions-row:not(.mobile-action) {
+        display: none;
+    }
+
     .mobile-search {
         display: flex;
+    }
+
+    .mobile-action {
+        display: flex;
+        overflow: hidden;
+        flex-direction: row;
+    }
+
+    #actions-container {
+        left: 0;
+        flex-grow: 1;
+    }
+
+    #filter-button {
+        left: 0;
+    }
+
+    #perform-action {
+        left: 0;
     }
 }
 

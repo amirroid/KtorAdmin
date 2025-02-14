@@ -249,16 +249,20 @@ function generateUrl(fileName, pluralName, fieldName) {
 
 function toggleFilter() {
     const topBox = document.getElementById("top-box");
-    let row = document.getElementById("actions-row")
+    let rows = document.getElementsByClassName("actions-row")
     let filters = document.getElementById("filters-container")
     if (filters.classList.contains("show")) {
         topBox.style.height = "55px"
-        row.classList.remove("hide")
+        for (let row of rows) {
+            row.classList.remove("hide")
+        }
         topBox.classList.remove("show-filters")
         filters.classList.remove("show")
     } else {
         let filtersSize = filters.getBoundingClientRect();
-        row.classList.add("hide")
+        for (let row of rows) {
+            row.classList.add("hide")
+        }
         filters.classList.add("show")
         topBox.classList.add("show-filters")
         topBox.style.height = `${filtersSize.height + 24 + 55}px`;
@@ -269,12 +273,14 @@ function toggleFilter() {
 function closeFiltersOrNavigateToAdd() {
     let topBox = document.getElementById("top-box")
     let filters = document.getElementById("filters-container")
-    let row = document.getElementById("actions-row")
+    let rows = document.getElementsByClassName("actions-row")
     if (filters.classList.contains("show")) {
         filters.classList.remove("show")
         topBox.classList.remove("show-filters")
         topBox.style.height = "55px"
-        row.classList.remove("hide")
+        for (let row of rows) {
+            row.classList.remove("hide")
+        }
     } else {
         window.location.href = cleanUrl().toString() + "/add"
     }

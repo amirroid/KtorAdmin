@@ -27,7 +27,7 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(Task5ChartSection())
             addSection(Task3ChartSection())
             addSection(2, Task6ChartSection())
-            media(maxWidth = "600px", template = listOf(1, 1))
+            media(maxWidth = "600px", template = listOf(1))
         }
     }
 }
