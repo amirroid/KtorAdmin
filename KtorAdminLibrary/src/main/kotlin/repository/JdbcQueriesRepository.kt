@@ -10,7 +10,9 @@ import models.chart.getFieldFunctionBasedOnAggregationFunction
 import models.chart.getFieldNameBasedOnAggregationFunction
 import formatters.extractTextInCurlyBraces
 import formatters.formatToDisplayInTable
+import formatters.map
 import formatters.populateTemplate
+import formatters.restore
 import getters.putColumn
 import getters.toTypedValue
 import hikra.KtorAdminHikariCP
@@ -93,6 +95,7 @@ internal object JdbcQueriesRepository {
                         val data = table.getAllAllowToShowColumns().map { column ->
                             rs.getObject("${table.getTableName()}_${column.columnName}")
                                 .formatToDisplayInTable(column.type)
+                                .restore(column)
                         }
                         result.add(DataWithPrimaryKey(primaryKey, data))
                     }
@@ -143,7 +146,7 @@ internal object JdbcQueriesRepository {
                 sqlQuery(table.createGetAllDataAsCsvQuery())
             ) { row ->
                 table.getAllColumns().joinToString(", ") {
-                    row.anyOrNull(it.columnName)?.toString() ?: "N/A"
+                    row.anyOrNull(it.columnName)?.restore(it)?.toString() ?: "N/A"
                 }
             }.joinToString("\n")
         }
@@ -169,6 +172,7 @@ internal object JdbcQueriesRepository {
     fun getChartData(table: AdminJdbcTable, section: ChartDashboardSection): ChartData {
         val groupedData = mutableMapOf<String, MutableList<MutableList<Double>>>() // Store lists separately for "ALL"
         val aggregationFunction = section.aggregationFunction
+        val columns = table.getAllColumns()
         val labelsSet =
             if (aggregationFunction == ChartDashboardAggregationFunction.ALL) mutableListOf() else mutableSetOf<String>()
 
@@ -182,12 +186,13 @@ internal object JdbcQueriesRepository {
                         labelsSet.add(label)
 
                         val values = section.valuesFields.map { field ->
+                            val column = columns.first { it.columnName == field.fieldName }
                             rs.getDoubleOrDefault(
                                 getFieldNameBasedOnAggregationFunction(
                                     aggregationFunction,
                                     field.fieldName
                                 )
-                            )
+                            ).restore(column)!!
                         }
 
                         // If ALL, store values separately without aggregation
@@ -239,6 +244,8 @@ internal object JdbcQueriesRepository {
     }
 
     fun getTextData(table: AdminJdbcTable, section: TextDashboardSection): TextData {
+        val columns = table.getAllColumns()
+        val column = columns.first { it.columnName == section.fieldName }
         return table.usingDataSource { session ->
             session.prepare(sqlQuery(section.createGetAllData())).use { prepareStatement ->
                 prepareStatement.executeQuery().use { rs ->
@@ -247,7 +254,8 @@ internal object JdbcQueriesRepository {
                         TextDashboardAggregationFunction.LAST_ITEM -> {
                             if (rs.next()) {
                                 val itemObject = rs.getObject(section.fieldName)
-                                itemObject?.toString()?.toDoubleOrNull()?.formatAsIntegerIfPossible()?.toString()
+                                itemObject?.toString()?.toDoubleOrNull()?.formatAsIntegerIfPossible().restore(column)
+                                    ?.toString()
                                     ?: itemObject.toString()
                             } else ""
                         }
@@ -258,12 +266,12 @@ internal object JdbcQueriesRepository {
                             if (rs.next()) {
                                 nextItem = rs.getDouble(
                                     section.fieldName
-                                )
+                                ).restore(column)!!
                             }
                             if (rs.next()) {
                                 previewsItem = rs.getDouble(
                                     section.fieldName
-                                )
+                                ).restore(column)!!
                             }
                             runCatching { ((nextItem - previewsItem).div(previewsItem) * 100).formatAsIntegerIfPossible() }.getOrNull()
                                 .toString() + "%"
@@ -271,7 +279,8 @@ internal object JdbcQueriesRepository {
 
                         else -> {
                             if (rs.next()) {
-                                rs.getDouble("aggregationFunctionValue").formatAsIntegerIfPossible().toString()
+                                rs.getDouble("aggregationFunctionValue").formatAsIntegerIfPossible().restore(column)!!
+                                    .toString()
                             } else ""
                         }
                     }
@@ -295,14 +304,26 @@ internal object JdbcQueriesRepository {
      * @param table The table to check in.
      * @param column The column to check for duplicate values.
      * @param value The value to check for existence.
+     * @param primaryKey The primary key value to exclude from the check (optional).
      * @return `true` if the value exists, otherwise `false`.
      */
-    fun checkExistSameData(table: AdminJdbcTable, column: ColumnSet, value: Any?): Boolean {
+    fun checkExistSameData(
+        table: AdminJdbcTable,
+        column: ColumnSet,
+        value: Any?,
+        primaryKey: String? = null
+    ): Boolean {
         return table.usingDataSource { session ->
             session.prepare(
-                sqlQuery(table.createExistsAColumnQuery(column.columnName))
+                sqlQuery(table.createExistsColumnQuery(column.columnName, primaryKey))
             ).use { preparedStatement ->
                 preparedStatement.putColumn(column.type, value, 1)
+
+                primaryKey?.let {
+                    val type = table.getPrimaryKeyColumn().type
+                    preparedStatement.putColumn(type, it.toTypedValue(type), 2)
+                }
+
                 preparedStatement.executeQuery().use { rs ->
                     rs.next() && rs.getBoolean(1)
                 }
@@ -314,14 +335,23 @@ internal object JdbcQueriesRepository {
      * Generates an SQL query to check if a specific value exists in a column.
      *
      * @param columnName The name of the column to check.
+     * @param primaryKey The primary key column name (optional, used to exclude the current record from duplication check).
      * @return A SQL query string formatted for checking existence.
      */
-    private fun AdminJdbcTable.createExistsAColumnQuery(columnName: String) = buildString {
+    private fun AdminJdbcTable.createExistsColumnQuery(columnName: String, primaryKey: String?) = buildString {
         append("SELECT EXISTS (SELECT 1 FROM ")
         append(getTableName())
         append(" WHERE ")
         append(columnName)
-        append(" = ?)")
+        append(" = ?")
+
+        if (primaryKey != null) {
+            append(" AND ")
+            append(getPrimaryKey())
+            append(" != ?")
+        }
+
+        append(")")
     }
 
 
@@ -348,7 +378,8 @@ internal object JdbcQueriesRepository {
                         while (resultSet.next()) {
                             val primaryKey = resultSet.getObject(primaryKeyColumn)?.toString() ?: "N/A"
                             val data = columns.map { column ->
-                                resultSet.getObject(column.columnName)?.formatToDisplayInTable(column.type) ?: "N/A"
+                                resultSet.getObject(column.columnName)?.formatToDisplayInTable(column.type)
+                                    .restore(column) ?: "N/A"
                             }
                             rows.add(
                                 DataWithPrimaryKey(
@@ -486,7 +517,7 @@ internal object JdbcQueriesRepository {
                                     referenceKey
                                 } else raw.anyOrNull(
                                     item.split(".").joinToString(separator = "_")
-                                )?.toString()
+                                ).toString()
                             })
                     } ?: "${table.getTableName().replaceFirstChar { it.uppercaseChar() }} Object ($referenceKey)"
                 )
@@ -500,7 +531,11 @@ internal object JdbcQueriesRepository {
     /**
      * Checks if data has been changed compared to initial value.
      */
-    private fun checkIsChangedData(columnSet: ColumnSet, initialValue: String?, currentValue: String?): Boolean =
+    private fun checkIsChangedData(
+        columnSet: ColumnSet,
+        initialValue: String?,
+        currentValue: String?,
+    ): Boolean =
         when (columnSet.type) {
             ColumnType.BOOLEAN -> when (currentValue) {
                 "on" -> initialValue?.lowercase() !in listOf(
@@ -536,7 +571,7 @@ internal object JdbcQueriesRepository {
                 prepareStatement.executeQuery().use { rs ->
                     if (rs.next()) {
                         return@usingDataSource table.getAllAllowToShowColumnsInUpsert().map { column ->
-                            rs.getObject(column.columnName)?.toString()
+                            rs.getObject(column.columnName)?.restore(column)?.toString()
                         }
                     }
                     return@usingDataSource null
@@ -561,7 +596,7 @@ internal object JdbcQueriesRepository {
 
                     // Insert main columns
                     columns.forEachIndexed { index, columnSet ->
-                        preparedStatement.putColumn(columnSet.type, parameters[index], index + 1)
+                        preparedStatement.putColumn(columnSet.type, parameters[index].map(columnSet), index + 1)
                     }
 
                     // Insert auto-now date columns
@@ -615,7 +650,7 @@ internal object JdbcQueriesRepository {
                         ).use { prepareStatement ->
                             changedData.forEachIndexed { index, item ->
                                 prepareStatement.putColumn(
-                                    item.first.type, item.second?.second, index + 1
+                                    item.first.type, item.second?.second.map(item.first), index + 1
                                 )
                             }
                             val autoNowDates = table.getAllAutoNowDateUpdateColumns()

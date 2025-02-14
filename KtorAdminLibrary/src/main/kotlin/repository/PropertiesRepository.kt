@@ -11,6 +11,7 @@ import annotations.limit.Limits
 import annotations.references.References
 import annotations.rich_editor.RichEditor
 import annotations.status.StatusStyle
+import annotations.value_mapper.ValueMapper
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ksp.toClassName
 import models.*
@@ -88,7 +89,7 @@ object PropertiesRepository {
             type = columnType,
             verboseName = verboseName,
             nullable = infoAnnotation?.findArgument<Boolean>("nullable") == true,
-            blank = infoAnnotation?.findArgument<Boolean>("blank") == true,
+            blank = infoAnnotation?.findArgument<Boolean>("blank") != false,
             unique = infoAnnotation?.findArgument<Boolean>("unique") == true,
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
             uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
@@ -104,7 +105,8 @@ object PropertiesRepository {
             autoNowDate = autoNowDate,
             statusColors = statusColors,
             hasRichEditor = hasRichEditor,
-            hasConfirmation = hasConfirmationAnnotation(property.annotations)
+            hasConfirmation = hasConfirmationAnnotation(property.annotations),
+            valueMapper = getValueMapperAnnotation(property.annotations),
         )
     }
 
@@ -196,6 +198,14 @@ object PropertiesRepository {
                     updateOnChange = it.arguments.getArgument<Boolean>("updateOnChange") == true
                 )
             }
+
+    /**
+     * Extracts ValueMapper annotation configuration if present.
+     */
+    private fun getValueMapperAnnotation(annotations: Sequence<KSAnnotation>) =
+        annotations.firstOrNull { it.shortName.asString() == ValueMapper::class.simpleName }?.arguments?.getArgument<String>(
+            "key"
+        )
 
     /**
      * Checks if a property should be ignored in panels.

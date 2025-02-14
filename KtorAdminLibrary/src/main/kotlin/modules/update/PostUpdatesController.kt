@@ -87,7 +87,7 @@ private suspend fun RoutingContext.updateData(
 ) {
     val columns = table.getAllAllowToShowColumnsInUpsert()
     val initialData = JdbcQueriesRepository.getData(table, primaryKey)
-    val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData)
+    val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData, primaryKey)
     parametersDataResponse.onSuccess { parametersData ->
         kotlin.runCatching {
             val changedDataAndId =

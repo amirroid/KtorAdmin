@@ -31,7 +31,8 @@ fun checkCsrfToken(csrfToken: String?): Boolean {
 
 internal suspend fun MultiPartData.toTableValues(
     table: AdminJdbcTable,
-    initialData: List<String?>? = null
+    initialData: List<String?>? = null,
+    primaryKey: String? = null
 ): Response<List<Pair<String, Any?>?>> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val otherFields = mutableMapOf<String, String>()
@@ -76,7 +77,8 @@ internal suspend fun MultiPartData.toTableValues(
                                 Validators.validateColumnParameter(
                                     table,
                                     column,
-                                    fileName ?: initialData?.get(columns.indexOf(column))
+                                    fileName ?: initialData?.get(columns.indexOf(column)),
+                                    primaryKey
                                 )?.let {
                                     listOf(it)
                                 } ?: emptyList()
@@ -92,7 +94,8 @@ internal suspend fun MultiPartData.toTableValues(
                                 Validators.validateColumnParameter(
                                     table,
                                     column,
-                                    fileName ?: initialData?.get(columns.indexOf(column))
+                                    fileName ?: initialData?.get(columns.indexOf(column)),
+                                    primaryKey
                                 )?.let {
                                     listOf(it)
                                 } ?: emptyList()
@@ -110,7 +113,7 @@ internal suspend fun MultiPartData.toTableValues(
 
                 is PartData.FormItem -> {
                     val itemErrors = Validators.validateColumnParameter(
-                        table, column, part.value
+                        table, column, part.value, primaryKey
                     )?.let { ErrorResponse(column.columnName, listOf(it)) }
                     errors += itemErrors
                     items[name] = part.value.let { it to it.toTypedValue(column.type) }

@@ -2,7 +2,10 @@ package configuration
 
 import action.CustomAdminAction
 import dashboard.KtorAdminDashboard
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import listener.AdminEventListener
+import mapper.KtorAdminValueMapper
 import models.forms.LoginFiled
 import tiny.TinyMCEConfig
 import java.time.ZoneId
@@ -53,6 +56,16 @@ internal object DynamicConfiguration {
 
     /** Flag to enable/disable PDF data download */
     var canDownloadDataAsPdf = false
+
+    val valueMappers = mutableListOf<KtorAdminValueMapper>()
+
+    fun registerValueMapper(valueMapper: KtorAdminValueMapper) {
+        if (valueMappers.any { it.key == valueMapper.key }) {
+            throw IllegalStateException("A ValueMapper with the key '${valueMapper.key}' is already registered.")
+        }
+        valueMappers += valueMapper
+    }
+
 
     /**
      * Registers an event listener for admin panel events.

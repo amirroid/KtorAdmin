@@ -7,6 +7,7 @@ import csrf.CsrfManager
 import dashboard.KtorAdminDashboard
 import hikra.KtorAdminHikariCP
 import listener.AdminEventListener
+import mapper.KtorAdminValueMapper
 import models.forms.LoginFiled
 import mongo.MongoCredential
 import mongo.MongoServerAddress
@@ -228,6 +229,8 @@ class KtorAdminConfiguration {
     ) {
         AWSS3StorageProvider.register(secretKey, accessKey, region, endpoint)
     }
+
+    fun registerValueMapper(valueMapper: KtorAdminValueMapper) = DynamicConfiguration.registerValueMapper(valueMapper)
 
     /**
      * Registers an event listener for admin events.

@@ -16,6 +16,7 @@ import annotations.rich_editor.RichEditor
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
 import annotations.uploads.LocalUpload
+import annotations.value_mapper.ValueMapper
 import models.actions.Action
 import org.jetbrains.exposed.sql.Table
 
@@ -41,17 +42,10 @@ object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
 
-    @Limits(
-        maxLength = 20,
-    )
-    @Confirmation
     val name = varchar("name", length = 150)
 
     @Limits(
         maxLength = 500
-    )
-    @ColumnInfo(
-        blank = false
     )
     @RichEditor
     val description = text("description")

@@ -22,7 +22,8 @@ internal object Validators {
     internal fun validateColumnParameter(
         table: AdminJdbcTable,
         columnSet: ColumnSet,
-        value: String?
+        value: String?,
+        primaryKey: String?
     ): String? {
         // If the column is nullable and the value is null, no validation is needed
         if (columnSet.nullable && value == null) {
@@ -37,7 +38,7 @@ internal object Validators {
         if (columnSet.unique) {
             // Convert the value to the appropriate database type and check for duplicates
             val typedValue = value?.toTypedValue(columnSet.type)
-            if (JdbcQueriesRepository.checkExistSameData(table, columnSet, typedValue)) {
+            if (JdbcQueriesRepository.checkExistSameData(table, columnSet, typedValue, primaryKey)) {
                 return "The field must be unique"
             }
         }

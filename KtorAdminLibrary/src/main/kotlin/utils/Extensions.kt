@@ -42,6 +42,7 @@ internal fun ColumnSet.toSuitableStringForFile() = """
     |    unique = ${unique},
     |    blank = ${blank},
     |    hasConfirmation = ${hasConfirmation},
+    |    valueMapper = ${valueMapper?.let { "\"${it}\"" }},
     |)
 """.trimMargin("|")
 

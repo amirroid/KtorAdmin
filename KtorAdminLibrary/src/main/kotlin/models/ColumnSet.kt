@@ -58,6 +58,7 @@ data class ColumnSet(
     val statusColors: List<String>? = null,
     val hasRichEditor: Boolean = false,
     val hasConfirmation: Boolean = false,
+    val valueMapper: String? = null
 )
 
 
