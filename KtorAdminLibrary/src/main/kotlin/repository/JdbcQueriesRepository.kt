@@ -189,10 +189,12 @@ internal object JdbcQueriesRepository {
                         val values = section.valuesFields.map { field ->
                             val column = columns.first { it.columnName == field.fieldName }
                             if (aggregationFunction == ChartDashboardAggregationFunction.COUNT) {
-                                getFieldNameBasedOnAggregationFunction(
-                                    aggregationFunction,
-                                    field.fieldName
-                                ).toString().toDoubleOrNull() ?: 0.0
+                                rs.getInt(
+                                    getFieldNameBasedOnAggregationFunction(
+                                        aggregationFunction,
+                                        field.fieldName
+                                    )
+                                ).toDouble()
                             } else {
                                 rs.getTypedValue(
                                     column.type,
