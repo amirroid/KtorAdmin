@@ -86,7 +86,9 @@ object PropertiesRepository {
             columnName = columnName,
             type = columnType,
             verboseName = verboseName,
-            nullable = infoAnnotation?.findArgument<Boolean>("nullable") ?: false,
+            nullable = infoAnnotation?.findArgument<Boolean>("nullable") == true,
+            blank = infoAnnotation?.findArgument<Boolean>("blank") == true,
+            unique = infoAnnotation?.findArgument<Boolean>("unique") == true,
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
             uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
             allowedMimeTypes = if (hasUploadAnnotation)

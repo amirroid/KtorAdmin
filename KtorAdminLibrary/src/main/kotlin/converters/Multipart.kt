@@ -72,6 +72,7 @@ internal suspend fun MultiPartData.toTableValues(
                                 ),
                             ).plus(
                                 Validators.validateColumnParameter(
+                                    table,
                                     column,
                                     fileName ?: initialData?.get(columns.indexOf(column))
                                 )?.let {
@@ -87,6 +88,7 @@ internal suspend fun MultiPartData.toTableValues(
                         ColumnType.BINARY -> {
                             val anotherErrors =
                                 Validators.validateColumnParameter(
+                                    table,
                                     column,
                                     fileName ?: initialData?.get(columns.indexOf(column))
                                 )?.let {
@@ -105,8 +107,9 @@ internal suspend fun MultiPartData.toTableValues(
                 }
 
                 is PartData.FormItem -> {
-                    val itemErrors = Validators.validateColumnParameter(column, part.value)
-                        ?.let { ErrorResponse(column.columnName, listOf(it)) }
+                    val itemErrors = Validators.validateColumnParameter(
+                        table, column, part.value
+                    )?.let { ErrorResponse(column.columnName, listOf(it)) }
                     errors += itemErrors
                     items[name] = part.value.let { it to it.toTypedValue(column.type) }
                 }

@@ -48,6 +48,9 @@ object Tasks : Table("tasks") {
     @Limits(
         maxLength = 500
     )
+    @ColumnInfo(
+        blank = false
+    )
     @RichEditor
     val description = text("description")
 
@@ -69,6 +72,9 @@ object Tasks : Table("tasks") {
     )
     val slug = varchar("slug", 500)
 
+    @ColumnInfo(
+        unique = true
+    )
     val number = integer("number").default(1)
 
     @LocalUpload

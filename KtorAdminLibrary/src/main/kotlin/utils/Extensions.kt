@@ -39,6 +39,8 @@ internal fun ColumnSet.toSuitableStringForFile() = """
     |    computedColumn = ${computedColumn?.let { "\"${it}\"" }},
     |    autoNowDate = ${autoNowDate?.toFormattedString()},
     |    hasRichEditor = ${hasRichEditor},
+    |    unique = ${unique},
+    |    blank = ${blank},
     |)
 """.trimMargin("|")
 

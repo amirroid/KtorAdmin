@@ -290,6 +290,42 @@ internal object JdbcQueriesRepository {
 
 
     /**
+     * Checks if a given value already exists in the specified column of the table.
+     *
+     * @param table The table to check in.
+     * @param column The column to check for duplicate values.
+     * @param value The value to check for existence.
+     * @return `true` if the value exists, otherwise `false`.
+     */
+    fun checkExistSameData(table: AdminJdbcTable, column: ColumnSet, value: Any?): Boolean {
+        return table.usingDataSource { session ->
+            session.prepare(
+                sqlQuery(table.createExistsAColumnQuery(column.columnName))
+            ).use { preparedStatement ->
+                preparedStatement.putColumn(column.type, value, 1)
+                preparedStatement.executeQuery().use { rs ->
+                    rs.next() && rs.getBoolean(1)
+                }
+            }
+        }
+    }
+
+    /**
+     * Generates an SQL query to check if a specific value exists in a column.
+     *
+     * @param columnName The name of the column to check.
+     * @return A SQL query string formatted for checking existence.
+     */
+    private fun AdminJdbcTable.createExistsAColumnQuery(columnName: String) = buildString {
+        append("SELECT EXISTS (SELECT 1 FROM ")
+        append(getTableName())
+        append(" WHERE ")
+        append(columnName)
+        append(" = ?)")
+    }
+
+
+    /**
      * Retrieves a list of data for the given dashboard section from the specified table.
      * It filters the columns based on the section's field settings and fetches the corresponding rows.
      * @param table The AdminJdbcTable from which data is retrieved.

@@ -31,6 +31,8 @@ import java.time.format.DateTimeFormatter
  * @property autoNowDate Configures automatic date assignment:
  * - `updateOnChange = true`: Updates the column to the current date when the entity changes.
  * - `updateOnChange = false`: Assigns the current date only when the entity is created.
+ * @property unique Specifies whether the column should have unique values across the table.
+ * @property blank Determines if the column can be left empty.
  * @property statusColors A list of colors used for styling status-based values in the column,
  *                        typically applied when using enumerations.
  * @property hasRichEditor Determines whether this column should be displayed as a rich text editor in the admin panel.
@@ -51,6 +53,8 @@ data class ColumnSet(
     val readOnly: Boolean = false,
     val computedColumn: String? = null,
     val autoNowDate: AutoNowDate? = null,
+    val unique: Boolean = false,
+    val blank: Boolean = true,
     val statusColors: List<String>? = null,
     val hasRichEditor: Boolean = false,
 )

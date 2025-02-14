@@ -1,11 +1,14 @@
 package validators
 
 import configuration.DynamicConfiguration
+import getters.toTypedValue
 import models.ColumnSet
 import models.Limit
 import models.field.FieldSet
 import models.types.ColumnType
 import models.types.FieldType
+import panels.AdminJdbcTable
+import repository.JdbcQueriesRepository
 import utils.Constants
 import java.net.URLConnection
 import java.time.Instant
@@ -16,7 +19,11 @@ import java.time.format.DateTimeFormatter
 import kotlin.time.Duration
 
 internal object Validators {
-    internal fun validateColumnParameter(columnSet: ColumnSet, value: String?): String? {
+    internal fun validateColumnParameter(
+        table: AdminJdbcTable,
+        columnSet: ColumnSet,
+        value: String?
+    ): String? {
         // If the column is nullable and the value is null, no validation is needed
         if (columnSet.nullable && value == null) {
             return null
@@ -24,6 +31,20 @@ internal object Validators {
         // If the column is not nullable and the value is null, return an error
         if (!columnSet.nullable && value == null) {
             return "The field cannot be null"
+        }
+
+        // Check if the column is marked as unique
+        if (columnSet.unique) {
+            // Convert the value to the appropriate database type and check for duplicates
+            val typedValue = value?.toTypedValue(columnSet.type)
+            if (JdbcQueriesRepository.checkExistSameData(table, columnSet, typedValue)) {
+                return "The field must be unique"
+            }
+        }
+
+        // Ensure the field is not blank if 'blank' is set to false
+        if (!columnSet.blank && value?.isBlank() == true) {
+            return "The field cannot be empty"
         }
 
         if (columnSet.reference != null) {
@@ -63,6 +84,11 @@ internal object Validators {
         if (!fieldSet.nullable && value == null) {
             return "The field cannot be null"
         }
+
+//        // Ensure the field is not blank if 'blank' is set to false
+//        if (!fieldSet.blank && value?.isBlank() == true) {
+//            return "The field cannot be empty"
+//        }
 
         // Perform validation based on the column type
         return when (fieldSet.type) {
