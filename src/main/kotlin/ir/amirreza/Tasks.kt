@@ -32,7 +32,7 @@ enum class Priority {
     filters = ["priority", "user_id", "checked"]
 )
 @DisplayFormat(
-    format = "{id} - User: {user_id.username}",
+    format = "{id} - User: {user_id.username} \nNumber: {number}"
 )
 @DefaultOrder(
     "name",

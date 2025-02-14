@@ -534,9 +534,16 @@ internal object JdbcQueriesRepository {
                             displayFormatValues.associateWith { item ->
                                 if (item == referenceColumn) {
                                     referenceKey
-                                } else raw.anyOrNull(
-                                    item.split(".").joinToString(separator = "_")
-                                ).toString()
+                                } else {
+                                    val splitItem = item.split(".")
+                                    val columnSet =
+                                        table.getAllColumns().firstOrNull { it.columnName == splitItem.last() }
+                                    raw.anyOrNull(
+                                        splitItem.joinToString(separator = "_")
+                                    ).let {
+                                        if (columnSet == null) it?.toString() else it.restore(columnSet)?.toString()
+                                    }
+                                }
                             })
                     } ?: "${table.getTableName().replaceFirstChar { it.uppercaseChar() }} Object ($referenceKey)"
                 )
