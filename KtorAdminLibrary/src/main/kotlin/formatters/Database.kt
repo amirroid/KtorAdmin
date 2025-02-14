@@ -1,9 +1,13 @@
 package formatters
 
 import configuration.DynamicConfiguration
+import io.ktor.server.util.toLocalDateTime
 import models.ColumnSet
 import models.types.ColumnType
+import java.sql.ResultSet
 import java.sql.Timestamp
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 internal fun Any?.formatToDisplayInTable(columnType: ColumnType): String {
@@ -22,6 +26,20 @@ internal fun Any?.formatToDisplayInTable(columnType: ColumnType): String {
         this == null -> "N/A"
         else -> toString()
     }
+}
+
+internal fun ResultSet.getTypedValue(type: ColumnType, name: String): Any? = when (type) {
+    ColumnType.LONG, ColumnType.ULONG -> getLong(name)
+    ColumnType.INTEGER, ColumnType.UINTEGER -> getInt(name)
+    ColumnType.SHORT, ColumnType.USHORT -> getShort(name)
+    ColumnType.FLOAT -> getFloat(name)
+    ColumnType.DOUBLE -> getDouble(name)
+    ColumnType.STRING -> getString(name)
+    ColumnType.BYTES -> getBytes(name)
+    ColumnType.BOOLEAN -> getBoolean(name)
+    ColumnType.DATETIME -> LocalDateTime.ofInstant(getTimestamp(name).toInstant(), DynamicConfiguration.timeZone)
+    ColumnType.DATE -> LocalDate.ofInstant(getTimestamp(name).toInstant(), DynamicConfiguration.timeZone)
+    else -> getObject(name)
 }
 
 internal inline fun <reified T> T?.map(columnSet: ColumnSet): T? {

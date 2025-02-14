@@ -10,6 +10,7 @@ import models.chart.getFieldFunctionBasedOnAggregationFunction
 import models.chart.getFieldNameBasedOnAggregationFunction
 import formatters.extractTextInCurlyBraces
 import formatters.formatToDisplayInTable
+import formatters.getTypedValue
 import formatters.map
 import formatters.populateTemplate
 import formatters.restore
@@ -93,7 +94,7 @@ internal object JdbcQueriesRepository {
                         val primaryKey =
                             rs.getObject("${table.getTableName()}_${table.getPrimaryKey()}")?.toString() ?: "UNKNOWN"
                         val data = table.getAllAllowToShowColumns().map { column ->
-                            rs.getObject("${table.getTableName()}_${column.columnName}")
+                            rs.getTypedValue(column.type, "${table.getTableName()}_${column.columnName}")
                                 .restore(column)
                                 .formatToDisplayInTable(column.type)
                         }
@@ -187,13 +188,19 @@ internal object JdbcQueriesRepository {
 
                         val values = section.valuesFields.map { field ->
                             val column = columns.first { it.columnName == field.fieldName }
-                            rs.getDoubleOrDefault(
+                            if (aggregationFunction == ChartDashboardAggregationFunction.COUNT) {
                                 getFieldNameBasedOnAggregationFunction(
                                     aggregationFunction,
                                     field.fieldName
-                                )
-                            ).let {
-                                if (aggregationFunction != ChartDashboardAggregationFunction.COUNT) it.restore(column)!! else it
+                                ).toString().toDoubleOrNull() ?: 0.0
+                            } else {
+                                rs.getTypedValue(
+                                    column.type,
+                                    getFieldNameBasedOnAggregationFunction(
+                                        aggregationFunction,
+                                        field.fieldName
+                                    )
+                                ).restore(column)?.toString()?.toDoubleOrNull() ?: 0.0
                             }
                         }
 
@@ -255,8 +262,8 @@ internal object JdbcQueriesRepository {
                     value = when (section.aggregationFunction) {
                         TextDashboardAggregationFunction.LAST_ITEM -> {
                             if (rs.next()) {
-                                val itemObject = rs.getObject(section.fieldName)
-                                itemObject?.toString()?.toDoubleOrNull().restore(column)?.formatAsIntegerIfPossible()
+                                val itemObject = rs.getTypedValue(column.type, section.fieldName)
+                                itemObject?.toString().restore(column)?.toDoubleOrNull()?.formatAsIntegerIfPossible()
                                     ?.toString()
                                     ?: itemObject.toString()
                             } else ""
@@ -266,14 +273,14 @@ internal object JdbcQueriesRepository {
                             var nextItem = 0.0
                             var previewsItem = 0.0
                             if (rs.next()) {
-                                nextItem = rs.getDouble(
-                                    section.fieldName
-                                ).restore(column)!!
+                                nextItem = rs.getTypedValue(
+                                    column.type, section.fieldName
+                                ).restore(column).toString().toDoubleOrNull() ?: 0.0
                             }
                             if (rs.next()) {
-                                previewsItem = rs.getDouble(
-                                    section.fieldName
-                                ).restore(column)!!
+                                previewsItem = rs.getTypedValue(
+                                    column.type, section.fieldName
+                                ).restore(column).toString().toDoubleOrNull() ?: 0.0
                             }
                             runCatching { ((nextItem - previewsItem).div(previewsItem) * 100).formatAsIntegerIfPossible() }.getOrNull()
                                 .toString() + "%"
@@ -281,14 +288,15 @@ internal object JdbcQueriesRepository {
 
                         TextDashboardAggregationFunction.COUNT -> {
                             if (rs.next()) {
-                                rs.getDouble("aggregationFunctionValue").formatAsIntegerIfPossible()
+                                rs.getInt("aggregationFunctionValue").toString()
                             } else ""
                         }
 
                         else -> {
                             if (rs.next()) {
-                                rs.getDouble("aggregationFunctionValue").restore(column)?.formatAsIntegerIfPossible()
-                                    ?.toString().orEmpty()
+                                rs.getTypedValue(column.type, "aggregationFunctionValue").restore(column).let {
+                                    it.toString().toDoubleOrNull()?.formatAsIntegerIfPossible() ?: it.toString()
+                                }
                             } else ""
                         }
                     }
@@ -302,8 +310,6 @@ internal object JdbcQueriesRepository {
     }
 
     private fun ResultSet.getLabelOrDefault(field: String) = getObject(field)?.toString() ?: "N/A"
-
-    private fun ResultSet.getDoubleOrDefault(field: String) = getObject(field)?.toString()?.toDoubleOrNull() ?: 0.0
 
 
     /**
@@ -386,7 +392,7 @@ internal object JdbcQueriesRepository {
                         while (resultSet.next()) {
                             val primaryKey = resultSet.getObject(primaryKeyColumn)?.toString() ?: "N/A"
                             val data = columns.map { column ->
-                                resultSet.getObject(column.columnName)
+                                resultSet.getTypedValue(column.type, column.columnName)
                                     .restore(column)
                                     ?.formatToDisplayInTable(column.type)
                                     ?: "N/A"
@@ -581,7 +587,7 @@ internal object JdbcQueriesRepository {
                 prepareStatement.executeQuery().use { rs ->
                     if (rs.next()) {
                         return@usingDataSource table.getAllAllowToShowColumnsInUpsert().map { column ->
-                            rs.getObject(column.columnName)?.restore(column)?.toString()
+                            rs.getTypedValue(column.type, column.columnName)?.restore(column)?.toString()
                         }
                     }
                     return@usingDataSource null

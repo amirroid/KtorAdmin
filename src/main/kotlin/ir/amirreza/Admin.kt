@@ -60,7 +60,6 @@ object CustomValueMapper : KtorAdminValueMapper {
     override fun map(value: Any?): Any? {
         return when (value) {
             is Int -> value.times(2)
-            is Double -> value.times(2)
             else -> null
         }
     }
@@ -68,7 +67,6 @@ object CustomValueMapper : KtorAdminValueMapper {
     override fun restore(value: Any?): Any? {
         return when (value) {
             is Int -> value.div(2)
-            is Double -> value.div(2)
             else -> null
         }
     }
