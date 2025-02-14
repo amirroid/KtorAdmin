@@ -347,6 +347,13 @@ th[data-col="checkbox"], td[data-col="checkbox"] {
     max-lines: 1;
 }
 
+.column-name {
+    max-width: calc(100% - 20px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 th {
     gap: 4px;
 }
