@@ -94,8 +94,8 @@ internal object JdbcQueriesRepository {
                             rs.getObject("${table.getTableName()}_${table.getPrimaryKey()}")?.toString() ?: "UNKNOWN"
                         val data = table.getAllAllowToShowColumns().map { column ->
                             rs.getObject("${table.getTableName()}_${column.columnName}")
-                                .formatToDisplayInTable(column.type)
                                 .restore(column)
+                                .formatToDisplayInTable(column.type)
                         }
                         result.add(DataWithPrimaryKey(primaryKey, data))
                     }
@@ -192,7 +192,9 @@ internal object JdbcQueriesRepository {
                                     aggregationFunction,
                                     field.fieldName
                                 )
-                            ).restore(column)!!
+                            ).let {
+                                if (aggregationFunction != ChartDashboardAggregationFunction.COUNT) it.restore(column)!! else it
+                            }
                         }
 
                         // If ALL, store values separately without aggregation
@@ -254,7 +256,7 @@ internal object JdbcQueriesRepository {
                         TextDashboardAggregationFunction.LAST_ITEM -> {
                             if (rs.next()) {
                                 val itemObject = rs.getObject(section.fieldName)
-                                itemObject?.toString()?.toDoubleOrNull()?.formatAsIntegerIfPossible().restore(column)
+                                itemObject?.toString()?.toDoubleOrNull().restore(column)?.formatAsIntegerIfPossible()
                                     ?.toString()
                                     ?: itemObject.toString()
                             } else ""
@@ -277,10 +279,16 @@ internal object JdbcQueriesRepository {
                                 .toString() + "%"
                         }
 
+                        TextDashboardAggregationFunction.COUNT -> {
+                            if (rs.next()) {
+                                rs.getDouble("aggregationFunctionValue").formatAsIntegerIfPossible()
+                            } else ""
+                        }
+
                         else -> {
                             if (rs.next()) {
-                                rs.getDouble("aggregationFunctionValue").formatAsIntegerIfPossible().restore(column)!!
-                                    .toString()
+                                rs.getDouble("aggregationFunctionValue").restore(column)?.formatAsIntegerIfPossible()
+                                    ?.toString().orEmpty()
                             } else ""
                         }
                     }
@@ -378,8 +386,10 @@ internal object JdbcQueriesRepository {
                         while (resultSet.next()) {
                             val primaryKey = resultSet.getObject(primaryKeyColumn)?.toString() ?: "N/A"
                             val data = columns.map { column ->
-                                resultSet.getObject(column.columnName)?.formatToDisplayInTable(column.type)
-                                    .restore(column) ?: "N/A"
+                                resultSet.getObject(column.columnName)
+                                    .restore(column)
+                                    ?.formatToDisplayInTable(column.type)
+                                    ?: "N/A"
                             }
                             rows.add(
                                 DataWithPrimaryKey(

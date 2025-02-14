@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import ir.amirreza.action.MyCustomAction
 import ir.amirreza.dashboard.CustomDashboard
 import ir.amirreza.listeners.AdminListener
+import mapper.KtorAdminValueMapper
 import models.JDBCDrivers
 import models.UploadTarget
 import models.forms.LoginFiled
@@ -14,6 +15,7 @@ import plugins.KtorAdmin
 import tiny.TinyMCEConfig
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.times
 import kotlin.time.toJavaDuration
 
 const val MEDIA_ROOT = "files"
@@ -48,7 +50,31 @@ fun Application.configureAdmin(database: Database) {
         canDownloadDataAsCsv = true
         canDownloadDataAsPdf = true
         tinyMCEConfig = TinyMCEConfig.Professional.copy(uploadTarget = UploadTarget.LocalFile(null))
+        registerValueMapper(
+            CustomValueMapper
+        )
     }
+}
+
+object CustomValueMapper : KtorAdminValueMapper {
+    override fun map(value: Any?): Any? {
+        return when (value) {
+            is Int -> value.times(2)
+            is Double -> value.times(2)
+            else -> null
+        }
+    }
+
+    override fun restore(value: Any?): Any? {
+        return when (value) {
+            is Int -> value.div(2)
+            is Double -> value.div(2)
+            else -> null
+        }
+    }
+
+    override val key: String
+        get() = "timesTo2"
 }
 
 private val adminLoginFields = listOf(

@@ -71,6 +71,7 @@ object Tasks : Table("tasks") {
     @ColumnInfo(
         unique = true
     )
+    @ValueMapper("timesTo2")
     val number = integer("number").default(1)
 
     @LocalUpload
