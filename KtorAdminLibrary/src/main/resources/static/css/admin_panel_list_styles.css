@@ -348,10 +348,14 @@ th[data-col="checkbox"], td[data-col="checkbox"] {
 }
 
 .column-name {
-    max-width: calc(100% - 20px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+
+th:has(svg) .column-name {
+    max-width: calc(100% - 20px);
 }
 
 th {
