@@ -64,6 +64,7 @@
     backdrop-filter: blur(8px);
     border-radius: 24px;
     padding-left: 4px;
+    z-index: 50;
     padding-top: 16px;
     border: 1px solid var(--border-color);
 }

@@ -565,7 +565,7 @@ th:last-child::before {
     margin-top: 16px;
 }
 
-#search-container {
+.search-container {
     display: flex;
     align-items: center;
     flex-direction: row;
@@ -578,12 +578,30 @@ th:last-child::before {
     margin-left: auto;
 }
 
-#search-container:has(input) {
+.search-container:has(input) {
     background-color: var(--background-gradient-start);
     border-radius: 16px;
 }
 
-#search-container path {
+.mobile-search {
+    display: none;
+    margin-top: 12px;
+    background-color: var(--white-transparent-60) !important;
+    border-radius: 20px;
+    width: 100%;
+}
+
+@media (max-width: 500px) {
+    .search-container:not(.mobile-search) {
+        visibility: hidden;
+    }
+
+    .mobile-search {
+        display: flex;
+    }
+}
+
+.search-container path {
     stroke: var(--primary-color);
 }
 

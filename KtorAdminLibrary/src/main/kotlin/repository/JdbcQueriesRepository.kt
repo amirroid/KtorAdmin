@@ -40,7 +40,6 @@ import java.sql.ResultSet
  * Provides methods for CRUD operations and data retrieval with filtering and pagination.
  */
 internal object JdbcQueriesRepository {
-    // region Database Connection
 
     /**
      * Executes database operations using the specified data source.
@@ -54,10 +53,6 @@ internal object JdbcQueriesRepository {
         session.close()
         return invoke
     }
-
-    // endregion
-
-    // region Data Retrieval
 
     /**
      * Retrieves all data from the table with optional filtering, search, pagination, and ordering.
@@ -550,9 +545,6 @@ internal object JdbcQueriesRepository {
             }
         }
 
-    // endregion
-
-    // region Data Modification
 
     /**
      * Checks if data has been changed compared to initial value.
