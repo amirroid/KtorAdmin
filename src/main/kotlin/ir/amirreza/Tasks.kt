@@ -2,6 +2,7 @@ package ir.amirreza
 
 import annotations.actions.AdminActions
 import annotations.computed.Computed
+import annotations.confirmation.Confirmation
 import annotations.display.DisplayFormat
 import annotations.enumeration.Enumeration
 import annotations.exposed.ExposedTable
@@ -43,6 +44,7 @@ object Tasks : Table("tasks") {
     @Limits(
         maxLength = 20,
     )
+    @Confirmation
     val name = varchar("name", length = 150)
 
     @Limits(
@@ -91,6 +93,7 @@ object Tasks : Table("tasks") {
     )
     @LocalUpload
     val videoThumbnail = varchar("thumbnail", 1000).nullable()
+
 
     val data = binary("data").nullable()
 

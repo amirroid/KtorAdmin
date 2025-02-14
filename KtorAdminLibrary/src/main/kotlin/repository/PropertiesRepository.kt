@@ -1,6 +1,7 @@
 package repository
 
 import annotations.computed.Computed
+import annotations.confirmation.Confirmation
 import annotations.date.AutoNowDate
 import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
@@ -102,7 +103,8 @@ object PropertiesRepository {
             computedColumn = computedColumnInfo?.first,
             autoNowDate = autoNowDate,
             statusColors = statusColors,
-            hasRichEditor = hasRichEditor
+            hasRichEditor = hasRichEditor,
+            hasConfirmation = hasConfirmationAnnotation(property.annotations)
         )
     }
 
@@ -162,7 +164,7 @@ object PropertiesRepository {
             limits = property.annotations.getLimits(),
             readOnly = isReadOnly,
             computedField = computedFieldInfo?.first,
-            autoNowDate = autoNowDate
+            autoNowDate = autoNowDate,
         )
     }
 
@@ -177,6 +179,12 @@ object PropertiesRepository {
      */
     private fun hasRichEditorAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
         annotations.any { it.shortName.asString() == RichEditor::class.simpleName }
+
+    /**
+     * Checks if a property has the Confirmation annotation.
+     */
+    private fun hasConfirmationAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
+        annotations.any { it.shortName.asString() == Confirmation::class.simpleName }
 
     /**
      * Extracts AutoNowDate annotation configuration if present.

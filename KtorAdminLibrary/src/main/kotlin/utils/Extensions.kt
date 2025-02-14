@@ -41,6 +41,7 @@ internal fun ColumnSet.toSuitableStringForFile() = """
     |    hasRichEditor = ${hasRichEditor},
     |    unique = ${unique},
     |    blank = ${blank},
+    |    hasConfirmation = ${hasConfirmation},
     |)
 """.trimMargin("|")
 

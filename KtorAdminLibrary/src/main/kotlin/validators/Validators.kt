@@ -354,32 +354,6 @@ internal object Validators {
 
     // Validation for Instant type
     private fun validateInstant(value: String, limits: Limit?): String? {
-//        try {
-//            // Parse the input value to Instant
-//            val parsedInstant = Instant.parse(value)
-//
-//            // If limits are provided, validate the instant against them
-//            if (limits != null) {
-//                val now = Instant.now()
-//
-//                // Calculate the minimum and maximum allowed instants
-//                val minInstant = now.plusMillis(limits.minDateRelativeToNow)
-//                val maxInstant = now.plusMillis(limits.maxDateRelativeToNow)
-//
-//                // Check if the parsed instant is before the minimum allowed instant
-//                if (limits.minDateRelativeToNow != Long.MAX_VALUE && parsedInstant.isBefore(minInstant)) {
-//                    return "Value should not be before ${minInstant}"
-//                }
-//                // Check if the parsed instant is after the maximum allowed instant
-//                if (limits.maxDateRelativeToNow != Long.MAX_VALUE && parsedInstant.isAfter(maxInstant)) {
-//                    return "Value should not be after ${maxInstant}"
-//                }
-//            }
-//        } catch (e: Exception) {
-//            // Return an error message if the value is not a valid Instant
-//            return "Value should be a valid instant (yyyy-MM-dd'T'HH:mm:ssZ)"
-//        }
-
         // Return null if the value is valid
         return validateDateTime(value, limits)
     }

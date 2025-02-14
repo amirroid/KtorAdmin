@@ -57,6 +57,7 @@ data class ColumnSet(
     val blank: Boolean = true,
     val statusColors: List<String>? = null,
     val hasRichEditor: Boolean = false,
+    val hasConfirmation: Boolean = false,
 )
 
 
