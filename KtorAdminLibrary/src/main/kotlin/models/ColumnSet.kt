@@ -62,21 +62,6 @@ data class ColumnSet(
 )
 
 
-internal fun ColumnSet.getCurrentDate() = when (type) {
-    ColumnType.DATE -> {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        LocalDate.now(DynamicConfiguration.timeZone).format(formatter)
-    }
-
-    ColumnType.DATETIME -> {
-        val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
-        LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
-    }
-
-    else -> null
-}
-
-
 internal fun ColumnSet.getCurrentDateClass() = when (type) {
     ColumnType.DATE -> {
         LocalDate.now(DynamicConfiguration.timeZone)

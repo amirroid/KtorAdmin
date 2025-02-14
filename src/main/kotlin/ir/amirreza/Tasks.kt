@@ -42,6 +42,7 @@ object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
 
+    @ValueMapper("test")
     val name = varchar("name", length = 150)
 
     @Limits(

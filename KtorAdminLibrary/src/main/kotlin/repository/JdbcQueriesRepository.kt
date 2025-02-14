@@ -10,6 +10,7 @@ import models.chart.getFieldFunctionBasedOnAggregationFunction
 import models.chart.getFieldNameBasedOnAggregationFunction
 import formatters.extractTextInCurlyBraces
 import formatters.formatToDisplayInTable
+import formatters.formatToDisplayInUpsert
 import formatters.getTypedValue
 import formatters.map
 import formatters.populateTemplate
@@ -589,7 +590,8 @@ internal object JdbcQueriesRepository {
                 prepareStatement.executeQuery().use { rs ->
                     if (rs.next()) {
                         return@usingDataSource table.getAllAllowToShowColumnsInUpsert().map { column ->
-                            rs.getTypedValue(column.type, column.columnName)?.restore(column)?.toString()
+                            rs.getTypedValue(column.type, column.columnName)?.restore(column)
+                                ?.formatToDisplayInUpsert(column.type)
                         }
                     }
                     return@usingDataSource null

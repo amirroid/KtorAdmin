@@ -53,6 +53,9 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper
         )
+        registerValueMapper(
+            CustomValueMapper2
+        )
     }
 }
 
@@ -73,6 +76,19 @@ object CustomValueMapper : KtorAdminValueMapper {
 
     override val key: String
         get() = "timesTo2"
+}
+
+object CustomValueMapper2 : KtorAdminValueMapper {
+    override fun map(value: Any?): Any? {
+        return (value as? String)?.plus(" Test")
+    }
+
+    override fun restore(value: Any?): Any? {
+        return (value as? String)?.replace(" Test", "")
+    }
+
+    override val key: String
+        get() = "test"
 }
 
 private val adminLoginFields = listOf(

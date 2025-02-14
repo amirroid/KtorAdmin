@@ -4,6 +4,7 @@ import configuration.DynamicConfiguration
 import io.ktor.server.util.toLocalDateTime
 import models.ColumnSet
 import models.types.ColumnType
+import utils.Constants
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.LocalDate
@@ -28,17 +29,31 @@ internal fun Any?.formatToDisplayInTable(columnType: ColumnType): String {
     }
 }
 
+internal fun Any?.formatToDisplayInUpsert(columnType: ColumnType): String {
+    return when {
+        this is Timestamp && columnType == ColumnType.DATETIME -> {
+            val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
+            toLocalDateTime().format(formatter)
+        }
+
+        this is Timestamp && columnType == ColumnType.DATE -> {
+            val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+            toLocalDateTime().format(formatter)
+        }
+
+        this is ByteArray && columnType == ColumnType.BINARY -> ""
+        this == null -> "N/A"
+        else -> toString()
+    }
+}
+
 internal fun ResultSet.getTypedValue(type: ColumnType, name: String): Any? = when (type) {
     ColumnType.LONG, ColumnType.ULONG -> getLong(name)
     ColumnType.INTEGER, ColumnType.UINTEGER -> getInt(name)
     ColumnType.SHORT, ColumnType.USHORT -> getShort(name)
     ColumnType.FLOAT -> getFloat(name)
     ColumnType.DOUBLE -> getDouble(name)
-    ColumnType.STRING -> getString(name)
-    ColumnType.BYTES -> getBytes(name)
-    ColumnType.BOOLEAN -> getBoolean(name)
-    ColumnType.DATETIME -> LocalDateTime.ofInstant(getTimestamp(name).toInstant(), DynamicConfiguration.timeZone)
-    ColumnType.DATE -> LocalDate.ofInstant(getTimestamp(name).toInstant(), DynamicConfiguration.timeZone)
+
     else -> getObject(name)
 }
 
