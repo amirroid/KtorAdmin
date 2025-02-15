@@ -58,8 +58,14 @@ fun Application.configureRouting(database: Database) {
                     "tasks" to tasks,
                     "users" to users,
                     "tokens" to tokens,
-                    "posts" to getPosts(),
+//                    "posts" to getPosts(),
                 )
+            )
+        }
+        get("/posts") {
+            addFakePosts()
+            call.respond(
+                HttpStatusCode.OK, getPosts()
             )
         }
         post("/login") {

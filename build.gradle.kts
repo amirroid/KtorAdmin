@@ -10,6 +10,7 @@ plugins {
     id("io.ktor.plugin") version "3.0.3"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
     id("com.google.devtools.ksp") version "2.1.0-1.0.29"
+    kotlin("plugin.jpa") version "2.1.0"
 }
 
 group = "ir.amirreza"
@@ -60,7 +61,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1")
 
     // Hibernate
-    implementation("org.hibernate:hibernate-core:6.4.0.Final")
-    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
-    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
+    implementation("org.hibernate:hibernate-core:5.6.15.Final")
+    implementation("javax.persistence:javax.persistence-api:2.2")
+    implementation("org.hibernate.validator:hibernate-validator:6.2.5.Final")
 }
+
