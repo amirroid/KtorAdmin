@@ -57,7 +57,8 @@ fun Application.configureRouting(database: Database) {
                 HttpStatusCode.OK, mapOf(
                     "tasks" to tasks,
                     "users" to users,
-                    "tokens" to tokens
+                    "tokens" to tokens,
+                    "posts" to getPosts(),
                 )
             )
         }

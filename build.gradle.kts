@@ -58,4 +58,9 @@ dependencies {
     implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$kmongoDbVersion")
     implementation("org.mongodb:bson-kotlinx:$kmongoDbVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1")
+
+    // Hibernate
+    implementation("org.hibernate:hibernate-core:6.4.0.Final")
+    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
 }

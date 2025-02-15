@@ -468,7 +468,7 @@ th:last-child::before {
     align-self: flex-end;
 }
 
-#actions-container {
+.actions-container {
     background-color: var(--white-transparent-60);
     border-radius: 16px 0 0 16px;
     position: relative;
@@ -483,7 +483,7 @@ th:last-child::before {
     transform: translateX(0);
 }
 
-#perform-action {
+.perform-action {
     background-color: var(--secondary-color);
     color: var(--white);
     height: 48px;
@@ -497,11 +497,11 @@ th:last-child::before {
     cursor: pointer;
 }
 
-#perform-action:hover {
+.perform-action:hover {
     opacity: .9;
 }
 
-#actions-input {
+.actions-input {
     display: flex;
     width: 100%;
     align-items: center;
@@ -520,11 +520,11 @@ th:last-child::before {
     background-position: calc(100% - 0.75rem) center !important;
 }
 
-:root.theme-dark #actions-input {
+:root.theme-dark .actions-input {
     background: url("data:image/svg+xml,%3Csvg%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M11.6199%205.22084L7.81655%209.02417C7.36738%209.47334%206.63238%209.47334%206.18322%209.02417L2.37988%205.22084%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%221.5%22%20stroke-miterlimit%3D%2210%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") no-repeat;
 }
 
-#actions-input:focus {
+.actions-input:focus {
     outline: none;
 }
 
@@ -571,6 +571,7 @@ th:last-child::before {
 .mobile-search {
     display: none;
     margin-top: 12px;
+    visibility: hidden;
     background-color: var(--white-transparent-60) !important;
     border-radius: 20px;
     width: 100%;
@@ -600,6 +601,7 @@ th:last-child::before {
 
     .mobile-search {
         display: flex;
+        visibility: visible;
     }
 
     .mobile-action {
@@ -608,7 +610,7 @@ th:last-child::before {
         flex-direction: row;
     }
 
-    #actions-container {
+    .actions-container {
         left: 0;
         flex-grow: 1;
     }
@@ -617,7 +619,7 @@ th:last-child::before {
         left: 0;
     }
 
-    #perform-action {
+    .perform-action {
         left: 0;
     }
 }
@@ -626,18 +628,18 @@ th:last-child::before {
     stroke: var(--primary-color);
 }
 
-#search-input {
+.search-input {
     background-color: transparent;
     border: none;
     flex-grow: 1;
     outline: none;
 }
 
-#search-input::placeholder {
+.search-input::placeholder {
     color: var(--primary-color);
 }
 
-#search-input:focus {
+.search-input:focus {
     outline: none;
 }
 

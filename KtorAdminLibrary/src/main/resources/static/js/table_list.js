@@ -84,28 +84,28 @@ function handleClicks() {
     });
 }
 
-
-document.addEventListener('DOMContentLoaded', function () {
+function handleSearches() {
     const searchValue = getQueryParam('search');
-    handleFilterInputs()
-    handleClicks()
-    if (searchValue) {
-        document.getElementById('search-input').value = searchValue;
-    }
-});
-
-// document.getElementById('search-button').addEventListener('click', performSearch);
-try {
-    document.getElementById('search-input').addEventListener('keypress', function (event) {
-        if (event.key === 'Enter') {
-            performSearch();
+    for (let element of document.getElementsByClassName('search-input')) {
+        if (searchValue) {
+            element.value = searchValue;
         }
-    });
-} catch {
+        element.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                performSearch(element);
+            }
+        });
+    }
 }
 
-function performSearch() {
-    const query = document.getElementById('search-input').value;
+document.addEventListener('DOMContentLoaded', function () {
+    handleFilterInputs()
+    handleClicks()
+    handleSearches()
+});
+
+function performSearch(element) {
+    const query = element.value;
     if (query) {
         const currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set('search', query);
@@ -287,7 +287,13 @@ function closeFiltersOrNavigateToAdd() {
 }
 
 function openActionDialog() {
-    const actionSelect = document.getElementById("actions-input");
+    const actionRows = document.querySelectorAll(".actions-row");
+
+    const visibleRow = Array.from(actionRows).find(row =>
+        getComputedStyle(row).display !== "none"
+    );
+
+    const actionSelect = visibleRow.querySelector(".actions-input");
     const selectedActionKey = actionSelect.value;
     if (!selectedActionKey) {
         alert("Please select an action!");
