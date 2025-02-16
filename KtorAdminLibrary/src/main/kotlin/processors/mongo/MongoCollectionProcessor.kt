@@ -27,6 +27,7 @@ import models.order.Order
 import models.order.toFormattedString
 import models.types.FieldType
 import repository.PropertiesRepository
+import utils.Constants
 import utils.FileUtils
 import utils.PackagesUtils
 import utils.guessFieldPropertyType
@@ -46,7 +47,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         val visitedClasses = mutableSetOf<String>()
         val containingFile = classDeclaration.containingFile ?: return
         val fieldSets = collectPropertiesRecursively(classDeclaration, visitedClasses = visitedClasses)
-        val packageName = classDeclaration.packageName.asString()
+        val packageName = "${Constants.PACKAGE_NAME}.ktorAdmin.mongo"
         val simpleFileName = classDeclaration.simpleName.asString()
         val fileName = FileUtils.getGeneratedFileName(simpleFileName)
         val generatedClass = generateClass(classDeclaration, fileName, fieldSets = fieldSets)

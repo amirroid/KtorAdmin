@@ -75,8 +75,8 @@ object PropertiesRepository {
 
         // Process additional properties
         val computedColumnInfo = property.annotations.getComputed()
-        val isReadOnly = (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) ||
-                (computedColumnInfo?.second ?: false)
+        val isReadOnly = (infoAnnotation?.findArgument<Boolean>("readOnly") == true) ||
+                (computedColumnInfo?.second == true)
 
         val autoNowDate = getAutoNowDateAnnotation(property.annotations)
         validateAutoNowDate(columnType, autoNowDate, columnName)

@@ -28,6 +28,7 @@ import models.order.Order
 import models.order.toFormattedString
 import models.types.ColumnType
 import repository.PropertiesRepository
+import utils.Constants
 import utils.FileUtils
 import utils.PackagesUtils
 import utils.toSuitableStringForFile
@@ -59,7 +60,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
     private fun generateDesiredClass(classDeclaration: KSClassDeclaration) {
         classDeclaration.validateImplementations()
         val containingFile = classDeclaration.containingFile ?: return
-        val packageName = classDeclaration.packageName.asString()
+        val packageName = "${Constants.PACKAGE_NAME}.ktorAdmin.exposed"
         val simpleFileName = classDeclaration.simpleName.asString()
         val fileName = FileUtils.getGeneratedFileName(simpleFileName)
         val columns = classDeclaration.getAllColumnSets()

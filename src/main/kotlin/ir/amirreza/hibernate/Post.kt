@@ -1,10 +1,12 @@
 package ir.amirreza.hibernate
 
+import annotations.hibernate.HibernateTable
 import kotlinx.serialization.Serializable
 import javax.persistence.*
 
 @Entity
 @Table(name = "post")
+@HibernateTable("post")
 @Serializable
 data class Post(
     @Id
