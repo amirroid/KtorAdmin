@@ -1,15 +1,13 @@
-package annotations.exposed
-
+package annotations.hibernate
 
 /**
- * Annotation for defining a table in databases managed with Exposed.
+ * Annotation for defining a table in databases managed with Hibernate.
  *
- * This annotation provides metadata for a database table in an Exposed-based database setup.
+ * This annotation provides metadata for a database table in a Hibernate-based database setup.
  * It helps with table mapping, structure management, and configuration of additional attributes
  * such as primary key, naming conventions, and grouping.
  *
  * @param tableName The name of the table in the database.
- * @param primaryKey The column serving as the primary key for the table.
  * @param singularName (Optional) The singular form of the table name, used in UI elements or forms.
  *                     If left empty, it will be automatically derived from `tableName`.
  * @param pluralName (Optional) The plural form of the table name, used in lists or collections.
@@ -21,9 +19,8 @@ package annotations.exposed
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class ExposedTable(
+annotation class HibernateTable(
     val tableName: String,
-    val primaryKey: String,
     val singularName: String = "",
     val pluralName: String = "",
     val groupName: String = "",

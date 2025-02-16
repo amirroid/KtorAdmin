@@ -1,2 +1,3 @@
 annotation_providers.ExposedTableAnnotationProcessorProvider
 annotation_providers.MongoCollectionAnnotationProcessorProvider
+annotation_providers.HibernateTableAnnotationProcessorProvider
