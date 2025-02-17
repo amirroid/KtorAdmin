@@ -8,6 +8,9 @@ import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
+import annotations.references.ManyToManyReferences
+import annotations.references.ManyToOneReferences
+import annotations.references.OneToManyReferences
 import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.status.StatusStyle
@@ -124,6 +127,8 @@ object PropertiesRepository {
         val hasRichEditor = hasRichEditorAnnotation(property.annotations)
         validateRichEditor(hasRichEditor, columnType)
 
+        val reference = property.annotations.getReferences()
+
         // Construct and return the final ColumnSet configuration
         return ColumnSet(
             columnName = baseInfo.columnName,
@@ -131,7 +136,7 @@ object PropertiesRepository {
             verboseName = baseInfo.verboseName,
             nullable = baseInfo.nullable,
             blank = infoAnnotation?.findArgument<Boolean>("blank") != false,
-            unique = infoAnnotation?.findArgument<Boolean>("unique") == true,
+            unique = infoAnnotation?.findArgument<Boolean>("unique") == true || reference is Reference.OneToOne,
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
             uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
             allowedMimeTypes = if (hasUploadAnnotation)
@@ -140,7 +145,7 @@ object PropertiesRepository {
             defaultValue = infoAnnotation?.findArgument<String>("defaultValue")?.takeIf { it.isNotEmpty() },
             enumerationValues = enumValues,
             limits = property.annotations.getLimits(),
-            reference = property.annotations.getReferences(),
+            reference = reference,
             readOnly = isReadOnly,
             computedColumn = computedColumnInfo?.first,
             autoNowDate = autoNowDate,
@@ -350,15 +355,55 @@ object PropertiesRepository {
     /**
      * Extracts reference configuration from annotations.
      */
+
+    private val OneToOneReferencesQualifiedName = OneToOneReferences::class.qualifiedName
+    private val ManyToOneReferencesQualifiedName = ManyToOneReferences::class.qualifiedName
+    private val OneToManyReferencesQualifiedName = OneToManyReferences::class.qualifiedName
+    private val ManyToManyReferencesQualifiedName = ManyToManyReferences::class.qualifiedName
+
     private fun Sequence<KSAnnotation>.getReferences(): Reference? =
-        find { it.shortName.asString() == OneToOneReferences::class.simpleName }
-            ?.arguments
-            ?.let {
-                Reference(
-                    tableName = it.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
-                    columnName = it.firstOrNull { arg -> arg.name?.asString() == "targetColumn" }!!.value as String
-                )
+        find {
+            it.qualifiedName.orEmpty() in listOf(
+                OneToOneReferencesQualifiedName,
+                ManyToManyReferencesQualifiedName,
+                ManyToOneReferencesQualifiedName,
+                OneToManyReferencesQualifiedName
+            )
+        }?.let {
+            when (it.qualifiedName) {
+                OneToOneReferencesQualifiedName -> {
+                    Reference.OneToOne(
+                        relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
+                        foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String
+                    )
+                }
+
+                OneToManyReferencesQualifiedName -> {
+                    Reference.OneToMany(
+                        relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
+                        foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String
+                    )
+                }
+
+                ManyToOneReferencesQualifiedName -> {
+                    Reference.ManyToOne(
+                        relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
+                        foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String
+                    )
+                }
+
+                ManyToManyReferencesQualifiedName -> {
+                    Reference.ManyToMany(
+                        relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
+                        joinTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "joinTable" }!!.value as String,
+                        leftPrimaryKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "leftPrimaryKey" }!!.value as String,
+                        rightPrimaryKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "rightPrimaryKey" }!!.value as String,
+                    )
+                }
+
+                else -> null
             }
+        }
 
     /**
      * Extracts and processes limit configurations from annotations.

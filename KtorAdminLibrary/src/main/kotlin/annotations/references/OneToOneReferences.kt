@@ -4,5 +4,5 @@ package annotations.references
 @Retention(AnnotationRetention.SOURCE)
 annotation class OneToOneReferences(
     val tableName: String,
-    val targetColumn: String
+    val foreignKey: String
 )

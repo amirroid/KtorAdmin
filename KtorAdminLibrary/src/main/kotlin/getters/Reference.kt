@@ -2,6 +2,7 @@ package getters
 
 import models.ColumnSet
 import models.common.DisplayItem
+import models.common.tableName
 import repository.JdbcQueriesRepository
 import panels.AdminJdbcTable
 
@@ -16,7 +17,7 @@ internal fun getReferencesItems(
     return columnsWithReferences.associateWith { column ->
         JdbcQueriesRepository.getAllReferences(
             table = tables.first { it.getTableName() == column.reference!!.tableName },
-            referenceColumn = column.reference!!.columnName
+            referenceColumn = column.reference!!
         )
     }
 }

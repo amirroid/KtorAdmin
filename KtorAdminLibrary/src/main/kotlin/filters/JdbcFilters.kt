@@ -50,18 +50,18 @@ internal object JdbcFilters {
                     values = columnSet.enumerationValues
                 )
 
-                columnSet?.reference != null -> {
-                    val referenceTable = jdbcTables.find {
-                        it.getTableName() == columnSet.reference.tableName
-                    }
-                        ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference.tableName}")
-
-                    FiltersData(
-                        paramName = columnSet.columnName,
-                        type = FilterTypes.REFERENCE,
-                        values = JdbcQueriesRepository.getAllReferences(referenceTable, columnSet.reference.columnName)
-                    )
-                }
+//                columnSet?.reference != null -> {
+//                    val referenceTable = jdbcTables.find {
+//                        it.getTableName() == columnSet.reference.tableName
+//                    }
+//                        ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference.tableName}")
+//
+//                    FiltersData(
+//                        paramName = columnSet.columnName,
+//                        type = FilterTypes.REFERENCE,
+//                        values = JdbcQueriesRepository.getAllReferences(referenceTable, columnSet.reference.columnName)
+//                    )
+//                }
 
                 else -> throw IllegalArgumentException("Filters are currently supported only for types: DATE, DATETIME, ENUMERATION, and REFERENCE")
             }

@@ -2,9 +2,7 @@ package annotations.references
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
-annotation class ManyToManyReferences(
+annotation class OneToManyReferences(
     val tableName: String,
-    val joinTable: String,
-    val leftPrimaryKey: String,
-    val rightPrimaryKey: String,
+    val foreignKey: String
 )

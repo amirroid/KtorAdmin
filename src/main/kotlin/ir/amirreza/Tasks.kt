@@ -9,6 +9,9 @@ import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
+import annotations.references.ManyToManyReferences
+import annotations.references.ManyToOneReferences
+import annotations.references.OneToManyReferences
 import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.roles.AccessRoles
@@ -26,7 +29,7 @@ enum class Priority {
 @AccessRoles("admin")
 @AdminQueries(
     searches = ["user_id.username", "description"],
-    filters = ["priority", "user_id", "checked"]
+    filters = ["priority", "checked"]
 )
 @DisplayFormat(
     format = "{id} - User: {user_id.username} \nNumber: {number}"
@@ -58,7 +61,7 @@ object Tasks : Table("tasks") {
     )
 
     @ColumnInfo("user_id", verboseName = "User")
-    @OneToOneReferences("users", "id")
+    @OneToManyReferences("users", "id")
     val userId = integer("user_id").references(Users.id)
 
     @Computed(

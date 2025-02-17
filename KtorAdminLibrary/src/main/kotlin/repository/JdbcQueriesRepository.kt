@@ -1,5 +1,6 @@
 package repository
 
+import com.squareup.kotlinpoet.UNIT
 import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
@@ -27,6 +28,9 @@ import models.chart.ListData
 import models.chart.TextDashboardAggregationFunction
 import models.chart.TextData
 import models.common.DisplayItem
+import models.common.Reference
+import models.common.foreignKey
+import models.common.tableName
 import models.getCurrentDateClass
 import models.order.Order
 import models.types.ColumnType
@@ -514,11 +518,12 @@ internal object JdbcQueriesRepository {
      */
     fun getAllReferences(
         table: AdminJdbcTable,
-        referenceColumn: String
-    ): List<DisplayItem> =
-        table.usingDataSource { session ->
+        referenceColumn: Reference,
+    ): List<DisplayItem> {
+        return table.usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllReferencesQuery(referenceColumn))) { raw ->
-                val referenceKey = raw.any("${table.getTableName()}_$referenceColumn").toString()
+                val referenceKey =
+                    raw.any("${table.getTableName()}_${referenceColumn.foreignKey}").toString()
                 val displayFormat = table.getDisplayFormat()
                 DisplayItem(
                     itemKey = referenceKey,
@@ -527,23 +532,28 @@ internal object JdbcQueriesRepository {
                         populateTemplate(
                             it,
                             displayFormatValues.associateWith { item ->
-                                if (item == referenceColumn) {
+                                if (item == referenceColumn.foreignKey) {
                                     referenceKey
                                 } else {
                                     val splitItem = item.split(".")
                                     val columnSet =
-                                        table.getAllColumns().firstOrNull { it.columnName == splitItem.last() }
+                                        table.getAllColumns()
+                                            .firstOrNull { it.columnName == splitItem.last() }
                                     raw.anyOrNull(
                                         splitItem.joinToString(separator = "_")
                                     ).let {
-                                        if (columnSet == null) it?.toString() else it.restore(columnSet)?.toString()
+                                        if (columnSet == null) it?.toString() else it.restore(columnSet)
+                                            ?.toString()
                                     }
                                 }
                             })
-                    } ?: "${table.getTableName().replaceFirstChar { it.uppercaseChar() }} Object ($referenceKey)"
+                    } ?: "${
+                        table.getTableName().replaceFirstChar { it.uppercaseChar() }
+                    } Object ($referenceKey)"
                 )
             }
         }
+    }
 
 
     /**
@@ -772,66 +782,67 @@ internal object JdbcQueriesRepository {
         search: String?,
         filters: List<Triple<ColumnSet, String, Any>>
     ): String {
-        val joinConditions = mutableListOf<String>()
-        val searchConditions = if (search != null) {
-            getSearches().map { columnPath ->
-                val pathParts = columnPath.split('.')
-                var currentTable = getTableName()
-                val currentColumn = pathParts.last()
-
-                pathParts.first().let { part ->
-                    val columnSet = getAllColumns().find { it.columnName == part }
-                    val nextTable = columnSet?.reference?.tableName
-                    val currentReferenceColumn = columnSet?.reference?.columnName
-
-                    if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
-                        joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
-                        currentTable = nextTable
-                    }
-                }
-
-                "LOWER(${currentTable}.${currentColumn}) LIKE LOWER(?)"
-            }
-        } else emptyList()
-
-        val filterConditions = if (filters.isEmpty()) emptyList() else getFilters().mapNotNull { item ->
-            val pathParts = item.split('.')
-            var currentTable = getTableName()
-            val currentColumn = pathParts.last()
-
-            pathParts.first().let { part ->
-                if (!filters.any { it.first.columnName == part }) {
-                    return@mapNotNull null
-                }
-                val columnSet = getAllColumns().find { it.columnName == part }
-                val nextTable = columnSet?.reference?.tableName
-                val currentReferenceColumn = columnSet?.reference?.columnName
-
-                if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
-                    joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
-                    currentTable = nextTable
-                }
-                filters.filter { it.first.columnName == columnSet?.columnName }
-                    .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
-                        "${currentTable}.${currentColumn} ${filterItem.second} ?"
-                    }
-            }
-        }
-        return if (filterConditions.isEmpty() && searchConditions.isEmpty()) {
-            ""
-        } else {
-            buildString {
-                append(joinConditions.distinct().joinToString(" "))
-                append(" WHERE ")
-                if (searchConditions.isNotEmpty()) {
-                    append(searchConditions.joinToString(" OR ") { it })
-                    if (filterConditions.isNotEmpty()) {
-                        append(" AND ")
-                    }
-                }
-                append(filterConditions.joinToString(" AND ") { it })
-            }
-        }
+        return ""
+//        val joinConditions = mutableListOf<String>()
+//        val searchConditions = if (search != null) {
+//            getSearches().map { columnPath ->
+//                val pathParts = columnPath.split('.')
+//                var currentTable = getTableName()
+//                val currentColumn = pathParts.last()
+//
+//                pathParts.first().let { part ->
+//                    val columnSet = getAllColumns().find { it.columnName == part }
+//                    val nextTable = columnSet?.reference?.tableName
+//                    val currentReferenceColumn = columnSet?.reference?.columnName
+//
+//                    if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
+//                        joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
+//                        currentTable = nextTable
+//                    }
+//                }
+//
+//                "LOWER(${currentTable}.${currentColumn}) LIKE LOWER(?)"
+//            }
+//        } else emptyList()
+//
+//        val filterConditions = if (filters.isEmpty()) emptyList() else getFilters().mapNotNull { item ->
+//            val pathParts = item.split('.')
+//            var currentTable = getTableName()
+//            val currentColumn = pathParts.last()
+//
+//            pathParts.first().let { part ->
+//                if (!filters.any { it.first.columnName == part }) {
+//                    return@mapNotNull null
+//                }
+//                val columnSet = getAllColumns().find { it.columnName == part }
+//                val nextTable = columnSet?.reference?.tableName
+//                val currentReferenceColumn = columnSet?.reference?.columnName
+//
+//                if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
+//                    joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
+//                    currentTable = nextTable
+//                }
+//                filters.filter { it.first.columnName == columnSet?.columnName }
+//                    .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
+//                        "${currentTable}.${currentColumn} ${filterItem.second} ?"
+//                    }
+//            }
+//        }
+//        return if (filterConditions.isEmpty() && searchConditions.isEmpty()) {
+//            ""
+//        } else {
+//            buildString {
+//                append(joinConditions.distinct().joinToString(" "))
+//                append(" WHERE ")
+//                if (searchConditions.isNotEmpty()) {
+//                    append(searchConditions.joinToString(" OR ") { it })
+//                    if (filterConditions.isNotEmpty()) {
+//                        append(" AND ")
+//                    }
+//                }
+//                append(filterConditions.joinToString(" AND ") { it })
+//            }
+//        }
     }
 
     /**
@@ -845,12 +856,16 @@ internal object JdbcQueriesRepository {
     /**
      * Creates query for retrieving all references.
      */
-    private fun AdminJdbcTable.createGetAllReferencesQuery(leftReferenceColumn: String): String {
+    private fun AdminJdbcTable.createGetAllReferencesQuery(reference: Reference): String {
+        return createBasicReference(reference.foreignKey)
+    }
+
+    private fun AdminJdbcTable.createBasicReference(foreignKeyName: String): String {
         val columns = getDisplayFormat()?.extractTextInCurlyBraces().orEmpty()
         val selectColumns = mutableSetOf<String>()
         val joins = mutableListOf<String>()
 
-        selectColumns.add("${getTableName()}.$leftReferenceColumn AS ${getTableName()}_$leftReferenceColumn")
+        selectColumns.add("${getTableName()}.$foreignKeyName AS ${getTableName()}_$foreignKeyName")
 
         val order = getDefaultOrder()
         order?.let {
@@ -871,10 +886,23 @@ internal object JdbcQueriesRepository {
 
                     if (reference != null) {
                         val joinTable = reference.tableName
-                        val joinColumn = reference.columnName
-                        currentColumn = nextColumn ?: referenceColumn
+                        when (reference) {
+                            is Reference.OneToOne -> {
+                                val joinColumn = reference.foreignKey
+                                currentColumn = nextColumn ?: referenceColumn
 
-                        joins.add("LEFT JOIN $joinTable ON $currentTable.$referenceColumn = $joinTable.$joinColumn")
+                                joins.add("LEFT JOIN $joinTable ON $currentTable.$referenceColumn = $joinTable.$joinColumn")
+                            }
+
+                            is Reference.ManyToOne -> {
+                                val joinColumn = reference.foreignKey
+                                currentColumn = nextColumn ?: referenceColumn
+
+                                joins.add("LEFT JOIN $joinTable ON $currentTable.$referenceColumn = $joinTable.$joinColumn")
+                            }
+
+                            else -> Unit
+                        }
                         currentTable = joinTable
                     } else if (i == path.lastIndex) {
                         currentColumn = referenceColumn
@@ -885,7 +913,7 @@ internal object JdbcQueriesRepository {
                     selectColumns.add("$currentTable.$currentColumn AS ${path.joinToString("_")}")
                 }
             } else {
-                if (column != leftReferenceColumn && column != getPrimaryKey()) {
+                if (column != foreignKeyName && column != getPrimaryKey()) {
                     selectColumns.add("${getTableName()}.$column")
                 }
             }

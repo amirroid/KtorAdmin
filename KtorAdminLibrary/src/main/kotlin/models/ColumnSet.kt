@@ -1,13 +1,11 @@
 package models
 
-import configuration.DynamicConfiguration
 import models.common.Reference
+import configuration.DynamicConfiguration
 import models.date.AutoNowDate
 import models.types.ColumnType
-import utils.Constants
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 /**
  * Holds metadata and configuration details for a database column.
