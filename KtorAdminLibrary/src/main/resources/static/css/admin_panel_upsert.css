@@ -1,11 +1,3 @@
-body {
-    height: 100vh;
-    background: linear-gradient(to top left, var(--background-gradient-start) 60%, var(--background-gradient-end) 100%);
-    overflow-y: hidden;
-    font-family: 'Istok Web', sans-serif;
-    margin: 16px;
-}
-
 * {
     font-weight: normal;
     margin: 0;
