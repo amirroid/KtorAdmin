@@ -3,6 +3,7 @@ package ir.amirreza.hibernate
 import annotations.enumeration.Enumeration
 import annotations.hibernate.HibernateTable
 import annotations.info.ColumnInfo
+import annotations.uploads.LocalUpload
 import ir.amirreza.Priority
 import kotlinx.serialization.Serializable
 import javax.persistence.*
@@ -22,7 +23,9 @@ data class Post(
     var content: String,
     @Enumerated(EnumType.STRING)
     @ColumnInfo(verboseName = "Priority")
-    val priority: Priority = Priority.Low
+    val priority: Priority = Priority.Low,
+    @LocalUpload
+    val file: String? = null
 )
 
 //@Serializable

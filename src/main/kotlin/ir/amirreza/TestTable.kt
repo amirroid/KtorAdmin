@@ -3,7 +3,7 @@ package ir.amirreza
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
-import annotations.references.References
+import annotations.references.OneToOneReferences
 import org.jetbrains.exposed.sql.Table
 
 @ExposedTable(
@@ -13,7 +13,7 @@ import org.jetbrains.exposed.sql.Table
 object TestTable : Table("test") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
-    @References(
+    @OneToOneReferences(
         "tasks",
         "id"
     )

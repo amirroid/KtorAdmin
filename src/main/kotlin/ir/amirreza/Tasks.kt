@@ -1,8 +1,6 @@
 package ir.amirreza
 
-import annotations.actions.AdminActions
 import annotations.computed.Computed
-import annotations.confirmation.Confirmation
 import annotations.display.DisplayFormat
 import annotations.enumeration.Enumeration
 import annotations.exposed.ExposedTable
@@ -11,13 +9,12 @@ import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
-import annotations.references.References
+import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
 import annotations.uploads.LocalUpload
 import annotations.value_mapper.ValueMapper
-import models.actions.Action
 import org.jetbrains.exposed.sql.Table
 
 enum class Priority {
@@ -61,7 +58,7 @@ object Tasks : Table("tasks") {
     )
 
     @ColumnInfo("user_id", verboseName = "User")
-    @References("users", "id")
+    @OneToOneReferences("users", "id")
     val userId = integer("user_id").references(Users.id)
 
     @Computed(

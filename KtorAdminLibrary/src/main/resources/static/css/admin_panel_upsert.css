@@ -400,6 +400,10 @@ input:disabled, select:disabled, input:read-only {
     flex-shrink: 0;
 }
 
+.delete-file-icon path {
+    stroke: red;
+}
+
 .selected-file-label {
     margin-left: 12px;
     word-wrap: break-word;

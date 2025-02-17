@@ -2,7 +2,7 @@ package annotations.references
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
-annotation class References(
+annotation class ManyToOneReferences(
     val tableName: String,
     val targetColumn: String
 )

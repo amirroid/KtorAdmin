@@ -8,7 +8,7 @@ import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
-import annotations.references.References
+import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.status.StatusStyle
 import annotations.value_mapper.ValueMapper
@@ -33,64 +33,102 @@ import utils.guessPropertyType
  */
 object PropertiesRepository {
     /**
-     * Processes a property declaration to create a ColumnSet configuration.
-     * Extracts and validates various annotations to determine column properties including:
-     * - Basic column information (name, type, nullability)
-     * - Upload configurations for file columns
-     * - Enumeration values and status styles
-     * - Computed column properties
-     * - Rich text editor settings
-     * - Date/time automatic update behaviors
-     *
-     * @param property The KSP property declaration to process
-     * @param type The KSP type information for the property
-     * @return ColumnSet configuration or null if the property cannot be processed
-     * @throws IllegalArgumentException if annotation combinations are invalid
+     * Data class representing the basic column information extracted from annotations.
+     * Acts as a container for common column properties to reduce duplication.
      */
-    fun getColumnSetsForExposed(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
-        val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
-        val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
-        val genericArgument = type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName ?: return null
+    data class BaseColumnInfo(
+        val name: String,
+        val columnName: String,
+        val verboseName: String,
+        val nullable: Boolean
+    )
 
-        // Extract basic column information
+    /**
+     * Extracts basic column information from property annotations.
+     * Handles both native (Hibernate/Exposed) and custom ColumnInfo annotations.
+     *
+     * @param property The property declaration to process
+     * @param nativeColumnName Optional native column name (e.g., from Hibernate @Column)
+     * @param nativeNullable Optional native nullable setting
+     * @return BaseColumnInfo containing processed column information
+     */
+    private fun extractBaseColumnInfo(
+        property: KSPropertyDeclaration,
+        nativeColumnName: String? = null,
+        nativeNullable: Boolean? = null
+    ): BaseColumnInfo {
         val name = property.simpleName.asString()
         val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
-        val columnName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() } ?: name
+
+        val infoName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() }
+        val columnName = nativeColumnName ?: infoName ?: name
+
+        val infoNullable =
+            infoAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
+        val nullable = (nativeNullable ?: infoNullable) != false
+
         val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
 
-        // Validate and process enumerations
-        val enumValues = property.annotations.getEnumerations()
+        return BaseColumnInfo(name, columnName, verboseName, nullable)
+    }
+
+    /**
+     * Core processing function for creating ColumnSet configurations.
+     * Handles all common logic between Hibernate and Exposed processing.
+     *
+     * @param property The property declaration being processed
+     * @param type The KSType information for the property
+     * @param baseInfo Basic column information from extractBaseColumnInfo
+     * @param genericArgument The resolved generic type argument
+     * @param enumValues List of enumeration values if applicable
+     * @param isNativeEnumerated Whether this is a native enumerated type (Hibernate)
+     * @return Processed ColumnSet configuration
+     */
+    private fun processColumnSet(
+        property: KSPropertyDeclaration,
+        baseInfo: BaseColumnInfo,
+        genericArgument: String,
+        enumValues: List<String>?,
+        isNativeEnumerated: Boolean = false
+    ): ColumnSet {
+        // Check for special column types
+        val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
+        val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
+        val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
+
+        // Validate upload configuration if present
         if (hasUploadAnnotation) {
-            UploadUtils.validatePropertyType(genericArgument, columnName)
+            UploadUtils.validatePropertyType(genericArgument, baseInfo.columnName)
         }
 
-        // Determine column type
+        // Determine the column type based on annotations and property type
         val columnType = when {
-            hasEnumerationColumnAnnotation -> ColumnType.ENUMERATION
+            hasEnumerationColumnAnnotation || isNativeEnumerated -> ColumnType.ENUMERATION
             hasUploadAnnotation -> ColumnType.FILE
             else -> guessPropertyType(genericArgument)
         }
 
-        // Process status styles
+        // Process and validate status styles
         val statusColors = property.annotations.getStatusStyles()
-        validateStatusColors(columnType, statusColors, enumValues, name)
+        validateStatusColors(columnType, statusColors, enumValues, baseInfo.name)
 
-        // Process additional properties
+        // Process additional column properties
         val computedColumnInfo = property.annotations.getComputed()
         val isReadOnly = (infoAnnotation?.findArgument<Boolean>("readOnly") == true) ||
                 (computedColumnInfo?.second == true)
 
         val autoNowDate = getAutoNowDateAnnotation(property.annotations)
-        validateAutoNowDate(columnType, autoNowDate, columnName)
+        validateAutoNowDate(columnType, autoNowDate, baseInfo.columnName)
 
         val hasRichEditor = hasRichEditorAnnotation(property.annotations)
         validateRichEditor(hasRichEditor, columnType)
 
+        // Construct and return the final ColumnSet configuration
         return ColumnSet(
-            columnName = columnName,
+            columnName = baseInfo.columnName,
             type = columnType,
-            verboseName = verboseName,
-            nullable = infoAnnotation?.findArgument<Boolean>("nullable") == true,
+            verboseName = baseInfo.verboseName,
+            nullable = baseInfo.nullable,
             blank = infoAnnotation?.findArgument<Boolean>("blank") != false,
             unique = infoAnnotation?.findArgument<Boolean>("unique") == true,
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
@@ -112,95 +150,72 @@ object PropertiesRepository {
         )
     }
 
+    /**
+     * Processes column configuration for Exposed ORM.
+     * Handles specific Exposed-related logic while delegating common processing.
+     *
+     * @param property The property declaration to process
+     * @param type The KSType information for the property
+     * @return ColumnSet configuration or null if processing fails
+     */
+    fun getColumnSetsForExposed(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
+        val genericArgument = type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName ?: return null
+        val baseInfo = extractBaseColumnInfo(property)
+        val enumValues = property.annotations.getEnumerations()
 
+        return processColumnSet(
+            property = property,
+            baseInfo = baseInfo,
+            genericArgument = genericArgument,
+            enumValues = enumValues
+        )
+    }
+
+    /**
+     * Processes column configuration for Hibernate ORM.
+     * Handles Hibernate-specific annotations and enumeration processing.
+     *
+     * @param property The property declaration to process
+     * @param type The KSType information for the property
+     * @return ColumnSet configuration or null if processing fails
+     */
     fun getColumnSetsForHibernate(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
-        val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
-        val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
-        val isNativeEnumeratedColumn =
-            type.declaration is KSClassDeclaration && (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS && property.annotations.any {
-                it.qualifiedName in HibernateTableProcessor.getListOfHibernatePackage("Enumerated")
-            }
         val genericArgument = type.declaration.qualifiedName?.asString() ?: return null
 
-        // Extract basic column information
-        val name = property.simpleName.asString()
+        // Check for native Hibernate enumeration
+        val isNativeEnumerated = type.declaration is KSClassDeclaration &&
+                (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS &&
+                property.annotations.any {
+                    it.qualifiedName in HibernateTableProcessor.getListOfHibernatePackage("Enumerated")
+                }
+
+        // Process Hibernate-specific column annotation
         val columnAnnotation = property.annotations.find {
             it.qualifiedName in HibernateTableProcessor.getListOfHibernatePackage("Column")
         }
-        val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
-
 
         val nativeName = columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() }
-        val infoName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() }
-        val columnName = nativeName ?: infoName ?: name
-
-
         val nativeNullable =
             columnAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
-        val infoNullable =
-            infoAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
-        val nullable = (nativeNullable ?: infoNullable) != false
 
+        val baseInfo = extractBaseColumnInfo(property, nativeName, nativeNullable)
 
-        val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
-
-        // Validate and process enumerations
-        val nativeEnumeratedValues = if (isNativeEnumeratedColumn) {
+        // Handle native enumeration values
+        val nativeEnumeratedValues = if (isNativeEnumerated) {
             (type.declaration as KSDeclarationContainer).declarations
                 .filterIsInstance<KSClassDeclaration>()
                 .map { it.simpleName.asString() }
                 .toList()
         } else null
+
         val enumValues = property.annotations.getEnumerations() ?: nativeEnumeratedValues
-        if (hasUploadAnnotation) {
-            UploadUtils.validatePropertyType(genericArgument, columnName)
-        }
 
-        // Determine column type
-        val columnType = when {
-            hasEnumerationColumnAnnotation || isNativeEnumeratedColumn -> ColumnType.ENUMERATION
-            hasUploadAnnotation -> ColumnType.FILE
-            else -> guessPropertyType(genericArgument)
-        }
-
-        // Process status styles
-        val statusColors = property.annotations.getStatusStyles()
-        validateStatusColors(columnType, statusColors, enumValues, name)
-
-        // Process additional properties
-        val computedColumnInfo = property.annotations.getComputed()
-        val isReadOnly = (infoAnnotation?.findArgument<Boolean>("readOnly") == true) ||
-                (computedColumnInfo?.second == true)
-
-        val autoNowDate = getAutoNowDateAnnotation(property.annotations)
-        validateAutoNowDate(columnType, autoNowDate, columnName)
-
-        val hasRichEditor = hasRichEditorAnnotation(property.annotations)
-        validateRichEditor(hasRichEditor, columnType)
-
-        return ColumnSet(
-            columnName = columnName,
-            type = columnType,
-            verboseName = verboseName,
-            nullable = nullable,
-            blank = infoAnnotation?.findArgument<Boolean>("blank") != false,
-            unique = infoAnnotation?.findArgument<Boolean>("unique") == true,
-            showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
-            uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
-            allowedMimeTypes = if (hasUploadAnnotation)
-                UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations)
-            else null,
-            defaultValue = infoAnnotation?.findArgument<String>("defaultValue")?.takeIf { it.isNotEmpty() },
-            enumerationValues = enumValues,
-            limits = property.annotations.getLimits(),
-            reference = property.annotations.getReferences(),
-            readOnly = isReadOnly,
-            computedColumn = computedColumnInfo?.first,
-            autoNowDate = autoNowDate,
-            statusColors = statusColors,
-            hasRichEditor = hasRichEditor,
-            hasConfirmation = hasConfirmationAnnotation(property.annotations),
-            valueMapper = getValueMapperAnnotation(property.annotations),
+        return processColumnSet(
+            property = property,
+            baseInfo = baseInfo,
+            genericArgument = genericArgument,
+            enumValues = enumValues,
+            isNativeEnumerated = isNativeEnumerated
         )
     }
 
@@ -335,7 +350,7 @@ object PropertiesRepository {
      * Extracts reference configuration from annotations.
      */
     private fun Sequence<KSAnnotation>.getReferences(): Reference? =
-        find { it.shortName.asString() == References::class.simpleName }
+        find { it.shortName.asString() == OneToOneReferences::class.simpleName }
             ?.arguments
             ?.let {
                 Reference(

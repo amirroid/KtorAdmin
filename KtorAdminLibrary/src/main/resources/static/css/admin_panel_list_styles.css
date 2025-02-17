@@ -283,6 +283,13 @@ h2 {
     table-layout: fixed;
     border-collapse: collapse;
     overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+
+#bottom-box table::-webkit-scrollbar {
+    display: none;
 }
 
 thead,
@@ -319,11 +326,13 @@ td {
     height: 54px;
     width: 100%;
     box-sizing: border-box;
+    overflow: hidden;
     padding-right: 16px;
 }
 
 th[data-col="checkbox"], td[data-col="checkbox"] {
     width: 100px;
+    min-width: 100px;
 }
 
 td .item-text {
@@ -332,10 +341,6 @@ td .item-text {
     white-space: nowrap;
     display: block;
     max-lines: 1;
-}
-
-td {
-    overflow: hidden;
 }
 
 .column-name {
@@ -355,13 +360,14 @@ th {
 
 th:not([data-col="checkbox"]), td:not([data-col="checkbox"]) {
     flex: 1;
+    min-width: 100px;
 }
 
 tr {
     cursor: pointer;
 }
 
-tbody tr:nth-child(even) {
+tbody tr:nth-child(even) td {
     background-color: var(--background-gradient-start-30);
 }
 
