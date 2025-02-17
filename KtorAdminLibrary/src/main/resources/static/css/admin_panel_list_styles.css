@@ -324,11 +324,18 @@ td {
 
 th[data-col="checkbox"], td[data-col="checkbox"] {
     width: 100px;
+}
+
+td .item-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    min-width: 100px;
+    display: block;
     max-lines: 1;
+}
+
+td {
+    overflow: hidden;
 }
 
 .column-name {
@@ -348,10 +355,6 @@ th {
 
 th:not([data-col="checkbox"]), td:not([data-col="checkbox"]) {
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 100px;
-    white-space: nowrap;
 }
 
 tr {

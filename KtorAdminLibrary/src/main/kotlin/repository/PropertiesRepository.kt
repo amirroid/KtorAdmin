@@ -45,10 +45,76 @@ object PropertiesRepository {
      * @return ColumnSet configuration or null if the property cannot be processed
      * @throws IllegalArgumentException if annotation combinations are invalid
      */
-    fun getColumnSets(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
+    fun getColumnSetsForExposed(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
         val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
         val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
         val genericArgument = type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName ?: return null
+
+        // Extract basic column information
+        val name = property.simpleName.asString()
+        val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
+        val columnName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() } ?: name
+        val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
+
+        // Validate and process enumerations
+        val enumValues = property.annotations.getEnumerations()
+        if (hasUploadAnnotation) {
+            UploadUtils.validatePropertyType(genericArgument, columnName)
+        }
+
+        // Determine column type
+        val columnType = when {
+            hasEnumerationColumnAnnotation -> ColumnType.ENUMERATION
+            hasUploadAnnotation -> ColumnType.FILE
+            else -> guessPropertyType(genericArgument)
+        }
+
+        // Process status styles
+        val statusColors = property.annotations.getStatusStyles()
+        validateStatusColors(columnType, statusColors, enumValues, name)
+
+        // Process additional properties
+        val computedColumnInfo = property.annotations.getComputed()
+        val isReadOnly = (infoAnnotation?.findArgument<Boolean>("readOnly") == true) ||
+                (computedColumnInfo?.second == true)
+
+        val autoNowDate = getAutoNowDateAnnotation(property.annotations)
+        validateAutoNowDate(columnType, autoNowDate, columnName)
+
+        val hasRichEditor = hasRichEditorAnnotation(property.annotations)
+        validateRichEditor(hasRichEditor, columnType)
+
+        return ColumnSet(
+            columnName = columnName,
+            type = columnType,
+            verboseName = verboseName,
+            nullable = infoAnnotation?.findArgument<Boolean>("nullable") == true,
+            blank = infoAnnotation?.findArgument<Boolean>("blank") != false,
+            unique = infoAnnotation?.findArgument<Boolean>("unique") == true,
+            showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
+            uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
+            allowedMimeTypes = if (hasUploadAnnotation)
+                UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations)
+            else null,
+            defaultValue = infoAnnotation?.findArgument<String>("defaultValue")?.takeIf { it.isNotEmpty() },
+            enumerationValues = enumValues,
+            limits = property.annotations.getLimits(),
+            reference = property.annotations.getReferences(),
+            readOnly = isReadOnly,
+            computedColumn = computedColumnInfo?.first,
+            autoNowDate = autoNowDate,
+            statusColors = statusColors,
+            hasRichEditor = hasRichEditor,
+            hasConfirmation = hasConfirmationAnnotation(property.annotations),
+            valueMapper = getValueMapperAnnotation(property.annotations),
+        )
+    }
+
+
+    fun getColumnSetsForHibernate(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
+        val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
+        val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
+        val genericArgument = type.declaration.qualifiedName?.asString() ?: return null
 
         // Extract basic column information
         val name = property.simpleName.asString()

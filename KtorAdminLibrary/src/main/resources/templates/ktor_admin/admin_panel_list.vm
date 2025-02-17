@@ -310,7 +310,7 @@
                                     </div>
                                 </td>
                             #else
-                                <td>$!item</td>
+                                <td><div class="item-text">$!item</div></td>
                             #end
                         #end
                     </tr>
