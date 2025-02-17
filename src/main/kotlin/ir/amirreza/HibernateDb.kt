@@ -24,11 +24,11 @@ fun addFakePosts() {
 
     try {
         val post1 = Post(
-            title = "Introduction to Ktor",
-            content = "Ktor is a framework for building asynchronous servers and clients using Kotlin."
+            titleContent = "Introduction to Ktor",
+            content = "Ktor is a framework for building asynchronous servers and clients using Kotlin.",
         )
         val post2 = Post(
-            title = "Understanding Hibernate in Kotlin",
+            titleContent = "Understanding Hibernate in Kotlin",
             content = "Hibernate is an ORM framework that simplifies database interactions in Kotlin applications."
         )
 

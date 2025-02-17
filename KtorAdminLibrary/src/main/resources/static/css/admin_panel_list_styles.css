@@ -500,6 +500,10 @@ th:last-child::before {
     cursor: pointer;
 }
 
+.actions-row:not(:has(.filter-button)) .perform-action {
+    margin-right: 0;
+}
+
 .perform-action:hover {
     opacity: .9;
 }
@@ -531,7 +535,7 @@ th:last-child::before {
     outline: none;
 }
 
-#filter-button {
+.filter-button {
     background-color: var(--white-transparent-60);
     border-radius: 18px;
     position: relative;
@@ -618,7 +622,7 @@ th:last-child::before {
         flex-grow: 1;
     }
 
-    #filter-button {
+    .filter-button {
         left: 0;
     }
 

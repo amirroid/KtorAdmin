@@ -83,7 +83,7 @@
         </div>
         <button class="perform-action" onclick="openActionDialog()">Perform</button>
         #if($filtersData.size != 0)
-            <div id="filter-button" onclick="toggleFilter()">
+            <div class="filter-button" onclick="toggleFilter()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                      xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -175,7 +175,7 @@
                         </div>
                         <button class="perform-action" onclick="openActionDialog()">Perform</button>
                         #if($filtersData.size != 0)
-                            <div id="filter-button" onclick="toggleFilter()">
+                            <div class="filter-button" onclick="toggleFilter()">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
                                     <path

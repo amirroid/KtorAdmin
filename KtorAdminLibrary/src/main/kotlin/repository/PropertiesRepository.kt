@@ -19,6 +19,8 @@ import models.common.Reference
 import models.field.FieldSet
 import models.types.ColumnType
 import models.types.FieldType
+import processors.hibernate.HibernateTableProcessor
+import processors.qualifiedName
 import utils.UploadUtils
 import utils.findArgument
 import utils.guessPropertyType
@@ -114,23 +116,49 @@ object PropertiesRepository {
     fun getColumnSetsForHibernate(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
         val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
         val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
+        val isNativeEnumeratedColumn =
+            type.declaration is KSClassDeclaration && (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS && property.annotations.any {
+                it.qualifiedName in HibernateTableProcessor.getListOfHibernatePackage("Enumerated")
+            }
         val genericArgument = type.declaration.qualifiedName?.asString() ?: return null
 
         // Extract basic column information
         val name = property.simpleName.asString()
+        val columnAnnotation = property.annotations.find {
+            it.qualifiedName in HibernateTableProcessor.getListOfHibernatePackage("Column")
+        }
         val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
-        val columnName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() } ?: name
+
+
+        val nativeName = columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() }
+        val infoName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() }
+        val columnName = nativeName ?: infoName ?: name
+
+
+        val nativeNullable =
+            columnAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
+        val infoNullable =
+            infoAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
+        val nullable = (nativeNullable ?: infoNullable) != false
+
+
         val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
 
         // Validate and process enumerations
-        val enumValues = property.annotations.getEnumerations()
+        val nativeEnumeratedValues = if (isNativeEnumeratedColumn) {
+            (type.declaration as KSDeclarationContainer).declarations
+                .filterIsInstance<KSClassDeclaration>()
+                .map { it.simpleName.asString() }
+                .toList()
+        } else null
+        val enumValues = property.annotations.getEnumerations() ?: nativeEnumeratedValues
         if (hasUploadAnnotation) {
             UploadUtils.validatePropertyType(genericArgument, columnName)
         }
 
         // Determine column type
         val columnType = when {
-            hasEnumerationColumnAnnotation -> ColumnType.ENUMERATION
+            hasEnumerationColumnAnnotation || isNativeEnumeratedColumn -> ColumnType.ENUMERATION
             hasUploadAnnotation -> ColumnType.FILE
             else -> guessPropertyType(genericArgument)
         }
@@ -154,7 +182,7 @@ object PropertiesRepository {
             columnName = columnName,
             type = columnType,
             verboseName = verboseName,
-            nullable = infoAnnotation?.findArgument<Boolean>("nullable") == true,
+            nullable = nullable,
             blank = infoAnnotation?.findArgument<Boolean>("blank") != false,
             unique = infoAnnotation?.findArgument<Boolean>("unique") == true,
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),

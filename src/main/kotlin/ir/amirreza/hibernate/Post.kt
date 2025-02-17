@@ -1,6 +1,9 @@
 package ir.amirreza.hibernate
 
+import annotations.enumeration.Enumeration
 import annotations.hibernate.HibernateTable
+import annotations.info.ColumnInfo
+import ir.amirreza.Priority
 import kotlinx.serialization.Serializable
 import javax.persistence.*
 
@@ -14,9 +17,12 @@ data class Post(
     @Column(name = "id")
     var id: Long = 0,
     @Column(name = "title")
-    var title: String,
+    var titleContent: String,
     @Column(name = "content")
-    var content: String
+    var content: String,
+    @Enumerated(EnumType.STRING)
+    @ColumnInfo(verboseName = "Priority")
+    val priority: Priority = Priority.Low
 )
 
 //@Serializable
