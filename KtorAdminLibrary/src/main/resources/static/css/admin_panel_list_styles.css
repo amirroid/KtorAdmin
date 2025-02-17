@@ -813,7 +813,7 @@ th:last-child::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 20;
+    z-index: 50;
     opacity: 0;
     visibility: hidden;
     transition: .2s cubic-bezier(0.4, 0, 0.2, 1);

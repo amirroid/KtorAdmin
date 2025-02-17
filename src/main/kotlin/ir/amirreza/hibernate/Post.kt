@@ -1,11 +1,12 @@
 package ir.amirreza.hibernate
 
-import annotations.enumeration.Enumeration
 import annotations.hibernate.HibernateTable
 import annotations.info.ColumnInfo
 import annotations.uploads.LocalUpload
 import ir.amirreza.Priority
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import org.hibernate.annotations.Type
 import javax.persistence.*
 
 @Entity
@@ -17,7 +18,6 @@ data class Post(
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     var id: Long = 0,
-    @Column(name = "title")
     var titleContent: String,
     @Column(name = "content")
     var content: String,
@@ -25,7 +25,7 @@ data class Post(
     @ColumnInfo(verboseName = "Priority")
     val priority: Priority = Priority.Low,
     @LocalUpload
-    val file: String? = null
+    var file: String? = null
 )
 
 //@Serializable

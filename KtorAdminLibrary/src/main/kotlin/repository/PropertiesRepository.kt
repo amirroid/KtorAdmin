@@ -48,12 +48,14 @@ object PropertiesRepository {
      * Handles both native (Hibernate/Exposed) and custom ColumnInfo annotations.
      *
      * @param property The property declaration to process
+     * @param type The KSType information for the property
      * @param nativeColumnName Optional native column name (e.g., from Hibernate @Column)
      * @param nativeNullable Optional native nullable setting
      * @return BaseColumnInfo containing processed column information
      */
     private fun extractBaseColumnInfo(
         property: KSPropertyDeclaration,
+        type: KSType,
         nativeColumnName: String? = null,
         nativeNullable: Boolean? = null
     ): BaseColumnInfo {
@@ -65,7 +67,7 @@ object PropertiesRepository {
 
         val infoNullable =
             infoAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
-        val nullable = (nativeNullable ?: infoNullable) != false
+        val nullable = nativeNullable ?: infoNullable ?: type.isMarkedNullable
 
         val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
 
@@ -77,7 +79,6 @@ object PropertiesRepository {
      * Handles all common logic between Hibernate and Exposed processing.
      *
      * @param property The property declaration being processed
-     * @param type The KSType information for the property
      * @param baseInfo Basic column information from extractBaseColumnInfo
      * @param genericArgument The resolved generic type argument
      * @param enumValues List of enumeration values if applicable
@@ -160,7 +161,7 @@ object PropertiesRepository {
      */
     fun getColumnSetsForExposed(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
         val genericArgument = type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName ?: return null
-        val baseInfo = extractBaseColumnInfo(property)
+        val baseInfo = extractBaseColumnInfo(property, type)
         val enumValues = property.annotations.getEnumerations()
 
         return processColumnSet(
@@ -198,7 +199,7 @@ object PropertiesRepository {
         val nativeNullable =
             columnAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
 
-        val baseInfo = extractBaseColumnInfo(property, nativeName, nativeNullable)
+        val baseInfo = extractBaseColumnInfo(property, type, nativeName, nativeNullable)
 
         // Handle native enumeration values
         val nativeEnumeratedValues = if (isNativeEnumerated) {
@@ -215,7 +216,7 @@ object PropertiesRepository {
             baseInfo = baseInfo,
             genericArgument = genericArgument,
             enumValues = enumValues,
-            isNativeEnumerated = isNativeEnumerated
+            isNativeEnumerated = isNativeEnumerated,
         )
     }
 

@@ -189,7 +189,13 @@ function getSelectedItems() {
 
 
 function performSelectedAction() {
-    const actionSelect = document.getElementById("actions-input");
+    const actionRows = document.querySelectorAll(".actions-row");
+
+    const visibleRow = Array.from(actionRows).find(row =>
+        getComputedStyle(row).display !== "none"
+    );
+
+    const actionSelect = visibleRow.querySelector(".actions-input");
     const selectedActionKey = actionSelect.value;
 
     if (!selectedActionKey) {
