@@ -513,17 +513,15 @@ internal object JdbcQueriesRepository {
     /**
      * Retrieves reference data for a specific column.
      * @param table Target database table
-     * @param referenceColumn Column to get references for
      * @return List of display items
      */
     fun getAllReferences(
         table: AdminJdbcTable,
-        referenceColumn: Reference,
     ): List<DisplayItem> {
         return table.usingDataSource { session ->
-            session.list(sqlQuery(table.createGetAllReferencesQuery(referenceColumn))) { raw ->
+            session.list(sqlQuery(table.createGetAllReferencesQuery())) { raw ->
                 val referenceKey =
-                    raw.any("${table.getTableName()}_${referenceColumn.foreignKey}").toString()
+                    raw.any("${table.getTableName()}_${table.getPrimaryKey()}").toString()
                 val displayFormat = table.getDisplayFormat()
                 DisplayItem(
                     itemKey = referenceKey,
@@ -532,7 +530,7 @@ internal object JdbcQueriesRepository {
                         populateTemplate(
                             it,
                             displayFormatValues.associateWith { item ->
-                                if (item == referenceColumn.foreignKey) {
+                                if (item == table.getPrimaryKey()) {
                                     referenceKey
                                 } else {
                                     val splitItem = item.split(".")
@@ -856,16 +854,18 @@ internal object JdbcQueriesRepository {
     /**
      * Creates query for retrieving all references.
      */
-    private fun AdminJdbcTable.createGetAllReferencesQuery(reference: Reference): String {
-        return createBasicReference(reference.foreignKey)
+    private fun AdminJdbcTable.createGetAllReferencesQuery(): String {
+        return createBasicReference()
     }
 
-    private fun AdminJdbcTable.createBasicReference(foreignKeyName: String): String {
+    private fun AdminJdbcTable.createBasicReference(): String {
         val columns = getDisplayFormat()?.extractTextInCurlyBraces().orEmpty()
         val selectColumns = mutableSetOf<String>()
         val joins = mutableListOf<String>()
 
-        selectColumns.add("${getTableName()}.$foreignKeyName AS ${getTableName()}_$foreignKeyName")
+
+        val primaryKey = getPrimaryKey()
+        selectColumns.add("${getTableName()}.$primaryKey AS ${getTableName()}_$primaryKey")
 
         val order = getDefaultOrder()
         order?.let {
@@ -894,7 +894,7 @@ internal object JdbcQueriesRepository {
                                 joins.add("LEFT JOIN $joinTable ON $currentTable.$referenceColumn = $joinTable.$joinColumn")
                             }
 
-                            is Reference.ManyToOne -> {
+                            is Reference.OneToMany -> {
                                 val joinColumn = reference.foreignKey
                                 currentColumn = nextColumn ?: referenceColumn
 
@@ -913,7 +913,7 @@ internal object JdbcQueriesRepository {
                     selectColumns.add("$currentTable.$currentColumn AS ${path.joinToString("_")}")
                 }
             } else {
-                if (column != foreignKeyName && column != getPrimaryKey()) {
+                if (column != primaryKey && column != getPrimaryKey()) {
                     selectColumns.add("${getTableName()}.$column")
                 }
             }

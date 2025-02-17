@@ -88,13 +88,16 @@
                                     </select>
                                 </div>
                             #elseif($column.reference.type == "list")
-                                <select name="$column.columnName" multiple
-                                        #if($column.readOnly)disabled#end>
-                                    #foreach($refValue in $referenceValues)
-                                        <option value="$refValue.itemKey"
-                                                #if($refValue.itemKey == $!defaultValue)selected#end>$refValue.item</option>
-                                    #end
-                                </select>
+                                <div class="multiple-select-input-background">
+                                    <select name="$column.columnName" multiple
+                                            #if($column.readOnly)disabled#end>
+                                        <option value="">Select an item</option>
+                                        #foreach($refValue in $referenceValues)
+                                            <option value="$refValue.itemKey"
+                                                    #if($refValue.itemKey == $!defaultValue)selected#end>$refValue.item</option>
+                                        #end
+                                    </select>
+                                </div>
                             #end
                         #else
                             <!-- STRING -->

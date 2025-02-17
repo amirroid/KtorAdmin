@@ -9,7 +9,6 @@ import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.references.ManyToManyReferences
-import annotations.references.ManyToOneReferences
 import annotations.references.OneToManyReferences
 import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
@@ -68,8 +67,7 @@ object PropertiesRepository {
         val infoName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() }
         val columnName = nativeColumnName ?: infoName ?: name
 
-        val infoNullable =
-            infoAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
+        val infoNullable = infoAnnotation?.findArgument<Boolean>("nullable")
         val nullable = nativeNullable ?: infoNullable ?: type.isMarkedNullable
 
         val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
@@ -357,7 +355,6 @@ object PropertiesRepository {
      */
 
     private val OneToOneReferencesQualifiedName = OneToOneReferences::class.qualifiedName
-    private val ManyToOneReferencesQualifiedName = ManyToOneReferences::class.qualifiedName
     private val OneToManyReferencesQualifiedName = OneToManyReferences::class.qualifiedName
     private val ManyToManyReferencesQualifiedName = ManyToManyReferences::class.qualifiedName
 
@@ -366,7 +363,6 @@ object PropertiesRepository {
             it.qualifiedName.orEmpty() in listOf(
                 OneToOneReferencesQualifiedName,
                 ManyToManyReferencesQualifiedName,
-                ManyToOneReferencesQualifiedName,
                 OneToManyReferencesQualifiedName
             )
         }?.let {
@@ -380,13 +376,6 @@ object PropertiesRepository {
 
                 OneToManyReferencesQualifiedName -> {
                     Reference.OneToMany(
-                        relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
-                        foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String
-                    )
-                }
-
-                ManyToOneReferencesQualifiedName -> {
-                    Reference.ManyToOne(
                         relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
                         foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String
                     )

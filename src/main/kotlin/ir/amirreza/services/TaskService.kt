@@ -3,6 +3,7 @@ package ir.amirreza.services
 import ir.amirreza.Priority
 import ir.amirreza.Tasks
 import ir.amirreza.TestTable
+import ir.amirreza.ref.TaskUsersCrossRef
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
@@ -17,7 +18,7 @@ data class Task(
     val name: String,
     val description: String,
     val priority: Priority,
-    val user: User
+    val user: User? = null
 )
 
 
@@ -25,6 +26,7 @@ class TaskService(private val database: Database) {
     init {
         transaction(database) {
             SchemaUtils.createMissingTablesAndColumns(Tasks)
+            SchemaUtils.create(TaskUsersCrossRef)
             SchemaUtils.create(TestTable)
         }
     }
@@ -33,8 +35,8 @@ class TaskService(private val database: Database) {
         return dbQuery {
             Tasks.selectAll().where { Tasks.id eq id }
                 .map {
-                    val user = UserService(database).read(it[Tasks.userId])!! // اطلاعات یوزر مرتبط را بگیریم
-                    Task(it[Tasks.id], it[Tasks.name], it[Tasks.description], it[Tasks.priority], user)
+//                    val user = UserService(database).read(it[Tasks.userId])!!
+                    Task(it[Tasks.id], it[Tasks.name], it[Tasks.description], it[Tasks.priority], )
                 }
                 .singleOrNull()
         }
@@ -44,8 +46,8 @@ class TaskService(private val database: Database) {
         return dbQuery {
             Tasks.selectAll()
                 .map {
-                    val user = UserService(database).read(it[Tasks.userId])!!
-                    Task(it[Tasks.id], it[Tasks.name], it[Tasks.description], it[Tasks.priority], user)
+//                    val user = UserService(database).read(it[Tasks.userId])!!
+                    Task(it[Tasks.id], it[Tasks.name], it[Tasks.description], it[Tasks.priority])
                 }
         }
     }

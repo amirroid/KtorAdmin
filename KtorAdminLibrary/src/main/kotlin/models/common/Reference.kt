@@ -17,13 +17,6 @@ sealed class Reference(val type: String) {
         val foreignKey: String,
     ) : Reference("select")
 
-    /**
-     * Represents a many-to-one relationship between two tables.
-     */
-    data class ManyToOne(
-        val relatedTable: String,
-        val foreignKey: String,
-    ) : Reference("list")
 
     /**
      * Represents a many-to-many relationship between two tables using a join table.
@@ -33,7 +26,7 @@ sealed class Reference(val type: String) {
         val joinTable: String,
         val leftPrimaryKey: String,
         val rightPrimaryKey: String,
-    ) : Reference("tow_list")
+    ) : Reference("list")
 }
 
 /**
@@ -55,13 +48,6 @@ fun Reference.toFormattedString(): String {
             |)
         """.trimMargin()
 
-        is Reference.ManyToOne -> """
-            |Reference.ManyToOne(
-            |   relatedTable = "$relatedTable",
-            |   foreignKey = "$foreignKey"
-            |)
-        """.trimMargin()
-
         is Reference.ManyToMany -> """
             |Reference.ManyToMany(
             |   relatedTable = "$relatedTable",
@@ -78,14 +64,12 @@ val Reference.tableName: String
         is Reference.OneToOne -> this.relatedTable
         is Reference.OneToMany -> this.relatedTable
         is Reference.ManyToMany -> this.relatedTable
-        is Reference.ManyToOne -> this.relatedTable
     }
 
 
 val Reference.foreignKey: String
     get() = when (this) {
         is Reference.OneToOne -> this.foreignKey
-        is Reference.ManyToOne -> this.foreignKey
         is Reference.ManyToMany -> this.rightPrimaryKey
         is Reference.OneToMany -> this.foreignKey
     }

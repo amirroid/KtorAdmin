@@ -229,6 +229,52 @@ label {
     border-radius: 16px;
 }
 
+.multiple-select-input-background {
+    margin-top: 4px;
+    background-color: var(--background-gradient-start);
+    border-radius: 16px;
+    overflow: hidden;
+    width: 100%;
+    max-height: 200px;
+}
+
+.multiple-select-input-background select {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.multiple-select-input-background select::-webkit-scrollbar {
+    display: none;
+}
+
+.multiple-select-input-background select:focus {
+    border: none;
+    outline: none;
+}
+
+.multiple-select-input-background select option {
+    padding: 8px;
+    color: var(--primary-color);
+    cursor: pointer;
+    outline: none;
+    border-bottom: 1px solid var(--border-color);
+}
+
+select option:focus {
+    border: none;
+    outline: none;
+}
+
+select[multiple] option:checked {
+    background-color: var(--secondary-color);
+    color: var(--white);
+    font-weight: bold;
+}
+
 .form-input::placeholder {
     color: hsla(0, 0%, 0%, 0.4);
 }

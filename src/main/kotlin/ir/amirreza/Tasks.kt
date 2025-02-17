@@ -10,7 +10,6 @@ import annotations.limit.Limits
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import annotations.references.ManyToManyReferences
-import annotations.references.ManyToOneReferences
 import annotations.references.OneToManyReferences
 import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
@@ -32,7 +31,7 @@ enum class Priority {
     filters = ["priority", "checked"]
 )
 @DisplayFormat(
-    format = "{id} - User: {user_id.username} \nNumber: {number}"
+    format = "{id} - User: {user_ref.username} \nNumber: {number}"
 )
 @DefaultOrder(
     "name",
@@ -60,9 +59,10 @@ object Tasks : Table("tasks") {
         { it.name }
     )
 
-    @ColumnInfo("user_id", verboseName = "User")
-    @OneToManyReferences("users", "id")
-    val userId = integer("user_id").references(Users.id)
+    @ColumnInfo("user_ref", verboseName = "User")
+    @ManyToManyReferences("users", "tasks_users", "task_id", "user_id")
+//    @OneToManyReferences("users", "id")
+    val userRef = integer("user_ref").references(Users.id)
 
     @Computed(
         compute = "{name}.toLowerCase().replaceAll(' ', '-')"
