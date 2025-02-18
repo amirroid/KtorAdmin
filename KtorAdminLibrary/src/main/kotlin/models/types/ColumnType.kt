@@ -24,7 +24,7 @@ enum class ColumnType {
     NOT_AVAILABLE
 }
 
-val ColumnType.isNumeric: Boolean
+internal val ColumnType.isNumeric: Boolean
     get() = when (this) {
         ColumnType.INTEGER, ColumnType.UINTEGER, ColumnType.SHORT, ColumnType.USHORT,
         ColumnType.LONG, ColumnType.ULONG, ColumnType.DOUBLE, ColumnType.FLOAT,

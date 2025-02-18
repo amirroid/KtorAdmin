@@ -2,10 +2,12 @@ package ir.amirreza.hibernate
 
 import annotations.hibernate.HibernateTable
 import annotations.info.ColumnInfo
+import annotations.type.OverrideColumnType
 import annotations.uploads.LocalUpload
 import ir.amirreza.Priority
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import models.types.ColumnType
 import org.hibernate.annotations.Type
 import javax.persistence.*
 

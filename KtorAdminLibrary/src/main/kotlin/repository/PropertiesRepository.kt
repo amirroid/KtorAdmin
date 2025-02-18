@@ -13,10 +13,12 @@ import annotations.references.OneToManyReferences
 import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.status.StatusStyle
+import annotations.type.OverrideColumnType
 import annotations.value_mapper.ValueMapper
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ksp.toClassName
 import models.*
+import models.actions.Action
 import models.common.Reference
 import models.field.FieldSet
 import models.types.ColumnType
@@ -103,10 +105,13 @@ object PropertiesRepository {
             UploadUtils.validatePropertyType(genericArgument, baseInfo.columnName)
         }
 
+        val overrideType = property.annotations.getOverrideType()
+
         // Determine the column type based on annotations and property type
         val columnType = when {
             hasEnumerationColumnAnnotation || isNativeEnumerated -> ColumnType.ENUMERATION
             hasUploadAnnotation -> ColumnType.FILE
+            overrideType != null -> overrideType
             genericArgument == null -> ColumnType.NOT_AVAILABLE
             else -> guessPropertyType(genericArgument)
         }
@@ -345,13 +350,22 @@ object PropertiesRepository {
      * Extracts status style colors from annotations.
      */
     private fun Sequence<KSAnnotation>.getStatusStyles(): List<String>? =
-        find { it.shortName.asString() == StatusStyle::class.simpleName }
+        find { it.qualifiedName == StatusStyle::class.qualifiedName }
             ?.arguments
             ?.firstOrNull { it.name?.asString() == "color" }
             ?.value
             ?.let { it as? List<*> }
             ?.filterIsInstance<String>()
             ?.takeIf { it.isNotEmpty() }
+
+
+    private fun Sequence<KSAnnotation>.getOverrideType(): ColumnType? =
+        find { it.qualifiedName == OverrideColumnType::class.qualifiedName }
+            ?.arguments
+            ?.firstOrNull { it.name?.asString() == "type" }
+            ?.value?.let { item ->
+                enumValues<ColumnType>().find { it.name == item.toString().split(".").last() }
+            }
 
     /**
      * Extracts reference configuration from annotations.

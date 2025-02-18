@@ -152,7 +152,7 @@ internal object AnnotationRepository {
 
     private fun createDefaultActionsFunction(classDeclaration: KSClassDeclaration): FunSpec {
         val defaultActions = classDeclaration.getActionsArguments()
-            ?.findActionList("actions")
+            ?.findList("actions")
             ?: Action.entries.map { "${Action::class.simpleName}.${it.name}" }
 
         return FunSpec.builder("getDefaultActions")
@@ -238,7 +238,7 @@ internal object AnnotationRepository {
         ?.let { it as? List<*> }
         ?.filterIsInstance<String>()
 
-    private fun List<KSValueArgument>.findActionList(name: String) = firstOrNull { it.name?.asString() == name }
+    private fun List<KSValueArgument>.findList(name: String) = firstOrNull { it.name?.asString() == name }
         ?.value
         ?.let { it as? List<*> }
         ?.mapNotNull { it?.toString() }
