@@ -86,7 +86,8 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
                     databaseKey = classDeclaration.getDatabaseKey(),
                     groupName = classDeclaration.getGroupName(),
                     primaryKey = primaryKey.columnName,
-                    iconFile = classDeclaration.getIconFile()
+                    iconFile = classDeclaration.getIconFile(),
+                    isShowInAdminPanel = classDeclaration.getShowInAdminPanel(),
                 )
             }
             .build()
@@ -121,6 +122,11 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
     private fun KSClassDeclaration.getIconFile() = (getAnnotationArguments()
         ?.find { it.name?.asString() == "iconFile" }
         ?.value as? String)?.takeIf { it.isNotEmpty() }
+
+
+    private fun KSClassDeclaration.getShowInAdminPanel() = (getAnnotationArguments()
+        ?.find { it.name?.asString() == "showInAdminPanel" }
+        ?.value as? Boolean)!!
 
 
     private fun KSClassDeclaration.getGroupName() = (getAnnotationArguments()

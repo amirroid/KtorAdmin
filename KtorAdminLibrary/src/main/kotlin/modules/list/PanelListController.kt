@@ -44,7 +44,7 @@ internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>, p
     val panel = tables.find { it.getPluralName() == pluralName }
 
     when {
-        panel == null -> notFound("No table found with plural name: $pluralName")
+        panel == null || panel.isShowInAdminPanel().not() -> notFound("No table found with plural name: $pluralName")
         else -> checkHasRole(panel) {
             kotlin.runCatching {
                 val handler = when (panel) {

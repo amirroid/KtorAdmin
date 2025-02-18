@@ -198,6 +198,12 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addStatement("return %S", primaryKey)
             .build()
 
+        val isShowInAdminPanelFunction = FunSpec.builder("isShowInAdminPanel")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(BOOLEAN)
+            .addStatement("return ${classDeclaration.getShowInAdminPanel()}")
+            .build()
+
         val getDefaultOrderFunction = FunSpec.builder("getDefaultOrder")
             .addModifiers(KModifier.OVERRIDE)
             .returns(Order::class.asTypeName().copy(nullable = true))
@@ -235,6 +241,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addFunction(getSearchColumnsFunction)
             .addFunction(getDisplayFormatFunction)
             .addFunction(getDatabaseKeyFunction)
+            .addFunction(isShowInAdminPanelFunction)
             .addFunction(getAccessRolesFunction)
             .addFunction(getIconFileFunction)
             .build()
@@ -405,6 +412,10 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
     private fun KSClassDeclaration.getSingularName(collectionName: String) = (getAnnotationArguments()
         ?.find { it.name?.asString() == "singularName" }
         ?.value as? String)?.takeIf { it.isNotEmpty() } ?: (collectionName + "s")
+
+    private fun KSClassDeclaration.getShowInAdminPanel() = (getAnnotationArguments()
+        ?.find { it.name?.asString() == "showInAdminPanel" }
+        ?.value as? Boolean)!!
 
     private fun KSClassDeclaration.getAnnotationArguments() = annotations
         .find { it.shortName.asString() == MongoCollection::class.simpleName }

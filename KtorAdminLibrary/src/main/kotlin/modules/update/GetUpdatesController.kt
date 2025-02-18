@@ -38,7 +38,9 @@ internal suspend fun ApplicationCall.handleEditItem(
     val primaryKey = parameters["primaryKey"]
     val panel = panels.find { it.getPluralName() == pluralName }
     when {
-        panel == null -> respondText { "No table found with plural name: $pluralName" }
+        panel == null || panel.isShowInAdminPanel()
+            .not() -> respondText { "No table found with plural name: $pluralName" }
+
         primaryKey == null -> respondText { "No primary key found: $pluralName" }
         else -> {
             checkHasRole(panel) {

@@ -33,7 +33,7 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
 
     when {
         // Handle case when panel is not found
-        panel == null -> {
+        panel == null || panel.isShowInAdminPanel().not() -> {
             call.notFound("No panel found with plural name: $pluralName")
         }
         // Handle case when action is not found

@@ -29,7 +29,7 @@ fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: Lis
                 return@get call.invalidateRequest()
             }
             val panel = panels.find { it.getPluralName() == pluralName }
-            if (panel == null) {
+            if (panel == null || panel.isShowInAdminPanel().not()) {
                 call.notFound("No table found with plural name: $pluralName")
             } else {
                 call.response.header(
@@ -57,7 +57,7 @@ fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: Lis
                 return@get call.invalidateRequest()
             }
 
-            val panel = panels.find { it.getPluralName() == pluralName }
+            val panel = panels.find { it.getPluralName() == pluralName }?.takeIf { it.isShowInAdminPanel() }
                 ?: return@get call.notFound("No table found with plural name: $pluralName")
 
             val pdfData = PdfHelper.generatePdf(panel, primaryKey)

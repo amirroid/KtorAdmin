@@ -33,7 +33,8 @@ internal object AnnotationRepository {
         databaseKey: String?,
         groupName: String?,
         primaryKey: String,
-        iconFile: String?
+        iconFile: String?,
+        isShowInAdminPanel: Boolean,
     ): TypeSpec.Builder {
         val columnNames = columnSets.map { it.columnName }.toSet()
 
@@ -46,6 +47,7 @@ internal object AnnotationRepository {
             addFunction(createCustomActionsFunction(classDeclaration))
             addFunction(createDefaultActionsFunction(classDeclaration))
             addFunction(createDisplayFormatFunction(classDeclaration, columnNames))
+            addFunction(createIsShowInAdminPanelFunction(isShowInAdminPanel))
             addFunction(createBasicGetterFunction("getPrimaryKey", primaryKey))
             addFunction(createBasicGetterFunction("getIconFile", iconFile, nullable = true))
             addFunction(createBasicGetterFunction("getDatabaseKey", databaseKey, nullable = true))
@@ -137,6 +139,15 @@ internal object AnnotationRepository {
             ?: emptyList()
 
         return createStringListFunction("getCustomActions", customActions)
+    }
+
+
+    private fun createIsShowInAdminPanelFunction(isShowInAdminPanel: Boolean): FunSpec {
+        return FunSpec.builder("isShowInAdminPanel")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(BOOLEAN)
+            .addStatement("return $isShowInAdminPanel")
+            .build()
     }
 
     private fun createDefaultActionsFunction(classDeclaration: KSClassDeclaration): FunSpec {

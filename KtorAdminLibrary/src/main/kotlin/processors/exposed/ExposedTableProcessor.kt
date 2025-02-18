@@ -102,7 +102,8 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
                     databaseKey = classDeclaration.getDatabaseKey(),
                     groupName = classDeclaration.getGroupName(),
                     primaryKey = primaryKey,
-                    iconFile = classDeclaration.getIconFile()
+                    iconFile = classDeclaration.getIconFile(),
+                    isShowInAdminPanel = classDeclaration.getShowInAdminPanel()
                 )
             }
             .build()
@@ -163,9 +164,14 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         ?.find { it.name?.asString() == "singularName" }
         ?.value as? String)?.takeIf { it.isNotEmpty() } ?: (tableName + "s")
 
+    private fun KSClassDeclaration.getShowInAdminPanel() = (getAnnotationArguments()
+        ?.find { it.name?.asString() == "showInAdminPanel" }
+        ?.value as? Boolean)!!
+
     private fun KSClassDeclaration.getAnnotationArguments() = annotations
         .find { it.shortName.asString() == ExposedTable::class.simpleName }
         ?.arguments
+
 
     companion object {
         private const val COLUMN_TYPE = "org.jetbrains.exposed.sql.Column"

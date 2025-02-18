@@ -4,7 +4,7 @@ import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
 import org.jetbrains.exposed.sql.Table
 
-@ExposedTable("tasks_users", "task_id")
+@ExposedTable("tasks_users", "task_id", showInAdminPanel = false)
 object TaskUsersCrossRef : Table("tasks_users") {
     @ColumnInfo("task_id")
     val taskId = integer("task_id")

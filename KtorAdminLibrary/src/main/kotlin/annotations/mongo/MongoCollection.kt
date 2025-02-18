@@ -18,6 +18,8 @@ package annotations.mongo
  * @param databaseKey (Optional) A custom key used for identifying the table in queries or settings.
  *                   This refers to a database key defined in the plugin configuration.
  * @param iconFile (Optional) The file name or path of an icon representing the table in UI components.
+ * @param showInAdminPanel Determines whether this table should be displayed in the admin panel.
+ *                         Default is `true`. If `false`, the table will be hidden from UI-based management.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
@@ -29,4 +31,5 @@ annotation class MongoCollection(
     val groupName: String = "",
     val databaseKey: String = "",
     val iconFile: String = "",
+    val showInAdminPanel: Boolean = true
 )

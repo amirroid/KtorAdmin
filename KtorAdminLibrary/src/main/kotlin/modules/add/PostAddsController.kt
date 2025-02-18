@@ -52,7 +52,7 @@ private suspend fun onMongoInsert(
 internal suspend fun RoutingContext.handleAddRequest(panels: List<AdminPanel>) {
     val pluralName = call.parameters["pluralName"]
     val panel = panels.findWithPluralName(pluralName)
-    if (panel == null) {
+    if (panel == null || panel.isShowInAdminPanel().not()) {
         call.respondText { "No table found with plural name: $pluralName" }
         return
     }

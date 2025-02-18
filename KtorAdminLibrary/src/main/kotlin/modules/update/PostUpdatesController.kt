@@ -64,7 +64,7 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
         return
     }
     val panel = panels.findWithPluralName(pluralName)
-    if (panel == null) {
+    if (panel == null || panel.isShowInAdminPanel().not()) {
         call.notFound("No table found with plural name: $pluralName")
         return
     }

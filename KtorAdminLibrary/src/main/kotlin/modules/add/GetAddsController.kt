@@ -27,7 +27,7 @@ import kotlin.math.log
 internal suspend fun ApplicationCall.handleAddNewItem(panels: List<AdminPanel>, panelGroups: List<PanelGroup>) {
     val pluralName = parameters["pluralName"]
     val panel = panels.find { it.getPluralName() == pluralName }
-    if (panel == null) {
+    if (panel == null || panel.isShowInAdminPanel().not()) {
         notFound("No table found with plural name: $pluralName")
     } else {
         checkHasRole(panel) {

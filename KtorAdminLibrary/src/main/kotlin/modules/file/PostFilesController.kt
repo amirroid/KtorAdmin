@@ -8,6 +8,7 @@ import panels.AdminJdbcTable
 import panels.AdminMongoCollection
 import panels.AdminPanel
 import repository.FileRepository
+import utils.notFound
 import utils.withAuthenticate
 
 fun Routing.handleGenerateFileUrl(panels: List<AdminPanel>, authenticateName: String?) {
@@ -31,6 +32,9 @@ fun Routing.handleGenerateFileUrl(panels: List<AdminPanel>, authenticateName: St
             val itemUploadTarget = panels.firstOrNull {
                 it.getPluralName() == pluralName
             }?.let { panel ->
+                if (panel.isShowInAdminPanel().not()) {
+                    return@post call.notFound("No table found with plural name: $pluralName")
+                }
                 when (panel) {
                     is AdminJdbcTable -> panel.getAllColumns().firstOrNull {
                         it.columnName == itemName
