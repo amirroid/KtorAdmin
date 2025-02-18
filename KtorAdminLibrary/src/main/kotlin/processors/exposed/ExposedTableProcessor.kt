@@ -17,6 +17,7 @@ import models.actions.Action
 import models.chart.AdminChartStyle
 import models.common.Reference
 import models.date.AutoNowDate
+import models.reference.EmptyColumn
 import models.types.ColumnType
 import repository.AnnotationRepository
 import repository.PropertiesRepository
@@ -118,13 +119,16 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
     }
 
     private fun KSClassDeclaration.getAllColumnSets(): List<ColumnSet> {
+        val emptyColumnName = EmptyColumn::class.qualifiedName
         val columns = mutableListOf<ColumnSet>()
         declarations.filterIsInstance<KSPropertyDeclaration>().forEach { property ->
             val type = property.type.resolve()
-            if (type.toClassName().canonicalName == COLUMN_TYPE) {
-                PropertiesRepository.getColumnSetsForExposed(property, type)?.let {
-                    columns += it
-                }
+            val typeName = type.toClassName().canonicalName
+            if (typeName == COLUMN_TYPE || typeName == emptyColumnName) {
+                PropertiesRepository.getColumnSetsForExposed(property, type, isEmpty = typeName == emptyColumnName)
+                    ?.let {
+                        columns += it
+                    }
             }
         }
         return columns

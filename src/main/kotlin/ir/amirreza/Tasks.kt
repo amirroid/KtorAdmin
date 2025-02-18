@@ -17,6 +17,7 @@ import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
 import annotations.uploads.LocalUpload
 import annotations.value_mapper.ValueMapper
+import models.reference.EmptyColumn
 import org.jetbrains.exposed.sql.Table
 
 enum class Priority {
@@ -62,6 +63,9 @@ object Tasks : Table("tasks") {
     @ColumnInfo("user_id", verboseName = "Users")
     @OneToManyReferences("users", "id")
     val userId = integer("user_id").references(Users.id)
+
+    @ManyToManyReferences("users", "tasks_users", "task_id", "user_id")
+    val users = EmptyColumn()
 
     @Computed(
         compute = "{name}.toLowerCase().replaceAll(' ', '-')"

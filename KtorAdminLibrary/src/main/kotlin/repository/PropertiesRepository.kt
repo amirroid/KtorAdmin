@@ -89,7 +89,7 @@ object PropertiesRepository {
     private fun processColumnSet(
         property: KSPropertyDeclaration,
         baseInfo: BaseColumnInfo,
-        genericArgument: String,
+        genericArgument: String?,
         enumValues: List<String>?,
         isNativeEnumerated: Boolean = false
     ): ColumnSet {
@@ -99,7 +99,7 @@ object PropertiesRepository {
         val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
 
         // Validate upload configuration if present
-        if (hasUploadAnnotation) {
+        if (hasUploadAnnotation && genericArgument != null) {
             UploadUtils.validatePropertyType(genericArgument, baseInfo.columnName)
         }
 
@@ -107,6 +107,7 @@ object PropertiesRepository {
         val columnType = when {
             hasEnumerationColumnAnnotation || isNativeEnumerated -> ColumnType.ENUMERATION
             hasUploadAnnotation -> ColumnType.FILE
+            genericArgument == null -> ColumnType.NOT_AVAILABLE
             else -> guessPropertyType(genericArgument)
         }
 
@@ -162,8 +163,10 @@ object PropertiesRepository {
      * @param type The KSType information for the property
      * @return ColumnSet configuration or null if processing fails
      */
-    fun getColumnSetsForExposed(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
-        val genericArgument = type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName ?: return null
+    fun getColumnSetsForExposed(property: KSPropertyDeclaration, type: KSType, isEmpty: Boolean = false): ColumnSet? {
+        val genericArgument = if (isEmpty) {
+            null
+        } else type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName ?: return null
         val baseInfo = extractBaseColumnInfo(property, type)
         val enumValues = property.annotations.getEnumerations()
 

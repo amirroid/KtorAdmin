@@ -5,6 +5,8 @@ import annotations.exposed.ExposedTable
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.order.DefaultOrder
+import annotations.references.ManyToManyReferences
+import models.reference.EmptyColumn
 import org.jetbrains.exposed.sql.Table
 
 @ExposedTable(
@@ -28,6 +30,10 @@ object Users : Table() {
     )
     val email = varchar("email", length = 150)
     val password = text("password")
+
+
+    @ManyToManyReferences("tasks", "tasks_users", "user_id", "task_id")
+    val tasks = EmptyColumn()
 
     override val primaryKey = PrimaryKey(id)
 }
