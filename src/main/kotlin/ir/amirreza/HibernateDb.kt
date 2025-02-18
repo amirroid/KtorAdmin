@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import ir.amirreza.hibernate.Author
 import ir.amirreza.hibernate.Post
 import org.hibernate.SessionFactory
 
@@ -7,6 +8,7 @@ object HibernateUtil {
     val sessionFactory: SessionFactory = org.hibernate.cfg.Configuration()
         .configure()
         .addAnnotatedClass(Post::class.java)
+        .addAnnotatedClass(Author::class.java)
         .buildSessionFactory()
 
 }
@@ -23,13 +25,18 @@ fun addFakePosts() {
     val transaction = session.beginTransaction()
 
     try {
+        val author = Author(name = "John Doe")
+        session.persist(author)
+
         val post1 = Post(
             titleContent = "Introduction to Ktor",
             content = "Ktor is a framework for building asynchronous servers and clients using Kotlin.",
+            author = author
         )
         val post2 = Post(
             titleContent = "Understanding Hibernate in Kotlin",
-            content = "Hibernate is an ORM framework that simplifies database interactions in Kotlin applications."
+            content = "Hibernate is an ORM framework that simplifies database interactions in Kotlin applications.",
+            author = author
         )
 
         session.persist(post1)
