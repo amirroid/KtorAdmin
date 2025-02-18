@@ -10,6 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import models.ColumnSet
 import models.field.FieldSet
+import models.response.updateSelectedReferences
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
@@ -69,9 +70,10 @@ internal suspend fun RoutingContext.handleAddRequest(panels: List<AdminPanel>) {
 
 private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJdbcTable, panels: List<AdminPanel>) {
     val parametersDataResponse = call.receiveMultipart().toTableValues(table)
+    val tables = panels.filterIsInstance<AdminJdbcTable>()
     parametersDataResponse.onSuccess { parametersData ->
-        val parameters = parametersData.map { it?.first }
-        val parametersClasses = parametersData.map { it?.second }
+        val parameters = parametersData.values.map { it?.first }
+        val parametersClasses = parametersData.values.map { it?.second }
         val columns = table.getAllAllowToShowColumnsInUpsert()
 
         // Validate parameters
@@ -79,11 +81,12 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
         if (isValidParameters) {
             kotlin.runCatching {
                 val id = JdbcQueriesRepository.insertData(table, parametersClasses)
+                parametersData.updateSelectedReferences(table, tables, id.toString())
                 onInsert(
                     tableName = table.getTableName(),
                     columnSets = columns,
                     objectPrimaryKey = id.toString(),
-                    parametersData = parametersData
+                    parametersData = parametersData.values
                 )
                 call.respondRedirect("/admin/$pluralName")
             }.onFailure {

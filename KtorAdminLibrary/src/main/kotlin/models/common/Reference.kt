@@ -67,9 +67,9 @@ val Reference.tableName: String
     }
 
 
-val Reference.foreignKey: String
+val Reference.foreignKey: String?
     get() = when (this) {
         is Reference.OneToOne -> this.foreignKey
-        is Reference.ManyToMany -> this.rightPrimaryKey
         is Reference.OneToMany -> this.foreignKey
+        else -> null
     }

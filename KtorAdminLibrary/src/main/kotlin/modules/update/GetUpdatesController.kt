@@ -8,6 +8,7 @@ import flash.getRequestId
 import utils.notFound
 import utils.serverError
 import getters.getReferencesItems
+import getters.getSelectedReferencesItems
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -63,7 +64,10 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
         runCatching {
             val user = principal<KtorAdminPrincipal>()!!
             val columns = table.getAllAllowToShowColumnsInUpsert()
-            val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
+            val panelColumnsList = table.getAllAllowToShowColumnsInUpsertView()
+            val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), panelColumnsList)
+            val selectedReferences =
+                getSelectedReferencesItems(table, panels.filterIsInstance<AdminJdbcTable>(), primaryKey)
             val requestId = getRequestId()
             val valuesWithErrors = getFlashDataAndClear(requestId)
             val errorValues = valuesWithErrors.first
@@ -80,7 +84,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
             respond(
                 VelocityContent(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm", model = mapOf(
-                        "columns" to columns,
+                        "columns" to panelColumnsList,
                         "tableName" to table.getTableName(),
                         "primaryKey" to primaryKey,
                         "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
@@ -88,6 +92,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "singularTableName" to table.getSingularName()
                             .replaceFirstChar { it.uppercaseChar() },
                         "references" to referencesItems,
+                        "selectedReferences" to selectedReferences,
                         "pluralNameBase" to table.getPluralName(),
                         "errors" to errors.toMap(),
                         "csrfToken" to CsrfManager.generateToken(),

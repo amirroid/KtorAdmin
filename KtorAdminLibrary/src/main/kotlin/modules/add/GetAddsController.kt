@@ -48,7 +48,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
     val valuesWithErrors = getFlashDataAndClear(requestId)
     runCatching {
         val user = principal<KtorAdminPrincipal>()!!
-        val columns = table.getAllAllowToShowColumnsInUpsert()
+        val columns = table.getAllAllowToShowColumnsInUpsertView()
         val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
         respond(
             VelocityContent(

@@ -11,7 +11,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import models.ColumnSet
+import models.common.Reference
 import models.field.FieldSet
+import models.response.updateSelectedReferences
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
@@ -73,7 +75,7 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
     call.checkHasRole(panel) {
         kotlin.runCatching {
             when (panel) {
-                is AdminJdbcTable -> updateData(pluralName, primaryKey, panel)
+                is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)
                 is AdminMongoCollection -> updateData(pluralName, primaryKey, panel, panels)
             }
         }.onFailure {
@@ -82,22 +84,25 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
     }
 }
 
+
 private suspend fun RoutingContext.updateData(
-    pluralName: String?, primaryKey: String, table: AdminJdbcTable
+    pluralName: String?, primaryKey: String, table: AdminJdbcTable, panels: List<AdminPanel>
 ) {
+    val tables = panels.filterIsInstance<AdminJdbcTable>()
     val columns = table.getAllAllowToShowColumnsInUpsert()
     val initialData = JdbcQueriesRepository.getData(table, primaryKey)
     val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData, primaryKey)
     parametersDataResponse.onSuccess { parametersData ->
         kotlin.runCatching {
             val changedDataAndId =
-                JdbcQueriesRepository.updateChangedData(table, parametersData, primaryKey, initialData)
+                JdbcQueriesRepository.updateChangedData(table, parametersData.values, primaryKey, initialData)
+            parametersData.updateSelectedReferences(table, tables, primaryKey)
             onUpdate(
                 tableName = table.getTableName(),
                 objectPrimaryKey = changedDataAndId?.first?.toString() ?: primaryKey,
                 changedColumns = changedDataAndId?.second ?: emptyList(),
                 columnSets = columns,
-                parametersData = parametersData
+                parametersData = parametersData.values
             )
             call.respondRedirect("/admin/$pluralName")
         }.onFailure {

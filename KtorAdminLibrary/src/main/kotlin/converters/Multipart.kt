@@ -3,6 +3,7 @@ package converters
 import csrf.CsrfManager
 import flash.REQUEST_ID
 import flash.REQUEST_ID_FORM
+import formatters.map
 import getters.toTypedValue
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
@@ -12,6 +13,8 @@ import models.ColumnSet
 import models.types.ColumnType
 import models.events.FileEvent
 import models.field.FieldSet
+import models.isNotListReference
+import models.response.TableResponse
 import models.types.FieldType
 import panels.*
 import repository.FileRepository
@@ -33,10 +36,12 @@ internal suspend fun MultiPartData.toTableValues(
     table: AdminJdbcTable,
     initialData: List<String?>? = null,
     primaryKey: String? = null
-): Response<List<Pair<String, Any?>?>> {
+): Response<TableResponse> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
+    val referenceItems = mutableMapOf<ColumnSet, MutableList<String>>()
     val otherFields = mutableMapOf<String, String>()
     val columns = table.getAllAllowToShowColumnsInUpsert()
+    val panelListColumns = table.getAllAllowToShowColumnsInUpsertView()
 
     val fileBytes = mutableMapOf<ColumnSet, Pair<String?, ByteArray>>()
     var requestId: String? = null
@@ -44,7 +49,7 @@ internal suspend fun MultiPartData.toTableValues(
     var isInvalidRequest = false
     forEachPart { part ->
         val name = part.name
-        val column = columns.firstOrNull { it.columnName == name }
+        val column = panelListColumns.firstOrNull { it.columnName == name }
         if (name == CSRF_TOKEN_FIELD_NAME && part is PartData.FormItem) {
             val token = part.value
             part.dispose()
@@ -112,11 +117,15 @@ internal suspend fun MultiPartData.toTableValues(
                 }
 
                 is PartData.FormItem -> {
-                    val itemErrors = Validators.validateColumnParameter(
-                        table, column, part.value, primaryKey
-                    )?.let { ErrorResponse(column.columnName, listOf(it)) }
-                    errors += itemErrors
-                    items[name] = part.value.let { it to it.toTypedValue(column.type) }
+                    if (column.isNotListReference) {
+                        val itemErrors = Validators.validateColumnParameter(
+                            table, column, part.value, primaryKey
+                        )?.let { ErrorResponse(column.columnName, listOf(it)) }
+                        errors += itemErrors
+                        items[name] = part.value.let { it to it.toTypedValue(column.type) }
+                    } else {
+                        referenceItems.getOrPut(column) { mutableListOf() } += part.value
+                    }
                 }
 
                 else -> Unit
@@ -159,7 +168,15 @@ internal suspend fun MultiPartData.toTableValues(
         items[column.columnName] = fileData
     }
     // Return values corresponding to the columns
-    return Response.Success(columns.map { items[it.columnName] })
+    return Response.Success(
+        TableResponse(
+            values = columns.map { items[it.columnName] },
+            referenceValues = panelListColumns
+                .filter { it.isNotListReference.not() }.associate { column ->
+                    column to (referenceItems[column] ?: emptyList())
+                }
+        )
+    )
 }
 
 internal suspend fun MultiPartData.toTableValues(

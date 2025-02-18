@@ -2,9 +2,11 @@ package getters
 
 import models.ColumnSet
 import models.common.DisplayItem
+import models.common.Reference
 import models.common.tableName
 import repository.JdbcQueriesRepository
 import panels.AdminJdbcTable
+import panels.getAllAllowToShowColumnsInUpsertView
 
 internal fun getReferencesItems(
     tables: List<AdminJdbcTable>,
@@ -18,5 +20,24 @@ internal fun getReferencesItems(
         JdbcQueriesRepository.getAllReferences(
             table = tables.first { it.getTableName() == column.reference!!.tableName },
         )
+    }
+}
+
+internal fun getSelectedReferencesItems(
+    table: AdminJdbcTable,
+    tables: List<AdminJdbcTable>,
+    primaryKey: String
+): Map<ColumnSet, Map<String, Any>> {
+    val columnsWithReferences =
+        table.getAllAllowToShowColumnsInUpsertView().filter { it.reference is Reference.ManyToMany }
+    if (columnsWithReferences.any { column -> tables.none { it.getTableName() == column.reference!!.tableName } }) {
+        throw IllegalArgumentException("Error: Some referenced tables do not exist or are not defined in the current schema.")
+    }
+    return columnsWithReferences.associateWith { column ->
+        JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+            table = table,
+            column,
+            primaryKey
+        ).associateBy { it.toString() }
     }
 }

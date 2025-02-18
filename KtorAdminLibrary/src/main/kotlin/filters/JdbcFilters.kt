@@ -3,6 +3,9 @@ package filters
 import getters.toTypedValue
 import io.ktor.http.*
 import models.ColumnSet
+import models.common.Reference
+import models.common.foreignKey
+import models.common.tableName
 import models.filters.FilterTypes
 import models.filters.FiltersData
 import models.types.ColumnType
@@ -50,18 +53,19 @@ internal object JdbcFilters {
                     values = columnSet.enumerationValues
                 )
 
-//                columnSet?.reference != null -> {
-//                    val referenceTable = jdbcTables.find {
-//                        it.getTableName() == columnSet.reference.tableName
-//                    }
-//                        ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference.tableName}")
-//
-//                    FiltersData(
-//                        paramName = columnSet.columnName,
-//                        type = FilterTypes.REFERENCE,
-//                        values = JdbcQueriesRepository.getAllReferences(referenceTable, columnSet.reference.columnName)
-//                    )
-//                }
+                columnSet?.reference is Reference.OneToOne || columnSet?.reference is Reference.OneToMany -> {
+                    val referenceTable = jdbcTables.find {
+                        it.getTableName() == columnSet.reference.tableName
+                    }
+                        ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference.tableName}")
+                    FiltersData(
+                        paramName = columnSet.columnName,
+                        type = FilterTypes.REFERENCE,
+                        values = JdbcQueriesRepository.getAllReferences(
+                            referenceTable,
+                        )
+                    )
+                }
 
                 else -> throw IllegalArgumentException("Filters are currently supported only for types: DATE, DATETIME, ENUMERATION, and REFERENCE")
             }
@@ -129,7 +133,7 @@ internal object JdbcFilters {
             parameters[startParamName]?.let { startValue ->
                 val startTimestamp = Instant.ofEpochMilli(startValue.toLong())
                     .atZone(ZoneId.systemDefault())
-                val value =when(columnSet.type){
+                val value = when (columnSet.type) {
                     ColumnType.DATETIME -> startTimestamp.toLocalDateTime()
                     ColumnType.DATE -> startTimestamp.toLocalDate()
                     else -> return@let
@@ -142,7 +146,7 @@ internal object JdbcFilters {
             parameters[endParamName]?.let { endValue ->
                 val endTimestamp = Instant.ofEpochMilli(endValue.toLong())
                     .atZone(ZoneId.systemDefault())
-                val value =when(columnSet.type){
+                val value = when (columnSet.type) {
                     ColumnType.DATETIME -> endTimestamp.toLocalDateTime()
                     ColumnType.DATE -> endTimestamp.toLocalDate()
                     else -> return@let

@@ -606,6 +606,109 @@ internal object JdbcQueriesRepository {
             }
         }
 
+
+    /**
+     * Retrieves all related primary keys from a Many-to-Many reference.
+     *
+     * This function executes a query to fetch the values of `rightPrimaryKey` from the join table,
+     * where the `leftPrimaryKey` matches the given primary key.
+     *
+     * @param table The table containing the reference.
+     * @param columnSet The column set containing the Many-to-Many reference.
+     * @param primaryKey The primary key value used to filter the results.
+     * @return A list of primary key values from the related table.
+     */
+    fun getAllSelectedReferenceInListReference(
+        table: AdminJdbcTable,
+        columnSet: ColumnSet,
+        primaryKey: String
+    ): List<Any> {
+        val reference = columnSet.reference as Reference.ManyToMany
+        val primaryKeys = mutableListOf<Any>()
+
+        table.usingDataSource { session ->
+            session.prepare(sqlQuery(table.createSelectedReferenceInListReference(reference)))
+                .use { preparedStatement ->
+                    val primaryKeyColumn = table.getPrimaryKeyColumn()
+                    val typedPrimaryKey = primaryKey.toTypedValue(primaryKeyColumn.type)
+
+                    preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, 1)
+
+                    preparedStatement.executeQuery().use { resultSet ->
+                        while (resultSet.next()) {
+                            resultSet.getObject(reference.rightPrimaryKey)?.let(primaryKeys::add)
+                        }
+                    }
+                }
+        }
+        return primaryKeys
+    }
+
+    /**
+     * Generates the SQL query for selecting the related primary keys
+     * from the join table in a Many-to-Many relationship.
+     */
+    private fun AdminJdbcTable.createSelectedReferenceInListReference(reference: Reference.ManyToMany) = buildString {
+        append("SELECT ${reference.rightPrimaryKey} FROM ")
+        append(reference.joinTable)
+        append(" WHERE ")
+        append(reference.leftPrimaryKey)
+        append(" = ?")
+    }
+
+    /**
+     * Updates a many-to-many relationship by:
+     * 1. Deleting old relations that are not in `newIds`.
+     * 2. If `newIds` is empty, it removes all relations for the given `primaryKey`.
+     * 3. Inserting new relations only if `newIds` is not empty and not already present.
+     */
+    fun updateSelectedReferenceInListReference(
+        table: AdminJdbcTable,
+        joinTable: AdminJdbcTable,
+        columnSet: ColumnSet,
+        primaryKey: String,
+        newIds: List<String>
+    ) {
+        val reference = columnSet.reference as Reference.ManyToMany
+
+        joinTable.usingDataSource { session ->
+            session.prepare(sqlQuery(createUpdateReferenceQuery(reference, newIds))).use { preparedStatement ->
+                val primaryKeyColumn = table.getPrimaryKeyColumn()
+                val typedPrimaryKey = primaryKey.toTypedValue(primaryKeyColumn.type)
+
+                var index = 1
+                preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, index++)
+
+                val idColumnSet = joinTable.getAllColumns().firstOrNull { it.columnName == reference.rightPrimaryKey }
+                if (idColumnSet == null) {
+                    throw IllegalStateException("Column '${reference.rightPrimaryKey}' not found in the join table.")
+                }
+
+                if (newIds.isNotEmpty()) {
+                    newIds.forEach { id ->
+                        preparedStatement.putColumn(
+                            idColumnSet.type,
+                            id.toTypedValue(idColumnSet.type),
+                            index++
+                        )
+                    }
+                    preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, index++)
+                    newIds.forEach { id ->
+                        preparedStatement.putColumn(
+                            idColumnSet.type,
+                            id.toTypedValue(idColumnSet.type),
+                            index++
+                        )
+                    }
+                    preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, index)
+                }
+
+                preparedStatement.executeUpdate()
+            }
+        }
+    }
+
+
     /**
      * Inserts new data into the table.
      */
@@ -780,67 +883,66 @@ internal object JdbcQueriesRepository {
         search: String?,
         filters: List<Triple<ColumnSet, String, Any>>
     ): String {
-        return ""
-//        val joinConditions = mutableListOf<String>()
-//        val searchConditions = if (search != null) {
-//            getSearches().map { columnPath ->
-//                val pathParts = columnPath.split('.')
-//                var currentTable = getTableName()
-//                val currentColumn = pathParts.last()
-//
-//                pathParts.first().let { part ->
-//                    val columnSet = getAllColumns().find { it.columnName == part }
-//                    val nextTable = columnSet?.reference?.tableName
-//                    val currentReferenceColumn = columnSet?.reference?.columnName
-//
-//                    if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
-//                        joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
-//                        currentTable = nextTable
-//                    }
-//                }
-//
-//                "LOWER(${currentTable}.${currentColumn}) LIKE LOWER(?)"
-//            }
-//        } else emptyList()
-//
-//        val filterConditions = if (filters.isEmpty()) emptyList() else getFilters().mapNotNull { item ->
-//            val pathParts = item.split('.')
-//            var currentTable = getTableName()
-//            val currentColumn = pathParts.last()
-//
-//            pathParts.first().let { part ->
-//                if (!filters.any { it.first.columnName == part }) {
-//                    return@mapNotNull null
-//                }
-//                val columnSet = getAllColumns().find { it.columnName == part }
-//                val nextTable = columnSet?.reference?.tableName
-//                val currentReferenceColumn = columnSet?.reference?.columnName
-//
-//                if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
-//                    joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
-//                    currentTable = nextTable
-//                }
-//                filters.filter { it.first.columnName == columnSet?.columnName }
-//                    .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
-//                        "${currentTable}.${currentColumn} ${filterItem.second} ?"
-//                    }
-//            }
-//        }
-//        return if (filterConditions.isEmpty() && searchConditions.isEmpty()) {
-//            ""
-//        } else {
-//            buildString {
-//                append(joinConditions.distinct().joinToString(" "))
-//                append(" WHERE ")
-//                if (searchConditions.isNotEmpty()) {
-//                    append(searchConditions.joinToString(" OR ") { it })
-//                    if (filterConditions.isNotEmpty()) {
-//                        append(" AND ")
-//                    }
-//                }
-//                append(filterConditions.joinToString(" AND ") { it })
-//            }
-//        }
+        val joinConditions = mutableListOf<String>()
+        val searchConditions = if (search != null) {
+            getSearches().map { columnPath ->
+                val pathParts = columnPath.split('.')
+                var currentTable = getTableName()
+                val currentColumn = pathParts.last()
+
+                pathParts.first().let { part ->
+                    val columnSet = getAllColumns().find { it.columnName == part }
+                    val nextTable = columnSet?.reference?.tableName
+                    val currentReferenceColumn = columnSet?.reference?.foreignKey
+
+                    if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
+                        joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
+                        currentTable = nextTable
+                    }
+                }
+
+                "LOWER(${currentTable}.${currentColumn}) LIKE LOWER(?)"
+            }
+        } else emptyList()
+
+        val filterConditions = if (filters.isEmpty()) emptyList() else getFilters().mapNotNull { item ->
+            val pathParts = item.split('.')
+            var currentTable = getTableName()
+            val currentColumn = pathParts.last()
+
+            pathParts.first().let { part ->
+                if (!filters.any { it.first.columnName == part }) {
+                    return@mapNotNull null
+                }
+                val columnSet = getAllColumns().find { it.columnName == part }
+                val nextTable = columnSet?.reference?.tableName
+                val currentReferenceColumn = columnSet?.reference?.foreignKey
+
+                if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
+                    joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
+                    currentTable = nextTable
+                }
+                filters.filter { it.first.columnName == columnSet?.columnName }
+                    .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
+                        "${currentTable}.${currentColumn} ${filterItem.second} ?"
+                    }
+            }
+        }
+        return if (filterConditions.isEmpty() && searchConditions.isEmpty()) {
+            ""
+        } else {
+            buildString {
+                append(joinConditions.distinct().joinToString(" "))
+                append(" WHERE ")
+                if (searchConditions.isNotEmpty()) {
+                    append(searchConditions.joinToString(" OR ") { it })
+                    if (filterConditions.isNotEmpty()) {
+                        append(" AND ")
+                    }
+                }
+                append(filterConditions.joinToString(" AND ") { it })
+            }
+        }
     }
 
     /**
@@ -1041,6 +1143,25 @@ internal object JdbcQueriesRepository {
         )
         append(" FROM ${getTableName()} WHERE ${getPrimaryKey()} = ?")
     }
+
+    private fun createUpdateReferenceQuery(reference: Reference.ManyToMany, newIds: List<String>) =
+        buildString {
+            append("DELETE FROM ${reference.joinTable} WHERE ${reference.leftPrimaryKey} = ?")
+            if (newIds.isNotEmpty()) {
+                append(" AND ${reference.rightPrimaryKey} NOT IN (${newIds.joinToString { "?" }});")
+            } else {
+                append(";")
+            }
+
+            if (newIds.isNotEmpty()) {
+                append("INSERT INTO ${reference.joinTable} (${reference.leftPrimaryKey}, ${reference.rightPrimaryKey}) ")
+                append("SELECT ?, new_ids.${reference.rightPrimaryKey} FROM (VALUES ")
+                append(newIds.joinToString { "(?)" })
+                append(") AS new_ids(${reference.rightPrimaryKey}) ")
+                append("WHERE NOT EXISTS (SELECT 1 FROM ${reference.joinTable} ")
+                append("WHERE ${reference.leftPrimaryKey} = ? AND ${reference.rightPrimaryKey} = new_ids.${reference.rightPrimaryKey});")
+            }
+        }
 
     /**
      * Creates query for inserting new data.

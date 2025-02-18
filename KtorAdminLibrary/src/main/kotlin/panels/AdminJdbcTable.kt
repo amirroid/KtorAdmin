@@ -1,6 +1,7 @@
 package panels
 
 import models.ColumnSet
+import models.isNotListReference
 
 interface AdminJdbcTable : AdminPanel {
     fun getAllColumns(): Collection<ColumnSet>
@@ -8,11 +9,13 @@ interface AdminJdbcTable : AdminPanel {
 }
 
 
-fun AdminJdbcTable.getAllAllowToShowColumns() = getAllColumns().filter { it.showInPanel }
-
+fun AdminJdbcTable.getAllAllowToShowColumns() = getAllColumns().filter { it.showInPanel && it.isNotListReference }
 
 fun AdminJdbcTable.getAllAllowToShowColumnsInUpsert() =
     getAllAllowToShowColumns().filter { it.showInPanel && it.autoNowDate == null }
+
+fun AdminJdbcTable.getAllAllowToShowColumnsInUpsertView() =
+    getAllColumns().filter { it.showInPanel && it.autoNowDate == null }
 
 
 fun AdminJdbcTable.getAllAutoNowDateInsertColumns() =

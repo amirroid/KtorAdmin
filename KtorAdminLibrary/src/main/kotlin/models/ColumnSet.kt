@@ -71,3 +71,7 @@ internal fun ColumnSet.getCurrentDateClass() = when (type) {
 
     else -> null
 }
+
+
+internal val ColumnSet.isNotListReference: Boolean
+    get() = reference !is Reference.ManyToMany

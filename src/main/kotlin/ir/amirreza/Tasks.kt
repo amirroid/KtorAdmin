@@ -28,10 +28,10 @@ enum class Priority {
 @AccessRoles("admin")
 @AdminQueries(
     searches = ["user_id.username", "description"],
-    filters = ["priority", "checked"]
+    filters = ["priority", "checked", "user_id"]
 )
 @DisplayFormat(
-    format = "{id} - User: {user_ref.username} \nNumber: {number}"
+    format = "{id} - User: {user_id.username} \nNumber: {number}"
 )
 @DefaultOrder(
     "name",
@@ -59,10 +59,9 @@ object Tasks : Table("tasks") {
         { it.name }
     )
 
-    @ColumnInfo("user_ref", verboseName = "User")
-    @ManyToManyReferences("users", "tasks_users", "task_id", "user_id")
-//    @OneToManyReferences("users", "id")
-    val userRef = integer("user_ref").references(Users.id)
+    @ColumnInfo("user_id", verboseName = "Users")
+    @OneToManyReferences("users", "id")
+    val userId = integer("user_id").references(Users.id)
 
     @Computed(
         compute = "{name}.toLowerCase().replaceAll(' ', '-')"

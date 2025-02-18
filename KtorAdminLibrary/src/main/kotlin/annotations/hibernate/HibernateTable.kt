@@ -16,6 +16,8 @@ package annotations.hibernate
  * @param databaseKey (Optional) A custom identifier for referencing the table in queries or configurations.
  *                   This key corresponds to a database identifier defined in the plugin settings.
  * @param iconFile (Optional) The file name or path of an icon representing the table in UI components.
+ * @param showInAdminPanel Determines whether this table should be displayed in the admin panel.
+ *                         Default is `true`. If `false`, the table will be hidden from UI-based management.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
@@ -26,4 +28,5 @@ annotation class HibernateTable(
     val groupName: String = "",
     val databaseKey: String = "",
     val iconFile: String = "",
+    val showInAdminPanel: Boolean = true
 )
