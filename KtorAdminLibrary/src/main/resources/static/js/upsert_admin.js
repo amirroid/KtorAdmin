@@ -155,8 +155,11 @@ function getCsrfToken() {
 
 function handleRefreshes() {
     let hasChanges = false;
+    let isSubmitting = false; // Flag to check if form is being submitted
+
     const form = document.getElementById('form-box');
     const formElements = form.querySelectorAll('input, select, textarea');
+
     formElements.forEach(element => {
         element.addEventListener('input', () => {
             hasChanges = true;
@@ -168,8 +171,14 @@ function handleRefreshes() {
             });
         }
     });
+
+    // Add event listener for form submission
+    form.addEventListener('submit', () => {
+        isSubmitting = true; // Set the flag to true when form is submitted
+    });
+
     window.addEventListener('beforeunload', (e) => {
-        if (hasChanges) {
+        if (hasChanges && !isSubmitting) { // Check if form is not being submitted
             const confirmationMessage = "Are you sure you want to leave? Unsaved changes will be lost!";
             e.preventDefault();
             e.returnValue = confirmationMessage; // Required for some browsers
