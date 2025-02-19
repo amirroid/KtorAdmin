@@ -11,4 +11,6 @@ object Constants {
 
     // Formats
     const val LOCAL_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm"
+
+    const val FILTERS_PREFIX = "filters."
 }

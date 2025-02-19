@@ -8,6 +8,7 @@ import models.filters.FiltersData
 import models.types.FieldType
 import org.bson.conversions.Bson
 import panels.AdminMongoCollection
+import utils.Constants
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -66,7 +67,7 @@ internal object MongoFilters {
                 }
 
                 FieldType.Enumeration -> {
-                    parameters[fieldSet.fieldName.toString()]?.let { value ->
+                    parameters[Constants.FILTERS_PREFIX + fieldSet.fieldName.toString()]?.let { value ->
                         if (fieldSet.enumerationValues?.contains(value) == true) {
                             filters.add(Filters.eq(fieldSet.fieldName.toString(), value))
                         }
@@ -74,13 +75,13 @@ internal object MongoFilters {
                 }
 
                 FieldType.Boolean -> {
-                    parameters[fieldSet.fieldName.toString()]?.let { value ->
+                    parameters[Constants.FILTERS_PREFIX + fieldSet.fieldName.toString()]?.let { value ->
                         filters.add(Filters.eq(fieldSet.fieldName.toString(), if (value == "1") "true" else "false"))
                     }
                 }
 
                 else -> {
-                    parameters[fieldSet.fieldName.toString()]?.let { value ->
+                    parameters[Constants.FILTERS_PREFIX + fieldSet.fieldName.toString()]?.let { value ->
                         filters.add(Filters.eq(fieldSet.fieldName.toString(), value))
                     }
                 }
@@ -99,7 +100,7 @@ internal object MongoFilters {
         val endParamName = "${fieldSet.fieldName}-end"
 
         if (parameters.contains(startParamName)) {
-            parameters[startParamName]?.let { startValue ->
+            parameters[Constants.FILTERS_PREFIX + startParamName]?.let { startValue ->
                 val start = Instant.ofEpochMilli(startValue.toLong())
                     .atZone(ZoneId.systemDefault())
                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -108,7 +109,7 @@ internal object MongoFilters {
         }
 
         if (parameters.contains(endParamName)) {
-            parameters[endParamName]?.let { endValue ->
+            parameters[Constants.FILTERS_PREFIX + endParamName]?.let { endValue ->
                 val end = Instant.ofEpochMilli(endValue.toLong())
                     .atZone(ZoneId.systemDefault())
                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))

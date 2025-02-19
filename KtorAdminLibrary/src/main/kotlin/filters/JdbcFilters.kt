@@ -10,6 +10,7 @@ import models.filters.FiltersData
 import models.types.ColumnType
 import panels.AdminJdbcTable
 import repository.JdbcQueriesRepository
+import utils.Constants
 import java.time.Instant
 import java.time.ZoneId
 
@@ -99,20 +100,19 @@ internal object JdbcFilters {
                 }
 
                 columnSet?.type == ColumnType.BOOLEAN -> {
-                    parameters[columnSet.columnName]?.let { value ->
-                        println("VALUE $value")
+                    parameters[Constants.FILTERS_PREFIX + columnSet.columnName]?.let { value ->
                         filters.add(Triple(columnSet, "= ", value.toTypedValue(columnSet.type)))
                     }
                 }
 
                 columnSet?.type == ColumnType.ENUMERATION -> {
-                    parameters[columnSet.columnName]?.let { value ->
+                    parameters[Constants.FILTERS_PREFIX + columnSet.columnName]?.let { value ->
                         filters.add(Triple(columnSet, "= ", value.toTypedValue(columnSet.type)))
                     }
                 }
 
                 columnSet?.reference != null -> {
-                    parameters[columnSet.columnName]?.let { refValue ->
+                    parameters[Constants.FILTERS_PREFIX + columnSet.columnName]?.let { refValue ->
                         filters.add(Triple(columnSet, "= ", refValue.toTypedValue(columnSet.type)))
                     }
                 }
@@ -133,7 +133,7 @@ internal object JdbcFilters {
         val endParamName = "${columnSet.columnName}-end"
 
         if (parameters.contains(startParamName)) {
-            parameters[startParamName]?.let { startValue ->
+            parameters[Constants.FILTERS_PREFIX + startParamName]?.let { startValue ->
                 val startTimestamp = Instant.ofEpochMilli(startValue.toLong())
                     .atZone(ZoneId.systemDefault())
                 val value = when (columnSet.type) {
@@ -146,7 +146,7 @@ internal object JdbcFilters {
         }
 
         if (parameters.contains(endParamName)) {
-            parameters[endParamName]?.let { endValue ->
+            parameters[Constants.FILTERS_PREFIX + endParamName]?.let { endValue ->
                 val endTimestamp = Instant.ofEpochMilli(endValue.toLong())
                     .atZone(ZoneId.systemDefault())
                 val value = when (columnSet.type) {

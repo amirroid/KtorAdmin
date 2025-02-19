@@ -7,11 +7,14 @@ function handleFilterInputs() {
     const urlParams = new URLSearchParams(window.location.search);
     let isAnyFilter = false;
 
+    let hasFilters = [...urlParams.keys()].some(key => key.startsWith('filters.'));
+    if (!hasFilters) return;
+
     // Iterate over all filter containers
     document.querySelectorAll('.filter').forEach(filterContainer => {
         const paramName = filterContainer.querySelector('input, select').name;
-        const startParam = `${paramName}-start`;
-        const endParam = `${paramName}-end`;
+        const startParam = `filters.${paramName}-start`;
+        const endParam = `filters.${paramName}-end`;
 
         const startInput = filterContainer.querySelector('input[id$="-start"]');
         const endInput = filterContainer.querySelector('input[id$="-end"]');
@@ -22,15 +25,12 @@ function handleFilterInputs() {
             const startTimestamp = parseInt(urlParams.get(startParam));
             const startDate = new Date(startTimestamp);
 
-            // If the input is of type 'date'
             if (startInput.type === 'date') {
                 startInput.value = startDate.toISOString().split('T')[0];  // Format to 'yyyy-mm-dd'
-                isAnyFilter = true
-            }
-            // If the input is of type 'datetime-local'
-            else if (startInput.type === 'datetime-local') {
+                isAnyFilter = true;
+            } else if (startInput.type === 'datetime-local') {
                 startInput.value = startDate.toISOString().slice(0, 16);  // Format to 'yyyy-mm-ddTHH:mm'
-                isAnyFilter = true
+                isAnyFilter = true;
             }
         }
 
@@ -39,26 +39,24 @@ function handleFilterInputs() {
             const endTimestamp = parseInt(urlParams.get(endParam));
             const endDate = new Date(endTimestamp);
 
-            // If the input is of type 'date'
             if (endInput.type === 'date') {
                 endInput.value = endDate.toISOString().split('T')[0];  // Format to 'yyyy-mm-dd'
-                isAnyFilter = true
-            }
-            // If the input is of type 'datetime-local'
-            else if (endInput.type === 'datetime-local') {
+                isAnyFilter = true;
+            } else if (endInput.type === 'datetime-local') {
                 endInput.value = endDate.toISOString().slice(0, 16);  // Format to 'yyyy-mm-ddTHH:mm'
-                isAnyFilter = true
+                isAnyFilter = true;
             }
         }
 
         // Handle select input
-        if (selectInput && urlParams.has(paramName)) {
-            selectInput.value = urlParams.get(paramName);
-            isAnyFilter = true
+        if (selectInput && urlParams.has(`filters.${paramName}`)) {
+            selectInput.value = urlParams.get(`filters.${paramName}`);
+            isAnyFilter = true;
         }
     });
+
     if (isAnyFilter) {
-        toggleFilter()
+        toggleFilter();
     }
 }
 
@@ -153,9 +151,9 @@ function onFilterApply() {
                     const timestamp = input.id.includes('-end')
                         ? date.setHours(23, 59, 59, 999)
                         : date.setHours(0, 0, 0, 0);
-                    filters.push(`${input.id}=${timestamp}`);
+                    filters.push(`filters.${input.id}=${timestamp}`);
                 } else if (input.type === 'select-one') {
-                    filters.push(`${input.id}=${encodeURIComponent(input.value)}`);
+                    filters.push(`filters.${input.id}=${encodeURIComponent(input.value)}`);
                 }
             }
         });
