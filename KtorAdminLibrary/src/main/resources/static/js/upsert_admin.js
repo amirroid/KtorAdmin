@@ -153,10 +153,36 @@ function getCsrfToken() {
     return document.querySelector('input[name="_csrf"]')?.value;
 }
 
+function handleRefreshes() {
+    let hasChanges = false;
+    const form = document.getElementById('form-box');
+    const formElements = form.querySelectorAll('input, select, textarea');
+    formElements.forEach(element => {
+        element.addEventListener('input', () => {
+            hasChanges = true;
+        });
+
+        if (element.tagName === 'SELECT') {
+            element.addEventListener('change', () => {
+                hasChanges = true;
+            });
+        }
+    });
+    window.addEventListener('beforeunload', (e) => {
+        if (hasChanges) {
+            const confirmationMessage = "Are you sure you want to leave? Unsaved changes will be lost!";
+            e.preventDefault();
+            e.returnValue = confirmationMessage; // Required for some browsers
+            return confirmationMessage;
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     handleComputedColumns()
     handleFileInputs()
     handleRichInputs()
+    handleRefreshes()
 });
 
 
