@@ -6,20 +6,22 @@ import models.isNotListReference
 interface AdminJdbcTable : AdminPanel {
     fun getAllColumns(): Collection<ColumnSet>
     fun getTableName(): String
+    fun getPanelListColumns(): List<String>
 }
 
 
-fun AdminJdbcTable.getAllAllowToShowColumns() = getAllColumns().filter { it.showInPanel && it.isNotListReference }
+fun AdminJdbcTable.getAllAllowToShowColumns() =
+    getAllColumns().filter { it.showInPanel && it.isNotListReference && it.columnName in getPanelListColumns() }
 
 fun AdminJdbcTable.getAllAllowToShowColumnsInUpsert() =
-    getAllAllowToShowColumns().filter { it.showInPanel && it.autoNowDate == null }
+    getAllColumns().filter { it.showInPanel && it.autoNowDate == null && it.isNotListReference }
 
 fun AdminJdbcTable.getAllAllowToShowColumnsInUpsertView() =
     getAllColumns().filter { it.showInPanel && it.autoNowDate == null }
 
 
 fun AdminJdbcTable.getAllAutoNowDateInsertColumns() =
-    getAllAllowToShowColumns().filter { it.autoNowDate != null }
+    getAllColumns().filter { it.autoNowDate != null }
 
 fun AdminJdbcTable.getAllAutoNowDateUpdateColumns() =
-    getAllAllowToShowColumns().filter { it.autoNowDate != null && it.autoNowDate.updateOnChange }
+    getAllColumns().filter { it.autoNowDate != null && it.autoNowDate.updateOnChange }

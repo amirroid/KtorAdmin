@@ -300,7 +300,7 @@
                                 fill: true,
                                 tension: $chart.section.tension,
                                 borderWidth: $chart.section.borderWidth,
-                                borderRadius: $chart.section.borderRadius
+                                borderRadius: $chart.section.borderRadius,
                             },
                         #end
                     ]

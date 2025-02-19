@@ -755,6 +755,7 @@ th:last-child::before {
     display: inline-block;
     position: relative;
     width: 100%;
+    max-width: 120px;
 }
 
 .status-style {

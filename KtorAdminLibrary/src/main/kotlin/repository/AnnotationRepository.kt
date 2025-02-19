@@ -2,6 +2,7 @@ package repository
 
 import annotations.actions.AdminActions
 import annotations.display.DisplayFormat
+import annotations.display.PanelDisplayList
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import annotations.roles.AccessRoles
@@ -36,7 +37,7 @@ internal object AnnotationRepository {
         iconFile: String?,
         isShowInAdminPanel: Boolean,
     ): TypeSpec.Builder {
-        val columnNames = columnSets.map { it.columnName }.toSet()
+        val columnNames = columnSets.map { it.columnName }
 
         return typedSpec.apply {
             addFunction(createSearchColumnsFunction(classDeclaration))
@@ -46,6 +47,7 @@ internal object AnnotationRepository {
             addFunction(createAllColumnsFunction(columnSets))
             addFunction(createCustomActionsFunction(classDeclaration))
             addFunction(createDefaultActionsFunction(classDeclaration))
+            addFunction(createDisplayListFunction(classDeclaration, columnNames))
             addFunction(createDisplayFormatFunction(classDeclaration, columnNames))
             addFunction(createIsShowInAdminPanelFunction(isShowInAdminPanel))
             addFunction(createBasicGetterFunction("getPrimaryKey", primaryKey))
@@ -73,7 +75,7 @@ internal object AnnotationRepository {
 
     private fun createDisplayFormatFunction(
         classDeclaration: KSClassDeclaration,
-        columnNames: Set<String>
+        columnNames: List<String>
     ): FunSpec {
         val displayFormat = getDisplayFormat(classDeclaration)
         validateDisplayFormat(displayFormat, columnNames, classDeclaration.simpleName.asString())
@@ -85,9 +87,25 @@ internal object AnnotationRepository {
             .build()
     }
 
+    private fun createDisplayListFunction(
+        classDeclaration: KSClassDeclaration,
+        columnNames: List<String>
+    ): FunSpec {
+        val displayList = getDisplayList(classDeclaration) ?: columnNames
+        if (displayList.any { it !in columnNames }) {
+            throw IllegalArgumentException("Display list contains invalid column names: ${displayList.filter { it !in columnNames }}")
+        }
+
+        return FunSpec.builder("getPanelListColumns")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(List::class.parameterizedBy(String::class))
+            .addStatement("return ${displayList.toSuitableStringForFile()}")
+            .build()
+    }
+
     private fun createDefaultOrderFunction(
         classDeclaration: KSClassDeclaration,
-        columnNames: Set<String>
+        columnNames: List<String>
     ): FunSpec {
         val order = getDefaultOrderFormat(classDeclaration)
         validateOrder(order, columnNames)
@@ -170,7 +188,7 @@ internal object AnnotationRepository {
             .build()
     }
 
-    private fun validateDisplayFormat(displayFormat: String?, columnNames: Set<String>, className: String) {
+    private fun validateDisplayFormat(displayFormat: String?, columnNames: List<String>, className: String) {
         if (displayFormat != null) {
             val invalidColumns = displayFormat.extractTextInCurlyBraces()
                 .map { it.split(".").first() }
@@ -182,7 +200,7 @@ internal object AnnotationRepository {
         }
     }
 
-    private fun validateOrder(order: Order?, columnNames: Set<String>) {
+    private fun validateOrder(order: Order?, columnNames: List<String>) {
         if (order != null) {
             if (order.name !in columnNames) {
                 throw IllegalArgumentException(
@@ -203,6 +221,12 @@ internal object AnnotationRepository {
         ?.arguments
         ?.find { it.name?.asString() == "format" }
         ?.value as? String
+
+    private fun getDisplayList(classDeclaration: KSClassDeclaration) = (classDeclaration.annotations
+        .find { it.shortName.asString() == PanelDisplayList::class.simpleName }
+        ?.arguments
+        ?.find { it.name?.asString() == "field" }
+        ?.value as? List<*>)?.filterIsInstance<String>()
 
     private fun getDefaultOrderFormat(classDeclaration: KSClassDeclaration) = classDeclaration.annotations
         .find { it.shortName.asString() == DefaultOrder::class.simpleName }

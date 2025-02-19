@@ -2,6 +2,7 @@ package ir.amirreza
 
 import annotations.computed.Computed
 import annotations.display.DisplayFormat
+import annotations.display.PanelDisplayList
 import annotations.enumeration.Enumeration
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
@@ -36,6 +37,9 @@ enum class Priority {
 @DefaultOrder(
     "name",
     "DESC"
+)
+@PanelDisplayList(
+    "name", "priority", "file", "checked"
 )
 object Tasks : Table("tasks") {
     @IgnoreColumn
