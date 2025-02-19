@@ -11,6 +11,10 @@ object HibernateUtil {
         .addAnnotatedClass(Author::class.java)
         .buildSessionFactory()
 
+    fun closeSession() {
+        sessionFactory.close()
+    }
+
 }
 
 fun getPosts(): List<Post> {

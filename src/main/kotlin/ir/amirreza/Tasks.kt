@@ -10,8 +10,7 @@ import annotations.limit.Limits
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
 import annotations.references.ManyToManyReferences
-import annotations.references.OneToManyReferences
-import annotations.references.OneToOneReferences
+import annotations.references.ManyToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
@@ -61,7 +60,7 @@ object Tasks : Table("tasks") {
     )
 
     @ColumnInfo("user_id", verboseName = "Users")
-    @OneToManyReferences("users", "id")
+    @ManyToOneReferences("users", "id")
     val userId = integer("user_id").references(Users.id)
 
     @ManyToManyReferences("users", "tasks_users", "task_id", "user_id")

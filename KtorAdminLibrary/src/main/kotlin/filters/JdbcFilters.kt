@@ -4,7 +4,6 @@ import getters.toTypedValue
 import io.ktor.http.*
 import models.ColumnSet
 import models.common.Reference
-import models.common.foreignKey
 import models.common.tableName
 import models.filters.FilterTypes
 import models.filters.FiltersData
@@ -13,7 +12,6 @@ import panels.AdminJdbcTable
 import repository.JdbcQueriesRepository
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 internal object JdbcFilters {
     fun findFiltersData(
@@ -53,7 +51,7 @@ internal object JdbcFilters {
                     values = columnSet.enumerationValues
                 )
 
-                columnSet?.reference is Reference.OneToOne || columnSet?.reference is Reference.OneToMany -> {
+                columnSet?.reference is Reference.OneToOne || columnSet?.reference is Reference.ManyToOne -> {
                     val referenceTable = jdbcTables.find {
                         it.getTableName() == columnSet.reference.tableName
                     }

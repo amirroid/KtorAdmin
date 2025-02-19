@@ -21,4 +21,7 @@ fun Application.module() {
     configureTemplating()
     configureRouting(database)
     configureAdmin(database)
+    monitor.subscribe(ApplicationStopping) {
+        HibernateUtil.closeSession()
+    }
 }

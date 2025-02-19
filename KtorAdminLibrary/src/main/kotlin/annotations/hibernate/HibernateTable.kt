@@ -7,7 +7,6 @@ package annotations.hibernate
  * It helps with table mapping, structure management, and configuration of additional attributes
  * such as primary key, naming conventions, and grouping.
  *
- * @param tableName The name of the table in the database.
  * @param singularName (Optional) The singular form of the table name, used in UI elements or forms.
  *                     If left empty, it will be automatically derived from `tableName`.
  * @param pluralName (Optional) The plural form of the table name, used in lists or collections.
@@ -22,7 +21,6 @@ package annotations.hibernate
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
 annotation class HibernateTable(
-    val tableName: String,
     val singularName: String = "",
     val pluralName: String = "",
     val groupName: String = "",

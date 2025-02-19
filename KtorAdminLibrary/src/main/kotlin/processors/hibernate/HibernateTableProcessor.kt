@@ -27,6 +27,8 @@ import repository.PropertiesRepository
 import utils.Constants
 import utils.FileUtils
 import utils.PackagesUtils
+import utils.toTableName
+import kotlin.collections.find
 
 class HibernateTableProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -114,9 +116,10 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
         return columns to (primaryKey ?: throw IllegalStateException("(${getTableName()}) No primary key found"))
     }
 
-    private fun KSClassDeclaration.getTableName() = getAnnotationArguments()
-        ?.find { it.name?.asString() == "tableName" }
-        ?.value as? String ?: ""
+    private fun KSClassDeclaration.getTableName(): String {
+        return annotations.find { it.qualifiedName in getListOfHibernatePackage("Table") }?.arguments?.find { it.name?.asString() == "name" }
+            ?.value as? String ?: toTableName()
+    }
 
 
     private fun KSClassDeclaration.getIconFile() = (getAnnotationArguments()

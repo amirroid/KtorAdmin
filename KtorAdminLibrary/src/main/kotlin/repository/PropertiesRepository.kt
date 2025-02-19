@@ -9,25 +9,26 @@ import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.references.ManyToManyReferences
-import annotations.references.OneToManyReferences
+import annotations.references.ManyToOneReferences
 import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.status.StatusStyle
 import annotations.type.OverrideColumnType
 import annotations.value_mapper.ValueMapper
+import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ksp.toClassName
 import models.*
-import models.actions.Action
 import models.common.Reference
 import models.field.FieldSet
 import models.types.ColumnType
 import models.types.FieldType
-import processors.hibernate.HibernateTableProcessor
+import processors.hibernate.HibernateTableProcessor.Companion.getListOfHibernatePackage
 import processors.qualifiedName
 import utils.UploadUtils
 import utils.findArgument
 import utils.guessPropertyType
+import utils.toTableName
 
 /**
  * Repository responsible for processing Kotlin Symbol Processing (KSP) property declarations
@@ -61,13 +62,14 @@ object PropertiesRepository {
         property: KSPropertyDeclaration,
         type: KSType,
         nativeColumnName: String? = null,
-        nativeNullable: Boolean? = null
+        nativeNullable: Boolean? = null,
+        hibernateReference: HibernateReferenceData? = null
     ): BaseColumnInfo {
         val name = property.simpleName.asString()
         val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
 
         val infoName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() }
-        val columnName = nativeColumnName ?: infoName ?: name
+        val columnName = nativeColumnName ?: infoName ?: hibernateReference?.columnName ?: name
 
         val infoNullable = infoAnnotation?.findArgument<Boolean>("nullable")
         val nullable = nativeNullable ?: infoNullable ?: type.isMarkedNullable
@@ -93,7 +95,8 @@ object PropertiesRepository {
         baseInfo: BaseColumnInfo,
         genericArgument: String?,
         enumValues: List<String>?,
-        isNativeEnumerated: Boolean = false
+        isNativeEnumerated: Boolean = false,
+        referenceData: HibernateReferenceData? = null
     ): ColumnSet {
         // Check for special column types
         val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
@@ -113,6 +116,7 @@ object PropertiesRepository {
             hasUploadAnnotation -> ColumnType.FILE
             overrideType != null -> overrideType
             genericArgument == null -> ColumnType.NOT_AVAILABLE
+            referenceData != null -> referenceData.type
             else -> guessPropertyType(genericArgument)
         }
 
@@ -131,7 +135,7 @@ object PropertiesRepository {
         val hasRichEditor = hasRichEditorAnnotation(property.annotations)
         validateRichEditor(hasRichEditor, columnType)
 
-        val reference = property.annotations.getReferences()
+        val reference = property.annotations.getReferences() ?: referenceData?.reference
 
         // Construct and return the final ColumnSet configuration
         return ColumnSet(
@@ -198,19 +202,21 @@ object PropertiesRepository {
         val isNativeEnumerated = type.declaration is KSClassDeclaration &&
                 (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS &&
                 property.annotations.any {
-                    it.qualifiedName in HibernateTableProcessor.getListOfHibernatePackage("Enumerated")
+                    it.qualifiedName in getListOfHibernatePackage("Enumerated")
                 }
 
         // Process Hibernate-specific column annotation
         val columnAnnotation = property.annotations.find {
-            it.qualifiedName in HibernateTableProcessor.getListOfHibernatePackage("Column")
+            it.qualifiedName in getListOfHibernatePackage("Column")
         }
+
+        val hibernateReference = detectReferenceAnnotationForHibernateTable(property, type)
 
         val nativeName = columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() }
         val nativeNullable =
             columnAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
 
-        val baseInfo = extractBaseColumnInfo(property, type, nativeName, nativeNullable)
+        val baseInfo = extractBaseColumnInfo(property, type, nativeName, nativeNullable, hibernateReference)
 
         // Handle native enumeration values
         val nativeEnumeratedValues = if (isNativeEnumerated) {
@@ -228,7 +234,98 @@ object PropertiesRepository {
             genericArgument = genericArgument,
             enumValues = enumValues,
             isNativeEnumerated = isNativeEnumerated,
+            referenceData = hibernateReference,
         )
+    }
+
+    data class HibernateReferenceData(
+        val type: ColumnType,
+        val reference: Reference,
+        val columnName: String
+    )
+
+    private fun detectReferenceAnnotationForHibernateTable(
+        property: KSPropertyDeclaration,
+        type: KSType
+    ): HibernateReferenceData? {
+        val annotations = property.annotations
+        val oneToOneReference = annotations.firstOrNull {
+            it.qualifiedName in getListOfHibernatePackage("OneToOne")
+        }
+        val manyToOneReference = annotations.firstOrNull {
+            it.qualifiedName in getListOfHibernatePackage("ManyToOne")
+        }
+        val joinColumn = annotations.firstOrNull {
+            it.qualifiedName in getListOfHibernatePackage("JoinColumn")
+        }
+        if (joinColumn == null) return null
+        val columnName = joinColumn.arguments.getArgument<String>("name")?.takeIf { it.isNotEmpty() }
+            ?: property.simpleName.asString()
+        val tableNameWithPrimaryKey = (type.declaration as? KSClassDeclaration)?.let {
+            getTableNameWithPrimaryKey(it)
+        }
+        if (tableNameWithPrimaryKey == null) {
+            return null
+        }
+        return when {
+            oneToOneReference != null -> {
+                HibernateReferenceData(
+                    type = tableNameWithPrimaryKey.third,
+                    reference = Reference.OneToOne(
+                        tableNameWithPrimaryKey.first,
+                        tableNameWithPrimaryKey.second,
+                    ),
+                    columnName = columnName
+                )
+            }
+
+            manyToOneReference != null -> {
+                HibernateReferenceData(
+                    type = tableNameWithPrimaryKey.third,
+                    reference = Reference.ManyToOne(
+                        tableNameWithPrimaryKey.first,
+                        tableNameWithPrimaryKey.second,
+                    ),
+                    columnName = columnName
+                )
+            }
+
+            else -> null
+        }
+    }
+
+
+    fun getTableNameWithPrimaryKey(classDeclaration: KSClassDeclaration): Triple<String, String, ColumnType>? {
+        val hibernateTable =
+            classDeclaration.annotations.find { it.qualifiedName in getListOfHibernatePackage("Table") }
+        return when {
+            hibernateTable != null -> {
+                var primaryKeyType: ColumnType? = null
+                val primaryKey = classDeclaration.getDeclaredProperties().firstOrNull { property ->
+                    property.annotations.firstOrNull { annotation ->
+                        annotation.qualifiedName in getListOfHibernatePackage(
+                            "Id"
+                        )
+                    }.also { annotation ->
+                        if (annotation != null) {
+                            val type = property.type.resolve().declaration.qualifiedName?.asString()
+                            type?.let {
+                                primaryKeyType = guessPropertyType(it)
+                            }
+                        }
+                    } != null
+                }?.simpleName?.asString()
+                primaryKeyType?.let {
+                    Triple(
+                        hibernateTable.arguments.getArgument("name") ?: classDeclaration.toTableName(),
+                        primaryKey!!,
+                        it
+                    )
+                }
+            }
+
+            else -> null
+        }
     }
 
     /**
@@ -372,7 +469,7 @@ object PropertiesRepository {
      */
 
     private val OneToOneReferencesQualifiedName = OneToOneReferences::class.qualifiedName
-    private val OneToManyReferencesQualifiedName = OneToManyReferences::class.qualifiedName
+    private val ManyToOneReferencesQualifiedName = ManyToOneReferences::class.qualifiedName
     private val ManyToManyReferencesQualifiedName = ManyToManyReferences::class.qualifiedName
 
     private fun Sequence<KSAnnotation>.getReferences(): Reference? =
@@ -380,7 +477,7 @@ object PropertiesRepository {
             it.qualifiedName.orEmpty() in listOf(
                 OneToOneReferencesQualifiedName,
                 ManyToManyReferencesQualifiedName,
-                OneToManyReferencesQualifiedName
+                ManyToOneReferencesQualifiedName
             )
         }?.let {
             when (it.qualifiedName) {
@@ -391,8 +488,8 @@ object PropertiesRepository {
                     )
                 }
 
-                OneToManyReferencesQualifiedName -> {
-                    Reference.OneToMany(
+                ManyToOneReferencesQualifiedName -> {
+                    Reference.ManyToOne(
                         relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
                         foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String
                     )

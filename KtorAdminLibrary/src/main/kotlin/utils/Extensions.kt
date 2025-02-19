@@ -1,6 +1,7 @@
 package utils
 
 import com.google.devtools.ksp.symbol.KSAnnotation
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import models.ColumnSet
 import models.common.toFormattedString
 import models.date.toFormattedString
@@ -127,3 +128,6 @@ internal inline fun <T> Iterable<T>.allIndexed(predicate: (index: Int, T) -> Boo
 internal fun Double.formatAsIntegerIfPossible(): String {
     return if (this % 1.0 == 0.0) toLong().toString() else toString()
 }
+
+
+internal fun KSClassDeclaration.toTableName() = simpleName.asString().split(" ").joinToString("_") { it.lowercase() }

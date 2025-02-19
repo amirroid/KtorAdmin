@@ -1,6 +1,5 @@
 package repository
 
-import com.squareup.kotlinpoet.UNIT
 import com.vladsch.kotlin.jdbc.*
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
@@ -996,7 +995,7 @@ internal object JdbcQueriesRepository {
                                 joins.add("LEFT JOIN $joinTable ON $currentTable.$referenceColumn = $joinTable.$joinColumn")
                             }
 
-                            is Reference.OneToMany -> {
+                            is Reference.ManyToOne -> {
                                 val joinColumn = reference.foreignKey
                                 currentColumn = nextColumn ?: referenceColumn
 

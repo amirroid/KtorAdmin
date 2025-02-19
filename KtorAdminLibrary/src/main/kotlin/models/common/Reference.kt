@@ -10,9 +10,9 @@ sealed class Reference(val type: String) {
     ) : Reference("select")
 
     /**
-     * Represents a one-to-many relationship between two tables.
+     * Represents a many-to-one relationship between two tables.
      */
-    data class OneToMany(
+    data class ManyToOne(
         val relatedTable: String,
         val foreignKey: String,
     ) : Reference("select")
@@ -41,8 +41,8 @@ fun Reference.toFormattedString(): String {
             |)
         """.trimMargin()
 
-        is Reference.OneToMany -> """
-            |Reference.OneToMany(
+        is Reference.ManyToOne -> """
+            |Reference.ManyToOne(
             |   relatedTable = "$relatedTable",
             |   foreignKey = "$foreignKey"
             |)
@@ -62,7 +62,7 @@ fun Reference.toFormattedString(): String {
 val Reference.tableName: String
     get() = when (this) {
         is Reference.OneToOne -> this.relatedTable
-        is Reference.OneToMany -> this.relatedTable
+        is Reference.ManyToOne -> this.relatedTable
         is Reference.ManyToMany -> this.relatedTable
     }
 
@@ -70,6 +70,6 @@ val Reference.tableName: String
 val Reference.foreignKey: String?
     get() = when (this) {
         is Reference.OneToOne -> this.foreignKey
-        is Reference.OneToMany -> this.foreignKey
+        is Reference.ManyToOne -> this.foreignKey
         else -> null
     }

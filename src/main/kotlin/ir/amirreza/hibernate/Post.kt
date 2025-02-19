@@ -2,24 +2,23 @@ package ir.amirreza.hibernate
 
 import annotations.hibernate.HibernateTable
 import annotations.info.ColumnInfo
-import annotations.references.OneToManyReferences
+import annotations.info.IgnoreColumn
 import annotations.type.OverrideColumnType
 import annotations.uploads.LocalUpload
 import ir.amirreza.Priority
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import models.types.ColumnType
-import org.hibernate.annotations.Type
 import javax.persistence.*
 
 @Entity
 @Table(name = "post")
-@HibernateTable("post")
+@HibernateTable("Post", "Posts")
 @Serializable
 data class Post(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
+    @IgnoreColumn
     var id: Long = 0,
 
     var titleContent: String,
@@ -35,16 +34,14 @@ data class Post(
     var file: String? = null,
 
     @ManyToOne
-    @ColumnInfo("author_id")
-    @OverrideColumnType(ColumnType.INTEGER)
-    @JoinColumn(name = "author_id", nullable = false) // ایجاد کلید خارجی در جدول post
+    @JoinColumn(name = "author_id", nullable = false)
     var author: Author
 )
 
 
 @Entity
 @Table(name = "authors")
-@HibernateTable("authors")
+@HibernateTable("Author", "Authors")
 @Serializable
 data class Author(
     @Id
