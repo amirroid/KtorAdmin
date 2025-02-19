@@ -61,9 +61,26 @@ h2 {
     gap: 12px;
 }
 
-@media (max-width: 850px) {
+@media (max-width: 768px) {
     #menu-expand-icon {
         display: none;
+    }
+
+    .select-input-multiple {
+        width: 100%;
+        outline: none;
+        transition: .2s linear;
+        font-family: "Istok Web", serif;
+        font-weight: 400;
+        font-style: normal;
+        border: none;
+        padding: 0 12px;
+        -moz-appearance: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        padding-right: 2rem !important;
+        background: url("data:image/svg+xml,%3Csvg%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M11.6199%205.22084L7.81655%209.02417C7.36738%209.47334%206.63238%209.47334%206.18322%209.02417L2.37988%205.22084%22%20stroke%3D%22%23292D32%22%20stroke-width%3D%221.5%22%20stroke-miterlimit%3D%2210%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") no-repeat;
+        background-position: calc(100% - 0.75rem) center !important;
     }
 }
 
@@ -237,6 +254,10 @@ label {
     overflow: hidden;
     width: 100%;
     max-height: 200px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .multiple-select-input-background select {

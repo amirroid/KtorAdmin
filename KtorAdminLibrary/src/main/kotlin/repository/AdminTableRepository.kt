@@ -1,15 +1,14 @@
 package repository
 
 import org.reflections.Reflections
+import org.reflections.scanners.SubTypesScanner
 import panels.AdminPanel
 import utils.Constants
 
 internal object AdminTableRepository {
-    private const val PACKAGE_NAME = Constants.PACKAGE_NAME
-
     fun getAll(): List<AdminPanel> {
         val tables = mutableListOf<AdminPanel>()
-        val reflections = Reflections(PACKAGE_NAME)
+        val reflections = Reflections("")
         val subClasses = reflections.getSubTypesOf(AdminPanel::class.java)
         subClasses.forEach {
             kotlin.runCatching {
