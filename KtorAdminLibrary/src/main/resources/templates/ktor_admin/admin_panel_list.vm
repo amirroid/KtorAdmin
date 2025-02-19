@@ -304,13 +304,16 @@
                                 <td>
                                     <div class="status-container">
                                         <div class="status-style">
-                                            <div style="background-color: $color" class="status-dot"></div> $!item
+                                            <div style="background-color: $color" class="status-dot"></div>
+                                            <span>$!item</span>
                                         </div>
                                         <div class="status-border" style="border-color: $color;"></div>
                                     </div>
                                 </td>
                             #else
-                                <td><div class="item-text">$!item</div></td>
+                                <td>
+                                    <div class="item-text">$!item</div>
+                                </td>
                             #end
                         #end
                     </tr>
