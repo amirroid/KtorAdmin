@@ -22,22 +22,22 @@ internal fun getReferencesItems(
     tables: List<AdminJdbcTable>,
     columns: List<ColumnSet>
 ): Map<ColumnSet, List<DisplayItem>> {
-    // Get columns that have reference relationships defined
+    // Extract columns with references early for better readability
     val columnsWithReferences = columns.filter { it.reference != null }
 
-    // Validate that all referenced tables exist in the schema
+    // Early validation of tables
     validateReferencedTables(columnsWithReferences, tables)
 
-    // Temporary cache to store reference data during function execution
+    // Use temporary cache for optimization
     val tempReferenceCache = mutableMapOf<String, List<DisplayItem>>()
 
     return columnsWithReferences.associateWith { column ->
-        val tableName = column.reference!!.tableName
-        // Fetch and cache reference data for each table (only once per table)
-        tempReferenceCache.getOrPut(tableName) {
-            JdbcQueriesRepository.getAllReferences(
-                table = tables.first { it.getTableName() == tableName }
-            )
+        val referencedTableName = column.reference!!.tableName
+
+        // Get or compute references using cache
+        tempReferenceCache.getOrPut(referencedTableName) {
+            val referencedTable = tables.first { it.getTableName() == referencedTableName }
+            JdbcQueriesRepository.getAllReferences(table = referencedTable)
         }
     }
 }
@@ -57,17 +57,20 @@ internal fun getSelectedReferencesItems(
     tables: List<AdminJdbcTable>,
     primaryKey: String
 ): Map<ColumnSet, Map<String, Any>> {
-    // Get columns with many-to-many relationships that are allowed to be shown
+    // Get relevant columns with many-to-many references
     val columnsWithReferences = table.getAllAllowToShowColumnsInUpsertView()
         .filter { it.reference is Reference.ManyToMany }
 
-    // Validate that all referenced tables exist in the schema
-    validateReferencedTables(columnsWithReferences, tables)
+    // Validate join tables exist
+    validateManyToManyTables(columnsWithReferences, tables)
 
     return columnsWithReferences.associateWith { column ->
-        // Get all selected references for the column and create a map with string keys
+        val reference = column.reference as Reference.ManyToMany
+        val joinTable = tables.first { it.getTableName() == reference.joinTable }
+
+        // Get selected references and map to string keys
         JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            table = table,
+            table = joinTable,
             columnSet = column,
             primaryKey = primaryKey
         ).associateBy { it.toString() }
@@ -85,12 +88,39 @@ private fun validateReferencedTables(
     columnsWithReferences: List<ColumnSet>,
     tables: List<AdminJdbcTable>
 ) {
-    val missingTables = columnsWithReferences.any { column ->
-        tables.none { it.getTableName() == column.reference!!.tableName }
-    }
-    if (missingTables) {
+    val missingTables = columnsWithReferences
+        .mapNotNull { column -> column.reference?.tableName }
+        .filter { tableName ->
+            tables.none { it.getTableName() == tableName }
+        }
+
+    if (missingTables.isNotEmpty()) {
         throw IllegalArgumentException(
-            "Error: Some referenced tables do not exist or are not defined in the current schema."
+            "Error: The following tables are missing from the schema: ${missingTables.joinToString()}"
+        )
+    }
+}
+
+/**
+ * Validates that all join tables for many-to-many relationships exist in the schema.
+ *
+ * @param columnsWithReferences List of columns with many-to-many references
+ * @param tables List of all available tables
+ * @throws IllegalArgumentException if any join table is not found
+ */
+private fun validateManyToManyTables(
+    columnsWithReferences: List<ColumnSet>,
+    tables: List<AdminJdbcTable>
+) {
+    val missingJoinTables = columnsWithReferences
+        .map { (it.reference as Reference.ManyToMany).joinTable }
+        .filter { joinTable ->
+            tables.none { it.getTableName() == joinTable }
+        }
+
+    if (missingJoinTables.isNotEmpty()) {
+        throw IllegalArgumentException(
+            "Error: The following join tables are missing from the schema: ${missingJoinTables.joinToString()}"
         )
     }
 }
