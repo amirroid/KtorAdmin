@@ -142,9 +142,10 @@ object PropertiesRepository {
             columnName = baseInfo.columnName,
             type = columnType,
             verboseName = baseInfo.verboseName,
-            nullable = baseInfo.nullable,
+            nullable = referenceData?.nullable ?: baseInfo.nullable,
             blank = infoAnnotation?.findArgument<Boolean>("blank") != false,
-            unique = infoAnnotation?.findArgument<Boolean>("unique") == true || reference is Reference.OneToOne,
+            unique = referenceData?.unique
+                ?: (infoAnnotation?.findArgument<Boolean>("unique") == true || reference is Reference.OneToOne),
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
             uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
             allowedMimeTypes = if (hasUploadAnnotation)
@@ -241,7 +242,9 @@ object PropertiesRepository {
     data class HibernateReferenceData(
         val type: ColumnType,
         val reference: Reference,
-        val columnName: String
+        val columnName: String,
+        val nullable: Boolean? = null,
+        val unique: Boolean? = null,
     )
 
     private fun detectReferenceAnnotationForHibernateTable(
@@ -267,6 +270,8 @@ object PropertiesRepository {
         if (tableNameWithPrimaryKey == null) {
             return null
         }
+        val nullable = joinColumn.findArgument<Boolean>("nullable")
+        val unique = joinColumn.findArgument<Boolean>("unique")
         return when {
             oneToOneReference != null -> {
                 HibernateReferenceData(
@@ -275,7 +280,9 @@ object PropertiesRepository {
                         tableNameWithPrimaryKey.first,
                         tableNameWithPrimaryKey.second,
                     ),
-                    columnName = columnName
+                    columnName = columnName,
+                    unique = unique,
+                    nullable = nullable,
                 )
             }
 
@@ -286,7 +293,9 @@ object PropertiesRepository {
                         tableNameWithPrimaryKey.first,
                         tableNameWithPrimaryKey.second,
                     ),
-                    columnName = columnName
+                    columnName = columnName,
+                    unique = unique,
+                    nullable = nullable,
                 )
             }
 
