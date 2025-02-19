@@ -55,7 +55,7 @@ function generateUrl(fileName, pluralName, fieldName) {
                 const error = json.error
                 if (error) {
                     loading.style.visibility = "hidden";
-                    alert(`ERROR: ${error}`)
+                    showAlert(`ERROR: ${error}`, "error")
                 }
             }
         }

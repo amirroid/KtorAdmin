@@ -197,14 +197,14 @@ function performSelectedAction(pluralName) {
     const selectedActionKey = actionSelect.value;
 
     if (!selectedActionKey) {
-        alert("Please select an action!");
+        showAlert("Please select an action!");
         return;
     }
 
     const selectedItemsArray = getSelectedItems();
 
     if (selectedItemsArray.length === 0) {
-        alert("Please select at least one item.");
+        showAlert("Please select at least one item.");
         return;
     }
 
@@ -239,7 +239,7 @@ function generateUrl(fileName, pluralName, fieldName) {
                 const error = json.error
                 if (error) {
                     loading.style.visibility = "hidden";
-                    alert(`ERROR: ${error}`)
+                    showAlert(`ERROR: ${error}`, "error")
                 }
             }
         }
@@ -300,11 +300,11 @@ function openActionDialog() {
     const actionSelect = visibleRow.querySelector(".actions-input");
     const selectedActionKey = actionSelect.value;
     if (!selectedActionKey) {
-        alert("Please select an action!");
+        showAlert("Please select an action!");
         return;
     }
     if (getSelectedItems().length === 0) {
-        alert("Please select at least one item.");
+        showAlert("Please select at least one item.");
         return;
     }
     document.getElementById('dialog').classList.add('active');

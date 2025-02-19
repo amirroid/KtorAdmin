@@ -109,7 +109,7 @@ function handleFilePicker(callback, value, meta) {
                 const fileUrl = await uploadFile(file);
                 callback(fileUrl);
             } catch (error) {
-                alert(error.message);
+                showAlert(error.message, "error");
             }
             loading.style.visibility = "hidden";
         }
@@ -125,7 +125,6 @@ async function handleFileUpload(blobInfo, success, failure) {
         const fileUrl = await uploadFile(blobInfo.blob());
         success(fileUrl);
     } catch (error) {
-        console.log(error.message)
         failure(error.message);
     }
     loading.style.visibility = "hidden";

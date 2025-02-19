@@ -180,3 +180,175 @@ function logout() {
         loading.style.visibility = "hidden";
     })
 }
+
+// Create and inject styles dynamically
+const style = document.createElement("style");
+style.textContent = `
+  /* Alert Container */
+  #custom-alert-container {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      z-index: 1000;
+      gap: 8px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 8px;
+      pointer-events: none; /* Allow clicks to pass through container */
+      
+      /* Hide scrollbar */
+      &::-webkit-scrollbar {
+          display: none;
+      }
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+  }
+
+  /* Alert Box */
+  .alert {
+      display: flex;
+      align-items: stretch;
+      width: 320px;
+      min-height: fit-content;
+      background-color: var(--white-transparent-60, rgba(255, 255, 255, 0.6));
+      color: black;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      transform: translateX(-120%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0;
+      position: relative;
+      flex-shrink: 0;
+      pointer-events: auto; /* Re-enable pointer events for alerts */
+  }
+
+  /* Alert Bar */
+  .alert-bar {
+      width: 6px;
+      align-self: stretch;
+      border-radius: 4px 0 0 4px;
+      margin-right: 8px;
+      flex-shrink: 0;
+  }
+
+  /* Alert Message */
+  .alert-message {
+      flex-grow: 1;
+      padding: 4px 0;
+      line-height: 1.4;
+      word-break: break-word;
+  }
+
+  /* Close Button */
+  .alert-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+      margin-left: 8px;
+  }
+
+  .alert-close:hover {
+      opacity: 1;
+  }
+
+  .alert-close svg {
+      width: 24px;
+      height: 24px;
+  }
+
+  /* Show Alert Animation */
+  .alert.show {
+      transform: translateX(0);
+      opacity: 1;
+  }
+
+  /* Remove Animation */
+  .alert.removing {
+      transform: translateX(-120%);
+      opacity: 0;
+      pointer-events: none;
+  }
+`;
+document.head.appendChild(style);
+
+// Create and append alert container
+const alertContainer = document.createElement("div");
+alertContainer.id = "custom-alert-container";
+document.body.appendChild(alertContainer);
+
+// Function to show alert
+function showAlert(message, type = "info", duration = 4500) {
+    const alertBox = document.createElement("div");
+    alertBox.classList.add("alert");
+
+    const alertBar = document.createElement("div");
+    alertBar.classList.add("alert-bar");
+
+    const messageSpan = document.createElement("span");
+    messageSpan.classList.add("alert-message");
+    messageSpan.textContent = message;
+
+    // Create close button with SVG
+    const closeButton = document.createElement("button");
+    closeButton.classList.add("alert-close");
+    closeButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+    `;
+
+    // Function to remove alert with animation
+    const removeAlert = () => {
+        // Add removing class to start exit animation
+        alertBox.classList.add('removing');
+
+        // Remove the alert after animation completes
+        alertBox.addEventListener('transitionend', function handler(e) {
+            alertBox.remove();
+        }, {once: true});
+    };
+
+    // Add click handler to close button
+    closeButton.addEventListener("click", removeAlert);
+
+    // Define alert colors
+    const colors = {
+        info: "#3498db",    // Blue
+        success: "#2ecc71", // Green
+        warning: "#f39c12", // Orange
+        error: "#e74c3c"    // Red
+    };
+    alertBar.style.backgroundColor = colors[type] || colors.info;
+
+    // Append elements
+    alertBox.appendChild(alertBar);
+    alertBox.appendChild(messageSpan);
+    alertBox.appendChild(closeButton);
+    alertContainer.appendChild(alertBox);
+
+    // Show alert with animation
+    requestAnimationFrame(() => {
+        alertBox.classList.add("show");
+        alertContainer.scrollTop = alertContainer.scrollHeight;
+    });
+
+    // Hide and remove alert after duration
+    if (duration) {
+        setTimeout(removeAlert, duration);
+    }
+}
