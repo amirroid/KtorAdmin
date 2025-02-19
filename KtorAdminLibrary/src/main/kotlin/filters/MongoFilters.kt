@@ -22,22 +22,26 @@ internal object MongoFilters {
             when (field?.type) {
                 FieldType.Date -> FiltersData(
                     paramName = field.fieldName.toString(),
+                    verboseName = field.verboseName,
                     type = FilterTypes.DATE
                 )
 
                 FieldType.DateTime, FieldType.Instant -> FiltersData(
                     paramName = field.fieldName.toString(),
+                    verboseName = field.verboseName,
                     type = FilterTypes.DATETIME
                 )
 
                 FieldType.Enumeration -> FiltersData(
                     paramName = field.fieldName.toString(),
                     type = FilterTypes.ENUMERATION,
+                    verboseName = field.verboseName,
                     values = field.enumerationValues
                 )
 
                 FieldType.Boolean -> FiltersData(
                     paramName = field.fieldName.toString(),
+                    verboseName = field.verboseName,
                     type = FilterTypes.BOOLEAN,
                 )
 

@@ -32,21 +32,25 @@ internal object JdbcFilters {
             when {
                 columnSet?.type == ColumnType.DATE -> FiltersData(
                     paramName = columnSet.columnName,
+                    verboseName = columnSet.verboseName,
                     type = FilterTypes.DATE
                 )
 
                 columnSet?.type == ColumnType.DATETIME -> FiltersData(
                     paramName = columnSet.columnName,
+                    verboseName = columnSet.verboseName,
                     type = FilterTypes.DATETIME
                 )
 
                 columnSet?.type == ColumnType.BOOLEAN -> FiltersData(
                     paramName = columnSet.columnName,
+                    verboseName = columnSet.verboseName,
                     type = FilterTypes.BOOLEAN
                 )
 
                 columnSet?.type == ColumnType.ENUMERATION -> FiltersData(
                     paramName = columnSet.columnName,
+                    verboseName = columnSet.verboseName,
                     type = FilterTypes.ENUMERATION,
                     values = columnSet.enumerationValues
                 )
@@ -58,6 +62,7 @@ internal object JdbcFilters {
                         ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference.tableName}")
                     FiltersData(
                         paramName = columnSet.columnName,
+                        verboseName = columnSet.verboseName,
                         type = FilterTypes.REFERENCE,
                         values = JdbcQueriesRepository.getAllReferences(
                             referenceTable,

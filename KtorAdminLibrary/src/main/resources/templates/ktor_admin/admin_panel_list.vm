@@ -105,7 +105,7 @@
                     #foreach($filter in $filtersData)
                         #if($filter.type == "DATE")
                             <div class="filter-field-container filter">
-                                <h4 class="filter-label">Select range of $filter.paramName</h4>
+                                <h4 class="filter-label">Select range of $filter.verboseName</h4>
                                 <div class="filter-field-parent-date">
                                     <input type="date" class="filter-input-date" id="${filter.paramName}-start"
                                            name="${filter.paramName}">
@@ -115,7 +115,7 @@
                             </div>
                         #elseif($filter.type == "DATETIME")
                             <div class="filter-field-container filter">
-                                <h4 class="filter-label">Select range of $filter.paramName</h4>
+                                <h4 class="filter-label">Select range of $filter.verboseName</h4>
                                 <div class="filter-field-parent-date">
                                     <input type="datetime-local" class="filter-input-date"
                                            id="${filter.paramName}-start" name="${filter.paramName}">
@@ -125,7 +125,7 @@
                             </div>
                         #elseif($filter.type == "ENUMERATION")
                             <div class="filter-field-container">
-                                <h4 class="filter-label">Select an item for $filter.paramName</h4>
+                                <h4 class="filter-label">Select an item for $filter.verboseName</h4>
                                 <div class="filter-field-parent filter">
                                     <select class="filter-field" name="${filter.paramName}" id="${filter.paramName}">
                                         <option value="">-- Select --</option>
@@ -137,7 +137,7 @@
                             </div>
                         #elseif($filter.type == "REFERENCE")
                             <div class="filter-field-container">
-                                <h4 class="filter-label">Select an item for $filter.paramName</h4>
+                                <h4 class="filter-label">Select an item for $filter.verboseName</h4>
                                 <div class="filter-field-parent filter">
                                     <select class="filter-field" name="${filter.paramName}" id="${filter.paramName}">
                                         <option value="">-- Select --</option>
@@ -149,7 +149,7 @@
                             </div>
                         #elseif($filter.type == "BOOLEAN")
                             <div class="filter-field-container">
-                                <h4 class="filter-label">Select a boolean for $filter.paramName</h4>
+                                <h4 class="filter-label">Select a boolean for $filter.verboseName</h4>
                                 <div class="filter-field-parent filter">
                                     <select class="filter-field" name="${filter.paramName}" id="${filter.paramName}">
                                         <option value="">-- Select --</option>

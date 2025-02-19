@@ -10,6 +10,7 @@ enum class FilterTypes {
 
 data class FiltersData(
     val paramName: String,
+    val verboseName: String,
     val type: FilterTypes,
     val values: Any? = null
 )
