@@ -186,7 +186,7 @@ function getSelectedItems() {
 }
 
 
-function performSelectedAction() {
+function performSelectedAction(pluralName) {
     const actionRows = document.querySelectorAll(".actions-row");
 
     const visibleRow = Array.from(actionRows).find(row =>
@@ -212,7 +212,7 @@ function performSelectedAction() {
     document.getElementById("ids").value = JSON.stringify(selectedItemsArray);
 
     const form = document.getElementById("action-form");
-    form.action = `${cleanUrl()}/action/${selectedActionKey}`;
+    form.action = `/admin/actions/${pluralName}/${selectedActionKey}`;
     form.submit();
 }
 
@@ -316,7 +316,7 @@ function closeActionDialog() {
 }
 
 async function downloadFile(pluralName, csrfToken) {
-    const url = `/admin/download/${pluralName}/csv?_csrf=${encodeURIComponent(csrfToken)}`;
+    const url = `/admin/downloads/${pluralName}/csv?_csrf=${encodeURIComponent(csrfToken)}`;
 
     const link = document.createElement("a");
     link.href = url;

@@ -150,7 +150,7 @@ function expandSidebar(icon, container, sidebar, menuIcon) {
 
 
 function openPanel(pluralName) {
-    window.location.href = `/admin/${pluralName}`
+    window.location.href = `/admin/resources/${pluralName}`
 }
 
 function openDashboard() {

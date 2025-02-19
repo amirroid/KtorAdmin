@@ -13,4 +13,8 @@ object Constants {
     const val LOCAL_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm"
 
     const val FILTERS_PREFIX = "filters."
+
+    const val RESOURCES_PATH = "resources"
+    const val ACTIONS_PATH = "actions"
+    const val DOWNLOADS_PATH = "downloads"
 }

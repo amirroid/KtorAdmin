@@ -34,11 +34,11 @@ internal fun Routing.configureGetRouting(panels: List<AdminPanel>, authenticateN
             get {
                 call.renderAdminPanel(panelGroups, panels)
             }
-            route("/{pluralName}") {
+            route("/${Constants.RESOURCES_PATH}/{pluralName}") {
                 get {
                     call.handlePanelList(panels, panelGroups)
                 }
-                get("add") {
+                get("/add") {
                     call.handleAddNewItem(panels, panelGroups)
                 }
                 get("/{primaryKey}") {

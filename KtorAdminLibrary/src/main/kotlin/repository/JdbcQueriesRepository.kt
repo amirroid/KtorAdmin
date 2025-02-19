@@ -145,7 +145,7 @@ internal object JdbcQueriesRepository {
             session.list(
                 sqlQuery(table.createGetAllDataAsCsvQuery())
             ) { row ->
-                table.getAllColumns().joinToString(", ") {
+                table.getAllAllowToShowColumns().joinToString(", ") {
                     row.anyOrNull(it.columnName)?.restore(it)?.toString() ?: "N/A"
                 }
             }.joinToString("\n")

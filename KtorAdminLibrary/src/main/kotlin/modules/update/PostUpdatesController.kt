@@ -1,7 +1,5 @@
 package modules.update
 
-import utils.notFound
-import utils.serverError
 import configuration.DynamicConfiguration
 import converters.toEvents
 import converters.toFieldEvents
@@ -11,7 +9,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import models.ColumnSet
-import models.common.Reference
 import models.field.FieldSet
 import models.response.updateSelectedReferences
 import panels.*
@@ -22,6 +19,9 @@ import response.onInvalidateRequest
 import response.onSuccess
 import utils.badRequest
 import utils.invalidateRequest
+import utils.notFound
+import utils.respondBack
+import utils.serverError
 import validators.checkHasRole
 
 
@@ -104,7 +104,7 @@ private suspend fun RoutingContext.updateData(
                 columnSets = columns,
                 parametersData = parametersData.values
             )
-            call.respondRedirect("/admin/$pluralName")
+            call.respondBack(pluralName)
         }.onFailure {
             call.serverError("Failed to update $pluralName\nReason: ${it.message}", it)
         }
@@ -137,7 +137,7 @@ private suspend fun RoutingContext.updateData(
                 fieldSets = fields,
                 parametersData = parametersData
             )
-            call.respondRedirect("/admin/$pluralName")
+            call.respondBack(pluralName)
         }.onFailure {
             call.serverError("Failed to update $pluralName\nReason: ${it.message}", throwable = it)
         }

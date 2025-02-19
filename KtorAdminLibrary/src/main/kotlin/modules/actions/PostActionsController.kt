@@ -1,6 +1,7 @@
 package modules.actions
 
 import csrf.CsrfManager
+import io.ktor.http.HttpHeaders
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -9,6 +10,7 @@ import panels.AdminJdbcTable
 import panels.AdminMongoCollection
 import panels.AdminPanel
 import panels.getAllCustomActions
+import utils.Constants
 import utils.badRequest
 import utils.invalidateRequest
 import utils.notFound
@@ -74,7 +76,9 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
 
                     // Execute the action and redirect
                     action.performAction(name, ids)
-                    call.respondRedirect("/admin/$pluralName")
+                    val previewsUrl =
+                        call.request.headers[HttpHeaders.Referrer] ?: "/admin/${Constants.RESOURCES_PATH}/$pluralName"
+                    call.respondRedirect(previewsUrl)
                 }.onFailure {
                     badRequest("Error: ${it.message}", it)
                 }

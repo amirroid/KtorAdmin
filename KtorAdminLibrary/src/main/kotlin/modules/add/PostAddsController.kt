@@ -19,6 +19,7 @@ import response.onInvalidateRequest
 import response.onSuccess
 import utils.badRequest
 import utils.invalidateRequest
+import utils.respondBack
 import validators.checkHasRole
 import validators.validateFieldsParameters
 import validators.validateParameters
@@ -88,7 +89,7 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
                     objectPrimaryKey = id.toString(),
                     parametersData = parametersData.values
                 )
-                call.respondRedirect("/admin/$pluralName")
+                call.respondBack(pluralName)
             }.onFailure {
                 call.badRequest("Failed to insert $pluralName\nReason: ${it.message}", it)
             }
@@ -121,7 +122,7 @@ private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminM
                     fieldSets = fields,
                     parametersData = parametersData
                 )
-                call.respondRedirect("/admin/$pluralName")
+                call.respondBack(pluralName)
             }.onFailure {
                 call.badRequest("Failed to insert $pluralName\nReason: ${it.message}", it)
             }

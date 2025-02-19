@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 async function downloadFile(pluralName, csrfToken, primaryKey) {
-    const url = `/admin/download/${pluralName}/${primaryKey}/pdf?_csrf=${encodeURIComponent(csrfToken)}`;
+    const url = `/admin/downloads/${pluralName}/${primaryKey}/pdf?_csrf=${encodeURIComponent(csrfToken)}`;
 
     const link = document.createElement("a");
     link.href = url;
