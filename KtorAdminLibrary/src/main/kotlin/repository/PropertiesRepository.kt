@@ -247,93 +247,120 @@ object PropertiesRepository {
         val unique: Boolean? = null,
     )
 
+    /**
+     * Detects and extracts Hibernate reference annotations (@OneToOne, @ManyToOne) from a property
+     * and builds corresponding reference data.
+     *
+     * @param property The property declaration to analyze
+     * @param type The KSType of the property
+     * @return HibernateReferenceData if a valid reference annotation is found, null otherwise
+     */
     private fun detectReferenceAnnotationForHibernateTable(
         property: KSPropertyDeclaration,
         type: KSType
     ): HibernateReferenceData? {
+        // Find relevant Hibernate annotations on the property
         val annotations = property.annotations
-        val oneToOneReference = annotations.firstOrNull {
-            it.qualifiedName in getListOfHibernatePackage("OneToOne")
-        }
-        val manyToOneReference = annotations.firstOrNull {
-            it.qualifiedName in getListOfHibernatePackage("ManyToOne")
-        }
-        val joinColumn = annotations.firstOrNull {
-            it.qualifiedName in getListOfHibernatePackage("JoinColumn")
-        }
+        val oneToOneReference = annotations.findReferenceAnnotation("OneToOne")
+        val manyToOneReference = annotations.findReferenceAnnotation("ManyToOne")
+        val joinColumn = annotations.findReferenceAnnotation("JoinColumn")
+
+        // Return early if no JoinColumn annotation is present
         if (joinColumn == null) return null
-        val columnName = joinColumn.arguments.getArgument<String>("name")?.takeIf { it.isNotEmpty() }
+
+        // Extract column name from JoinColumn annotation or use property name as fallback
+        val columnName = joinColumn.arguments.getArgument<String>("name")
+            ?.takeIf { it.isNotEmpty() }
             ?: property.simpleName.asString()
+
+        // Get referenced table information
         val tableNameWithPrimaryKey = (type.declaration as? KSClassDeclaration)?.let {
             getTableNameWithPrimaryKey(it)
-        }
-        if (tableNameWithPrimaryKey == null) {
-            return null
-        }
+        } ?: return null
+
+        // Extract nullable and unique constraints from JoinColumn
         val nullable = joinColumn.findArgument<Boolean>("nullable")
         val unique = joinColumn.findArgument<Boolean>("unique")
-        return when {
-            oneToOneReference != null -> {
-                HibernateReferenceData(
-                    type = tableNameWithPrimaryKey.third,
-                    reference = Reference.OneToOne(
-                        tableNameWithPrimaryKey.first,
-                        tableNameWithPrimaryKey.second,
-                    ),
-                    columnName = columnName,
-                    unique = unique,
-                    nullable = nullable,
-                )
-            }
 
-            manyToOneReference != null -> {
-                HibernateReferenceData(
-                    type = tableNameWithPrimaryKey.third,
-                    reference = Reference.ManyToOne(
-                        tableNameWithPrimaryKey.first,
-                        tableNameWithPrimaryKey.second,
-                    ),
-                    columnName = columnName,
-                    unique = unique,
-                    nullable = nullable,
-                )
-            }
+        // Create appropriate reference data based on annotation type
+        return when {
+            oneToOneReference != null -> createReferenceData(
+                tableNameWithPrimaryKey,
+                Reference.OneToOne(
+                    tableNameWithPrimaryKey.first,
+                    tableNameWithPrimaryKey.second
+                ),
+                columnName,
+                unique,
+                nullable
+            )
+
+            manyToOneReference != null -> createReferenceData(
+                tableNameWithPrimaryKey,
+                Reference.ManyToOne(
+                    tableNameWithPrimaryKey.first,
+                    tableNameWithPrimaryKey.second
+                ),
+                columnName,
+                unique,
+                nullable
+            )
 
             else -> null
         }
     }
 
+    /**
+     * Helper function to find a specific Hibernate annotation
+     */
+    private fun Sequence<KSAnnotation>.findReferenceAnnotation(annotationName: String): KSAnnotation? =
+        firstOrNull { it.qualifiedName in getListOfHibernatePackage(annotationName) }
 
+    /**
+     * Helper function to create HibernateReferenceData
+     */
+    private fun createReferenceData(
+        tableInfo: Triple<String, String, ColumnType>,
+        reference: Reference,
+        columnName: String,
+        unique: Boolean?,
+        nullable: Boolean?
+    ): HibernateReferenceData = HibernateReferenceData(
+        type = tableInfo.third,
+        reference = reference,
+        columnName = columnName,
+        unique = unique,
+        nullable = nullable
+    )
+
+    /**
+     * Extracts table name and primary key information from a class declaration with Hibernate annotations.
+     *
+     * @param classDeclaration The class declaration to analyze
+     * @return Triple containing (table name, primary key name, primary key type) or null if not found
+     */
     fun getTableNameWithPrimaryKey(classDeclaration: KSClassDeclaration): Triple<String, String, ColumnType>? {
-        val hibernateTable =
-            classDeclaration.annotations.find { it.qualifiedName in getListOfHibernatePackage("Table") }
-        return when {
-            hibernateTable != null -> {
-                var primaryKeyType: ColumnType? = null
-                val primaryKey = classDeclaration.getDeclaredProperties().firstOrNull { property ->
-                    property.annotations.firstOrNull { annotation ->
-                        annotation.qualifiedName in getListOfHibernatePackage(
-                            "Id"
-                        )
-                    }.also { annotation ->
-                        if (annotation != null) {
-                            val type = property.type.resolve().declaration.qualifiedName?.asString()
-                            type?.let {
-                                primaryKeyType = guessPropertyType(it)
-                            }
-                        }
-                    } != null
-                }?.simpleName?.asString()
-                primaryKeyType?.let {
-                    Triple(
-                        hibernateTable.arguments.getArgument("name") ?: classDeclaration.toTableName(),
-                        primaryKey!!,
-                        it
-                    )
-                }
-            }
+        // Find @Table annotation
+        val hibernateTable = classDeclaration.annotations.findReferenceAnnotation("Table") ?: return null
 
-            else -> null
+        // Find property with @Id annotation and extract its type
+        var primaryKeyType: ColumnType? = null
+        val primaryKey = classDeclaration.getDeclaredProperties()
+            .firstOrNull { property ->
+                property.annotations.findReferenceAnnotation("Id")?.also { annotation ->
+                    // Extract and convert primary key type
+                    val type = property.type.resolve().declaration.qualifiedName?.asString()
+                    primaryKeyType = type?.let { guessPropertyType(it) }
+                } != null
+            }?.simpleName?.asString()
+
+        // Create result only if primary key type was found
+        return primaryKeyType?.let {
+            Triple(
+                hibernateTable.arguments.getArgument("name") ?: classDeclaration.toTableName(),
+                primaryKey!!,
+                it
+            )
         }
     }
 
