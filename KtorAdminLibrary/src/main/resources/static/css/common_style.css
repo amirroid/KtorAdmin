@@ -172,6 +172,23 @@
     background-color: var(--highlight-color);
 }
 
+.istok-web-regular {
+    font-family: "Istok Web", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.istok-web-black {
+    font-family: "Istok Web", serif;
+    font-weight: 900;
+    font-style: normal;
+}
+
+.istok-web-bold {
+    font-family: "Istok Web", serif;
+    font-weight: 700;
+    font-style: normal;
+}
 
 #username-container:hover .dropdown-icon path {
     stroke: var(--white);

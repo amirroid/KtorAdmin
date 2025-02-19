@@ -11,6 +11,7 @@
 </head>
 
 <body>
+<h1 class="name"><span class="istok-web-black">Ktor</span>Admin</h1>
 <div id="login-container">
     <h1 id="title">Login</h1>
     <form method="post">

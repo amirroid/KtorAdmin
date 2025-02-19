@@ -1,12 +1,9 @@
 body {
-    height: 100vh;
-    background: linear-gradient(to top left, var(--background-gradient-start) 60%, var(--background-gradient-end) 100%);
-    overflow-y: hidden;
-    font-family: 'Istok Web', sans-serif;
-    margin: 16px;
     display: flex;
     justify-content: center;
+    flex-direction: column;
     align-items: center;
+    gap: 12px;
 }
 
 * {
@@ -48,6 +45,10 @@ body {
     border: none;
     transition: .1s linear;
     cursor: pointer;
+}
+
+.name {
+    font-size: 36px;
 }
 
 #submit-button:hover {
