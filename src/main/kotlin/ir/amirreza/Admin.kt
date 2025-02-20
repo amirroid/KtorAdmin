@@ -42,7 +42,7 @@ fun Application.configureAdmin(database: Database) {
         adminDashboard = CustomDashboard()
         defaultAwsS3Bucket = "school-data"
         awsS3SignatureDuration = 1.minutes.toJavaDuration()
-        authenticateName = "admin"
+//        authenticateName = "admin"
         loginFields = adminLoginFields
         csrfTokenExpirationTime = 1000 * 60
         registerCustomAdminActionForAll(MyCustomAction())

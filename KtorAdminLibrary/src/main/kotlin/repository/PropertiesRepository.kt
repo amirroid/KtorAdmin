@@ -74,7 +74,11 @@ object PropertiesRepository {
         val infoNullable = infoAnnotation?.findArgument<Boolean>("nullable")
         val nullable = nativeNullable ?: infoNullable ?: type.isMarkedNullable
 
-        val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: columnName
+        val defaultVerboseName = columnName.split("_")
+            .mapIndexed { index, item -> if (index == 0) item.replaceFirstChar { it.uppercase() } else item }
+            .joinToString(" ")
+        val verboseName =
+            infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: defaultVerboseName
 
         return BaseColumnInfo(name, columnName, verboseName, nullable)
     }

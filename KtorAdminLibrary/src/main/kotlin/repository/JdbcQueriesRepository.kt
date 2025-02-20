@@ -545,7 +545,7 @@ internal object JdbcQueriesRepository {
                                 }
                             })
                     } ?: "${
-                        table.getTableName().replaceFirstChar { it.uppercaseChar() }
+                        table.getSingularName().replaceFirstChar { it.uppercaseChar() }
                     } Object ($referenceKey)"
                 )
             }
