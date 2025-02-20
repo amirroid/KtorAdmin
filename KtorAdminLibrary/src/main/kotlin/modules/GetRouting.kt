@@ -23,6 +23,7 @@ import panels.AdminJdbcTable
 import panels.AdminPanel
 import repository.JdbcQueriesRepository
 import utils.Constants
+import utils.forbidden
 import utils.serverError
 import utils.withAuthenticate
 
@@ -55,7 +56,11 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
         val sectionsInfo = getSectionsInfo()
         val gridTemplate = DynamicConfiguration.dashboard?.grid?.gridTemplate ?: emptyList()
         val mediaTemplates = DynamicConfiguration.dashboard?.grid?.mediaTemplates ?: emptyList()
-        val username = principal<KtorAdminPrincipal>()?.name
+        val user = principal<KtorAdminPrincipal>()
+        val username = user?.name
+        if (user?.dashboardAccess == false) {
+            return forbidden("You do not have permission to access the admin dashboard.")
+        }
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/admin_dashboard.vm",
