@@ -273,9 +273,13 @@ object PropertiesRepository {
             ?.takeIf { it.isNotEmpty() }
             ?: property.simpleName.asString()
 
+
+        val referenceColumnName =
+            joinColumn.arguments.getArgument<String>("referencedColumnName")?.takeIf { it.isNotEmpty() }
+
         // Get referenced table information
         val tableNameWithPrimaryKey = (type.declaration as? KSClassDeclaration)?.let {
-            getTableNameWithPrimaryKey(it)
+            getTableNameWithPrimaryKey(it, referenceColumnName)
         } ?: return null
 
         // Extract nullable and unique constraints from JoinColumn
@@ -339,29 +343,43 @@ object PropertiesRepository {
      * @param classDeclaration The class declaration to analyze
      * @return Triple containing (table name, primary key name, primary key type) or null if not found
      */
-    fun getTableNameWithPrimaryKey(classDeclaration: KSClassDeclaration): Triple<String, String, ColumnType>? {
+    fun getTableNameWithPrimaryKey(
+        classDeclaration: KSClassDeclaration,
+        referenceColumnName: String?
+    ): Triple<String, String, ColumnType>? {
         // Find @Table annotation
         val hibernateTable = classDeclaration.annotations.findReferenceAnnotation("Table") ?: return null
 
-        // Find property with @Id annotation and extract its type
         var primaryKeyType: ColumnType? = null
-        val primaryKey = classDeclaration.getDeclaredProperties()
-            .firstOrNull { property ->
-                property.annotations.findReferenceAnnotation("Id")?.also { annotation ->
-                    // Extract and convert primary key type
+        val primaryKey = referenceColumnName?.let { refColumn ->
+            classDeclaration.getDeclaredProperties().firstOrNull { it.findColumnName() == refColumn }?.let {
+                val type = it.type.resolve().declaration.qualifiedName?.asString()
+                primaryKeyType = type?.let(::guessPropertyType)
+                refColumn
+            } ?: throw IllegalArgumentException("Reference column '$refColumn' not found")
+        } ?: run {
+            classDeclaration.getDeclaredProperties().firstOrNull { property ->
+                property.annotations.findReferenceAnnotation("Id")?.also {
                     val type = property.type.resolve().declaration.qualifiedName?.asString()
-                    primaryKeyType = type?.let { guessPropertyType(it) }
+                    primaryKeyType = type?.let(::guessPropertyType)
                 } != null
-            }?.simpleName?.asString()
-
-        // Create result only if primary key type was found
-        return primaryKeyType?.let {
-            Triple(
-                hibernateTable.arguments.getArgument("name") ?: classDeclaration.toTableName(),
-                primaryKey!!,
-                it
-            )
+            }?.findColumnName()
         }
+
+        primaryKeyType ?: return null
+
+        return Triple(
+            hibernateTable.arguments.getArgument("name") ?: classDeclaration.toTableName(),
+            primaryKey ?: throw IllegalStateException("Primary key not found"),
+            primaryKeyType
+        )
+    }
+
+    private fun KSPropertyDeclaration.findColumnName(): String? {
+        val columnAnnotation = annotations.find {
+            it.qualifiedName in getListOfHibernatePackage("Column")
+        }
+        return columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() } ?: simpleName.asString()
     }
 
     /**

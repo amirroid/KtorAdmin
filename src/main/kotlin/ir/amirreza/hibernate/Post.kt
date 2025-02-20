@@ -48,6 +48,6 @@ data class Author(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
 
-    @Column(nullable = false)
+    @Column("name1", nullable = false)
     val name: String,
 )
