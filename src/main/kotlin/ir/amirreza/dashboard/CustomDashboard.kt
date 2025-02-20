@@ -84,6 +84,11 @@ class TaskListChartSection : ListDashboardSection() {
         get() = "TASKS"
     override val index: Int
         get() = 25
+    override val fields: List<String>?
+        get() = listOf(
+            "name", "priority", "file", "number",
+            "checked"
+        )
 
     override val limitCount: Int?
         get() = 2

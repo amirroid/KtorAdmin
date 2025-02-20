@@ -379,8 +379,9 @@ internal object JdbcQueriesRepository {
      */
     fun getListSectionData(table: AdminJdbcTable, section: ListDashboardSection): ListData {
         val tableColumns = table.getAllAllowToShowColumns()
+        val allColumns = table.getAllColumns()
         val columns = section.fields?.mapNotNull { fieldName ->
-            tableColumns.firstOrNull { it.columnName == fieldName }
+            allColumns.firstOrNull { it.columnName == fieldName }
         } ?: tableColumns
         val primaryKeyColumn = table.getPrimaryKey()
         val rows = mutableListOf<DataWithPrimaryKey>()

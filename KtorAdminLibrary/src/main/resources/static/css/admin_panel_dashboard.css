@@ -230,6 +230,7 @@ h2 {
     display: flex;
     flex-direction: row;
     cursor: pointer;
+    width: min-content;
     align-items: center;
     margin-left: 16px;
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
