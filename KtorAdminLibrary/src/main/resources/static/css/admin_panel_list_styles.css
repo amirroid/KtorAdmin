@@ -87,8 +87,25 @@ h2 {
 
 #name {
     font-size: 24px;
-    flex-grow: 1;
     margin-left: 24px;
+}
+
+#name-container {
+    display: flex;
+    gap: 12px;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+}
+
+#count-text {
+    flex-shrink: 0;
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 3px 8px;
+    color: var(--secondary-color);
+    font-size: 12px;
+    opacity: .9;
 }
 
 #top-box {

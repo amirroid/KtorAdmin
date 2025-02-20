@@ -84,8 +84,9 @@ private class JdbcPanelHandler(private val jdbcTables: List<AdminJdbcTable>) : P
         val filtersData = JdbcFilters.findFiltersData(panel, jdbcTables)
         val filters = JdbcFilters.extractFilters(panel, jdbcTables, call.parameters)
 
+        val totalCount = JdbcQueriesRepository.getCount(panel, searchParameter, filters)
         val data = JdbcQueriesRepository.getAllData(panel, searchParameter, currentPage, filters, order)
-        val maxPages = calculateMaxPages(panel, searchParameter, filters)
+        val maxPages = calculateMaxPages(totalCount)
 
         call.respondWithTemplate(
             panel = panel,
@@ -96,16 +97,14 @@ private class JdbcPanelHandler(private val jdbcTables: List<AdminJdbcTable>) : P
             filtersData = filtersData,
             order = order,
             panelGroups = panelGroups,
-            hasSearch = panel.getSearches().isNotEmpty()
+            hasSearch = panel.getSearches().isNotEmpty(),
+            count = totalCount
         )
     }
 
     private fun calculateMaxPages(
-        table: AdminJdbcTable,
-        searchParameter: String?,
-        filters: MutableList<Triple<ColumnSet, String, Any>>
+        totalCount: Long
     ): Long {
-        val totalCount = JdbcQueriesRepository.getCount(table, searchParameter, filters)
         val pages = totalCount / DynamicConfiguration.maxItemsInPage
         return if (totalCount % DynamicConfiguration.maxItemsInPage == 0L) pages else pages + 1
     }
@@ -210,7 +209,8 @@ private suspend fun ApplicationCall.respondWithTemplate(
     filtersData: Any,
     order: Order?,
     panelGroups: List<PanelGroup>,
-    hasSearch: Boolean
+    hasSearch: Boolean,
+    count: Long? = null
 ) {
     val user = principal<KtorAdminPrincipal>()
     val model = buildTemplateModel(
@@ -223,7 +223,8 @@ private suspend fun ApplicationCall.respondWithTemplate(
         order = order,
         panelGroups = panelGroups,
         hasSearch = hasSearch,
-        username = user?.name
+        username = user?.name,
+        count = count
     )
 
     respond(
@@ -244,7 +245,8 @@ private fun buildTemplateModel(
     order: Order?,
     panelGroups: List<PanelGroup>,
     hasSearch: Boolean,
-    username: String?
+    username: String?,
+    count: Long?,
 ): Map<String, Any> {
     return mutableMapOf(
         "fields" to when (panel) {
@@ -269,5 +271,6 @@ private fun buildTemplateModel(
             put("order", it.copy(direction = it.direction.lowercase()))
         }
         username?.let { put("username", it) }
+        count?.let { put("count", it) }
     }.toMap()
 }

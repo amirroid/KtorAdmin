@@ -163,7 +163,12 @@
                     <button id="filter-submit-button" onclick="onFilterApply()">Filter</button>
                 </div>
                 <div id="top-box-row-up">
-                    <h1 id="name" class="istok-web-bold">$pluralName</h1>
+                    <div id="name-container">
+                        <h1 id="name" class="istok-web-bold">$pluralName</h1>
+                        #if($count)
+                            <div id="count-text">$count Items</div>
+                        #end
+                    </div>
                     <div class="actions-row">
                         <div class="actions-container">
                             <select class="actions-input">
