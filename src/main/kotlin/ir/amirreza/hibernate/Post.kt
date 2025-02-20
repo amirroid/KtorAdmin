@@ -3,6 +3,7 @@ package ir.amirreza.hibernate
 import annotations.hibernate.HibernateTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
+import annotations.roles.AccessRoles
 import annotations.type.OverrideColumnType
 import annotations.uploads.LocalUpload
 import ir.amirreza.Priority
@@ -48,6 +49,5 @@ data class Author(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
 
-    @Column("name1", nullable = false)
     val name: String,
 )

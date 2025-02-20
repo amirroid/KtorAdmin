@@ -64,7 +64,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
         notFound("No data found with primary key: $primaryKey")
     } else {
         runCatching {
-            val user = principal<KtorAdminPrincipal>()!!
+            val username = principal<KtorAdminPrincipal>()?.name
             val columns = table.getAllAllowToShowColumnsInUpsert()
             val panelColumnsList = table.getAllAllowToShowColumnsInUpsertView()
             val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), panelColumnsList)
@@ -100,11 +100,10 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "csrfToken" to CsrfManager.generateToken(),
                         "panelGroups" to panelGroups,
                         "currentPanel" to table.getPluralName(),
-                        "username" to user.name,
                         "isUpdate" to true,
                         "requestId" to requestId,
                         "hasAction" to table.hasEditAction
-                    ).addCommonUpsertModels(table)
+                    ).addCommonUpsertModels(table, username)
                 )
             )
         }.onFailure {
@@ -124,7 +123,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
         notFound("No data found with primary key: $primaryKey")
     } else {
         runCatching {
-            val user = principal<KtorAdminPrincipal>()!!
+            val username = principal<KtorAdminPrincipal>()?.name
             val fields = panel.getAllAllowToShowFieldsInUpsert()
             val requestId = getRequestId()
             val valuesWithErrors = getFlashDataAndClear(requestId)
@@ -141,7 +140,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
             }.toMap()
             respond(
                 VelocityContent(
-                    "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mapOf(
+                    "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mutableMapOf(
                         "fields" to fields,
                         "values" to values,
                         "errors" to errors.toMap(),
@@ -150,12 +149,13 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                         "csrfToken" to CsrfManager.generateToken(),
                         "panelGroups" to panelGroups,
                         "currentPanel" to panel.getPluralName(),
-                        "username" to user.name,
                         "isUpdate" to true,
                         "requestId" to requestId,
                         "hasAction" to panel.hasEditAction,
                         "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
-                    )
+                    ).apply {
+                        username?.let { put("username", it) }
+                    }
                 )
             )
         }.onFailure {

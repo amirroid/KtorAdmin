@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 import panels.AdminJdbcTable
 import panels.getAllAllowToShowColumnsInUpsert
 
-fun Map<String, Any>.addCommonUpsertModels(table: AdminJdbcTable): Map<String, Any> {
+fun Map<String, Any>.addCommonUpsertModels(table: AdminJdbcTable, username: String?): Map<String, Any> {
     return toMutableMap().apply {
         if (table.getAllAllowToShowColumnsInUpsert().any { it.hasRichEditor }) {
             val json = Json {
@@ -14,6 +14,7 @@ fun Map<String, Any>.addCommonUpsertModels(table: AdminJdbcTable): Map<String, A
             }
             val config = json.encodeToString(DynamicConfiguration.tinyMCEConfig)
             set("tinyMCEConfig", config)
+            username?.let { put("username", it) }
         }
     }.toMap()
 }

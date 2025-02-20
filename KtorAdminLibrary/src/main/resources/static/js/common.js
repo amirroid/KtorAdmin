@@ -171,7 +171,7 @@ function logout() {
                 window.location.replace("/admin/login")
             } else {
                 loading.style.visibility = "hidden";
-                alert(`ERROR`)
+                showAlert(`ERROR`, "error")
             }
         }
     ).catch(error => {
@@ -184,7 +184,7 @@ function logout() {
 // Create and inject styles dynamically
 const style = document.createElement("style");
 style.textContent = `
-  /* Alert Container */
+  /* Alert Container - Fixed position container for all alerts */
   #custom-alert-container {
       position: fixed;
       top: 20px;
@@ -198,9 +198,9 @@ style.textContent = `
       overflow-y: auto;
       overflow-x: hidden;
       padding-right: 8px;
-      pointer-events: none; /* Allow clicks to pass through container */
+      pointer-events: none; /* Allows clicks to pass through container */
       
-      /* Hide scrollbar */
+      /* Hide scrollbar across different browsers */
       &::-webkit-scrollbar {
           display: none;
       }
@@ -208,7 +208,7 @@ style.textContent = `
       scrollbar-width: none;
   }
 
-  /* Alert Box */
+  /* Alert Box - Individual alert styling */
   .alert {
       display: flex;
       align-items: stretch;
@@ -222,14 +222,15 @@ style.textContent = `
       backdrop-filter: blur(10px);
       transform: translateX(-120%);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                  opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                  opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  top 0.3s ease-in-out;
       opacity: 0;
       position: relative;
       flex-shrink: 0;
       pointer-events: auto; /* Re-enable pointer events for alerts */
   }
 
-  /* Alert Bar */
+  /* Alert Bar - Colored bar indicating alert type */
   .alert-bar {
       width: 6px;
       align-self: stretch;
@@ -237,8 +238,8 @@ style.textContent = `
       margin-right: 8px;
       flex-shrink: 0;
   }
-
-  /* Alert Message */
+  
+  /* Alert Message - Text content container */
   .alert-message {
       flex-grow: 1;
       padding: 4px 0;
@@ -246,7 +247,7 @@ style.textContent = `
       word-break: break-word;
   }
 
-  /* Close Button */
+  /* Close Button - Custom styled button with hover effect */
   .alert-close {
       display: flex;
       align-items: center;
@@ -265,44 +266,55 @@ style.textContent = `
       opacity: 1;
   }
 
+  /* Close Button SVG - Icon sizing */
   .alert-close svg {
       width: 24px;
       height: 24px;
   }
 
-  /* Show Alert Animation */
+  /* Show Alert Animation - Entry state */
   .alert.show {
       transform: translateX(0);
       opacity: 1;
   }
 
-  /* Remove Animation */
+  /* Remove Animation - Exit state */
   .alert.removing {
       transform: translateX(-120%);
       opacity: 0;
       pointer-events: none;
   }
 `;
+
+// Inject styles into document head
 document.head.appendChild(style);
 
-// Create and append alert container
+// Create and append alert container to body
 const alertContainer = document.createElement("div");
 alertContainer.id = "custom-alert-container";
 document.body.appendChild(alertContainer);
 
-// Function to show alert
+/**
+ * Shows an alert message with specified type and duration
+ * @param {string} message - The message to display in the alert
+ * @param {string} type - Alert type: 'info', 'success', 'warning', 'error'
+ * @param {number} duration - Duration in milliseconds before auto-closing
+ */
 function showAlert(message, type = "info", duration = 4500) {
+    // Create main alert container
     const alertBox = document.createElement("div");
     alertBox.classList.add("alert");
 
+    // Create colored bar element
     const alertBar = document.createElement("div");
     alertBar.classList.add("alert-bar");
 
+    // Create message element
     const messageSpan = document.createElement("span");
     messageSpan.classList.add("alert-message");
     messageSpan.textContent = message;
 
-    // Create close button with SVG
+    // Create close button with SVG icon
     const closeButton = document.createElement("button");
     closeButton.classList.add("alert-close");
     closeButton.innerHTML = `
@@ -312,21 +324,24 @@ function showAlert(message, type = "info", duration = 4500) {
         </svg>
     `;
 
-    // Function to remove alert with animation
+    /**
+     * Removes alert with animation and triggers upward movement of remaining alerts
+     */
     const removeAlert = () => {
         // Add removing class to start exit animation
         alertBox.classList.add('removing');
 
-        // Remove the alert after animation completes
+        // Handle alert removal after animation
         alertBox.addEventListener('transitionend', function handler(e) {
             alertBox.remove();
         }, {once: true});
+
     };
 
     // Add click handler to close button
     closeButton.addEventListener("click", removeAlert);
 
-    // Define alert colors
+    // Define color scheme for different alert types
     const colors = {
         info: "#3498db",    // Blue
         success: "#2ecc71", // Green
@@ -335,19 +350,19 @@ function showAlert(message, type = "info", duration = 4500) {
     };
     alertBar.style.backgroundColor = colors[type] || colors.info;
 
-    // Append elements
+    // Construct alert by appending elements
     alertBox.appendChild(alertBar);
     alertBox.appendChild(messageSpan);
     alertBox.appendChild(closeButton);
     alertContainer.appendChild(alertBox);
 
-    // Show alert with animation
+    // Trigger show animation in next frame
     requestAnimationFrame(() => {
         alertBox.classList.add("show");
         alertContainer.scrollTop = alertContainer.scrollHeight;
     });
 
-    // Hide and remove alert after duration
+    // Set up auto-removal after duration
     if (duration) {
         setTimeout(removeAlert, duration);
     }

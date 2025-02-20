@@ -55,12 +55,12 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
         val sectionsInfo = getSectionsInfo()
         val gridTemplate = DynamicConfiguration.dashboard?.grid?.gridTemplate ?: emptyList()
         val mediaTemplates = DynamicConfiguration.dashboard?.grid?.mediaTemplates ?: emptyList()
+        val username = principal<KtorAdminPrincipal>()?.name
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/admin_dashboard.vm",
                 model = mutableMapOf(
                     "panelGroups" to panelGroups,
-                    "username" to principal<KtorAdminPrincipal>()!!.name,
                     "sectionsData" to sectionsData.associateBy {
                         when (it) {
                             is TextData -> it.section.index
@@ -72,7 +72,11 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
                     "sectionsInfo" to sectionsInfo,
                     "gridTemplate" to gridTemplate,
                     "mediaTemplates" to mediaTemplates,
-                )
+                ).apply {
+                    username?.let {
+                        put("username", it)
+                    }
+                }
             )
         )
     }.onFailure {

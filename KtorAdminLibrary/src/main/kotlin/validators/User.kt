@@ -9,7 +9,7 @@ import utils.forbidden
 internal suspend fun ApplicationCall.checkHasRole(panel: AdminPanel, build: suspend ApplicationCall.() -> Unit) {
     val user = principal<KtorAdminPrincipal>()
     val accessRoles = panel.getAccessRoles()
-    if (accessRoles != null && user?.roles?.any { it in accessRoles } != true) {
+    if (accessRoles != null && user != null && user.roles?.any { it in accessRoles } != true) {
         forbidden("Access denied: You do not have permission to perform this action.")
         return
     }

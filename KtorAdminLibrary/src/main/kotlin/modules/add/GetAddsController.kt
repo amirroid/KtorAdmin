@@ -47,7 +47,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
     val requestId = getRequestId()
     val valuesWithErrors = getFlashDataAndClear(requestId)
     runCatching {
-        val user = principal<KtorAdminPrincipal>()!!
+        val username = principal<KtorAdminPrincipal>()?.name
         val columns = table.getAllAllowToShowColumnsInUpsertView()
         val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
         respond(
@@ -62,11 +62,10 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "csrfToken" to CsrfManager.generateToken(),
                     "panelGroups" to panelGroups,
                     "currentPanel" to table.getPluralName(),
-                    "username" to user.name,
                     "isUpdate" to false,
                     "requestId" to requestId,
                     "hasAction" to table.hasAddAction
-                ).addCommonUpsertModels(table)
+                ).addCommonUpsertModels(table, username)
             )
         )
     }.onFailure {
@@ -78,7 +77,7 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
     panel: AdminMongoCollection, panelGroups: List<PanelGroup>
 ) {
     runCatching {
-        val user = principal<KtorAdminPrincipal>()!!
+        val username = principal<KtorAdminPrincipal>()?.name
         val fields = panel.getAllAllowToShowFieldsInUpsert()
         val requestId = getRequestId()
         val valuesWithErrors = getFlashDataAndClear(requestId)
@@ -87,7 +86,7 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
         val values = errorValues?.takeIf { it.isNotEmpty() } ?: emptyMap()
         respond(
             VelocityContent(
-                "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mapOf(
+                "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mutableMapOf(
                     "fields" to fields,
                     "collectionName" to panel.getCollectionName(),
                     "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
@@ -99,8 +98,9 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
                     "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
                     "panelGroups" to panelGroups,
                     "currentPanel" to panel.getPluralName(),
-                    "username" to user.name,
-                )
+                ).apply {
+                    username?.let { put("username", it) }
+                }
             )
         )
     }.onFailure {

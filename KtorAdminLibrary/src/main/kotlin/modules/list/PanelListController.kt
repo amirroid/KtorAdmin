@@ -212,7 +212,7 @@ private suspend fun ApplicationCall.respondWithTemplate(
     panelGroups: List<PanelGroup>,
     hasSearch: Boolean
 ) {
-    val user = principal<KtorAdminPrincipal>()!!
+    val user = principal<KtorAdminPrincipal>()
     val model = buildTemplateModel(
         panel = panel,
         data = data,
@@ -223,7 +223,7 @@ private suspend fun ApplicationCall.respondWithTemplate(
         order = order,
         panelGroups = panelGroups,
         hasSearch = hasSearch,
-        username = user.name
+        username = user?.name
     )
 
     respond(
@@ -244,7 +244,7 @@ private fun buildTemplateModel(
     order: Order?,
     panelGroups: List<PanelGroup>,
     hasSearch: Boolean,
-    username: String
+    username: String?
 ): Map<String, Any> {
     return mutableMapOf(
         "fields" to when (panel) {
@@ -261,7 +261,6 @@ private fun buildTemplateModel(
         "filtersData" to filtersData,
         "actions" to panel.getAllCustomActions(),
         "csrfToken" to CsrfManager.generateToken(),
-        "username" to username,
         "panelGroups" to panelGroups,
         "currentPanel" to panel.getPluralName(),
         "canDownload" to DynamicConfiguration.canDownloadDataAsCsv
@@ -269,5 +268,6 @@ private fun buildTemplateModel(
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))
         }
+        username?.let { put("username", it) }
     }.toMap()
 }
