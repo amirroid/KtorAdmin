@@ -34,6 +34,14 @@ private interface PanelHandler {
         searchParameter: String?,
         panelGroups: List<PanelGroup>
     )
+
+
+    fun calculateMaxPages(
+        totalCount: Long
+    ): Long {
+        val pages = totalCount / DynamicConfiguration.maxItemsInPage
+        return if (totalCount % DynamicConfiguration.maxItemsInPage == 0L) pages else pages + 1
+    }
 }
 
 internal suspend fun ApplicationCall.handlePanelList(tables: List<AdminPanel>, panelGroups: List<PanelGroup>) {
@@ -101,13 +109,6 @@ private class JdbcPanelHandler(private val jdbcTables: List<AdminJdbcTable>) : P
             count = totalCount
         )
     }
-
-    private fun calculateMaxPages(
-        totalCount: Long
-    ): Long {
-        val pages = totalCount / DynamicConfiguration.maxItemsInPage
-        return if (totalCount % DynamicConfiguration.maxItemsInPage == 0L) pages else pages + 1
-    }
 }
 
 private class MongoPanelHandler : PanelHandler {
@@ -135,18 +136,19 @@ private class MongoPanelHandler : PanelHandler {
             order = order
         )
 
-        val maxPages = MongoClientRepository.getTotalPages(panel, combinedFilters)
+        val totalCount = MongoClientRepository.getCount(panel, combinedFilters)
 
         call.respondWithTemplate(
             panel = panel,
             data = data,
             pluralName = pluralName,
-            maxPages = maxPages,
+            maxPages = calculateMaxPages(totalCount),
             currentPage = currentPage,
             filtersData = filtersData,
             order = order,
             panelGroups = panelGroups,
-            hasSearch = panel.getSearches().isNotEmpty()
+            hasSearch = panel.getSearches().isNotEmpty(),
+            count = totalCount
         )
     }
 
@@ -210,7 +212,7 @@ private suspend fun ApplicationCall.respondWithTemplate(
     order: Order?,
     panelGroups: List<PanelGroup>,
     hasSearch: Boolean,
-    count: Long? = null
+    count: Long,
 ) {
     val user = principal<KtorAdminPrincipal>()
     val model = buildTemplateModel(
@@ -246,7 +248,7 @@ private fun buildTemplateModel(
     panelGroups: List<PanelGroup>,
     hasSearch: Boolean,
     username: String?,
-    count: Long?,
+    count: Long,
 ): Map<String, Any> {
     return mutableMapOf(
         "fields" to when (panel) {
@@ -265,12 +267,12 @@ private fun buildTemplateModel(
         "csrfToken" to CsrfManager.generateToken(),
         "panelGroups" to panelGroups,
         "currentPanel" to panel.getPluralName(),
-        "canDownload" to DynamicConfiguration.canDownloadDataAsCsv
+        "canDownload" to DynamicConfiguration.canDownloadDataAsCsv,
+        "count" to count
     ).apply {
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))
         }
         username?.let { put("username", it) }
-        count?.let { put("count", it) }
     }.toMap()
 }

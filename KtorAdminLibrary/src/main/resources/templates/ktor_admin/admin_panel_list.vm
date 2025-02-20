@@ -167,6 +167,8 @@
                         <h1 id="name" class="istok-web-bold">$pluralName</h1>
                         #if($count)
                             <div id="count-text">$count Items</div>
+                        #else
+                            <div id="count-text">Empty</div>
                         #end
                     </div>
                     <div class="actions-row">

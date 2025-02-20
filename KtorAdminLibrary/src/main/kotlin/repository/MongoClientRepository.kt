@@ -130,16 +130,11 @@ internal object MongoClientRepository {
         }
     }
 
-    suspend fun getTotalPages(
+    suspend fun getCount(
         table: AdminMongoCollection,
         filters: Bson,
     ): Long {
-        val totalCount = table.getCollection().countDocuments(filters)
-        return if (totalCount % DynamicConfiguration.maxItemsInPage == 0L) {
-            totalCount / DynamicConfiguration.maxItemsInPage
-        } else {
-            (totalCount / DynamicConfiguration.maxItemsInPage) + 1
-        }
+        return table.getCollection().countDocuments(filters)
     }
 
 
