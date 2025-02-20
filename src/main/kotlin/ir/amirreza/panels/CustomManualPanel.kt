@@ -20,9 +20,7 @@ class CustomManualPanel : AdminJdbcTable {
     override fun getIconFile(): String? = null
     override fun getDatabaseKey(): String? = null
     override fun getTableName(): String = "post"
-    override fun getPanelListColumns(): List<String> {
-        return emptyList()
-    }
+    override fun getPanelListColumns(): List<String> = getAllColumns().map { it.columnName }
 
     override fun getGroupName(): String? = null
     override fun getPluralName(): String = "Posts2"

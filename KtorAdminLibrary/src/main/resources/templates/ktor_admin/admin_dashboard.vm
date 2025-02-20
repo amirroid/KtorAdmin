@@ -83,7 +83,17 @@
                 #elseif($section.section.sectionType == "list")
                     <div class="table-section"
                          style="grid-column: span ${sectionInfo.span}; height: ${sectionInfo.height};">
-                        <h2 class="table-title">$section.section.sectionName</h2>
+                        <h2 class="table-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.4301 5.92993L20.5001 11.9999L14.4301 18.0699" stroke="#292D32"
+                                      stroke-width="2" stroke-miterlimit="10" stroke-linecap="round"
+                                      stroke-linejoin="round"/>
+                                <path d="M3.5 12H20.33" stroke="#292D32" stroke-width="2" stroke-miterlimit="10"
+                                      stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <a href="/admin/resources/$section.pluralName">$section.section.sectionName</a>
+                        </h2>
                         <div class="table-container">
                             <table>
                                 <thead>

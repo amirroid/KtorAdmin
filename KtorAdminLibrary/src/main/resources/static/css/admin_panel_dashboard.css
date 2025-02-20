@@ -103,7 +103,7 @@ h2 {
     width: 80px;
     height: 55px;
     background-color: var(--white-transparent-60);
-    border-radius: 20px 20px 0px 0px;
+    border-radius: 20px 20px 0 0;
     cursor: pointer;
     transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -162,7 +162,7 @@ h2 {
 }
 
 .table-section {
-    gap: 8px;
+    gap: 4px;
     min-height: 100%;
     display: flex;
     flex-direction: column;
@@ -225,10 +225,39 @@ h2 {
     font-weight: bold;
 }
 
+
 .table-title {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    align-items: center;
     margin-left: 16px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.table-title svg {
+    width: 0;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.table-title path {
+    stroke: var(--secondary-color);
+}
+
+.table-title a {
     font-size: 16px;
+    text-decoration: none;
     font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.table-title:hover a {
+    color: var(--secondary-color);
+    margin-left: 8px;
+}
+
+.table-title:hover svg {
+    width: 20px;
 }
 
 .menu:hover ~ .sidebar {
