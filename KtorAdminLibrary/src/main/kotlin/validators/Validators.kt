@@ -2,6 +2,7 @@ package validators
 
 import configuration.DynamicConfiguration
 import getters.toTypedValue
+import getters.toTypedValueNullable
 import models.ColumnSet
 import models.Limit
 import models.field.FieldSet
@@ -34,15 +35,6 @@ internal object Validators {
             return "The field cannot be null"
         }
 
-        // Check if the column is marked as unique
-        if (columnSet.unique) {
-            // Convert the value to the appropriate database type and check for duplicates
-            val typedValue = value?.toTypedValue(columnSet.type)
-            if (JdbcQueriesRepository.checkExistSameData(table, columnSet, typedValue, primaryKey)) {
-                return "The field must be unique"
-            }
-        }
-
         // Ensure the field is not blank if 'blank' is set to false
         if (!columnSet.blank && value?.isBlank() == true) {
             return "The field cannot be empty"
@@ -51,6 +43,19 @@ internal object Validators {
         if (columnSet.reference != null) {
             if (value.isNullOrEmpty()) {
                 return "The field cannot be empty or null when a reference is required."
+            }
+        }
+
+        if (value != null && value.toTypedValueNullable(columnSet.type) == null) {
+            return "The provided value is not valid."
+        }
+
+        // Check if the column is marked as unique
+        if (columnSet.unique) {
+            // Convert the value to the appropriate database type and check for duplicates
+            val typedValue = value?.toTypedValue(columnSet.type)
+            if (JdbcQueriesRepository.checkExistSameData(table, columnSet, typedValue, primaryKey)) {
+                return "The field must be unique"
             }
         }
 

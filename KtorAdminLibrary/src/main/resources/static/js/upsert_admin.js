@@ -212,3 +212,11 @@ function toggleExpand(element) {
     }
     element.classList.toggle("open");
 }
+
+document.querySelector("form").addEventListener("submit", (e) => {
+    let submitButton = document.querySelector("#submit-button");
+    if (submitButton && submitButton.classList.contains("disabled")) {
+        showAlert("This action is disabled!");
+        e.preventDefault();
+    }
+});

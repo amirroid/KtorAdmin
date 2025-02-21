@@ -26,6 +26,25 @@ internal fun String.toTypedValue(columnType: ColumnType): Any {
     }
 }
 
+internal fun String.toTypedValueNullable(columnType: ColumnType): Any? {
+    return when (columnType) {
+        ColumnType.INTEGER -> toIntOrNull()
+        ColumnType.UINTEGER -> toUIntOrNull()
+        ColumnType.SHORT -> toShortOrNull()
+        ColumnType.USHORT -> toUShortOrNull()
+        ColumnType.LONG -> toLongOrNull()
+        ColumnType.ULONG -> toULongOrNull()
+        ColumnType.DOUBLE -> toDoubleOrNull()
+        ColumnType.FLOAT -> toFloatOrNull()
+        ColumnType.BIG_DECIMAL -> toBigDecimalOrNull()
+        ColumnType.CHAR -> singleOrNull()
+        ColumnType.BOOLEAN -> toBoolean()
+        ColumnType.DATE -> toLocalDate()
+        ColumnType.DATETIME -> toLocalDateTime()
+        else -> null
+    }
+}
+
 internal fun String.toBoolean(): Boolean? {
     return when (this) {
         Constants.TRUE_FORM -> true

@@ -318,6 +318,20 @@ select[multiple] option:checked {
     opacity: 0.9;
 }
 
+button.disabled {
+    background-color: #D1D1D1 !important;
+    color: #A0A0A0 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+:root.theme-dark button.disabled {
+    background-color: #3A3D42 !important;
+    color: #666A70 !important;
+}
+
 .field-input:focus {
     outline: 2px solid var(--secondary-color);
     opacity: 0.9;

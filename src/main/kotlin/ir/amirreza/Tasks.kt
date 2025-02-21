@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.actions.AdminActions
 import annotations.computed.Computed
 import annotations.display.DisplayFormat
 import annotations.display.PanelDisplayList
