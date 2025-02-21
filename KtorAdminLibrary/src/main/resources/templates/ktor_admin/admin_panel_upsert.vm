@@ -262,6 +262,10 @@
                                    #if($column.readOnly)readonly#end/>
                         </div>
                     #end
+                    #set($previewItem = $previews[$column])
+                    #if($previewItem)
+                        $previewItem
+                    #end
                 #end
                 <input type="hidden" value="$csrfToken" name="_csrf">
                 <input type="hidden" value="$requestId" name="requestId">

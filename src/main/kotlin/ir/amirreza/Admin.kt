@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import ir.amirreza.action.MyCustomAction
 import ir.amirreza.dashboard.CustomDashboard
 import ir.amirreza.listeners.AdminListener
+import ir.amirreza.video_preview.VideoPreview
 import mapper.KtorAdminValueMapper
 import models.JDBCDrivers
 import models.UploadTarget
@@ -53,6 +54,7 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper
         )
+        registerPreview(VideoPreview())
         registerValueMapper(
             CustomValueMapper2
         )

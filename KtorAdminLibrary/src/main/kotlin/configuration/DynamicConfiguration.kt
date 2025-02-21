@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.withLock
 import listener.AdminEventListener
 import mapper.KtorAdminValueMapper
 import models.forms.LoginFiled
+import preview.KtorAdminPreview
 import tiny.TinyMCEConfig
 import java.time.ZoneId
 import kotlin.time.Duration
@@ -59,6 +60,8 @@ internal object DynamicConfiguration {
 
     val valueMappers = mutableListOf<KtorAdminValueMapper>()
 
+    val previews = mutableListOf<KtorAdminPreview>()
+
     fun registerValueMapper(valueMapper: KtorAdminValueMapper) {
         if (valueMappers.any { it.key == valueMapper.key }) {
             throw IllegalStateException("A ValueMapper with the key '${valueMapper.key}' is already registered.")
@@ -79,6 +82,19 @@ internal object DynamicConfiguration {
             throw IllegalStateException("An event listener is already registered. Please unregister it before registering a new one.")
         }
         currentEventListener = listener
+    }
+
+
+    fun registerPreview(preview: KtorAdminPreview) {
+        if (previews.any { it.key == preview.key }) {
+            throw IllegalStateException("Preview with key '${preview.key}' is already registered.")
+        }
+        previews += preview
+    }
+
+    fun getPreview(key: String): KtorAdminPreview {
+        return previews.firstOrNull { it.key == key }
+            ?: throw NoSuchElementException("No preview found with key '$key'.")
     }
 
     /**

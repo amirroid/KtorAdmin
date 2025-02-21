@@ -9,6 +9,7 @@ import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.order.DefaultOrder
+import annotations.preview.Preview
 import annotations.query.AdminQueries
 import annotations.references.ManyToManyReferences
 import annotations.references.ManyToOneReferences
@@ -86,6 +87,7 @@ object Tasks : Table("tasks") {
         maxBytes = 1024 * 1024 * 20,
         allowedMimeTypes = ["video/mp4"]
     )
+    @Preview("video_preview")
     val file = varchar("file", 1000).nullable()
 
     @ColumnInfo(

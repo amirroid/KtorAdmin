@@ -102,13 +102,27 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "currentPanel" to table.getPluralName(),
                         "isUpdate" to true,
                         "requestId" to requestId,
-                        "hasAction" to table.hasEditAction
+                        "hasAction" to table.hasEditAction,
+                        "previews" to extractPreviews(
+                            table.getTableName(),
+                            columnsWithValues = values.mapKeys { item -> columns.first { column -> column.columnName == item.key } }
+                        )
                     ).addCommonUpsertModels(table, username)
                 )
             )
         }.onFailure {
             serverError("Error: ${it.message}", it)
         }
+    }
+}
+
+
+private fun extractPreviews(
+    tableName: String,
+    columnsWithValues: Map<ColumnSet, Any?>
+) = columnsWithValues.mapValues { (columnSet, value) ->
+    columnSet.preview?.let { preview ->
+        DynamicConfiguration.getPreview(preview).createPreview(tableName, columnSet.columnName, value)
     }
 }
 

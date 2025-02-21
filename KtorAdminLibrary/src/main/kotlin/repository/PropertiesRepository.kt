@@ -8,6 +8,7 @@ import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
+import annotations.preview.Preview
 import annotations.references.ManyToManyReferences
 import annotations.references.ManyToOneReferences
 import annotations.references.OneToOneReferences
@@ -166,6 +167,7 @@ object PropertiesRepository {
             hasRichEditor = hasRichEditor,
             hasConfirmation = hasConfirmationAnnotation(property.annotations),
             valueMapper = getValueMapperAnnotation(property.annotations),
+            preview = getPreviewAnnotation(property.annotations)
         )
     }
 
@@ -450,25 +452,25 @@ object PropertiesRepository {
      * Checks if a property has the Enumeration annotation.
      */
     private fun hasEnumerationColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
-        annotations.any { it.shortName.asString() == Enumeration::class.simpleName }
+        annotations.any { it.qualifiedName == Enumeration::class.qualifiedName }
 
     /**
      * Checks if a property has the RichEditor annotation.
      */
     private fun hasRichEditorAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
-        annotations.any { it.shortName.asString() == RichEditor::class.simpleName }
+        annotations.any { it.qualifiedName == RichEditor::class.qualifiedName }
 
     /**
      * Checks if a property has the Confirmation annotation.
      */
     private fun hasConfirmationAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
-        annotations.any { it.shortName.asString() == Confirmation::class.simpleName }
+        annotations.any { it.qualifiedName == Confirmation::class.qualifiedName }
 
     /**
      * Extracts AutoNowDate annotation configuration if present.
      */
     private fun getAutoNowDateAnnotation(annotations: Sequence<KSAnnotation>) =
-        annotations.firstOrNull { it.shortName.asString() == AutoNowDate::class.simpleName }
+        annotations.firstOrNull { it.qualifiedName == AutoNowDate::class.qualifiedName }
             ?.let {
                 models.date.AutoNowDate(
                     updateOnChange = it.arguments.getArgument<Boolean>("updateOnChange") == true
@@ -476,10 +478,17 @@ object PropertiesRepository {
             }
 
     /**
+     * Extracts Preview annotation configuration if present.
+     */
+    private fun getPreviewAnnotation(annotations: Sequence<KSAnnotation>) =
+        annotations.firstOrNull { it.qualifiedName == Preview::class.qualifiedName }
+            ?.arguments?.getArgument<String>("key")
+
+    /**
      * Extracts ValueMapper annotation configuration if present.
      */
     private fun getValueMapperAnnotation(annotations: Sequence<KSAnnotation>) =
-        annotations.firstOrNull { it.shortName.asString() == ValueMapper::class.simpleName }?.arguments?.getArgument<String>(
+        annotations.firstOrNull { it.qualifiedName == ValueMapper::class.qualifiedName }?.arguments?.getArgument<String>(
             "key"
         )
 
@@ -487,7 +496,7 @@ object PropertiesRepository {
      * Checks if a property should be ignored in panels.
      */
     private fun hasIgnoreColumnAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
-        annotations.any { it.shortName.asString() == IgnoreColumn::class.simpleName }
+        annotations.any { it.qualifiedName == IgnoreColumn::class.qualifiedName }
 
     /**
      * Extracts enumeration values from annotations.
@@ -570,7 +579,7 @@ object PropertiesRepository {
      * Extracts and processes limit configurations from annotations.
      */
     private fun Sequence<KSAnnotation>.getLimits(): Limit? =
-        find { it.shortName.asString() == Limits::class.simpleName }?.arguments?.let { args ->
+        find { it.qualifiedName == Limits::class.qualifiedName }?.arguments?.let { args ->
             Limit(
                 maxLength = args.getArgument("maxLength") ?: Int.MAX_VALUE,
                 minLength = args.getArgument("minLength") ?: Int.MIN_VALUE,
@@ -593,7 +602,7 @@ object PropertiesRepository {
      * Extracts computed column/field configuration from annotations.
      */
     private fun Sequence<KSAnnotation>.getComputed(): Pair<String, Boolean>? =
-        find { it.shortName.asString() == Computed::class.simpleName }
+        find { it.qualifiedName == Computed::class.qualifiedName }
             ?.arguments?.let {
                 it.getArgument<String>("compute")!! to it.getArgument<Boolean>("readOnly")!!
             }

@@ -11,6 +11,7 @@ import mapper.KtorAdminValueMapper
 import models.forms.LoginFiled
 import mongo.MongoCredential
 import mongo.MongoServerAddress
+import preview.KtorAdminPreview
 import providers.AWSS3StorageProvider
 import providers.StorageProvider
 import repository.FileRepository
@@ -237,6 +238,13 @@ class KtorAdminConfiguration {
      */
     fun registerEventListener(listener: AdminEventListener) {
         DynamicConfiguration.registerEventListener(listener)
+    }
+
+    /**
+     * Registers an event listener for admin events.
+     */
+    fun registerPreview(preview: KtorAdminPreview) {
+        DynamicConfiguration.registerPreview(preview)
     }
 
     /**

@@ -81,7 +81,7 @@ class CustomManualPanel : AdminJdbcTable {
         ),
         ColumnSet(
             columnName = "author_id",
-            verboseName = "author_id",
+            verboseName = "Author id",
             type = ColumnType.LONG,
             nullable = false,
             showInPanel = true,

@@ -44,6 +44,7 @@ internal fun ColumnSet.toSuitableStringForFile() = """
     |    blank = ${blank},
     |    hasConfirmation = ${hasConfirmation},
     |    valueMapper = ${valueMapper?.let { "\"${it}\"" }},
+    |    preview = ${preview?.let { "\"${it}\"" }},
     |)
 """.trimMargin("|")
 
