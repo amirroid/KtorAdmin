@@ -41,7 +41,7 @@ internal fun String.toTypedValueNullable(columnType: ColumnType): Any? {
         ColumnType.BOOLEAN -> toBoolean()
         ColumnType.DATE -> toLocalDate()
         ColumnType.DATETIME -> toLocalDateTime()
-        else -> null
+        else -> this
     }
 }
 
