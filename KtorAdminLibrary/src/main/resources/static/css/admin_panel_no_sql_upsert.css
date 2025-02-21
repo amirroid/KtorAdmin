@@ -1,0 +1,83 @@
+.field-section {
+    border-radius: 12px;
+    overflow: hidden;
+    border: .5px solid var(--secondary-color);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    background-color: var(--secondary-color);
+    color: var(--white);
+    padding-left: 16px;
+    height: 48px;
+}
+
+.field-section .field-section {
+    margin-top: 12px;
+}
+
+.multi-section .multi-section {
+    margin-right: 12px;
+    margin-left: 12px;
+}
+
+.list-entry, .key-value-entry {
+    position: relative;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: .5px solid var(--secondary-color);
+}
+
+.list-entry[data-template="true"] {
+    display: none;
+}
+
+.nested-fields-container {
+    padding: 10px;
+}
+
+.remove-entry-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 5px 10px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.remove-entry-btn:hover {
+    background: #ff0000;
+}
+
+.add-entry-btn {
+    margin: 10px 0;
+    padding: 8px 15px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.add-entry-btn:hover {
+    background: #45a049;
+}
+
+.key-value-pair {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+
+.key-field, .value-field {
+    flex: 1;
+}

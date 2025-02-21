@@ -19,8 +19,8 @@ sealed class FieldType(val name: kotlin.String, val fieldType: kotlin.String) {
     data object ObjectId : FieldType("OBJECT_ID", "text")
     data object NotAvailable : FieldType("NOT_AVAILABLE", "text")
 
-    data class Map(val fields: kotlin.collections.List<FieldSet>) : FieldType("Map", "map")
-    data class List(val fields: kotlin.collections.List<FieldSet>) : FieldType("List", "list")
+    data class Map(val fields: kotlin.collections.List<FieldSet>) : FieldType("MAP", "map")
+    data class List(val fields: kotlin.collections.List<FieldSet>) : FieldType("LIST", "list")
 }
 
 fun FieldType.toSuitableStringForFile(): String = when (this) {
