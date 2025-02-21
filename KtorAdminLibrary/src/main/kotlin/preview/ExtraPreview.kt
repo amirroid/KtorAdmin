@@ -16,4 +16,14 @@ open class ExtraPreview {
         </div>
     """.trimIndent()
     }
+
+    fun video(src: String): String {
+        return """
+        <div class="video-container">
+            <div class="video-wrapper">
+                <video class="video-player" src="$src" controls></video>
+            </div>
+        </div>
+    """.trimIndent()
+    }
 }
