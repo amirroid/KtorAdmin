@@ -66,13 +66,17 @@ function getDefaultTheme() {
 }
 
 function initTheme() {
-    let allNodes = document.querySelectorAll("*")
+    let allNodes = document.querySelectorAll("*");
     allNodes.forEach(node => node.classList.add("no-animation"));
+
     let theme = localStorage.getItem(themeKey) ?? getDefaultTheme();
     if (theme === "dark") {
-        document.querySelector(":root").classList.add("theme-dark")
+        document.documentElement.classList.add("theme-dark");
     }
-    allNodes.forEach(node => node.classList.remove("no-animation"));
+
+    requestAnimationFrame(() => {
+        allNodes.forEach(node => node.classList.remove("no-animation"));
+    });
 }
 
 function getCSSVariable(variableName) {
@@ -115,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 window.addEventListener("pageshow", runInitialFunctions);
+window.addEventListener("popstate", runInitialFunctions);
 
 
 function expandOrShrinkSidebar() {

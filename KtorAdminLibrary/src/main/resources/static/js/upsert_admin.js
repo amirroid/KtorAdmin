@@ -155,10 +155,8 @@ function getCsrfToken() {
 function handleRefreshes() {
     let hasChanges = false;
     let isSubmitting = false; // Flag to check if form is being submitted
-
     const form = document.getElementById('form-box');
     const formElements = form.querySelectorAll('input, select, textarea');
-
     formElements.forEach(element => {
         element.addEventListener('input', () => {
             hasChanges = true;
