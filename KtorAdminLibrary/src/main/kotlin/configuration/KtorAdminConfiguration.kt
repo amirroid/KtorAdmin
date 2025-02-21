@@ -241,7 +241,7 @@ class KtorAdminConfiguration {
     }
 
     /**
-     * Registers an event listener for admin events.
+     * Registers a new preview.
      */
     fun registerPreview(preview: KtorAdminPreview) {
         DynamicConfiguration.registerPreview(preview)

@@ -521,3 +521,46 @@ input:disabled, select:disabled, input:read-only {
 path {
     stroke: var(--primary-color);
 }
+
+.expandable {
+    width: 100%;
+    padding: 12px;
+    cursor: pointer;
+    background-color: var(--background-gradient-start);
+    border-radius: 16px;
+}
+
+.expandable-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.expandable-title {
+    font-size: 14px;
+    margin-right: auto;
+}
+
+.expandable-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-top 0.3s ease-in-out;
+}
+
+.expandable.open .expandable-content {
+    margin-top: 16px;
+    max-height: 500px;
+}
+
+.expandable-icon {
+    transition: transform 0.3s ease;
+}
+
+.expandable.open .expandable-icon {
+    transform: rotate(180deg);
+}
+
+.expandable svg {
+    width: 24px;
+    height: 24px;
+}

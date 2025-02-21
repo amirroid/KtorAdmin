@@ -203,3 +203,14 @@ async function downloadFile(pluralName, csrfToken, primaryKey) {
     link.click();
     document.body.removeChild(link);
 }
+
+
+function toggleExpand(element) {
+    const content = element.querySelector(".expandable-content");
+    if (element.classList.contains("open")) {
+        content.style.maxHeight = "0";
+    } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+    }
+    element.classList.toggle("open");
+}
