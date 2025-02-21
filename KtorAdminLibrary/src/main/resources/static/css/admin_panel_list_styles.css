@@ -694,6 +694,10 @@ th:last-child::before {
     outline: none;
 }
 
+.file-link:hover {
+    opacity: .7;
+}
+
 #loading {
     visibility: hidden;
     position: fixed;
