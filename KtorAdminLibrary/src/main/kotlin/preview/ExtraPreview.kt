@@ -26,4 +26,12 @@ open class ExtraPreview {
         </div>
     """.trimIndent()
     }
+
+    fun image(src: String): String {
+        return """
+        <div class="image-container-preview">
+            <img class="image-content-preview" src="$src" alt="image">
+        </div>
+    """.trimIndent()
+    }
 }

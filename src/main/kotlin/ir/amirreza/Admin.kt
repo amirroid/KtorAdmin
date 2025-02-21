@@ -4,7 +4,8 @@ import io.ktor.server.application.*
 import ir.amirreza.action.MyCustomAction
 import ir.amirreza.dashboard.CustomDashboard
 import ir.amirreza.listeners.AdminListener
-import ir.amirreza.video_preview.VideoPreview
+import ir.amirreza.previews.ImagePreview
+import ir.amirreza.previews.VideoPreview
 import mapper.KtorAdminValueMapper
 import models.JDBCDrivers
 import models.UploadTarget
@@ -15,8 +16,6 @@ import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
 import tiny.TinyMCEConfig
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.times
 import kotlin.time.toJavaDuration
 
 const val MEDIA_ROOT = "files"
@@ -55,6 +54,7 @@ fun Application.configureAdmin(database: Database) {
             CustomValueMapper
         )
         registerPreview(VideoPreview())
+        registerPreview(ImagePreview())
         registerValueMapper(
             CustomValueMapper2
         )

@@ -1,4 +1,4 @@
-package ir.amirreza.video_preview
+package ir.amirreza.previews
 
 import preview.KtorAdminPreview
 

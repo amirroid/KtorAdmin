@@ -3,6 +3,8 @@ package ir.amirreza.hibernate
 import annotations.hibernate.HibernateTable
 import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
+import annotations.limit.Limits
+import annotations.preview.Preview
 import annotations.roles.AccessRoles
 import annotations.type.OverrideColumnType
 import annotations.uploads.LocalUpload
@@ -17,10 +19,10 @@ import javax.persistence.*
 @Serializable
 data class Post(
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     @IgnoreColumn
-    var id: Long = 0,
+    var id: Long? = null,
 
     var titleContent: String,
 
@@ -32,6 +34,10 @@ data class Post(
     val priority: Priority = Priority.Low,
 
     @LocalUpload
+    @Preview("image")
+    @Limits(
+        allowedMimeTypes = ["image/jpeg", "image/png"]
+    )
     var file: String? = null,
 
     @ManyToOne
