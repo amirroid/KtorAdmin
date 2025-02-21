@@ -217,6 +217,7 @@ h2 {
     width: calc(50% - 4px);;
     height: 44px;
     font-size: 16px;
+    background-color: var(--white);
 }
 
 .filter-field-parent-date .filter-input-date:nth-child(1) {
@@ -663,11 +664,6 @@ th:last-child::before {
     border: none;
     flex-grow: 1;
     outline: none;
-}
-
-.search-input::-webkit-search-decoration,
-.search-input::-webkit-search-cancel-button {
-    display: none;
 }
 
 .search-input::placeholder {
