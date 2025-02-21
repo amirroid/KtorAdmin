@@ -36,7 +36,7 @@
                     <path d="M18.3334 18.3333L16.6667 16.6667" stroke="#292D32" stroke-width="1.5"
                           stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <input class="search-input" type="text" placeholder="Search...">
+                <input class="search-input" type="search" placeholder="Search...">
             #end
         </div>
         <div id="username-container">
@@ -69,7 +69,7 @@
                 <path d="M18.3334 18.3333L16.6667 16.6667" stroke="#292D32" stroke-width="1.5"
                       stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <input class="search-input" type="text" placeholder="Search...">
+            <input class="search-input" type="search" placeholder="Search...">
         </div>
     #end
     <div class="mobile-action actions-row">
@@ -230,7 +230,8 @@
                         #end
                         <th #if($isCheckBox) data-col="checkbox" #end class="istok-web-bold"
                                              onclick="handleSortClick('$name', '$!order.name', '$order.direction')">
-                            <span class="column-name">#if($isReference)<span style="opacity: .5" class="istok-web-black">#</span> #end$field.verboseName</span>
+                            <span class="column-name">#if($isReference)<span style="opacity: .5"
+                                                                             class="istok-web-black">#</span> #end$field.verboseName</span>
                             #if($!order.direction == "asc" and $!order.name == $name)
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">

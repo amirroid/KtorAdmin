@@ -665,6 +665,11 @@ th:last-child::before {
     outline: none;
 }
 
+.search-input::-webkit-search-decoration,
+.search-input::-webkit-search-cancel-button {
+    display: none;
+}
+
 .search-input::placeholder {
     color: var(--primary-color);
 }

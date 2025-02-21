@@ -88,8 +88,8 @@ function handleSearches() {
         if (searchValue) {
             element.value = searchValue;
         }
-        element.addEventListener('keypress', function (event) {
-            if (event.key === 'Enter') {
+        element.addEventListener('keydown', function (event) {
+            if (event.keyCode === 13) {
                 performSearch(element);
             }
         });
