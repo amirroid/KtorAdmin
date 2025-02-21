@@ -41,7 +41,7 @@ enum class Priority {
     "DESC"
 )
 @PanelDisplayList(
-    "name", "priority", "file", "checked"
+    "name", "priority", "file", "checked", "user_id"
 )
 object Tasks : Table("tasks") {
     @IgnoreColumn

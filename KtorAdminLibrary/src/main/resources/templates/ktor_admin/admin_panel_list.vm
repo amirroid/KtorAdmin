@@ -223,9 +223,14 @@
                         #else
                             #set($name = $field.fieldName)
                         #end
+                        #if($!field.reference)
+                            #set($isReference = true)
+                        #else
+                            #set($isReference = false)
+                        #end
                         <th #if($isCheckBox) data-col="checkbox" #end class="istok-web-bold"
                                              onclick="handleSortClick('$name', '$!order.name', '$order.direction')">
-                            <span class="column-name">$field.verboseName</span>
+                            <span class="column-name">#if($isReference)<span class="istok-web-black">#</span> #end$field.verboseName</span>
                             #if($!order.direction == "asc" and $!order.name == $name)
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
@@ -265,6 +270,11 @@
                         #foreach($item in $row.data)
                             #set($field = $fields.get($foreach.index))
                             #set($isCheckBox = $field.type.name == "BOOLEAN")
+                            #if($!field.reference and $!item.value)
+                                #set($isReference = true)
+                            #else
+                                #set($isReference = false)
+                            #end
                             #set($isFile = $field.type.name == "FILE" and $item and $item != "N/A")
                             #if($isCheckBox)
                                 <td data-col="checkbox">
@@ -290,6 +300,23 @@
                                     <button class="file-link"
                                             onclick="generateUrl('$item', '$pluralNameBase', '$fieldName')">
                                         Link
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M13 11L21.2 2.80005" stroke="#9A6C00" stroke-width="1.5"
+                                                  stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M22 6.8V2H17.2" stroke="#9A6C00" stroke-width="1.5"
+                                                  stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M11 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V13"
+                                                  stroke="#9A6C00" stroke-width="1.5" stroke-linecap="round"
+                                                  stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                </td>
+                            #elseif($isReference)
+                                <td>
+                                    <button class="file-link"
+                                            onclick="redirectToEditWithPluralName('$item.pluralName', '$item.value')">
+                                        $item.value
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
                                             <path d="M13 11L21.2 2.80005" stroke="#9A6C00" stroke-width="1.5"

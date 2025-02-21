@@ -122,6 +122,11 @@ function redirectToEdit(id) {
 }
 
 
+function redirectToEditWithPluralName(pluralName, id) {
+    window.location.href = `/admin/resources/${pluralName}/${id}`;
+}
+
+
 function redirectToAdd() {
     window.location.href = cleanUrl().toString() + "/add";
 }

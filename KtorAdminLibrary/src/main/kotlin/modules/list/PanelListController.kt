@@ -93,7 +93,7 @@ private class JdbcPanelHandler(private val jdbcTables: List<AdminJdbcTable>) : P
         val filters = JdbcFilters.extractFilters(panel, jdbcTables, call.parameters)
 
         val totalCount = JdbcQueriesRepository.getCount(panel, searchParameter, filters)
-        val data = JdbcQueriesRepository.getAllData(panel, searchParameter, currentPage, filters, order)
+        val data = JdbcQueriesRepository.getAllData(panel, jdbcTables, searchParameter, currentPage, filters, order)
         val maxPages = calculateMaxPages(totalCount)
 
         call.respondWithTemplate(

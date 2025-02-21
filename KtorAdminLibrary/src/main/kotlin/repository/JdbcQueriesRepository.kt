@@ -32,6 +32,7 @@ import models.common.foreignKey
 import models.common.tableName
 import models.getCurrentDateClass
 import models.order.Order
+import models.reference.ReferenceData
 import models.types.ColumnType
 import panels.*
 import utils.formatAsIntegerIfPossible
@@ -60,6 +61,7 @@ internal object JdbcQueriesRepository {
     /**
      * Retrieves all data from the table with optional filtering, search, pagination, and ordering.
      * @param table Target database table
+     * @param tables The list of tables
      * @param search Search string to filter results
      * @param currentPage Page number for pagination
      * @param filters List of column filters
@@ -68,6 +70,7 @@ internal object JdbcQueriesRepository {
      */
     fun getAllData(
         table: AdminJdbcTable,
+        tables: List<AdminJdbcTable>,
         search: String?,
         currentPage: Int?,
         filters: MutableList<Triple<ColumnSet, String, Any>>,
@@ -93,9 +96,11 @@ internal object JdbcQueriesRepository {
                         val primaryKey =
                             rs.getObject("${table.getTableName()}_${table.getPrimaryKey()}")?.toString() ?: "UNKNOWN"
                         val data = table.getAllAllowToShowColumns().map { column ->
-                            rs.getTypedValue(column.type, "${table.getTableName()}_${column.columnName}")
-                                .restore(column)
-                                .formatToDisplayInTable(column.type)
+                            column.mapDataIfReference(
+                                value = rs.getTypedValue(column.type, "${table.getTableName()}_${column.columnName}")
+                                    .restore(column),
+                                tables = tables
+                            )
                         }
                         result.add(DataWithPrimaryKey(primaryKey, data))
                     }
@@ -103,6 +108,20 @@ internal object JdbcQueriesRepository {
             }
         }
         return result
+    }
+
+    private fun ColumnSet.mapDataIfReference(value: Any?, tables: List<AdminJdbcTable>): Any {
+        return if (reference != null && value != null) {
+            val relatedTable = tables.find { it.getTableName() == reference.tableName }
+            if (relatedTable != null) {
+                ReferenceData(
+                    value = value.formatToDisplayInTable(type),
+                    pluralName = relatedTable.getPluralName()
+                )
+            } else value.formatToDisplayInTable(type)
+        } else {
+            value.formatToDisplayInTable(type)
+        }
     }
 
     /**
