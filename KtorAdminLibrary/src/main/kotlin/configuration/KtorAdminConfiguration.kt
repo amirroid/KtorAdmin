@@ -237,7 +237,7 @@ class KtorAdminConfiguration {
      * Registers an event listener for admin events.
      */
     fun registerEventListener(listener: AdminEventListener) {
-        DynamicConfiguration.registerEventListener(listener)
+        DynamicConfiguration.currentEventListener = listener
     }
 
     /**

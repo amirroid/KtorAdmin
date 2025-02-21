@@ -8,6 +8,7 @@ import flash.setFlashSessionsAndRedirect
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.toMap
 import models.ColumnSet
 import models.field.FieldSet
 import models.response.updateSelectedReferences
@@ -104,6 +105,9 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
 }
 
 private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminMongoCollection) {
+    return call.respond(
+        call.receiveParameters().toMap()
+    )
     val parametersDataResponse = call.receiveMultipart().toTableValues(panel)
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.map { it?.first }

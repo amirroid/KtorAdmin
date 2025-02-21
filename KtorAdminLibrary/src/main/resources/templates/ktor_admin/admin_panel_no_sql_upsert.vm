@@ -230,7 +230,7 @@
                 #end
             #end
 
-            <form method="post" enctype="multipart/form-data" id="form-box">
+            <form method="post" id="form-box">
                 #foreach($field in $fields)
                     #renderField($field "")
                 #end

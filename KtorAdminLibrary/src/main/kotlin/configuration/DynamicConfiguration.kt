@@ -2,14 +2,14 @@ package configuration
 
 import action.CustomAdminAction
 import dashboard.KtorAdminDashboard
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import listener.AdminEventListener
 import mapper.KtorAdminValueMapper
 import models.forms.LoginFiled
 import preview.KtorAdminPreview
 import tiny.TinyMCEConfig
 import java.time.ZoneId
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
@@ -22,17 +22,34 @@ internal object DynamicConfiguration {
     /** Maximum number of items to display per page in listings */
     var maxItemsInPage: Int = 20
 
-    /** List of fields required for login functionality */
-    var loginFields: List<LoginFiled> = emptyList()
+    /** List of fields required for login functionality (Thread-safe) */
+    private val _loginFields = ConcurrentLinkedQueue<LoginFiled>()
+    var loginFields: List<LoginFiled>
+        get() = _loginFields.toList()
+        set(value) {
+            _loginFields.clear()
+            _loginFields.addAll(value)
+        }
 
-    /** Custom actions specific to certain admin panel sections */
-    var customActions: List<CustomAdminAction> = emptyList()
+    /** Custom actions specific to certain admin panel sections (Thread-safe) */
+    private val _customActions = ConcurrentLinkedQueue<CustomAdminAction>()
+    val customActions: List<CustomAdminAction>
+        get() = _customActions.toList()
 
-    /** Custom actions that apply to all admin panel sections */
-    var forAllCustomActions: List<CustomAdminAction> = emptyList()
+    /** Custom actions that apply to all admin panel sections (Thread-safe) */
+    private val _forAllCustomActions = ConcurrentLinkedQueue<CustomAdminAction>()
+    val forAllCustomActions: List<CustomAdminAction>
+        get() = _forAllCustomActions.toList()
 
-    /** Current event listener for admin panel events */
-    var currentEventListener: AdminEventListener? = null
+    /** Current event listener for admin panel events (Thread-safe) */
+    private val _currentEventListener = AtomicReference<AdminEventListener?>()
+    var currentEventListener: AdminEventListener?
+        get() = _currentEventListener.get()
+        set(value) {
+            if (!_currentEventListener.compareAndSet(null, value)) {
+                throw IllegalStateException("An event listener is already registered. Please unregister it before registering a new one.")
+            }
+        }
 
     /** Timezone configuration for date/time handling */
     var timeZone: ZoneId = ZoneId.systemDefault()
@@ -58,40 +75,46 @@ internal object DynamicConfiguration {
     /** Flag to enable/disable PDF data download */
     var canDownloadDataAsPdf = false
 
-    val valueMappers = mutableListOf<KtorAdminValueMapper>()
+    /** Value mappers (Thread-safe) */
+    private val _valueMappers = ConcurrentLinkedQueue<KtorAdminValueMapper>()
+    val valueMappers: List<KtorAdminValueMapper>
+        get() = _valueMappers.toList()
 
-    val previews = mutableListOf<KtorAdminPreview>()
-
-    fun registerValueMapper(valueMapper: KtorAdminValueMapper) {
-        if (valueMappers.any { it.key == valueMapper.key }) {
-            throw IllegalStateException("A ValueMapper with the key '${valueMapper.key}' is already registered.")
-        }
-        valueMappers += valueMapper
-    }
-
+    /** Previews (Thread-safe) */
+    private val _previews = ConcurrentLinkedQueue<KtorAdminPreview>()
+    val previews: List<KtorAdminPreview>
+        get() = _previews.toList()
 
     /**
-     * Registers an event listener for admin panel events.
-     * Only one listener can be active at a time.
-     *
-     * @param listener The event listener to register
-     * @throws IllegalStateException if another listener is already registered
+     * Registers a new value mapper.
+     * @param valueMapper The value mapper to register.
+     * @throws IllegalStateException if a value mapper with the same key is already registered.
      */
-    fun registerEventListener(listener: AdminEventListener) {
-        if (currentEventListener != null) {
-            throw IllegalStateException("An event listener is already registered. Please unregister it before registering a new one.")
+    fun registerValueMapper(valueMapper: KtorAdminValueMapper) {
+        if (_valueMappers.any { it.key == valueMapper.key }) {
+            throw IllegalStateException("A ValueMapper with the key '${valueMapper.key}' is already registered.")
         }
-        currentEventListener = listener
+        _valueMappers.add(valueMapper)
     }
 
-
+    /**
+     * Registers a new preview.
+     * @param preview The preview to register.
+     * @throws IllegalStateException if a preview with the same key is already registered.
+     */
     fun registerPreview(preview: KtorAdminPreview) {
-        if (previews.any { it.key == preview.key }) {
+        if (_previews.any { it.key == preview.key }) {
             throw IllegalStateException("Preview with key '${preview.key}' is already registered.")
         }
-        previews += preview
+        _previews.add(preview)
     }
 
+    /**
+     * Retrieves a preview by its key.
+     * @param key The key of the preview.
+     * @return The corresponding preview.
+     * @throws NoSuchElementException if no preview is found with the given key.
+     */
     fun getPreview(key: String): KtorAdminPreview {
         return previews.firstOrNull { it.key == key }
             ?: throw NoSuchElementException("No preview found with key '$key'.")
@@ -99,29 +122,25 @@ internal object DynamicConfiguration {
 
     /**
      * Registers a custom admin action for specific sections.
-     * Each action must have a unique key.
-     *
-     * @param customAction The custom action to register
-     * @throws IllegalArgumentException if an action with the same key is already registered
+     * @param customAction The custom action to register.
+     * @throws IllegalArgumentException if an action with the same key is already registered.
      */
     fun registerCustomAdminAction(customAction: CustomAdminAction) {
-        if (customAction.key in customActions.map { it.key }) {
+        if (_customActions.any { it.key == customAction.key }) {
             throw IllegalArgumentException("A custom action with key '${customAction.key}' is already registered.")
         }
-        customActions += customAction
+        _customActions.add(customAction)
     }
 
     /**
      * Registers a custom admin action that applies to all sections.
-     * Each action must have a unique key.
-     *
-     * @param customAction The custom action to register
-     * @throws IllegalArgumentException if an action with the same key is already registered
+     * @param customAction The custom action to register.
+     * @throws IllegalArgumentException if an action with the same key is already registered.
      */
     fun registerCustomAdminActionForAll(customAction: CustomAdminAction) {
-        if (customAction.key in forAllCustomActions.map { it.key }) {
+        if (_forAllCustomActions.any { it.key == customAction.key }) {
             throw IllegalArgumentException("A custom action with key '${customAction.key}' is already registered.")
         }
-        forAllCustomActions += customAction
+        _forAllCustomActions.add(customAction)
     }
 }
