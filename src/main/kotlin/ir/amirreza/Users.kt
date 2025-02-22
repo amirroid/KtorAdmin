@@ -3,6 +3,7 @@ package ir.amirreza
 import annotations.confirmation.Confirmation
 import annotations.display.DisplayFormat
 import annotations.exposed.ExposedTable
+import annotations.info.ColumnInfo
 import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.order.DefaultOrder

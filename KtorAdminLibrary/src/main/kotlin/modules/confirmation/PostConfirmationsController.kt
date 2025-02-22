@@ -1,34 +1,23 @@
 package modules.confirmation
 
 import configuration.DynamicConfiguration
-import converters.toTableValues
 import csrf.CSRF_TOKEN_FIELD_NAME
 import csrf.CsrfManager
-import flash.REQUEST_ID
 import flash.REQUEST_ID_FORM
 import flash.setFlashSessionsAndRedirect
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.parameters
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.request.receiveMultipart
-import io.ktor.server.request.receiveParameters
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.RoutingContext
-import io.ktor.util.toMap
+import io.ktor.http.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.util.*
 import models.ColumnSet
-import models.PanelGroup
 import models.events.ColumnEvent
-import models.response.updateSelectedReferences
-import modules.update.handleNoSqlEditView
 import panels.AdminJdbcTable
 import panels.AdminMongoCollection
 import panels.AdminPanel
-import panels.getAllAllowToShowColumnsInUpsert
+import panels.hasEditAction
 import repository.JdbcQueriesRepository
 import response.ErrorResponse
-import response.onError
-import response.onInvalidateRequest
-import response.onSuccess
 import utils.badRequest
 import utils.invalidateRequest
 import utils.respondBack
@@ -36,9 +25,12 @@ import utils.serverError
 import validators.Validators
 import validators.checkHasRole
 
-internal suspend fun RoutingContext.handleSaveConfirmation(
-    panels: List<AdminPanel>,
-) {
+/**
+ * Handles saving confirmation data for a given field in an admin panel.
+ *
+ * @param panels The list of available admin panels.
+ */
+internal suspend fun RoutingContext.handleSaveConfirmation(panels: List<AdminPanel>) {
     val field = call.parameters["field"]
     val pluralName = call.parameters["pluralName"]
     val primaryKey = call.parameters["primaryKey"]
@@ -46,22 +38,32 @@ internal suspend fun RoutingContext.handleSaveConfirmation(
     val panel = panels.find { it.getPluralName() == pluralName }
 
     when {
+        // Panel not found or not visible in the admin panel
         panel == null || !panel.isShowInAdminPanel() ->
             call.respondText(
                 "No table or collection found with plural name: $pluralName",
                 status = HttpStatusCode.NotFound
             )
 
+        // Primary key is missing
         primaryKey == null ->
             call.respondText("Primary key is missing for: $pluralName", status = HttpStatusCode.BadRequest)
 
         else -> {
+            if (!panel.hasEditAction) {
+                call.badRequest("Edit action is disabled")
+                return
+            }
+
             call.checkHasRole(panel) {
                 val parameters = call.receiveParameters()
                 val csrfToken = parameters[CSRF_TOKEN_FIELD_NAME]
+
+                // Validate CSRF token
                 if (!CsrfManager.validateToken(csrfToken)) {
                     return@checkHasRole call.invalidateRequest()
                 }
+
                 when (panel) {
                     is AdminJdbcTable -> {
                         val column = panel.getAllColumns().firstOrNull { it.columnName == field }
@@ -74,16 +76,16 @@ internal suspend fun RoutingContext.handleSaveConfirmation(
                                 primaryKey = primaryKey
                             )
                         } else {
-                            badRequest("Invalid column name: $field in table $pluralName")
+                            call.badRequest("Invalid column name: $field in table $pluralName")
                         }
                     }
 
                     is AdminMongoCollection -> {
                         val mongoField = panel.getAllFields().firstOrNull { it.fieldName == field }
                         if (mongoField != null) {
-//                            handleNoSqlEditView(primaryKey, panel, panelGroups = panelGroups)
+                            // handleNoSqlEditView(primaryKey, panel, panelGroups = panelGroups)
                         } else {
-                            badRequest("Invalid field name: $field in collection $pluralName")
+                            call.badRequest("Invalid field name: $field in collection $pluralName")
                         }
                     }
                 }
@@ -92,6 +94,15 @@ internal suspend fun RoutingContext.handleSaveConfirmation(
     }
 }
 
+/**
+ * Updates a column value in the database and handles validation.
+ *
+ * @param pluralName The plural name of the table.
+ * @param columnSet The column to be updated.
+ * @param table The table containing the column.
+ * @param params The parameters received in the request.
+ * @param primaryKey The primary key of the record to update.
+ */
 private suspend fun RoutingContext.updateData(
     pluralName: String,
     columnSet: ColumnSet,
@@ -103,29 +114,35 @@ private suspend fun RoutingContext.updateData(
     val confirmationColumnName = "${columnSet.columnName}.confirmation"
     val confirmValue = params[confirmationColumnName]?.firstOrNull()
     val requestId = params[REQUEST_ID_FORM]?.firstOrNull()
+
+    // Validate the column value
     val validateColumn = Validators.validateColumnParameter(table, columnSet, value, primaryKey)
     val isSameValues = value == confirmValue
 
     if (isSameValues && validateColumn == null) {
         kotlin.runCatching {
+            // Update the column value in the database
             JdbcQueriesRepository.updateAColumn(
                 table = table,
                 columnSet = columnSet,
                 value = value,
                 primaryKey = primaryKey
             )
+
+            // Notify event listeners about the update
             DynamicConfiguration.currentEventListener?.onUpdateJdbcData(
                 table.getTableName(),
                 primaryKey,
-                listOf(
-                    ColumnEvent(true, columnSet, value)
-                )
+                listOf(ColumnEvent(true, columnSet, value))
             )
+
+            // Redirect back after successful update
             call.respondBack(pluralName)
         }.onFailure {
             call.serverError("Failed to update $pluralName. Reason: ${it.localizedMessage}", it)
         }
     } else {
+        // Collect validation errors
         val errors = mutableListOf<ErrorResponse>()
         if (validateColumn != null) {
             errors.add(ErrorResponse(confirmationColumnName, listOf(validateColumn)))
@@ -133,11 +150,14 @@ private suspend fun RoutingContext.updateData(
         if (!isSameValues) {
             errors.add(ErrorResponse(confirmationColumnName, listOf("The confirmation value does not match.")))
         }
+
+        // Store input values for potential correction
         val values = mutableMapOf(
             columnSet.columnName to value,
-            confirmationColumnName to confirmValue,
+            confirmationColumnName to confirmValue
         )
 
+        // Redirect with validation errors
         call.setFlashSessionsAndRedirect(requestId, errors, values)
     }
 }
