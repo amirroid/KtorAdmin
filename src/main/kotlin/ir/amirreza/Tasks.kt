@@ -27,7 +27,6 @@ enum class Priority {
 }
 
 
-@ExposedTable("tasks", "id", "task", "tasks", iconFile = "/static/images/tasks.png")
 @AccessRoles("admin")
 @AdminQueries(
     searches = ["user_id.username", "description"],
@@ -42,6 +41,13 @@ enum class Priority {
 )
 @PanelDisplayList(
     "name", "priority", "file", "checked", "user_id"
+)
+@ExposedTable(
+    tableName = "tasks",
+    primaryKey = "id",
+    singularName = "task",
+    pluralName = "tasks",
+    iconFile = "/static/images/tasks.png",
 )
 object Tasks : Table("tasks") {
     @IgnoreColumn

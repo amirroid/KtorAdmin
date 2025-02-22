@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.confirmation.Confirmation
 import annotations.display.DisplayFormat
 import annotations.exposed.ExposedTable
 import annotations.info.IgnoreColumn
@@ -29,6 +30,8 @@ object Users : Table() {
         regexPattern = """[A-z0-9]*@[A-z0-9]*.[A-z0-9]*"""
     )
     val email = varchar("email", length = 150)
+
+    @Confirmation
     val password = text("password")
 
 

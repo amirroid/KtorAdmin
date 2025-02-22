@@ -208,6 +208,29 @@ label {
     padding: 0 12px;
 }
 
+.confirmation-value {
+    padding: 8px 16px;
+    font-size: 16px;
+}
+
+.confirmation-button {
+    display: block;
+    padding: 8px 16px;
+    background-color: var(--secondary-color);
+    color: var(--white);
+    outline: none;
+    border-radius: 12px;
+    border: none;
+    transition: .3s ease-in;
+    max-width: 200px;
+    margin-left: 0;
+    cursor: pointer;
+}
+
+.confirmation-button:hover {
+    opacity: .8;
+}
+
 .rich-editor-area {
     margin-top: 4px;
 }

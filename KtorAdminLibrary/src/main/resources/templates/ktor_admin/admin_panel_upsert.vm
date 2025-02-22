@@ -101,6 +101,13 @@
                                     </select>
                                 </div>
                             #end
+                        #elseif($column.hasConfirmation and $isUpdate)
+                            #if($defaultValue)
+                                <p class="confirmation-value">Current value: $!defaultValue</p>
+                            #end
+                            <button type="button" class="confirmation-button"
+                                    onclick="goToConfigurationEditUrl('$column.columnName')">
+                                Reset $column.verboseName</button>
                         #else
                             <!-- STRING -->
                             #if($column.type.name == "STRING")
@@ -254,14 +261,6 @@
                             </div>
                         #end
                     </div>
-                    #if($column.hasConfirmation and $column.type.name=="STRING")
-                        <div class="sidebar-input-wrapper">
-                            <label class="item-label" style="padding-top: 12px">Confirm $column.verboseName</label>
-                            <input type="password" class="form-input"
-                                   name="${column.columnName}.confirmation"
-                                   #if($column.readOnly)readonly#end/>
-                        </div>
-                    #end
                     #set($previewItem = $previews[$column])
                     #if($previewItem)
                         $previewItem

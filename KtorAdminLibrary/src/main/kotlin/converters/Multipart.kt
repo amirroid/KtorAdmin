@@ -39,7 +39,6 @@ internal suspend fun MultiPartData.toTableValues(
 ): Response<TableResponse> {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val referenceItems = mutableMapOf<ColumnSet, MutableList<String>>()
-    val otherFields = mutableMapOf<String, String>()
     val columns = table.getAllAllowToShowColumnsInUpsert()
     val panelListColumns = table.getAllAllowToShowColumnsInUpsertView()
 
@@ -130,25 +129,10 @@ internal suspend fun MultiPartData.toTableValues(
 
                 else -> Unit
             }
-        } else {
-            if (part is PartData.FormItem) {
-                otherFields[part.name ?: return@forEachPart] = part.value
-            }
         }
         part.dispose()
     }
     if (isInvalidRequest) return Response.InvalidRequest
-    columns.filter { it.hasConfirmation }.forEach { column ->
-        val original = items[column.columnName]
-        val confirmation = otherFields[column.columnName + ".confirmation"]
-
-        if (original?.first != confirmation) {
-            errors += ErrorResponse(
-                column.columnName,
-                listOf("Confirmation value does not match the original")
-            )
-        }
-    }
     val errorsNotNull = errors.filterNotNull()
     if (errorsNotNull.isNotEmpty()) {
         return Response.Error(

@@ -372,3 +372,9 @@ function showAlert(message, type = "info", duration = 4500) {
         setTimeout(removeAlert, duration);
     }
 }
+
+function cleanUrl() {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.search = ''
+    return currentUrl
+}

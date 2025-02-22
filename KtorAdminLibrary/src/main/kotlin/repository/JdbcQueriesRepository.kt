@@ -785,7 +785,7 @@ internal object JdbcQueriesRepository {
                     item.first,
                     initialValue,
                     item.second?.first
-                ) && !(initialValue != null && item.second?.first == null)
+                ) && !(initialValue != null && item.second?.first == null) && item.first.hasConfirmation.not()
             }
             if (changedData.isNotEmpty() || table.getAllAutoNowDateUpdateColumns().isNotEmpty()) {
                 table.usingDataSource { session ->

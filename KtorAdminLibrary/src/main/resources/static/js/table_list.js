@@ -131,12 +131,6 @@ function redirectToAdd() {
     window.location.href = cleanUrl().toString() + "/add";
 }
 
-function cleanUrl() {
-    const currentUrl = new URL(window.location.href);
-    currentUrl.search = ''
-    return currentUrl
-}
-
 function redirectToPage(page) {
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('page', page);

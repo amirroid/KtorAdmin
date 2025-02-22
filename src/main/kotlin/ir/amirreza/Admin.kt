@@ -71,7 +71,7 @@ object CustomValueMapper : KtorAdminValueMapper {
 
     override fun restore(value: Any?): Any? {
         return when (value) {
-            is Int -> value
+            is Int -> value.div(2)
             else -> null
         }
     }

@@ -220,3 +220,8 @@ document.querySelector("form").addEventListener("submit", (e) => {
         e.preventDefault();
     }
 });
+
+
+function goToConfigurationEditUrl(field) {
+    window.location.href = cleanUrl().toString() + "/" + field
+}

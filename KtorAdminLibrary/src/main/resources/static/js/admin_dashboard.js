@@ -23,12 +23,6 @@ function redirectToEdit(pluralName, id) {
     window.location.href = cleanUrl().toString() + "/" + pluralName + "/" + +id;
 }
 
-function cleanUrl() {
-    const currentUrl = new URL(window.location.href);
-    currentUrl.search = ''
-    return currentUrl
-}
-
 document.addEventListener('DOMContentLoaded', function () {
     handleClicks()
 });
