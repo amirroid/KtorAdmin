@@ -7,6 +7,7 @@ import annotations.info.IgnoreColumn
 import annotations.limit.Limits
 import annotations.order.DefaultOrder
 import annotations.references.ManyToManyReferences
+import annotations.value_mapper.ValueMapper
 import models.reference.EmptyColumn
 import org.jetbrains.exposed.sql.Table
 

@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 import panels.AdminJdbcTable
 import panels.getAllAllowToShowColumnsInUpsert
 
-fun Map<String, Any>.addCommonUpsertModels(table: AdminJdbcTable, username: String?): Map<String, Any> {
+internal fun Map<String, Any>.addCommonUpsertModels(table: AdminJdbcTable, username: String?): Map<String, Any> {
     return toMutableMap().apply {
         if (table.getAllAllowToShowColumnsInUpsert().any { it.hasRichEditor }) {
             val json = Json {

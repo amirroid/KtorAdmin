@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    #if($isUpdate)
+    #if($title)
+        <title>$title</title>
+    #elseif($isUpdate)
         <title>Update $singularTableName</title>
     #else
         <title>Add a new $singularTableName</title>
@@ -54,14 +56,17 @@
     </div>
     <div id="union-box">
         <div id="top-box-row-up">
-            #if($isUpdate)
+            #if($title)
+                <h1 id="name" class="istok-web-bold">$title</h1>
+            #elseif($isUpdate)
                 <h1 id="name" class="istok-web-bold">Update $singularTableName</h1>
             #else
                 <h1 id="name" class="istok-web-bold">Add a new $singularTableName</h1>
             #end
         </div>
         <div id="bottom-box">
-            <form method="post" enctype="multipart/form-data" id="form-box">
+            <form method="post" #if($callMethod) enctype="$callMethod" #else enctype="multipart/form-data" #end
+                  id="form-box">
                 #foreach($column in $columns)
                     <div class="sidebar-input-wrapper">
                         #if($!values.get($column.columnName))

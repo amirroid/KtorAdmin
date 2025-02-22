@@ -110,6 +110,43 @@ internal object JdbcQueriesRepository {
         return result
     }
 
+
+    /**
+     * Updates a specific column value in the database table.
+     *
+     * @param table The target table for the update operation.
+     * @param columnSet The column whose value will be updated.
+     * @param value The new value for the column (can be null).
+     * @param primaryKey The primary key value to identify the specific record.
+     */
+    fun updateAColumn(
+        table: AdminJdbcTable,
+        columnSet: ColumnSet,
+        value: String?,
+        primaryKey: String
+    ) {
+        table.usingDataSource { session ->
+            session.prepare(sqlQuery(table.createUpdateAColumnQuery(columnSet))).use { prepareStatement ->
+
+                // Sets the new value at the first parameter position
+                prepareStatement.putColumn(
+                    columnSet.type,
+                    value?.toTypedValue(columnSet.type).map(columnSet),
+                    1
+                )
+
+                // Sets the primary key value at the second parameter position
+                val primaryKeyColumn = table.getPrimaryKeyColumn()
+                prepareStatement.putColumn(
+                    primaryKeyColumn.type,
+                    primaryKey.toTypedValue(primaryKeyColumn.type).map(primaryKeyColumn),
+                    2
+                )
+                prepareStatement.executeUpdate()
+            }
+        }
+    }
+
     private fun ColumnSet.mapDataIfReference(value: Any?, tables: List<AdminJdbcTable>): Any {
         return if (reference != null && value != null) {
             val relatedTable = tables.find { it.getTableName() == reference.tableName }
@@ -515,6 +552,23 @@ internal object JdbcQueriesRepository {
                 DynamicConfiguration.maxItemsInPage * currentPage
             )
         }
+    }
+
+
+    /**
+     * Generates an `UPDATE` SQL query to modify a specific column value.
+     *
+     * @param columnSet The column whose value will be updated.
+     * @return An SQL string that updates the specified column value.
+     */
+    fun AdminJdbcTable.createUpdateAColumnQuery(columnSet: ColumnSet) = buildString {
+        append("UPDATE ")
+        append(getTableName()) // Adds the table name
+        append(" SET ")
+        append(columnSet.columnName) // Adds the target column name
+        append(" = ? WHERE ")
+        append(getPrimaryKey()) // Adds the WHERE condition based on the primary key
+        append(" = ?")
     }
 
     /**

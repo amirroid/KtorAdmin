@@ -17,6 +17,7 @@ import models.chart.ListData
 import models.chart.TextData
 import models.toTableGroups
 import modules.add.handleAddNewItem
+import modules.confirmation.handleGetConfirmation
 import modules.list.handlePanelList
 import modules.update.handleEditItem
 import panels.AdminJdbcTable
@@ -44,6 +45,9 @@ internal fun Routing.configureGetRouting(panels: List<AdminPanel>, authenticateN
                 }
                 get("/{primaryKey}") {
                     call.handleEditItem(panels, panelGroups)
+                }
+                get("/{primaryKey}/{field}") {
+                    call.handleGetConfirmation(panels, panelGroups)
                 }
             }
         }
