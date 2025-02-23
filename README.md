@@ -1,37 +1,25 @@
 ### **KtorAdmin – The Ultimate Admin Panel for Ktor Applications**  
 
----
-
 ![KtorAdmin Banner](/art/banner.jpg)  
 
 ## **Overview**  
 
 KtorAdmin is a **powerful and flexible library** designed to generate an **admin panel** for applications built with **Ktor**. Unlike traditional admin panels that require **predefined database schemas**, KtorAdmin **dynamically detects and adapts** to your ORM structure, making it a seamless solution for managing both **relational and NoSQL databases**.  
 
-## 🚀 **Key Features**  
+## **Key Features**  
 
-### **Database & ORM Support**  
-- **Schema-Free Configuration** – No need to define database schemas; KtorAdmin automatically detects and adapts to ORM structures.  
-- **Multi-ORM Support** – Seamlessly integrates with **Hibernate, Exposed, and MongoDB**.  
-
-### **Admin Panel Generation**  
-- **Dynamic UI Generation** – Automatically creates an **admin panel** based on entity structures.  
-- **Custom Actions** – Define **custom admin actions** for entities, enhancing flexibility.  
-- **Rich Text Editor** – Built-in support for **rich content editing**.  
-- **Data Export Functionality** – Export data in multiple formats.  
-
-### **Security & Access Control**  
-- **Role-Based Access Control (RBAC)** – Enables **fine-grained control** over user permissions and access levels.  
-- **Multiple Authentication Providers** – Supports various authentication mechanisms.  
-- **Advanced Permission System** – Manage users and define **data access levels**.  
-
-### **Event Handling & Automation**  
-- **Event-Driven Architecture** – Provides **event listeners** to handle operations such as **inserts, updates, and deletions**.  
-- **File Handling** – Supports **file uploads**, allowing automatic processing of uploaded files such as generating **thumbnails for images and videos**.  
-
-### **Performance & Scalability**  
-- **Secure & Scalable** – Designed with **security in mind** and adaptable for **both small and large-scale applications**.  
-- **Scalable & High Performance** – Optimized for production use with minimal overhead.  
+- **Schema-Free Configuration** – No need for predefined database schemas; KtorAdmin automatically detects ORM structures.  
+- **Multi-ORM Support** – Compatible with **Hibernate, Exposed, and MongoDB**.  
+- **Dynamic UI Generation** – Automatically creates an **admin panel** based on entity definitions.  
+- **Event-Driven Architecture** – Provides **event listeners** for insert, update, and delete operations.  
+- **File Handling** – Supports **file uploads** and allows automatic **processing of files** like generating thumbnails.  
+- **Role-Based Access Control (RBAC)** – Fine-grained control over **user roles and permissions**.  
+- **Custom Actions** – Define and execute **custom admin actions**.  
+- **Multiple Authentication Providers** – Supports **various authentication mechanisms**.  
+- **Data Export Functionality** – Easily **export data** in multiple formats.  
+- **Rich Text Editor** – Built-in **support for content editing**.  
+- **Advanced Filtering & Search** – Efficiently manage and **filter data** with predefined filters.  
+- **Scalable & High Performance** – Optimized for **production use** with minimal overhead.
 
 ---
 
