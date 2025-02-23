@@ -8,5 +8,6 @@ class MyCustomAction : CustomAdminAction {
         get() = "Delete all"
 
     override suspend fun performAction(name: String, selectedIds: List<String>) {
+        // Do action
     }
 }

@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.value_mapper.ValueMapper
 import io.ktor.server.application.*
 import ir.amirreza.action.MyCustomAction
 import ir.amirreza.dashboard.CustomDashboard
@@ -14,7 +15,9 @@ import mongo.MongoCredential
 import mongo.MongoServerAddress
 import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
+import providers.StorageProvider
 import tiny.TinyMCEConfig
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
@@ -41,15 +44,15 @@ fun Application.configureAdmin(database: Database) {
         mediaRoot = MEDIA_ROOT
         adminDashboard = CustomDashboard()
         defaultAwsS3Bucket = "school-data"
-        awsS3SignatureDuration = 1.minutes.toJavaDuration()
-//        authenticateName = "admin"
+        s3SignatureDuration = 1.minutes.toJavaDuration()
+        authenticateName = "admin"
         loginFields = adminLoginFields
         csrfTokenExpirationTime = 1000 * 60
         registerCustomAdminActionForAll(MyCustomAction())
         registerEventListener(AdminListener(database))
         canDownloadDataAsCsv = true
         canDownloadDataAsPdf = true
-        tinyMCEConfig = TinyMCEConfig.Professional.copy(uploadTarget = UploadTarget.LocalFile(null))
+        tinyMCEConfig = TinyMCEConfig.Professional.copy(uploadTarget = UploadTarget.LocalFile(path = null))
         registerValueMapper(
             CustomValueMapper
         )

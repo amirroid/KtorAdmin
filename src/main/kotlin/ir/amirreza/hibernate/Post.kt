@@ -9,6 +9,7 @@ import annotations.roles.AccessRoles
 import annotations.type.OverrideColumnType
 import annotations.uploads.LocalUpload
 import ir.amirreza.Priority
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import models.types.ColumnType
 import javax.persistence.*
@@ -24,7 +25,7 @@ data class Post(
     @IgnoreColumn
     var id: Long? = null,
 
-    var titleContent: String,
+    var title: String,
 
     @Column(name = "content")
     var content: String,
@@ -40,7 +41,8 @@ data class Post(
     )
     var file: String? = null,
 
-    @ManyToOne
+
+    @OneToOne
     @JoinColumn(name = "author_id", nullable = false)
     var author: Author
 )

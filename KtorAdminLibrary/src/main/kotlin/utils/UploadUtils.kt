@@ -1,7 +1,7 @@
 package utils
 
 import annotations.file.AllowedMimeTypes
-import annotations.uploads.AwsS3Upload
+import annotations.uploads.S3Upload
 import annotations.uploads.CustomUpload
 import annotations.uploads.LocalUpload
 import com.google.devtools.ksp.symbol.KSAnnotation
@@ -9,7 +9,7 @@ import models.UploadTarget
 import models.types.FieldType
 
 object UploadUtils {
-    private val awsS3Name = AwsS3Upload::class.simpleName
+    private val awsS3Name = S3Upload::class.simpleName
     private val localName = LocalUpload::class.simpleName
     private val customName = CustomUpload::class.simpleName
     private val annotationNames = listOf(

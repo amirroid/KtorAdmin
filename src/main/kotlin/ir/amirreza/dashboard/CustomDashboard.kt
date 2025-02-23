@@ -14,12 +14,13 @@ import kotlin.math.max
 class CustomDashboard : KtorAdminDashboard() {
     override fun KtorAdminDashboard.configure() {
         configureLayout {
-            addSection(TaskTextSection(), "200px")
-            addSection(Task2TextSection(), "200px")
-            addSection(Task3TextSection(), "200px")
-            addSection(Task4TextSection(), "200px")
-            addSection(2, TaskChartSection())
-            addSection(2, TaskListChartSection())
+            addSection(section = TaskTextSection(), height = "200px")
+            addSection(section = Task2TextSection(), height = "200px")
+            addSection(section = Task3TextSection(), height = "200px")
+            addSection(section = Task4TextSection(), height = "200px")
+            addSection(span = 2, section = TaskChartSection())
+            addSection(span = 2, section = TaskListChartSection())
+            media(maxWidth = "600px", template = listOf(1))
             addSection(Task5TextSection())
             addSection(Task2ChartSection(2))
             addSection(Task2ChartSection(3))
@@ -27,7 +28,6 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(Task5ChartSection())
             addSection(Task3ChartSection())
             addSection(2, Task6ChartSection())
-            media(maxWidth = "600px", template = listOf(1))
         }
     }
 }
@@ -39,7 +39,7 @@ class TaskChartSection : ChartDashboardSection() {
     override val tableName: String
         get() = "tasks"
     override val labelField: String
-        get() = "priority"
+        get() = "date"
     override val valuesFields: List<ChartField>
         get() = listOf(
             ChartField(

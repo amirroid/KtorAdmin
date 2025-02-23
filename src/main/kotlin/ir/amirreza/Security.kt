@@ -1,10 +1,14 @@
 package ir.amirreza
 
 import authentication.KtorAdminPrincipal
+import authentication.configureAdminCookies
 import authentication.ktorAdminFormAuth
 import authentication.ktorAdminTokenAuth
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.sessions.Sessions
+import kotlin.math.max
+import kotlin.time.Duration.Companion.days
 
 fun Application.configureSecurity() {
     install(Authentication) {
@@ -15,7 +19,7 @@ fun Application.configureSecurity() {
                 } else null
             }
         }
-//        ktorAdminTokenAuth("admin") {
+//        ktorAdminTokenAuth(name = "admin") {
 //            validateToken { token ->
 //                if (token == "1234") {
 //                    KtorAdminPrincipal("Amirreza", roles = listOf("admin"))

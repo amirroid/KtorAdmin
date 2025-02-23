@@ -33,12 +33,12 @@ fun addFakePosts() {
         session.persist(author)
 
         val post1 = Post(
-            titleContent = "Introduction to Ktor",
+            title = "Introduction to Ktor",
             content = "Ktor is a framework for building asynchronous servers and clients using Kotlin.",
             author = author
         )
         val post2 = Post(
-            titleContent = "Understanding Hibernate in Kotlin",
+            title = "Understanding Hibernate in Kotlin",
             content = "Hibernate is an ORM framework that simplifies database interactions in Kotlin applications.",
             author = author
         )

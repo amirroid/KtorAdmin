@@ -1,6 +1,5 @@
 package models.events
 
-import models.ColumnSet
 import models.field.FieldSet
 
 /**

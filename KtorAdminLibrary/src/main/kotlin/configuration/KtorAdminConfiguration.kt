@@ -83,7 +83,7 @@ class KtorAdminConfiguration {
     /**
      * AWS S3 pre-signed URL expiration duration.
      */
-    var awsS3SignatureDuration: Duration?
+    var s3SignatureDuration: Duration?
         get() = AWSS3StorageProvider.signatureDuration
         set(value) {
             AWSS3StorageProvider.signatureDuration = value

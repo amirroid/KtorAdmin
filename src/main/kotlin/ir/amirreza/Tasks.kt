@@ -14,13 +14,18 @@ import annotations.preview.Preview
 import annotations.query.AdminQueries
 import annotations.references.ManyToManyReferences
 import annotations.references.ManyToOneReferences
+import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
+import annotations.uploads.CustomUpload
+import annotations.uploads.S3Upload
 import annotations.uploads.LocalUpload
 import annotations.value_mapper.ValueMapper
+import models.actions.Action
 import models.reference.EmptyColumn
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.kotlin.datetime.date
 
 enum class Priority {
     Low, Medium, High
@@ -32,9 +37,7 @@ enum class Priority {
     searches = ["user_id.username", "description"],
     filters = ["priority", "checked", "user_id"]
 )
-@DisplayFormat(
-    format = "{id} - User: {user_id.username} \nNumber: {number}"
-)
+
 @DefaultOrder(
     "name",
     "DESC"
@@ -49,12 +52,21 @@ enum class Priority {
     pluralName = "tasks",
     iconFile = "/static/images/tasks.png",
 )
+@DisplayFormat(
+    format = "{id} - User: {user_id.username}"
+)
 object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
 
     @ValueMapper("test")
     val name = varchar("name", length = 150)
+
+
+    @Computed(
+        compute = "{name}.toLowerCase().replaceAll(' ', '-')"
+    )
+    val slug = varchar("slug", 500)
 
     @Limits(
         maxLength = 500
@@ -78,10 +90,6 @@ object Tasks : Table("tasks") {
     @ManyToManyReferences("users", "tasks_users", "task_id", "user_id")
     val users = EmptyColumn()
 
-    @Computed(
-        compute = "{name}.toLowerCase().replaceAll(' ', '-')"
-    )
-    val slug = varchar("slug", 500)
 
     @ColumnInfo(
         unique = true
@@ -89,13 +97,16 @@ object Tasks : Table("tasks") {
     @ValueMapper("timesTo2")
     val number = integer("number").default(1)
 
-    @LocalUpload
+    @Preview(key = "video_preview")
     @Limits(
         maxBytes = 1024 * 1024 * 20,
         allowedMimeTypes = ["video/mp4"]
     )
-    @Preview("video_preview")
+    @LocalUpload
     val file = varchar("file", 1000).nullable()
+
+
+    val date = date("date").nullable()
 
     @ColumnInfo(
         columnName = "thumbnail",

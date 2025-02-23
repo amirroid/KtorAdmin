@@ -8,8 +8,8 @@ class VideoPreview : KtorAdminPreview() {
 
     override fun createPreview(tableName: String, name: String, value: Any?): String? {
         return value?.toString()?.let { video ->
-            expandable("Video preview") {
-                video(video)
+            expandable(title = "Video preview") {
+                video(src = video)
             }
         }
     }
