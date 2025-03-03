@@ -60,7 +60,7 @@ data class UserFile(
     val title: String,
     @LocalUpload
     @Limits(
-        allowedMimeTypes = ["image/png"]
+//        allowedMimeTypes = ["image/png"]
     )
     val file: String,
     @FieldInfo(

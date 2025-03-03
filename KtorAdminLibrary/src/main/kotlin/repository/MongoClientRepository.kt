@@ -12,6 +12,7 @@ import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import configuration.DynamicConfiguration
+import getters.toTypedValue
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
@@ -71,11 +72,7 @@ internal object MongoClientRepository {
 
     private fun BsonValue.toStringId() = asObjectId()?.value?.toHexString()
 
-    private fun String.formatParameter(field: FieldSet) = when (field.type) {
-        FieldType.Boolean -> if (this == "on") "true" else "false"
-        else -> this
-    }
-
+    private fun String.formatParameter(field: FieldSet) = toTypedValue(field.type)
 
     suspend fun insertData(
         values: Map<FieldSet, Any?>,
@@ -86,7 +83,7 @@ internal object MongoClientRepository {
         }
         val document = Document().apply {
             values.toList().plus(changeDates).distinctBy { it.first }.forEach { (field, value) ->
-                put(field.fieldName, value?.toString()?.formatParameter(field) ?: return@forEach)
+                put(field.fieldName, value?.toString()?.formatParameter(field))
             }
             panel.getAllAutoNowDateInsertFields()
         }

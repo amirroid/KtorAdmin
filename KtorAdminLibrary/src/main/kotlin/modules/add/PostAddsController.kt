@@ -105,9 +105,6 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
 }
 
 private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminMongoCollection) {
-    return call.respond(
-        call.receiveParameters().toMap()
-    )
     val parametersDataResponse = call.receiveMultipart().toTableValues(panel)
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.map { it?.first }

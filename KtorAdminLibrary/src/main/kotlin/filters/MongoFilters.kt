@@ -1,6 +1,8 @@
 package filters
 
 import com.mongodb.client.model.Filters
+import configuration.DynamicConfiguration
+import getters.toDate
 import io.ktor.http.*
 import models.field.FieldSet
 import models.filters.FilterTypes
@@ -76,7 +78,7 @@ internal object MongoFilters {
 
                 FieldType.Boolean -> {
                     parameters[Constants.FILTERS_PREFIX + fieldSet.fieldName.toString()]?.let { value ->
-                        filters.add(Filters.eq(fieldSet.fieldName.toString(), if (value == "1") "true" else "false"))
+                        filters.add(Filters.eq(fieldSet.fieldName.toString(), value == Constants.TRUE_FORM))
                     }
                 }
 
@@ -99,20 +101,22 @@ internal object MongoFilters {
         val startParamName = "${fieldSet.fieldName}-start"
         val endParamName = "${fieldSet.fieldName}-end"
 
-        if (parameters.contains(startParamName)) {
+        if (parameters.contains(Constants.FILTERS_PREFIX + startParamName)) {
             parameters[Constants.FILTERS_PREFIX + startParamName]?.let { startValue ->
                 val start = Instant.ofEpochMilli(startValue.toLong())
-                    .atZone(ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    .atZone(DynamicConfiguration.timeZone)
+                    .toLocalDateTime()
+                    .toDate()
                 filters.add(Filters.gte(fieldSet.fieldName.toString(), start))
             }
         }
 
-        if (parameters.contains(endParamName)) {
+        if (parameters.contains(Constants.FILTERS_PREFIX + endParamName)) {
             parameters[Constants.FILTERS_PREFIX + endParamName]?.let { endValue ->
                 val end = Instant.ofEpochMilli(endValue.toLong())
-                    .atZone(ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    .atZone(DynamicConfiguration.timeZone)
+                    .toLocalDateTime()
+                    .toDate()
                 filters.add(Filters.lte(fieldSet.fieldName.toString(), end))
             }
         }

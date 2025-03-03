@@ -39,7 +39,7 @@ fun Application.configureAdmin(database: Database) {
                 "amirreza", "admin", "your_password"
             ),
         )
-        authenticateName = "admin"
+//        authenticateName = "admin"
         mediaPath = MEDIA_PATH
         mediaRoot = MEDIA_ROOT
         adminDashboard = CustomDashboard()

@@ -77,48 +77,59 @@
                 #end
 
                 #if($field.type.name == "LIST" || $field.type.name == "MAP")
-                    <fieldset class="field-section ${field.type.name.toLowerCase()}-section multi-section custom-section"
-                              data-field="$fullFieldName"
-                              data-type="$field.type.name"
+                    <fieldset
+                            class="field-section ${field.type.name.toLowerCase()}-section multi-section custom-section"
+                            data-field="$fullFieldName"
+                            data-type="$field.type.name"
                         #if($field.type.name ==
                             "MAP" && $field.type.fields.size() == 1 && !$field.type.fields.get(0).fieldName)
-                              data-value-type="$field.type.fields.get(0).type.name"
+                            data-value-type="$field.type.fields.get(0).type.name"
                         #end>
                         <h3 class="section-title">$field.fieldName</h3>
 
                         #if($field.type.name ==
                             "MAP" && $field.type.fields.size() == 1 && !$field.type.fields.get(0).fieldName)
                             <div class="key-value-container multi-section">
-                                <div class="key-value-entry" data-template="true">
+                                <div class="key-value-entry" data-template="true" style="display: none;">
                                     <div class="key-value-pair">
                                         <div class="key-field">
                                             <label>Key</label>
-                                            <input type="text" class="form-input" name="${fullFieldName}[0].key"
+                                            <input type="text" class="form-input" name="${fullFieldName}[_INDEX_].key"
                                                    value="$!defaultValue"/>
                                         </div>
                                         <div class="value-field">
                                             <label>Value</label>
                                             #set($valueType = $field.type.fields.get(0).type)
                                             #if($valueType.name == "STRING")
-                                                <input type="text" class="form-input" name="${fullFieldName}[0].value"
+                                                <input type="text" class="form-input"
+                                                       name="${fullFieldName}[_INDEX_].value"
                                                        value="$!defaultValue"/>
                                             #elseif($valueType.name == "NUMBER")
-                                                <input type="number" class="form-input" name="${fullFieldName}[0].value"
+                                                <input type="number" class="form-input"
+                                                       name="${fullFieldName}[_INDEX_].value"
                                                        value="$!defaultValue"/>
                                             #elseif($valueType.name == "BOOLEAN")
                                                 <input type="checkbox" class="checkbox-input"
-                                                       name="${fullFieldName}[0].value"
+                                                       name="${fullFieldName}[_INDEX_].value"
                                                        #if($!defaultValue == "true")checked#end/>
                                             #else
-                                                <input type="text" class="form-input" name="${fullFieldName}[0].value"
+                                                <input type="text" class="form-input"
+                                                       name="${fullFieldName}[_INDEX_].value"
                                                        value="$!defaultValue"/>
                                             #end
                                         </div>
                                         <button type="button" class="remove-entry-btn" onclick="removeEntry(this)">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                                <path d="M9.16998 14.83L14.83 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                                <path d="M14.83 14.83L9.16998 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z"
+                                                      stroke="#292D32" stroke-width="1.5" stroke-linecap="round"
+                                                      stroke-linejoin="round"/>
+                                                <path d="M9.16998 14.83L14.83 9.17004" stroke="#292D32"
+                                                      stroke-width="1.5" stroke-linecap="round"
+                                                      stroke-linejoin="round"/>
+                                                <path d="M14.83 14.83L9.16998 9.17004" stroke="#292D32"
+                                                      stroke-width="1.5" stroke-linecap="round"
+                                                      stroke-linejoin="round"/>
                                             </svg>
                                         </button>
                                     </div>
@@ -129,17 +140,27 @@
                             </div>
                         #elseif($field.type.name == "LIST")
                             <div class="list-container">
-                                <div class="list-entry" data-template="true">
+                                <div class="list-entry" data-template="true" style="display: none;">
                                     <div class="nested-fields-container">
                                         #foreach($nestedField in $field.type.fields)
-                                            #renderField($nestedField "${fullFieldName}[0]")
+                                            #if($field.type.fields.size() == 1 && !$nestedField.fieldName)
+                                                #set($nestedFieldName = "${fullFieldName}[_INDEX_]")
+                                            #else
+                                                #set($nestedFieldName = "${fullFieldName}[_INDEX_]")
+                                            #end
+                                            #renderField($nestedField $nestedFieldName)
                                         #end
                                     </div>
                                     <button type="button" class="remove-entry-btn" onclick="removeEntry(this)">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M9.16998 14.83L14.83 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M14.83 14.83L9.16998 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z"
+                                                  stroke="#292D32" stroke-width="1.5" stroke-linecap="round"
+                                                  stroke-linejoin="round"/>
+                                            <path d="M9.16998 14.83L14.83 9.17004" stroke="#292D32" stroke-width="1.5"
+                                                  stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M14.83 14.83L9.16998 9.17004" stroke="#292D32" stroke-width="1.5"
+                                                  stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                     </button>
                                 </div>
@@ -239,7 +260,7 @@
                 #end
             #end
 
-            <form method="post" id="form-box">
+            <form method="post" enctype="multipart/form-data" id="form-box">
                 #foreach($field in $fields)
                     #renderField($field "")
                 #end
@@ -264,13 +285,13 @@
                 function updateElementNames(element, index) {
                     element.querySelectorAll('input, select, textarea').forEach(input => {
                         const oldName = input.getAttribute('name');
-                        const newName = oldName.replace(/\[\d+\](?=\.|$|\[)/, `[${index}]`);
+                        const newName = oldName.replace(/\[_INDEX_\]|\[\d+\](?=\.|$|\[)/, `[${index}]`);
                         input.setAttribute('name', newName);
                     });
 
                     element.querySelectorAll('fieldset[data-field]').forEach(section => {
                         const oldFieldName = section.getAttribute('data-field');
-                        const newFieldName = oldFieldName.replace(/\[\d+\](?=\.|$|\[)/, `[${index}]`);
+                        const newFieldName = oldFieldName.replace(/\[_INDEX_\]|\[\d+\](?=\.|$|\[)/, `[${index}]`);
                         section.setAttribute('data-field', newFieldName);
 
                         const addButton = section.querySelector('.add-entry-btn');
@@ -284,7 +305,9 @@
                     const removeBtn = document.createElement('button');
                     removeBtn.type = 'button';
                     removeBtn.className = 'remove-entry-btn';
-                    removeBtn.onclick = function() { removeEntry(this); };
+                    removeBtn.onclick = function () {
+                        removeEntry(this);
+                    };
                     removeBtn.innerHTML = `
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -300,10 +323,36 @@
                     const container = section.querySelector('.list-container');
                     const template = container.querySelector('.list-entry[data-template="true"]');
                     const newEntry = template.cloneNode(true);
+                    const index = getNextIndex(container);
 
                     newEntry.removeAttribute('data-template');
                     newEntry.style.display = '';
                     clearEntryValues(newEntry);
+
+                    // Replace all _INDEX_ placeholders with the actual index
+                    function replaceIndexPlaceholders(element, idx) {
+                        element.querySelectorAll('input, select, textarea, fieldset[data-field]').forEach(el => {
+                            if (el.hasAttribute('name')) {
+                                const name = el.getAttribute('name');
+                                el.setAttribute('name', name.replace(/\[_INDEX_\]/g, `[${idx}]`));
+                            }
+                            if (el.hasAttribute('data-field')) {
+                                const field = el.getAttribute('data-field');
+                                el.setAttribute('data-field', field.replace(/\[_INDEX_\]/g, `[${idx}]`));
+                            }
+                        });
+
+                        // Process nested fieldsets
+                        element.querySelectorAll('fieldset[data-field]').forEach(fieldset => {
+                            const addBtn = fieldset.querySelector('.add-entry-btn');
+                            if (addBtn && addBtn.hasAttribute('data-field-name')) {
+                                const fieldName = addBtn.getAttribute('data-field-name');
+                                addBtn.setAttribute('data-field-name', fieldName.replace(/\[_INDEX_\]/g, `[${idx}]`));
+                            }
+                        });
+                    }
+
+                    replaceIndexPlaceholders(newEntry, index);
 
                     // Make sure the remove button is present and visible
                     let removeBtn = newEntry.querySelector('.remove-entry-btn');
@@ -313,11 +362,12 @@
                     } else {
                         // Make sure the existing button is visible and functional
                         removeBtn.style.display = '';
-                        removeBtn.onclick = function() { removeEntry(this); };
+                        removeBtn.onclick = function () {
+                            removeEntry(this);
+                        };
                     }
 
                     container.insertBefore(newEntry, button);
-                    updateFieldNames(container);
                     initializeNestedAddButtons(newEntry);
                 }
 
@@ -334,9 +384,19 @@
                     const newEntry = template.cloneNode(true);
                     if (!newEntry) return;
 
+                    const index = getNextIndex(container);
+
                     newEntry.removeAttribute('data-template');
                     newEntry.style.display = '';
                     clearEntryValues(newEntry);
+
+                    // Replace all _INDEX_ placeholders with the actual index
+                    newEntry.querySelectorAll('input, select, textarea').forEach(input => {
+                        const name = input.getAttribute('name');
+                        if (name) {
+                            input.setAttribute('name', name.replace(/\[_INDEX_\]/g, `[${index}]`));
+                        }
+                    });
 
                     // Make sure the remove button is present and visible
                     let removeBtn = newEntry.querySelector('.remove-entry-btn');
@@ -346,13 +406,14 @@
                     } else {
                         // Make sure the existing button is visible and functional
                         removeBtn.style.display = '';
-                        removeBtn.onclick = function() { removeEntry(this); };
+                        removeBtn.onclick = function () {
+                            removeEntry(this);
+                        };
                     }
 
                     // Insert before the add button
                     const addButton = container.querySelector('.add-entry-btn');
                     container.insertBefore(newEntry, addButton);
-                    updateFieldNames(container);
                 }
 
                 function removeEntry(button) {
@@ -374,29 +435,19 @@
 
                 function initializeNestedAddButtons(container) {
                     container.querySelectorAll('.add-entry-btn').forEach(button => {
-                        const fieldName = button.getAttribute('data-field-name');
-                        if (fieldName) {
-                            button.onclick = () => addListEntry(button);
+                        if (!button.closest('.key-value-container')) {  // Only handle list buttons here
+                            button.onclick = function () {
+                                addListEntry(this);
+                            };
                         }
                     });
                 }
 
                 // Initialize all elements
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Hide all template elements by default
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Make sure all template elements are hidden
                     document.querySelectorAll('[data-template="true"]').forEach(el => {
                         el.style.display = 'none';
-                    });
-
-                    // Add remove buttons to all existing list entries and key-value entries
-                    document.querySelectorAll('fieldset[data-type="LIST"], fieldset[data-type="MAP"]').forEach(fieldset => {
-                        const entries = fieldset.querySelectorAll('.list-entry:not([data-template="true"]), .key-value-entry:not([data-template="true"])');
-                        entries.forEach(entry => {
-                            if (!entry.querySelector('.remove-entry-btn')) {
-                                const removeBtn = createRemoveButton();
-                                entry.appendChild(removeBtn);
-                            }
-                        });
                     });
 
                     // Add event listeners to all "Add New Entry" buttons
@@ -404,12 +455,12 @@
                         if (button.closest('.key-value-container')) {
                             const fieldName = button.closest('fieldset').getAttribute('data-field');
                             if (fieldName) {
-                                button.onclick = function() {
+                                button.onclick = function () {
                                     addKeyValueEntry(fieldName);
                                 };
                             }
                         } else if (button.closest('.list-container')) {
-                            button.onclick = function() {
+                            button.onclick = function () {
                                 addListEntry(this);
                             };
                         }
