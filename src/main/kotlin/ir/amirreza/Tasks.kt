@@ -2,6 +2,7 @@ package ir.amirreza
 
 import annotations.actions.AdminActions
 import annotations.computed.Computed
+import annotations.date.AutoNowDate
 import annotations.display.DisplayFormat
 import annotations.display.PanelDisplayList
 import annotations.enumeration.Enumeration
@@ -18,12 +19,14 @@ import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
+import annotations.type.OverrideColumnType
 import annotations.uploads.CustomUpload
 import annotations.uploads.S3Upload
 import annotations.uploads.LocalUpload
 import annotations.value_mapper.ValueMapper
 import models.actions.Action
 import models.reference.EmptyColumn
+import models.types.ColumnType
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.kotlin.datetime.date
 
@@ -94,7 +97,7 @@ object Tasks : Table("tasks") {
     @ColumnInfo(
         unique = true
     )
-    @ValueMapper("timesTo2")
+//    @ValueMapper("timesTo2")
     val number = integer("number").default(1)
 
     @Preview(key = "video_preview")

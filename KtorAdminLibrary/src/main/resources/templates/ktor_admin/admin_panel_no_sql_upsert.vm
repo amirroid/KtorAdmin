@@ -77,7 +77,7 @@
                 #end
 
                 #if($field.type.name == "LIST" || $field.type.name == "MAP")
-                    <fieldset class="field-section ${field.type.name.toLowerCase()}-section multi-section"
+                    <fieldset class="field-section ${field.type.name.toLowerCase()}-section multi-section custom-section"
                               data-field="$fullFieldName"
                               data-type="$field.type.name"
                         #if($field.type.name ==
@@ -115,7 +115,11 @@
                                             #end
                                         </div>
                                         <button type="button" class="remove-entry-btn" onclick="removeEntry(this)">
-                                            Remove
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M9.16998 14.83L14.83 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M14.83 14.83L9.16998 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
@@ -131,7 +135,12 @@
                                             #renderField($nestedField "${fullFieldName}[0]")
                                         #end
                                     </div>
-                                    <button type="button" class="remove-entry-btn" onclick="removeEntry(this)">Remove
+                                    <button type="button" class="remove-entry-btn" onclick="removeEntry(this)">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M9.16998 14.83L14.83 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M14.83 14.83L9.16998 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
                                     </button>
                                 </div>
                                 <button type="button" class="add-entry-btn"
@@ -142,8 +151,8 @@
                         #else
                             <div class="nested-fields-container">
                                 #foreach($nestedField in $field.type.fields)
-                        #renderField($nestedField $fullFieldName)
-                    #end
+                                    #renderField($nestedField $fullFieldName)
+                                #end
                             </div>
                         #end
                     </fieldset>
@@ -194,12 +203,12 @@
                                     #if($!defaultValue == "true" || $!defaultValue == "1" || $!defaultValue == "on")
                                        checked #end #if($field.readOnly) disabled #end>
                                 <span class="checkmark">
-                        <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 3.83L3.83 6.66L9.5 1" stroke="white" stroke-width="1.5"
-                                  stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </span>
+                                    <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1 3.83L3.83 6.66L9.5 1" stroke="white" stroke-width="1.5"
+                                              stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
                                 $field.verboseName
                             </label>
                         #elseif($field.type.name == "ENUMERATION")
@@ -271,6 +280,21 @@
                     });
                 }
 
+                function createRemoveButton() {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'remove-entry-btn';
+                    removeBtn.onclick = function() { removeEntry(this); };
+                    removeBtn.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9.16998 14.83L14.83 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14.83 14.83L9.16998 9.17004" stroke="#292D32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    `;
+                    return removeBtn;
+                }
+
                 function addListEntry(button) {
                     const section = button.closest('fieldset');
                     const container = section.querySelector('.list-container');
@@ -281,6 +305,17 @@
                     newEntry.style.display = '';
                     clearEntryValues(newEntry);
 
+                    // Make sure the remove button is present and visible
+                    let removeBtn = newEntry.querySelector('.remove-entry-btn');
+                    if (!removeBtn) {
+                        removeBtn = createRemoveButton();
+                        newEntry.appendChild(removeBtn);
+                    } else {
+                        // Make sure the existing button is visible and functional
+                        removeBtn.style.display = '';
+                        removeBtn.onclick = function() { removeEntry(this); };
+                    }
+
                     container.insertBefore(newEntry, button);
                     updateFieldNames(container);
                     initializeNestedAddButtons(newEntry);
@@ -288,15 +323,35 @@
 
                 function addKeyValueEntry(fieldName) {
                     const section = document.querySelector(`fieldset[data-field="${fieldName}"]`);
+                    if (!section) return;
+
                     const container = section.querySelector('.key-value-container');
+                    if (!container) return;
+
                     const template = container.querySelector('.key-value-entry[data-template="true"]');
+                    if (!template) return;
+
                     const newEntry = template.cloneNode(true);
+                    if (!newEntry) return;
 
                     newEntry.removeAttribute('data-template');
                     newEntry.style.display = '';
                     clearEntryValues(newEntry);
 
-                    container.insertBefore(newEntry, container.querySelector('.add-entry-btn'));
+                    // Make sure the remove button is present and visible
+                    let removeBtn = newEntry.querySelector('.remove-entry-btn');
+                    if (!removeBtn) {
+                        removeBtn = createRemoveButton();
+                        newEntry.appendChild(removeBtn);
+                    } else {
+                        // Make sure the existing button is visible and functional
+                        removeBtn.style.display = '';
+                        removeBtn.onclick = function() { removeEntry(this); };
+                    }
+
+                    // Insert before the add button
+                    const addButton = container.querySelector('.add-entry-btn');
+                    container.insertBefore(newEntry, addButton);
                     updateFieldNames(container);
                 }
 
@@ -325,6 +380,41 @@
                         }
                     });
                 }
+
+                // Initialize all elements
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Hide all template elements by default
+                    document.querySelectorAll('[data-template="true"]').forEach(el => {
+                        el.style.display = 'none';
+                    });
+
+                    // Add remove buttons to all existing list entries and key-value entries
+                    document.querySelectorAll('fieldset[data-type="LIST"], fieldset[data-type="MAP"]').forEach(fieldset => {
+                        const entries = fieldset.querySelectorAll('.list-entry:not([data-template="true"]), .key-value-entry:not([data-template="true"])');
+                        entries.forEach(entry => {
+                            if (!entry.querySelector('.remove-entry-btn')) {
+                                const removeBtn = createRemoveButton();
+                                entry.appendChild(removeBtn);
+                            }
+                        });
+                    });
+
+                    // Add event listeners to all "Add New Entry" buttons
+                    document.querySelectorAll('.add-entry-btn').forEach(button => {
+                        if (button.closest('.key-value-container')) {
+                            const fieldName = button.closest('fieldset').getAttribute('data-field');
+                            if (fieldName) {
+                                button.onclick = function() {
+                                    addKeyValueEntry(fieldName);
+                                };
+                            }
+                        } else if (button.closest('.list-container')) {
+                            button.onclick = function() {
+                                addListEntry(this);
+                            };
+                        }
+                    });
+                });
             </script>
         </div>
     </div>

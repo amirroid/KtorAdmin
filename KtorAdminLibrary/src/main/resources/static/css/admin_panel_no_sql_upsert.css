@@ -1,7 +1,11 @@
-.field-section {
+.custom-section {
     border-radius: 12px;
     overflow: hidden;
     border: .5px solid var(--secondary-color);
+}
+
+.custom-section .custom-section {
+    margin: 12px;
 }
 
 .section-title {
@@ -13,27 +17,10 @@
     height: 48px;
 }
 
-.field-section .field-section {
-    margin-top: 12px;
-}
-
-.multi-section .multi-section {
-    margin-right: 12px;
-    margin-left: 12px;
-}
 
 .key-value-entry {
     position: relative;
     margin-top: 10px;
-}
-
-.list-entry {
-    position: relative;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 12px;
-    overflow: hidden;
-    border: .5px solid var(--secondary-color);
 }
 
 .list-entry[data-template="true"] {
@@ -46,11 +33,11 @@
 
 .remove-entry-btn {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    /*top: 0;*/
+    /*left: 0;*/
+    /*right: 0;*/
     padding: 5px 10px;
-    background: #ff4444;
-    color: white;
+    background-color: transparent;
     border: none;
     border-radius: 4px;
     cursor: pointer;

@@ -37,8 +37,8 @@ import java.time.LocalDateTime
 //}
 
 @MongoCollection(
-    "user_files",
-    "_id",
+    collectionName = "user_files",
+    primaryKey = "_id",
     singularName = "File",
     pluralName = "Files",
 )

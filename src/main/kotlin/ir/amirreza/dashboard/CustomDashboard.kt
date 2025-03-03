@@ -70,7 +70,7 @@ class TaskChartSection : ChartDashboardSection() {
         get() = 1
 
     override val tension: Float
-        get() = 0.5f
+        get() = 0.49f
 
 
     override val borderWidth: Float

@@ -58,15 +58,6 @@ class KtorAdminConfiguration {
         }
 
     /**
-     * Default MongoDB database name.
-     */
-    var defaultMongoDatabaseName: String?
-        get() = MongoClientRepository.defaultDatabaseName
-        set(value) {
-            MongoClientRepository.defaultDatabaseName = value
-        }
-
-    /**
      * Rate limit per minute for API requests.
      */
     var rateLimitPerMinutes: Int
@@ -185,8 +176,8 @@ class KtorAdminConfiguration {
     /**
      * Registers a new MongoDB client.
      */
-    fun mongo(databaseName: String, address: MongoServerAddress, credential: MongoCredential? = null) {
-        MongoClientRepository.registerNewClient(databaseName, address, credential)
+    fun mongo(key: String?, databaseName: String, address: MongoServerAddress, credential: MongoCredential? = null) {
+        MongoClientRepository.registerNewClient(key, databaseName, address, credential)
     }
 
     /**

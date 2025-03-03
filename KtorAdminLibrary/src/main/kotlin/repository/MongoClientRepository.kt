@@ -10,6 +10,7 @@ import com.mongodb.client.model.Updates.combine
 import com.mongodb.client.model.Updates.set
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
+import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import configuration.DynamicConfiguration
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.filterNotNull
@@ -30,15 +31,16 @@ import panels.*
 import java.util.logging.Filter
 
 internal object MongoClientRepository {
-    private var clients: MutableMap<String, MongoClient> = mutableMapOf()
-    var defaultDatabaseName: String? = null
+    private var databases: MutableMap<String?, MongoDatabase> = mutableMapOf()
 
-    fun registerNewClient(databaseName: String, address: MongoServerAddress, credential: MongoCredential? = null) {
-        if (clients.isEmpty() && defaultDatabaseName == null) {
-            defaultDatabaseName = databaseName
-        }
-        if (clients.containsKey(databaseName)) {
-            throw IllegalArgumentException("Client with database name '$databaseName' already exists")
+    fun registerNewClient(
+        key: String?,
+        databaseName: String,
+        address: MongoServerAddress,
+        credential: MongoCredential? = null
+    ) {
+        if (databases.containsKey(key)) {
+            throw IllegalArgumentException("Client with key '$key' already exists")
         }
         val settings = MongoClientSettings.builder()
             .let {
@@ -52,15 +54,14 @@ internal object MongoClientRepository {
             }
             .applyToClusterSettings { cluster -> cluster.hosts(listOf(ServerAddress(address.host, address.port))) }
             .build()
-        clients[databaseName] = MongoClient.create(settings)
+        databases[key] = MongoClient.create(settings).getDatabase(databaseName)
     }
 
     private fun AdminMongoCollection.getCollection(): MongoCollection<Document> {
-        val databaseKey = getDatabaseKey() ?: defaultDatabaseName
-        ?: throw IllegalStateException("Both database key and default database name are null.")
-        val client =
-            clients[databaseKey] ?: throw IllegalArgumentException("Client for database name $databaseKey not found.")
-        return client.getDatabase(databaseKey).getCollection(getCollectionName())
+        val databaseKey = getDatabaseKey()
+        val database =
+            databases[databaseKey] ?: throw IllegalArgumentException("Client for database name $databaseKey not found.")
+        return database.getCollection(getCollectionName())
     }
 
     private fun AdminMongoCollection.getPrimaryKeyFilter(primaryKey: String) =

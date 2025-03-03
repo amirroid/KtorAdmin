@@ -1,6 +1,5 @@
 package ir.amirreza
 
-import annotations.value_mapper.ValueMapper
 import io.ktor.server.application.*
 import ir.amirreza.action.MyCustomAction
 import ir.amirreza.dashboard.CustomDashboard
@@ -17,7 +16,6 @@ import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
 import providers.StorageProvider
 import tiny.TinyMCEConfig
-import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
@@ -34,18 +32,19 @@ fun Application.configureAdmin(database: Database) {
             driver = JDBCDrivers.POSTGRES
         )
         mongo(
-            "0@localhost",
-            MongoServerAddress("localhost", 27017),
-            MongoCredential(
+            key = null,
+            databaseName = "0@localhost",
+            address = MongoServerAddress("localhost", 27017),
+            credential = MongoCredential(
                 "amirreza", "admin", "your_password"
             ),
         )
+        authenticateName = "admin"
         mediaPath = MEDIA_PATH
         mediaRoot = MEDIA_ROOT
         adminDashboard = CustomDashboard()
         defaultAwsS3Bucket = "school-data"
         s3SignatureDuration = 1.minutes.toJavaDuration()
-        authenticateName = "admin"
         loginFields = adminLoginFields
         csrfTokenExpirationTime = 1000 * 60
         registerCustomAdminActionForAll(MyCustomAction())
@@ -95,6 +94,7 @@ object CustomValueMapper2 : KtorAdminValueMapper {
     override val key: String
         get() = "test"
 }
+
 
 private val adminLoginFields = listOf(
     LoginFiled(
