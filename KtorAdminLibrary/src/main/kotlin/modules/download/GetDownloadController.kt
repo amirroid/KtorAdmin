@@ -8,9 +8,11 @@ import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import panels.AdminJdbcTable
+import panels.AdminMongoCollection
 import panels.AdminPanel
 import pdf.PdfHelper
 import repository.JdbcQueriesRepository
+import repository.MongoClientRepository
 import utils.Constants
 import utils.badRequest
 import utils.invalidateRequest
@@ -41,7 +43,8 @@ fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: Lis
                     )
                     val file = when (panel) {
                         is AdminJdbcTable -> JdbcQueriesRepository.getAllDataAsCsvFile(panel)
-                        else -> return@get
+                        is AdminMongoCollection -> MongoClientRepository.getAllDataAsCsvFile(panel)
+                        else -> "return@get"
                     }
                     val bytes = file.toByteArray()
                     call.respondBytes(contentType = ContentType.Text.CSV) { bytes }

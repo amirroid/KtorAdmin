@@ -12,6 +12,7 @@ import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import configuration.DynamicConfiguration
+import formatters.map
 import getters.toTypedValue
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
@@ -235,12 +236,10 @@ internal object MongoClientRepository {
             }
             .projection(
                 fields(
-                    fields(
-                        *fields.plus(table.getPrimaryKeyField())
-                            .map { include(it.fieldName) }
-                            .distinct()
-                            .toTypedArray()
-                    )
+                    *fields.plus(table.getPrimaryKeyField())
+                        .map { include(it.fieldName) }
+                        .distinct()
+                        .toTypedArray()
                 )
             ).filterNotNull().toList()
 
@@ -249,6 +248,18 @@ internal object MongoClientRepository {
                 primaryKey = values[table.getPrimaryKey()]!!.toString(),
                 data = fields.map { field -> values[field.fieldName]?.toString() }
             )
+        }
+    }
+
+
+    suspend fun getAllDataAsCsvFile(panel: AdminMongoCollection): String {
+        val fields = panel.getAllAllowToShowFields()
+        return panel.getCollection().find().projection(
+            fields(
+                *fields.map { include(it.fieldName) }.toTypedArray()
+            )
+        ).filterNotNull().toList().joinToString("\n") { values ->
+            fields.joinToString(", ") { values[it.fieldName]?.toString() ?: "N/A" }
         }
     }
 
