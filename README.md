@@ -34,3 +34,8 @@
 KtorAdmin removes **unnecessary boilerplate code** and provides a **schema-independent, dynamic, and extensible** solution for admin panel creation. Whether you're handling **relational databases** like **MySQL & PostgreSQL** or working with **NoSQL databases** like **MongoDB**, KtorAdmin gives you an effortless way to **manage and monitor** your app’s data.
 
 📖 **Documentation:** [Read the Docs](https://amirreza-gholami.gitbook.io/ktor-admin) 🚀
+
+---
+
+## **License**
+This package is created and modified by [Amirroid](https://github.com/Amirroid) and has been released under the MIT License.
