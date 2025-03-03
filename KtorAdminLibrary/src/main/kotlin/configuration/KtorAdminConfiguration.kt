@@ -243,5 +243,6 @@ class KtorAdminConfiguration {
      */
     internal fun closeDatabase() {
         KtorAdminHikariCP.closeAllConnections()
+        MongoClientRepository.closeAllConnections()
     }
 }
