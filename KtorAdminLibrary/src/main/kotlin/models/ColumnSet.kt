@@ -35,7 +35,15 @@ import java.time.LocalDateTime
  *                        typically applied when using enumerations.
  * @property hasRichEditor Determines whether this column should be displayed as a rich text editor in the admin panel.
  *                        Defaults to `false`.
+ * @property hasTextArea Specifies whether the column should be displayed as a multi-line text area input.
+ *                        Useful for long text fields. Defaults to `false`.
+ * @property hasConfirmation Indicates whether changes to this column require user confirmation before being applied.
+ *                        This is useful for critical fields where accidental modifications should be prevented.
+ *                        Defaults to `false`.
+ * @property valueMapper Defines a transformation or mapping function to process values before displaying or storing them.
+ *                        This can be used to convert data formats, apply specific parsing rules, or format values dynamically.
  * @property preview A key used in `KtorAdminPreview` to reference a preview of this column's content, if applicable.
+ *                        This is useful for fields that require visual representation, such as images or rich content.
  */
 data class ColumnSet(
     val columnName: String,
@@ -56,6 +64,7 @@ data class ColumnSet(
     val blank: Boolean = true,
     val statusColors: List<String>? = null,
     val hasRichEditor: Boolean = false,
+    val hasTextArea: Boolean = false,
     val hasConfirmation: Boolean = false,
     val valueMapper: String? = null,
     val preview: String? = null

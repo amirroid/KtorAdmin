@@ -119,6 +119,9 @@
                                 #if($column.hasRichEditor)
                                     <textarea name="$column.columnName" class="rich-editor-area"
                                               #if($column.readOnly)readonly#end>$!defaultValue</textarea>
+                                #elseif($column.hasTextArea)
+                                    <textarea name="$column.columnName" class="simple-editor-area"
+                                              #if($column.readOnly)readonly#end>$!defaultValue</textarea>
                                 #else
                                         <input type=#if($column.hasConfirmation) "password" #else "text" #end
                                     class="form-input" name="$column.columnName"

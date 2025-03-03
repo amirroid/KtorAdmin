@@ -14,6 +14,7 @@ import annotations.references.ManyToOneReferences
 import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.status.StatusStyle
+import annotations.text_area.TextAreaField
 import annotations.type.OverrideColumnType
 import annotations.value_mapper.ValueMapper
 import com.google.devtools.ksp.getDeclaredProperties
@@ -142,6 +143,9 @@ object PropertiesRepository {
 
         val reference = property.annotations.getReferences() ?: referenceData?.reference
 
+        val hasTextAreaField = hasTextAreaFieldAnnotation(property.annotations)
+        validateTextArea(hasTextAreaField, columnType)
+
         // Construct and return the final ColumnSet configuration
         return ColumnSet(
             columnName = baseInfo.columnName,
@@ -167,7 +171,8 @@ object PropertiesRepository {
             hasRichEditor = hasRichEditor,
             hasConfirmation = hasConfirmationAnnotation(property.annotations),
             valueMapper = getValueMapperAnnotation(property.annotations),
-            preview = getPreviewAnnotation(property.annotations)
+            preview = getPreviewAnnotation(property.annotations),
+            hasTextArea = hasTextAreaField
         )
     }
 
@@ -423,11 +428,18 @@ object PropertiesRepository {
         // Process computed field information
         val computedFieldInfo = property.annotations.getComputed()
         val isReadOnly = (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) ||
-                (computedFieldInfo?.second ?: false)
+                (computedFieldInfo?.second == true)
 
         // Validate date-related configurations
         val autoNowDate = getAutoNowDateAnnotation(property.annotations)
         validateFieldAutoNowDate(fieldType, autoNowDate, fieldName)
+
+        val hasRichEditor = hasRichEditorAnnotation(property.annotations)
+        val hasTextAreaField = hasTextAreaFieldAnnotation(property.annotations)
+
+        if ((hasTextAreaField || hasRichEditor) && fieldType !is FieldType.String) {
+            throw IllegalArgumentException("($fieldName) Fields annotated with @TextAreaField or marked as rich editors must be of type String.")
+        }
 
         return FieldSet(
             fieldName = fieldName,
@@ -446,7 +458,8 @@ object PropertiesRepository {
             computedField = computedFieldInfo?.first,
             autoNowDate = autoNowDate,
             preview = getPreviewAnnotation(property.annotations),
-            hasRichEditor = hasRichEditorAnnotation(property.annotations)
+            hasRichEditor = hasRichEditor,
+            hasTextArea = hasTextAreaField
         )
     }
 
@@ -461,6 +474,12 @@ object PropertiesRepository {
      */
     private fun hasRichEditorAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
         annotations.any { it.qualifiedName == RichEditor::class.qualifiedName }
+
+    /**
+     * Checks if a property has the TextAreaField annotation.
+     */
+    private fun hasTextAreaFieldAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
+        annotations.any { it.qualifiedName == TextAreaField::class.qualifiedName }
 
     /**
      * Checks if a property has the Confirmation annotation.
@@ -658,6 +677,15 @@ object PropertiesRepository {
     private fun validateRichEditor(hasRichEditor: Boolean, columnType: ColumnType) {
         if (hasRichEditor && columnType != ColumnType.STRING) {
             throw IllegalArgumentException("Rich editor can only be used with columns of type STRING.")
+        }
+    }
+
+    /**
+     * Validates text area configuration.
+     */
+    private fun validateTextArea(hasTextArea: Boolean, columnType: ColumnType) {
+        if (hasTextArea && columnType != ColumnType.STRING) {
+            throw IllegalArgumentException("Text area can only be used with columns of type STRING.")
         }
     }
 

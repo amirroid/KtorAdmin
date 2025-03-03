@@ -187,6 +187,9 @@
                             #if($field.hasRichEditor)
                                 <textarea name="$fullFieldName" class="rich-editor-area"
                                           #if($field.readOnly)readonly#end>$!defaultValue</textarea>
+                            #elseif($field.hasTextArea)
+                                <textarea name="$field.fieldName" class="simple-editor-area"
+                                          #if($field.readOnly)readonly#end>$!defaultValue</textarea>
                             #else
                                 <input type="text" class="form-input" name="$fullFieldName"
                                        value="$!defaultValue"

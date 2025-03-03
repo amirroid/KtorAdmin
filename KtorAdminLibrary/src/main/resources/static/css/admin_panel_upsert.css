@@ -208,6 +208,25 @@ label {
     padding: 0 12px;
 }
 
+.simple-editor-area {
+    width: 100%;
+    margin-top: 4px;
+    background-color: var(--background-gradient-start);
+    min-height: 150px;
+    border-radius: 16px;
+    outline: none;
+    transition: 0.2s linear;
+    display: block;
+    font-family: "Istok Web", serif;
+    font-weight: 400;
+    font-style: normal;
+    resize: vertical;
+    border: none;
+    padding: 12px;
+    line-height: 1.5;
+    overflow-y: auto;
+}
+
 .confirmation-value {
     padding: 8px 16px;
     font-size: 16px;

@@ -19,6 +19,7 @@ import annotations.references.OneToOneReferences
 import annotations.rich_editor.RichEditor
 import annotations.roles.AccessRoles
 import annotations.status.StatusStyle
+import annotations.text_area.TextAreaField
 import annotations.type.OverrideColumnType
 import annotations.uploads.CustomUpload
 import annotations.uploads.S3Upload
@@ -74,7 +75,8 @@ object Tasks : Table("tasks") {
     @Limits(
         maxLength = 500
     )
-    @RichEditor
+//    @RichEditor
+    @TextAreaField
     val description = text("description")
 
     @Enumeration("Low", "Medium", "High")

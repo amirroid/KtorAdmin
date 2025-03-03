@@ -32,6 +32,8 @@ import java.time.format.DateTimeFormatter
  * - `updateOnChange = false`: Only assigns the current date when the entity is created.
  * @property hasRichEditor Determines whether this column should be displayed as a rich text editor in the admin panel.
  *                        Defaults to `false`.
+ * @property hasTextArea Specifies whether the column should be displayed as a multi-line text area input.
+ *                        Useful for long text fields. Defaults to `false`.
  * @property preview A key used in `KtorAdminPreview` to reference a preview of this column's content, if applicable.
  */
 data class FieldSet(
@@ -49,6 +51,7 @@ data class FieldSet(
     val computedField: String? = null,
     val autoNowDate: AutoNowDate? = null,
     val hasRichEditor: Boolean = false,
+    val hasTextArea: Boolean = false,
     val preview: String? = null
 )
 
