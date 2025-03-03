@@ -2,6 +2,7 @@ package ir.amirreza
 
 import annotations.computed.Computed
 import annotations.date.AutoNowDate
+import annotations.display.PanelDisplayList
 import annotations.enumeration.Enumeration
 import annotations.field.FieldInfo
 import annotations.info.ColumnInfo
@@ -53,6 +54,7 @@ import java.time.LocalDateTime
     "createdAt",
     "DESC"
 )
+@PanelDisplayList("_id", "title")
 @Serializable
 data class UserFile(
     @FieldInfo("_id")

@@ -15,6 +15,7 @@ import models.ColumnSet
 import models.actions.Action
 import models.order.Order
 import models.order.toFormattedString
+import processors.qualifiedName
 import utils.PackagesUtils
 import utils.toSuitableStringForFile
 
@@ -217,19 +218,19 @@ internal object AnnotationRepository {
     }
 
     private fun getDisplayFormat(classDeclaration: KSClassDeclaration) = classDeclaration.annotations
-        .find { it.shortName.asString() == DisplayFormat::class.simpleName }
+        .find { it.qualifiedName == DisplayFormat::class.qualifiedName }
         ?.arguments
         ?.find { it.name?.asString() == "format" }
         ?.value as? String
 
     private fun getDisplayList(classDeclaration: KSClassDeclaration) = (classDeclaration.annotations
-        .find { it.shortName.asString() == PanelDisplayList::class.simpleName }
+        .find { it.qualifiedName == PanelDisplayList::class.qualifiedName }
         ?.arguments
         ?.find { it.name?.asString() == "field" }
         ?.value as? List<*>)?.filterIsInstance<String>()
 
     private fun getDefaultOrderFormat(classDeclaration: KSClassDeclaration) = classDeclaration.annotations
-        .find { it.shortName.asString() == DefaultOrder::class.simpleName }
+        .find { it.qualifiedName == DefaultOrder::class.qualifiedName }
         ?.arguments
         ?.let {
             Order(
@@ -240,7 +241,7 @@ internal object AnnotationRepository {
 
     private fun getAccessRoles(classDeclaration: KSClassDeclaration): List<String>? {
         return classDeclaration.annotations
-            .find { it.shortName.asString() == AccessRoles::class.simpleName }
+            .find { it.qualifiedName == AccessRoles::class.qualifiedName }
             ?.arguments
             ?.firstOrNull { it.name?.asString() == "role" }
             ?.value
@@ -250,11 +251,11 @@ internal object AnnotationRepository {
     }
 
     private fun KSClassDeclaration.getQueryColumnsArguments() = annotations
-        .find { it.shortName.asString() == AdminQueries::class.simpleName }
+        .find { it.qualifiedName == AdminQueries::class.qualifiedName }
         ?.arguments
 
     private fun KSClassDeclaration.getActionsArguments() = annotations
-        .find { it.shortName.asString() == AdminActions::class.simpleName }
+        .find { it.qualifiedName == AdminActions::class.qualifiedName }
         ?.arguments
 
     private fun List<KSValueArgument>.findStringList(name: String) = firstOrNull { it.name?.asString() == name }

@@ -6,10 +6,11 @@ import models.types.FieldType
 interface AdminMongoCollection : AdminPanel {
     fun getAllFields(): List<FieldSet>
     fun getCollectionName(): String
+    fun getPanelListFields(): List<String>
 }
 
 fun AdminMongoCollection.getAllAllowToShowFields() =
-    getAllFields().filter { it.showInPanel }
+    getAllFields().filter { it.fieldName in getPanelListFields() }
 
 fun AdminMongoCollection.getPrimaryKeyField() =
     getAllFields().first { it.fieldName == getPrimaryKey() }

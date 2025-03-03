@@ -2,6 +2,7 @@ package processors.mongo
 
 import annotations.actions.AdminActions
 import annotations.display.DisplayFormat
+import annotations.display.PanelDisplayList
 import annotations.mongo.MongoCollection
 import annotations.order.DefaultOrder
 import annotations.query.AdminQueries
@@ -26,6 +27,7 @@ import models.field.FieldSet
 import models.order.Order
 import models.order.toFormattedString
 import models.types.FieldType
+import processors.qualifiedName
 import repository.PropertiesRepository
 import utils.Constants
 import utils.FileUtils
@@ -79,6 +81,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         fileName: String,
         fieldSets: List<FieldSet>
     ): TypeSpec {
+        val fieldNames = fieldSets.mapNotNull { it.fieldName }
         val adminMongoCollection = PackagesUtils.getAdminMongoCollectionClass()
         val fieldSet = PackagesUtils.getFieldSetClass()
         val primaryKey = classDeclaration.getPrimaryKey()
@@ -182,6 +185,17 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .returns(String::class.asTypeName().copy(nullable = true))
             .addStatement("return ${classDeclaration.getGroupName()?.let { "\"$it\"" }}")
             .build()
+        val displayList = getDisplayList(classDeclaration) ?: fieldNames
+        if (displayList.any { it !in fieldNames }) {
+            throw IllegalArgumentException("Display list contains invalid field names: ${displayList.filter { it !in fieldNames }}")
+        }
+
+        val getPanelListFieldsFunction = FunSpec.builder("getPanelListFields")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(List::class.parameterizedBy(String::class))
+            .addStatement("return ${displayList.toSuitableStringForFile()}")
+            .build()
+
         val getDisplayFormatFunction = FunSpec.builder("getDisplayFormat")
             .addModifiers(KModifier.OVERRIDE)
             .returns(String::class.asTypeName().copy(nullable = true))
@@ -244,6 +258,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addFunction(isShowInAdminPanelFunction)
             .addFunction(getAccessRolesFunction)
             .addFunction(getIconFileFunction)
+            .addFunction(getPanelListFieldsFunction)
             .build()
     }
 
@@ -425,4 +440,10 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
         ?.value
         ?.let { it as? List<*> }
         ?.filterIsInstance<String>()
+
+    private fun getDisplayList(classDeclaration: KSClassDeclaration) = (classDeclaration.annotations
+        .find { it.qualifiedName == PanelDisplayList::class.qualifiedName }
+        ?.arguments
+        ?.find { it.name?.asString() == "field" }
+        ?.value as? List<*>)?.filterIsInstance<String>()
 }
