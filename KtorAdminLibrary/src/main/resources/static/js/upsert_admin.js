@@ -1,9 +1,9 @@
 function handleComputedColumns() {
     computedColumns.forEach(function (item) {
         // Select the source field based on the computed column reference
-        const sourceSelector = `[name="${item.computedColumn.match(/\{(.+?)}/)[1]}"].form-input`;
+        const sourceSelector = `[name="${item.computedColumn.match(/\{(.+?)}/)[1]}"]`;
         const sourceField = document.querySelector(sourceSelector);
-        const targetField = document.querySelector(`[name="${item.columnName}"].form-input`);
+        const targetField = document.querySelector(`[name="${item.columnName}"]`);
 
         /**
          * Function to compute and set the value for the target field
