@@ -433,7 +433,7 @@ object PropertiesRepository {
             fieldName = fieldName,
             verboseName = verboseName,
             type = fieldType,
-            nullable = infoAnnotation?.findArgument<Boolean>("nullable") ?: false,
+            nullable = infoAnnotation?.findArgument<Boolean>("nullable") == true,
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
             uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
             allowedMimeTypes = if (hasUploadAnnotation)
@@ -445,6 +445,8 @@ object PropertiesRepository {
             readOnly = isReadOnly,
             computedField = computedFieldInfo?.first,
             autoNowDate = autoNowDate,
+            preview = getPreviewAnnotation(property.annotations),
+            hasRichEditor = hasRichEditorAnnotation(property.annotations)
         )
     }
 
@@ -502,7 +504,7 @@ object PropertiesRepository {
      * Extracts enumeration values from annotations.
      */
     private fun Sequence<KSAnnotation>.getEnumerations(): List<String>? =
-        find { it.shortName.asString() == Enumeration::class.simpleName }
+        find { it.qualifiedName == Enumeration::class.qualifiedName }
             ?.arguments
             ?.firstOrNull { it.name?.asString() == "values" }
             ?.value

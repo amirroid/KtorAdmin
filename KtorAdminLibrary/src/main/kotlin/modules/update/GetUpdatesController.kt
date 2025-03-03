@@ -103,7 +103,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "isUpdate" to true,
                         "requestId" to requestId,
                         "hasAction" to table.hasEditAction,
-                        "previews" to extractPreviews(
+                        "previews" to extractColumnsPreviews(
                             table.getTableName(),
                             columnsWithValues = values.mapKeys { item -> columns.first { column -> column.columnName == item.key } }
                         )
@@ -117,12 +117,22 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
 }
 
 
-private fun extractPreviews(
+private fun extractColumnsPreviews(
     tableName: String,
     columnsWithValues: Map<ColumnSet, Any?>
 ) = columnsWithValues.mapValues { (columnSet, value) ->
     columnSet.preview?.let { preview ->
         DynamicConfiguration.getPreview(preview).createPreview(tableName, columnSet.columnName, value)
+    }
+}
+
+
+private fun extractFieldsPreviews(
+    tableName: String,
+    fieldsWithValues: Map<FieldSet, Any?>
+) = fieldsWithValues.mapValues { (fieldSet, value) ->
+    fieldSet.preview?.let { preview ->
+        DynamicConfiguration.getPreview(preview).createPreview(tableName, fieldSet.fieldName.orEmpty(), value)
     }
 }
 
@@ -167,9 +177,11 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                         "requestId" to requestId,
                         "hasAction" to panel.hasEditAction,
                         "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
-                    ).apply {
-                        username?.let { put("username", it) }
-                    }
+                        "previews" to extractFieldsPreviews(
+                            panel.getCollectionName(),
+                            fieldsWithValues = values.mapKeys { item -> fields.first { field -> field.fieldName == item.key } }
+                        )
+                    ).addCommonUpsertModels(panel, username)
                 )
             )
         }.onFailure {

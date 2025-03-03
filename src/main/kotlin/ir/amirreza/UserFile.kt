@@ -8,7 +8,9 @@ import annotations.info.ColumnInfo
 import annotations.limit.Limits
 import annotations.mongo.MongoCollection
 import annotations.order.DefaultOrder
+import annotations.preview.Preview
 import annotations.query.AdminQueries
+import annotations.rich_editor.RichEditor
 import annotations.uploads.LocalUpload
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -58,10 +60,15 @@ data class UserFile(
     val id: String? = null,
     @Enumeration("Test", "Te")
     val title: String,
+
+    @RichEditor
+    val description: String,
+
     @LocalUpload
     @Limits(
-//        allowedMimeTypes = ["image/png"]
+        allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg"]
     )
+    @Preview("image")
     val file: String,
     @FieldInfo(
         verboseName = "Created At"

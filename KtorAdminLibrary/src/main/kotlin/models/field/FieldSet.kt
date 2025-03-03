@@ -30,6 +30,9 @@ import java.time.format.DateTimeFormatter
  * @property autoNowDate If provided, this property specifies behavior for automatically assigning the current date and time:
  * - `updateOnChange = true`: Updates the column to the current date whenever the entity is modified.
  * - `updateOnChange = false`: Only assigns the current date when the entity is created.
+ * @property hasRichEditor Determines whether this column should be displayed as a rich text editor in the admin panel.
+ *                        Defaults to `false`.
+ * @property preview A key used in `KtorAdminPreview` to reference a preview of this column's content, if applicable.
  */
 data class FieldSet(
     val fieldName: String?,
@@ -45,6 +48,8 @@ data class FieldSet(
     val readOnly: Boolean = false,
     val computedField: String? = null,
     val autoNowDate: AutoNowDate? = null,
+    val hasRichEditor: Boolean = false,
+    val preview: String? = null
 )
 
 

@@ -35,6 +35,7 @@ import java.time.LocalDateTime
  *                        typically applied when using enumerations.
  * @property hasRichEditor Determines whether this column should be displayed as a rich text editor in the admin panel.
  *                        Defaults to `false`.
+ * @property preview A key used in `KtorAdminPreview` to reference a preview of this column's content, if applicable.
  */
 data class ColumnSet(
     val columnName: String,

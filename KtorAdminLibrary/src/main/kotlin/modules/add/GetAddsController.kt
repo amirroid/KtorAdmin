@@ -98,9 +98,7 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
                     "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
                     "panelGroups" to panelGroups,
                     "currentPanel" to panel.getPluralName(),
-                ).apply {
-                    username?.let { put("username", it) }
-                }
+                ).addCommonUpsertModels(panel, username)
             )
         )
     }.onFailure {

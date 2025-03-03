@@ -257,6 +257,10 @@
                             </div>
                         #end
                     </div>
+                    #set($previewItem = $previews[$field])
+                    #if($previewItem)
+                        $previewItem
+                    #end
                 #end
             #end
 

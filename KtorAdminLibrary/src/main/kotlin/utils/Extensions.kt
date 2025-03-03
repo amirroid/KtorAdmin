@@ -69,8 +69,10 @@ internal fun FieldSet.toSuitableStringForFile() = """
     |    enumerationValues = ${enumerationValues?.toSuitableStringForFile()},
     |    limits = ${limits?.toFormattedString()},
     |    readOnly = $readOnly,
+    |    hasRichEditor = $hasRichEditor,
     |    computedField = ${computedField?.let { "\"${it}\"" }},
     |    autoNowDate = ${autoNowDate?.toFormattedString()},
+    |    preview = ${preview?.let { "\"${it}\"" }},
     |)
 """.trimMargin("|")
 
