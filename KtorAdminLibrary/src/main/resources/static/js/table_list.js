@@ -141,15 +141,13 @@ function onFilterApply() {
     const filters = [];
 
     document.querySelectorAll('.filter').forEach(filterContainer => {
-        const inputs = filterContainer.querySelectorAll('input, select');
-
-        inputs.forEach(input => {
+        filterContainer.querySelectorAll('input, select').forEach(input => {
             if (input.value) {
                 if (input.type === 'date' || input.type === 'datetime-local') {
                     const date = new Date(input.value);
                     const timestamp = input.id.includes('-end')
-                        ? date.setHours(23, 59, 59, 999)
-                        : date.setHours(0, 0, 0, 0);
+                        ? Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
+                        : Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
                     filters.push(`filters.${input.id}=${timestamp}`);
                 } else if (input.type === 'select-one') {
                     filters.push(`filters.${input.id}=${encodeURIComponent(input.value)}`);
@@ -158,10 +156,8 @@ function onFilterApply() {
         });
     });
 
-    const queryString = filters.join('&');
-    window.location.href = `${window.location.pathname}?${queryString}`;
+    window.location.href = `${window.location.pathname}?${filters.join('&')}`;
 }
-
 
 function handleSortClick(columnName, currentOrder, currentDirection) {
     const url = new URL(window.location.href);
