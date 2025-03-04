@@ -7,6 +7,9 @@ import formatters.map
 import getters.toTypedValue
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.toList
 import kotlinx.io.readByteArray
 import models.ColumnSet
@@ -36,7 +39,7 @@ internal suspend fun MultiPartData.toTableValues(
     table: AdminJdbcTable,
     initialData: List<String?>? = null,
     primaryKey: String? = null
-): Response<TableResponse> {
+): Response<TableResponse> = coroutineScope {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val referenceItems = mutableMapOf<ColumnSet, MutableList<String>>()
     val columns = table.getAllAllowToShowColumnsInUpsert()
@@ -132,27 +135,35 @@ internal suspend fun MultiPartData.toTableValues(
         }
         part.dispose()
     }
-    if (isInvalidRequest) return Response.InvalidRequest
+    if (isInvalidRequest) return@coroutineScope Response.InvalidRequest
     val errorsNotNull = errors.filterNotNull()
     if (errorsNotNull.isNotEmpty()) {
-        return Response.Error(
+        return@coroutineScope Response.Error(
             errorsNotNull,
             columns.associateWith { items[it.columnName]?.first }.mapKeys { it.key.columnName },
             requestId
         )
     }
-    fileBytes.forEach { (column, pair) ->
-        val fileData = FileRepository.uploadFile(column.uploadTarget!!, pair.second, pair.first)
-            ?.let {
-                it.first to FileEvent(
-                    fileName = it.first,
-                    bytes = it.second
-                )
-            }
-        items[column.columnName] = fileData
+
+    val deferredResults = fileBytes.map { (column, pair) ->
+        async {
+            val fileData = FileRepository.uploadFile(column.uploadTarget!!, pair.second, pair.first)
+                ?.let {
+                    it.first to FileEvent(
+                        fileName = it.first,
+                        bytes = it.second
+                    )
+                }
+            column.columnName.toString() to fileData
+        }
     }
+
+    deferredResults.awaitAll().forEach { (fieldName, fileData) ->
+        items[fieldName] = fileData
+    }
+
     // Return values corresponding to the columns
-    return Response.Success(
+    return@coroutineScope Response.Success(
         TableResponse(
             values = columns.map { items[it.columnName] },
             referenceValues = panelListColumns
@@ -166,7 +177,7 @@ internal suspend fun MultiPartData.toTableValues(
 internal suspend fun MultiPartData.toTableValues(
     table: AdminMongoCollection,
     initialData: List<String?>? = null
-): Response<List<Pair<String, Any?>?>> {
+): Response<List<Pair<String, Any?>?>> = coroutineScope {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val fields = table.getAllAllowToShowFieldsInUpsert()
 
@@ -236,26 +247,33 @@ internal suspend fun MultiPartData.toTableValues(
         }
         part.dispose()
     }
-    if (isInvalidRequest) return Response.InvalidRequest
+    if (isInvalidRequest) return@coroutineScope Response.InvalidRequest
     val errorsNotNull = errors.filterNotNull()
     if (errorsNotNull.isNotEmpty()) {
-        return Response.Error(
+        return@coroutineScope Response.Error(
             requestId = requestId,
             errors = errorsNotNull,
             values = fields.associateWith { items[it.fieldName.toString()]?.first }
                 .mapKeys { it.key.fieldName.toString() }
         )
     }
-    fileBytes.forEach { (field, pair) ->
-        val fileData = FileRepository.uploadFile(field.uploadTarget!!, pair.second, pair.first)
-            ?.let {
-                it.first to FileEvent(
-                    fileName = it.first,
-                    bytes = it.second
-                )
-            }
-        items[field.fieldName.toString()] = fileData
+    val deferredResults = fileBytes.map { (field, pair) ->
+        async {
+            val fileData = FileRepository.uploadFile(field.uploadTarget!!, pair.second, pair.first)
+                ?.let {
+                    it.first to FileEvent(
+                        fileName = it.first,
+                        bytes = it.second
+                    )
+                }
+            field.fieldName.toString() to fileData
+        }
     }
+
+    deferredResults.awaitAll().forEach { (fieldName, fileData) ->
+        items[fieldName] = fileData
+    }
+
     // Return values corresponding to the columns
-    return Response.Success(fields.map { items[it.fieldName] })
+    return@coroutineScope Response.Success(fields.map { items[it.fieldName] })
 }
