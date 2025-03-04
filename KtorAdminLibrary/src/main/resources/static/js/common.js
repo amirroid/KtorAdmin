@@ -47,6 +47,8 @@ const themeKey = "theme"
 
 function changeTheme() {
     const sidebar = document.getElementsByClassName("sidebar")[0];
+    let allNodes = document.querySelectorAll("*");
+    allNodes.forEach(node => node.classList.add("no-animation"));
     if (localStorage.getItem(themeKey) === "dark") {
         localStorage.setItem(themeKey, "light")
         document.querySelector(":root").classList.remove("theme-dark")
@@ -59,6 +61,10 @@ function changeTheme() {
         handleRichInputs()
     } catch (_) {
     }
+
+    requestAnimationFrame(() => {
+        allNodes.forEach(node => node.classList.remove("no-animation"));
+    });
 }
 
 function getDefaultTheme() {

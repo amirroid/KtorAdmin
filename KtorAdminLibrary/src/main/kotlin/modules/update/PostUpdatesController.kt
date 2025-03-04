@@ -123,9 +123,8 @@ private suspend fun RoutingContext.updateData(
 
     val parametersDataResponse = call.receiveMultipart().toTableValues(panel, initialData)
     parametersDataResponse.onSuccess { parametersData ->
-        val parameters = parametersData.map { it?.first }
         val fieldsWithParameter = fields.mapIndexed { index, field ->
-            field to parameters.getOrNull(index)
+            field to parametersData.getOrNull(index)
         }.toMap()
         kotlin.runCatching {
             val changedDataAndId =

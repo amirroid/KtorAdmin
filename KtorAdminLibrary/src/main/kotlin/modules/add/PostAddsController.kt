@@ -109,14 +109,14 @@ private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminM
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.map { it?.first }
         val fields = panel.getAllAllowToShowFieldsInUpsert()
-        val fieldsWithParameter = fields.mapIndexed { index, field ->
-            field to parameters.getOrNull(index)
+        val fieldsWithParameterObject = fields.mapIndexed { index, field ->
+            field to parametersData.getOrNull(index)?.second
         }.toMap()
         // Validate parameters
         val isValidParameters = fields.validateFieldsParameters(parameters)
         if (isValidParameters) {
             kotlin.runCatching {
-                val id = MongoClientRepository.insertData(fieldsWithParameter, panel)
+                val id = MongoClientRepository.insertData(fieldsWithParameterObject, panel)
                 onMongoInsert(
                     collectionName = panel.getCollectionName(),
                     objectPrimaryKey = id,

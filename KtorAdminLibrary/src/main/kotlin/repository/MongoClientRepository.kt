@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import models.DataWithPrimaryKey
+import models.events.FileEvent
 import models.field.FieldSet
 import models.field.getCurrentDate
 import models.order.Order
@@ -29,6 +30,7 @@ import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import panels.*
+import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -199,7 +201,9 @@ internal object MongoClientRepository {
 
         val document = Document().apply {
             values.toList().plus(changeDates).distinctBy { it.first }.forEach { (field, value) ->
-                put(field.fieldName, value?.toString()?.formatParameter(field))
+                if (field.type is FieldType.File && value is FileEvent) {
+                    put(field.fieldName, value.fileName)
+                } else put(field.fieldName, value)
             }
         }
 
@@ -315,37 +319,42 @@ internal object MongoClientRepository {
      */
     suspend fun updateChangedData(
         panel: AdminMongoCollection,
-        parameters: Map<FieldSet, String?>,
+        parameters: Map<FieldSet, Pair<String, Any?>?>,
         primaryKey: String,
         initialData: List<String?>?,
     ): Pair<String?, List<String>>? {
         // If initialData is null, this is an insert operation
         if (initialData == null) {
-            return insertData(parameters, panel)?.let { id ->
+            return insertData(parameters.mapValues { it.value?.second }, panel)?.let { id ->
                 id to panel.getAllFields().map { it.fieldName.toString() }
             }
         } else {
-            // This is an update operation
-            val changeDates = panel.getAllAutoNowDateUpdateFields().map {
-                it to it.getCurrentDate()
-            }
 
             // Find fields that have changed values
             val updateFields = parameters.toList().filterIndexed { index, item ->
                 val initialValue = initialData.getOrNull(index)
-                val formattedValue = item.second?.formatParameter(item.first)
+                val formattedValue = item.second?.first
                 initialValue != formattedValue && !(initialValue != null && item.second == null)
-            }.plus(changeDates).distinctBy { it.first }
+            }
 
             // If no fields changed, return null
             if (updateFields.isEmpty()) return null
 
             val updatedFieldsBson = updateFields.mapNotNull {
-                set(
+                if (it.first.type is FieldType.File && it.second?.second is FileEvent) {
+                    set(
+                        it.first.fieldName.toString(),
+                        (it.second?.second as FileEvent).fileName
+                    )
+                } else set(
                     it.first.fieldName.toString(),
-                    it.second?.formatParameter(it.first) ?: return@mapNotNull null
+                    it.second?.second ?: return@mapNotNull null
                 )
-            }
+            }.plus(
+                panel.getAllAutoNowDateUpdateFields().map {
+                    set(it.fieldName.orEmpty(), Date())
+                }
+            )
 
             val id = panel.getCollection()
                 .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updatedFieldsBson))
