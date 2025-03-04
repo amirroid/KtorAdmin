@@ -75,6 +75,7 @@ internal fun FieldSet.toSuitableStringForFile() = """
     |    computedField = ${computedField?.let { "\"${it}\"" }},
     |    autoNowDate = ${autoNowDate?.toFormattedString()},
     |    preview = ${preview?.let { "\"${it}\"" }},
+    |    hasConfirmation = ${hasConfirmation},
     |)
 """.trimMargin("|")
 

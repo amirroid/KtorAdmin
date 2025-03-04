@@ -35,6 +35,9 @@ import java.time.format.DateTimeFormatter
  * @property hasTextArea Specifies whether the column should be displayed as a multi-line text area input.
  *                        Useful for long text fields. Defaults to `false`.
  * @property preview A key used in `KtorAdminPreview` to reference a preview of this column's content, if applicable.
+ * @property hasConfirmation Indicates whether changes to this column require user confirmation before being applied.
+ *                        This is useful for critical fields where accidental modifications should be prevented.
+ *                        Defaults to `false`.
  */
 data class FieldSet(
     val fieldName: String?,
@@ -52,7 +55,8 @@ data class FieldSet(
     val autoNowDate: AutoNowDate? = null,
     val hasRichEditor: Boolean = false,
     val hasTextArea: Boolean = false,
-    val preview: String? = null
+    val preview: String? = null,
+    val hasConfirmation: Boolean = false,
 )
 
 

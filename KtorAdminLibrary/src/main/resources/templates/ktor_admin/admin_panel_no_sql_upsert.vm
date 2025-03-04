@@ -4,10 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    #if($isUpdate)
-        <title>Update $singularName</title>
+    #if($title)
+        <title>$title</title>
     #else
-        <title>Add a new $singularName</title>
+        #if($isUpdate)
+            <title>Update $singularName</title>
+        #else
+            <title>Add a new $singularName</title>
+        #end
     #end
     <link href="/static/css/admin_panel_upsert.css" rel="stylesheet">
     <link href="/static/css/admin_panel_no_sql_upsert.css" rel="stylesheet">
@@ -54,10 +58,14 @@
     </div>
     <div id="union-box">
         <div id="top-box-row-up">
-            #if($isUpdate)
-                <h1 id="name" class="istok-web-bold">Update $singularName</h1>
+            #if($title)
+                <h1 id="name" class="istok-web-bold">$title</h1>
             #else
-                <h1 id="name" class="istok-web-bold">Add a new $singularName</h1>
+                #if($isUpdate)
+                    <h1 id="name" class="istok-web-bold">Update $singularName</h1>
+                #else
+                    <h1 id="name" class="istok-web-bold">Add a new $singularName</h1>
+                #end
             #end
         </div>
         <div id="bottom-box">
@@ -183,7 +191,14 @@
                             <label class="item-label">$field.verboseName</label>
                         #end
 
-                        #if($field.type.name == "STRING")
+                        #if($field.hasConfirmation and $isUpdate)
+                            #if($defaultValue)
+                                <p class="confirmation-value">Current value: $!defaultValue</p>
+                            #end
+                            <button type="button" class="confirmation-button"
+                                    onclick="goToConfigurationEditUrl('$field.fieldName')">
+                                Reset $field.verboseName</button>
+                        #elseif($field.type.name == "STRING")
                             #if($field.hasRichEditor)
                                 <textarea name="$fullFieldName" class="rich-editor-area"
                                           #if($field.readOnly)readonly#end>$!defaultValue</textarea>
@@ -267,7 +282,8 @@
                 #end
             #end
 
-            <form method="post" enctype="multipart/form-data" id="form-box">
+            <form method="post" #if($callMethod) enctype="$callMethod" #else enctype="multipart/form-data" #end
+                  id="form-box">
                 #foreach($field in $fields)
                     #renderField($field "")
                 #end

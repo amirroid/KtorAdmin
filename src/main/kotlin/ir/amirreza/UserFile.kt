@@ -1,6 +1,7 @@
 package ir.amirreza
 
 import annotations.computed.Computed
+import annotations.confirmation.Confirmation
 import annotations.date.AutoNowDate
 import annotations.display.PanelDisplayList
 import annotations.enumeration.Enumeration

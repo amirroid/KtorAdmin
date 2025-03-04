@@ -27,6 +27,7 @@ import models.types.ColumnType
 import models.types.FieldType
 import processors.hibernate.HibernateTableProcessor.Companion.getListOfHibernatePackage
 import processors.qualifiedName
+import repository.PropertiesRepository.hasConfirmationAnnotation
 import utils.UploadUtils
 import utils.findArgument
 import utils.guessPropertyType
@@ -172,7 +173,7 @@ object PropertiesRepository {
             hasConfirmation = hasConfirmationAnnotation(property.annotations),
             valueMapper = getValueMapperAnnotation(property.annotations),
             preview = getPreviewAnnotation(property.annotations),
-            hasTextArea = hasTextAreaField
+            hasTextArea = hasTextAreaField,
         )
     }
 
@@ -459,7 +460,8 @@ object PropertiesRepository {
             autoNowDate = autoNowDate,
             preview = getPreviewAnnotation(property.annotations),
             hasRichEditor = hasRichEditor,
-            hasTextArea = hasTextAreaField
+            hasTextArea = hasTextAreaField,
+            hasConfirmation = hasConfirmationAnnotation(property.annotations),
         )
     }
 

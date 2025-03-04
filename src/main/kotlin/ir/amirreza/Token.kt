@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import annotations.confirmation.Confirmation
 import annotations.date.AutoNowDate
 import annotations.exposed.ExposedTable
 import annotations.info.ColumnInfo
@@ -24,6 +25,7 @@ object TokenTable : Table() {
     @ColumnInfo("user_id")
     @OneToOneReferences("users", "id")
     val userId = integer("user_id").references(Users.id, onDelete = ReferenceOption.CASCADE)
+
     val token = text("token")
 
     @ColumnInfo("date")

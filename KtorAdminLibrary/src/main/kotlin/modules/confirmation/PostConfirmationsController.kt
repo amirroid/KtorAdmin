@@ -12,11 +12,14 @@ import io.ktor.server.routing.*
 import io.ktor.util.*
 import models.ColumnSet
 import models.events.ColumnEvent
+import models.events.FieldEvent
+import models.field.FieldSet
 import panels.AdminJdbcTable
 import panels.AdminMongoCollection
 import panels.AdminPanel
 import panels.hasEditAction
 import repository.JdbcQueriesRepository
+import repository.MongoClientRepository
 import response.ErrorResponse
 import utils.badRequest
 import utils.invalidateRequest
@@ -83,7 +86,13 @@ internal suspend fun RoutingContext.handleSaveConfirmation(panels: List<AdminPan
                     is AdminMongoCollection -> {
                         val mongoField = panel.getAllFields().firstOrNull { it.fieldName == field }
                         if (mongoField != null) {
-                            // handleNoSqlEditView(primaryKey, panel, panelGroups = panelGroups)
+                            updateFieldData(
+                                pluralName = pluralName!!,
+                                fieldSet = mongoField,
+                                panel = panel,
+                                params = parameters.toMap(),
+                                primaryKey = primaryKey
+                            )
                         } else {
                             call.badRequest("Invalid field name: $field in collection $pluralName")
                         }
@@ -154,6 +163,65 @@ private suspend fun RoutingContext.updateData(
         // Store input values for potential correction
         val values = mutableMapOf(
             columnSet.columnName to value,
+            confirmationColumnName to confirmValue
+        )
+
+        // Redirect with validation errors
+        call.setFlashSessionsAndRedirect(requestId, errors, values)
+    }
+}
+
+private suspend fun RoutingContext.updateFieldData(
+    pluralName: String,
+    fieldSet: FieldSet,
+    panel: AdminMongoCollection,
+    params: Map<String, List<String>>,
+    primaryKey: String
+) {
+    val value = params[fieldSet.fieldName]?.firstOrNull()
+    val confirmationColumnName = "${fieldSet.fieldName}.confirmation"
+    val confirmValue = params[confirmationColumnName]?.firstOrNull()
+    val requestId = params[REQUEST_ID_FORM]?.firstOrNull()
+
+    // Validate the field value
+    val validateField = Validators.validateFieldParameter(fieldSet, value)
+    val isSameValues = value == confirmValue
+
+    if (isSameValues && validateField == null) {
+        kotlin.runCatching {
+            // Update the field value in the database
+            MongoClientRepository.updateConfirmation(
+                panel = panel,
+                primaryKey = primaryKey,
+                field = fieldSet,
+                value = value,
+            )
+
+            // Notify event listeners about the update
+            DynamicConfiguration.currentEventListener?.onUpdateMongoData(
+                panel.getCollectionName(),
+                primaryKey,
+                listOf(FieldEvent(true, fieldSet, value))
+            )
+
+            // Redirect back after successful update
+            call.respondBack(pluralName)
+        }.onFailure {
+            call.serverError("Failed to update $pluralName. Reason: ${it.localizedMessage}", it)
+        }
+    } else {
+        // Collect validation errors
+        val errors = mutableListOf<ErrorResponse>()
+        if (validateField != null) {
+            errors.add(ErrorResponse(confirmationColumnName, listOf(validateField)))
+        }
+        if (!isSameValues) {
+            errors.add(ErrorResponse(confirmationColumnName, listOf("The confirmation value does not match.")))
+        }
+
+        // Store input values for potential correction
+        val values = mutableMapOf(
+            fieldSet.fieldName.orEmpty() to value,
             confirmationColumnName to confirmValue
         )
 
