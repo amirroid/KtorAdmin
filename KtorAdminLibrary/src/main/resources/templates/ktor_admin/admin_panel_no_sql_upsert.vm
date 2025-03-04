@@ -289,7 +289,7 @@
                 #end
                 <input type="hidden" value="$csrfToken" name="_csrf">
                 <input type="hidden" value="$requestId" name="requestId">
-                <button id="submit-button" type="submit" #if($hasAction == false) disabled #end>Submit</button>
+                <button id="submit-button" type="submit"  #if($hasAction == false) class="disabled" #end>Submit</button>
             </form>
 
             <script>
