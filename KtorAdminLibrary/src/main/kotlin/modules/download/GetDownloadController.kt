@@ -71,7 +71,7 @@ fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: Lis
                 val panel = panels.find { it.getPluralName() == pluralName }?.takeIf { it.isShowInAdminPanel() }
                     ?: return@get call.notFound("No table found with plural name: $pluralName")
 
-                val pdfData = PdfHelper.generatePdf(panel, primaryKey)
+                val pdfData = PdfHelper.generatePdf(panel, primaryKey, call)
                     ?: return@get call.badRequest("Error generating PDF")
 
                 call.response.header(
