@@ -41,7 +41,7 @@ internal fun Any?.formatToDisplayInUpsert(columnType: ColumnType): String {
             toLocalDateTime().format(formatter)
         }
 
-        this is ByteArray && columnType == ColumnType.BINARY -> ""
+        this is ByteArray && columnType == ColumnType.BINARY -> "Byte array object"
         this == null -> "N/A"
         else -> toString()
     }

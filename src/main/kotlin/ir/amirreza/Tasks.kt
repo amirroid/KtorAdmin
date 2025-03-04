@@ -110,7 +110,7 @@ object Tasks : Table("tasks") {
     @LocalUpload
     val file = varchar("file", 1000).nullable()
 
-
+    @AutoNowDate
     val date = date("date").nullable()
 
     @ColumnInfo(
