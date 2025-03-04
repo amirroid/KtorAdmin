@@ -21,6 +21,8 @@ import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import utils.Constants
+import utils.addCommonModels
+import utils.addCommonUpsertModels
 import utils.serverError
 import validators.checkHasRole
 
@@ -237,7 +239,7 @@ private suspend fun ApplicationCall.respondWithTemplate(
     )
 }
 
-private fun buildTemplateModel(
+private suspend fun buildTemplateModel(
     panel: AdminPanel,
     data: Any,
     pluralName: String,
@@ -274,5 +276,5 @@ private fun buildTemplateModel(
             put("order", it.copy(direction = it.direction.lowercase()))
         }
         username?.let { put("username", it) }
-    }.toMap()
+    }.addCommonModels(panelGroups)
 }

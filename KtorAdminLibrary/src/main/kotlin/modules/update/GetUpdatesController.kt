@@ -24,6 +24,7 @@ import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.toMap
 import utils.Constants
+import utils.addCommonModels
 import utils.addCommonUpsertModels
 import validators.checkHasRole
 import kotlin.collections.toMap
@@ -106,7 +107,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                             table.getTableName(),
                             columnsWithValues = values.mapKeys { item -> columns.first { column -> column.columnName == item.key } }
                         )
-                    ).addCommonUpsertModels(table, username)
+                    ).addCommonUpsertModels(table, username).toMutableMap().addCommonModels(panelGroups)
                 )
             )
         }.onFailure {
@@ -182,7 +183,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                             panel.getCollectionName(),
                             fieldsWithValues = values.mapKeys { item -> fields.first { field -> field.fieldName == item.key } }
                         )
-                    ).addCommonUpsertModels(panel, username)
+                    ).addCommonUpsertModels(panel, username).toMutableMap().addCommonModels(panelGroups)
                 )
             )
         }.onFailure {

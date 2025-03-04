@@ -14,6 +14,9 @@ import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import configuration.DynamicConfiguration
 import formatters.map
 import getters.toTypedValue
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
@@ -208,6 +211,17 @@ internal object MongoClientRepository {
         }
 
         return panel.getCollection().insertOne(document).insertedId?.toStringId()
+    }
+
+    suspend fun getCountOfCollections(panels: List<AdminMongoCollection>): Map<String, Long> = coroutineScope {
+        val deferredCounts = panels.map { panel ->
+            async {
+                panel.getCollection().countDocuments()
+            }
+        }
+
+        // Await all results and associate them with their collection names
+        panels.map { it.getCollectionName() }.zip(deferredCounts.awaitAll()).toMap()
     }
 
     /**

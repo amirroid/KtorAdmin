@@ -209,7 +209,14 @@
                     <div class="menu-icon"
                          style="-webkit-mask: url('$panel.iconFile') no-repeat center / contain; mask: url('$panel.iconFile') no-repeat center / contain;"></div>
                 #end
-                $capitalizedPanel
+
+                #if($panel.tableName)
+                    #set($panelName = $panel.tableName)
+                #else
+                    #set($panelName = $panel.collectionName)
+                #end
+                <span class="sidebar-item-name">$capitalizedPanel</span> <span
+                    class="sidebar-item-count">$!counts[$panelName]</span>
             </button>
         #end
     #end

@@ -95,6 +95,17 @@
     transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.sidebar-item-name {
+    text-align: start;
+    flex-grow: 1;
+}
+
+.sidebar-item-count {
+    color: var(--secondary-color);
+    font-size: 12px;
+    margin-right: 12px;
+}
+
 .menu-item .menu-icon:is(svg) path {
     stroke: var(--primary-color);
     transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -106,6 +117,9 @@
 
 .menu-item.selected {
     background-color: var(--background-gradient-start);
+}
+
+.menu-item.selected .sidebar-item-name {
     color: var(--secondary-color);
 }
 
@@ -117,7 +131,7 @@
     cursor: pointer;
 }
 
-.menu-item:hover {
+.menu-item:hover .sidebar-item-name {
     color: var(--secondary-color);
 }
 

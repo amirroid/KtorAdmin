@@ -24,6 +24,7 @@ import panels.AdminJdbcTable
 import panels.AdminPanel
 import repository.JdbcQueriesRepository
 import utils.Constants
+import utils.addCommonModels
 import utils.forbidden
 import utils.serverError
 import utils.withAuthenticate
@@ -85,7 +86,7 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
                     username?.let {
                         put("username", it)
                     }
-                }
+                }.addCommonModels(panelGroups)
             )
         )
     }.onFailure {

@@ -19,6 +19,7 @@ import panels.*
 import response.ErrorResponse
 import response.toMap
 import utils.Constants
+import utils.addCommonModels
 import utils.addCommonUpsertModels
 import utils.serverError
 import validators.checkHasRole
@@ -65,7 +66,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "isUpdate" to false,
                     "requestId" to requestId,
                     "hasAction" to table.hasAddAction
-                ).addCommonUpsertModels(table, username)
+                ).addCommonUpsertModels(table, username).toMutableMap().addCommonModels(panelGroups)
             )
         )
     }.onFailure {
@@ -97,7 +98,7 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
                     "hasAction" to panel.hasAddAction,
                     "panelGroups" to panelGroups,
                     "currentPanel" to panel.getPluralName(),
-                ).addCommonUpsertModels(panel, username)
+                ).addCommonUpsertModels(panel, username).toMutableMap().addCommonModels(panelGroups)
             )
         )
     }.onFailure {

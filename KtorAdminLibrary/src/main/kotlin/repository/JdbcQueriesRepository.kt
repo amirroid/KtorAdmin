@@ -680,6 +680,27 @@ internal object JdbcQueriesRepository {
         }
 
 
+    // This method retrieves the record count for tables, grouped by their database key (for tables in different databases).
+    fun getCountOfTables(tables: List<AdminJdbcTable>) = buildMap {
+        tables.groupBy { it.getDatabaseKey() }.forEach { (_, relatedTables) ->
+            relatedTables.first().usingDataSource { session ->
+                session.prepare(sqlQuery(createGetCountOfTablesQuery(relatedTables))).use { prepareStatement ->
+                    prepareStatement.executeQuery().use { rs ->
+                        while (rs.next()) {
+                            put(rs.getString("table_name"), rs.getLong("record_count"))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // This method creates an SQL query to count records in multiple tables using UNION ALL.
+    private fun createGetCountOfTablesQuery(tables: List<AdminJdbcTable>) = tables.joinToString(" UNION ALL ") {
+        "SELECT '${it.getTableName()}' AS table_name, COUNT(*) AS record_count FROM ${it.getTableName()}"
+    }
+
+
     /**
      * Retrieves all related primary keys from a Many-to-Many reference.
      *
