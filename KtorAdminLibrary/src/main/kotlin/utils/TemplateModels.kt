@@ -16,8 +16,8 @@ internal fun Map<String, Any>.addCommonUpsertModels(table: AdminJdbcTable, usern
             }
             val config = json.encodeToString(DynamicConfiguration.tinyMCEConfig)
             set("tinyMCEConfig", config)
-            username?.let { put("username", it) }
         }
+        username?.let { put("username", it) }
     }.toMap()
 }
 
@@ -29,7 +29,7 @@ internal fun Map<String, Any>.addCommonUpsertModels(table: AdminMongoCollection,
             }
             val config = json.encodeToString(DynamicConfiguration.tinyMCEConfig)
             set("tinyMCEConfig", config)
-            username?.let { put("username", it) }
         }
+        username?.let { put("username", it) }
     }.toMap()
 }
