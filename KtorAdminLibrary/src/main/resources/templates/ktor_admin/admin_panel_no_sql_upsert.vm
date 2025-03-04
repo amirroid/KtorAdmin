@@ -49,7 +49,7 @@
             </div>
             <div class="dropdown-content">
                 #if($canDownload)
-                    <button onclick="downloadFile('$pluralNameBase', '$csrfToken', '$primaryKey')">Download as Pdf
+                    <button onclick="downloadFile('$pluralName', '$csrfToken', '$primaryKey')">Download as Pdf
                     </button>
                 #end
                 <button onclick="logout()" id="logout">Logout</button>

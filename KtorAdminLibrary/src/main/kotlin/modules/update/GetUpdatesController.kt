@@ -169,6 +169,8 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                         "errors" to errors.toMap(),
                         "collectionName" to panel.getCollectionName(),
                         "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
+                        "pluralName" to panel.getPluralName(),
+                        "primaryKey" to primaryKey,
                         "csrfToken" to CsrfManager.generateToken(),
                         "panelGroups" to panelGroups,
                         "currentPanel" to panel.getPluralName(),

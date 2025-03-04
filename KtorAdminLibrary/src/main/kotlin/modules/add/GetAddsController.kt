@@ -95,7 +95,6 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
                     "csrfToken" to CsrfManager.generateToken(),
                     "requestId" to requestId,
                     "hasAction" to panel.hasAddAction,
-                    "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
                     "panelGroups" to panelGroups,
                     "currentPanel" to panel.getPluralName(),
                 ).addCommonUpsertModels(panel, username)
