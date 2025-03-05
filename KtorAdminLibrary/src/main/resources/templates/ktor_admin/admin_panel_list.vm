@@ -59,7 +59,9 @@
                 #if($canDownload)
                     <button onclick="downloadFile('$pluralNameBase', '$csrfToken')">Download as CSV</button>
                 #end
-                <button onclick="logout()" id="logout">Logout</button>
+                #if($hasAuthenticate)
+                    <button onclick="logout()" id="logout">Logout</button>
+                #end
             </div>
         </div>
     </div>

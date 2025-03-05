@@ -56,7 +56,9 @@
                     <button onclick="downloadFile('$pluralName', '$csrfToken', '$primaryKey')">Download as Pdf
                     </button>
                 #end
-                <button onclick="logout()" id="logout">Logout</button>
+                #if($hasAuthenticate)
+                    <button onclick="logout()" id="logout">Logout</button>
+                #end
             </div>
         </div>
     </div>

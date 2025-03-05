@@ -75,5 +75,6 @@ internal suspend fun MutableMap<String, Any>.addCommonModels(
             put("menus", provider.invoke(name))
         }
         put("adminPath", DynamicConfiguration.adminPath)
+        put("hasAuthenticate", DynamicConfiguration.authenticateName != null)
     }
 }

@@ -52,7 +52,9 @@
                     <button><a href="$menu.link">$menu.title</a></button>
                 #end
                 <button onclick="changeTheme()">Change theme</button>
-                <button onclick="logout()" id="logout">Logout</button>
+                #if($hasAuthenticate)
+                    <button onclick="logout()" id="logout">Logout</button>
+                #end
             </div>
         </div>
     </div>

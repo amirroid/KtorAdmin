@@ -78,6 +78,8 @@ internal object DynamicConfiguration {
 
     var adminPath = "admin"
 
+    var authenticateName: String? = null
+
     /** Value mappers (Thread-safe) */
     private val _valueMappers = ConcurrentLinkedQueue<KtorAdminValueMapper>()
     val valueMappers: List<KtorAdminValueMapper>

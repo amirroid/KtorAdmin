@@ -73,6 +73,10 @@ class KtorAdminConfiguration {
      * Authentication name (if required).
      */
     var authenticateName: String? = null
+        set(value) {
+            DynamicConfiguration.authenticateName = value
+            field = value
+        }
 
     /**
      * AWS S3 pre-signed URL expiration duration.
