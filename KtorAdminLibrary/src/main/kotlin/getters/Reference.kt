@@ -1,5 +1,8 @@
 package getters
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import models.ColumnSet
 import models.common.DisplayItem
 import models.common.Reference
@@ -18,10 +21,10 @@ import panels.getAllAllowToShowColumnsInUpsertView
  * @return Map of columns to their referenced display items
  * @throws IllegalArgumentException if any referenced table is not found in the schema
  */
-internal fun getReferencesItems(
+internal suspend fun getReferencesItems(
     tables: List<AdminJdbcTable>,
     columns: List<ColumnSet>
-): Map<ColumnSet, List<DisplayItem>> {
+): Map<ColumnSet, List<DisplayItem>> = coroutineScope {
     // Extract columns with references early for better readability
     val columnsWithReferences = columns.filter { it.reference != null }
 
@@ -31,15 +34,20 @@ internal fun getReferencesItems(
     // Use temporary cache for optimization
     val tempReferenceCache = mutableMapOf<String, List<DisplayItem>>()
 
-    return columnsWithReferences.associateWith { column ->
-        val referencedTableName = column.reference!!.tableName
+    // Launch async tasks for each column with reference
+    columnsWithReferences.map { column ->
+        async {
+            val referencedTableName = column.reference!!.tableName
 
-        // Get or compute references using cache
-        tempReferenceCache.getOrPut(referencedTableName) {
-            val referencedTable = tables.first { it.getTableName() == referencedTableName }
-            JdbcQueriesRepository.getAllReferences(table = referencedTable)
+            // Get or compute references using cache
+            val references = tempReferenceCache.getOrPut(referencedTableName) {
+                val referencedTable = tables.first { it.getTableName() == referencedTableName }
+                JdbcQueriesRepository.getAllReferences(table = referencedTable)
+            }
+
+            column to references
         }
-    }
+    }.awaitAll().toMap() // Wait for all tasks to complete and return the map
 }
 
 /**
@@ -52,11 +60,11 @@ internal fun getReferencesItems(
  * @return Map of columns to their selected reference items
  * @throws IllegalArgumentException if any referenced table is not found in the schema
  */
-internal fun getSelectedReferencesItems(
+internal suspend fun getSelectedReferencesItems(
     table: AdminJdbcTable,
     tables: List<AdminJdbcTable>,
     primaryKey: String
-): Map<ColumnSet, Map<String, Any>> {
+): Map<ColumnSet, Map<String, Any>> = coroutineScope {
     // Get relevant columns with many-to-many references
     val columnsWithReferences = table.getAllAllowToShowColumnsInUpsertView()
         .filter { it.reference is Reference.ManyToMany }
@@ -64,17 +72,22 @@ internal fun getSelectedReferencesItems(
     // Validate join tables exist
     validateManyToManyTables(columnsWithReferences, tables)
 
-    return columnsWithReferences.associateWith { column ->
-        val reference = column.reference as Reference.ManyToMany
-        val joinTable = tables.first { it.getTableName() == reference.joinTable }
+    // Launch async tasks for each reference column
+    columnsWithReferences.map { column ->
+        async {
+            val reference = column.reference as Reference.ManyToMany
+            val joinTable = tables.first { it.getTableName() == reference.joinTable }
 
-        // Get selected references and map to string keys
-        JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            table = joinTable,
-            columnSet = column,
-            primaryKey = primaryKey
-        ).associateBy { it.toString() }
-    }
+            // Get selected references and map to string keys
+            val selectedReferences = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                table = joinTable,
+                columnSet = column,
+                primaryKey = primaryKey
+            ).associateBy { it.toString() }
+
+            column to selectedReferences
+        }
+    }.awaitAll().toMap()  // Wait for all tasks to complete and return the map
 }
 
 /**

@@ -13,6 +13,9 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.velocity.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import models.ColumnSet
 import models.PanelGroup
 import models.field.FieldSet
@@ -53,6 +56,34 @@ internal suspend fun ApplicationCall.handleEditItem(
     }
 }
 
+private suspend fun processValues(
+    columns: List<ColumnSet>,
+    data: List<String?>,
+    call: ApplicationCall
+): Map<String, Any?> = coroutineScope {
+    columns.mapIndexed { index, column ->
+        async {
+            column.columnName to data[index]?.let { item ->
+                handlePreviewValue(column, item, call)
+            }
+        }
+    }.awaitAll().toMap()
+}
+
+private suspend fun processValues(
+    fields: List<FieldSet>,
+    data: List<String?>,
+    call: ApplicationCall
+): Map<String, Any?> = coroutineScope {
+    fields.mapIndexed { index, field ->
+        async {
+            field.fieldName.orEmpty() to data[index]?.let { item ->
+                handlePreviewValue(field, item, call)
+            }
+        }
+    }.awaitAll().toMap()
+}
+
 internal suspend fun ApplicationCall.handleJdbcEditView(
     primaryKey: String,
     table: AdminJdbcTable,
@@ -74,15 +105,9 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
             val valuesWithErrors = getFlashDataAndClear(requestId)
             val errorValues = valuesWithErrors.first
             val errors = valuesWithErrors.second ?: emptyList()
-            val values = errorValues?.takeIf { it.isNotEmpty() } ?: columns.mapIndexed { index, column ->
-                column.columnName to data[index]?.let { item ->
-                    handlePreviewValue(
-                        column,
-                        item,
-                        this
-                    )
-                }
-            }.toMap()
+            val values = errorValues?.takeIf { it.isNotEmpty() } ?: processValues(
+                columns, data, this
+            )
             respond(
                 VelocityContent(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm", model = mapOf(
@@ -153,15 +178,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
             val valuesWithErrors = getFlashDataAndClear(requestId)
             val errors = valuesWithErrors.second ?: emptyList()
             val errorValues = valuesWithErrors.first
-            val values = errorValues?.takeIf { it.isNotEmpty() } ?: fields.mapIndexed { index, field ->
-                field.fieldName to data[index]?.let { item ->
-                    handlePreviewValue(
-                        field,
-                        item,
-                        this
-                    )
-                }
-            }.toMap()
+            val values = errorValues?.takeIf { it.isNotEmpty() } ?: processValues(fields, data, this)
             respond(
                 VelocityContent(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mutableMapOf(
@@ -192,10 +209,11 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
     }
 }
 
-suspend fun handlePreviewValue(columnSet: ColumnSet, value: String, call: ApplicationCall) = when (columnSet.type) {
-    ColumnType.FILE -> FileRepository.generateMediaUrl(columnSet.uploadTarget!!, value, call)
-    else -> value
-}
+suspend fun handlePreviewValue(columnSet: ColumnSet, value: String, call: ApplicationCall) =
+    when (columnSet.type) {
+        ColumnType.FILE -> FileRepository.generateMediaUrl(columnSet.uploadTarget!!, value, call)
+        else -> value
+    }
 
 suspend fun handlePreviewValue(fieldSet: FieldSet, value: String, call: ApplicationCall) = when (fieldSet.type) {
     FieldType.File -> FileRepository.generateMediaUrl(fieldSet.uploadTarget!!, value, call)
