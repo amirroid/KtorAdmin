@@ -4,12 +4,15 @@ import configuration.DynamicConfiguration
 import io.ktor.server.util.toLocalDateTime
 import models.ColumnSet
 import models.types.ColumnType
+import models.types.FieldType
 import utils.Constants
 import java.sql.ResultSet
 import java.sql.Timestamp
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
 internal fun Any?.formatToDisplayInTable(columnType: ColumnType): String {
     return when {
@@ -24,6 +27,24 @@ internal fun Any?.formatToDisplayInTable(columnType: ColumnType): String {
         }
 
         this is ByteArray && columnType == ColumnType.BINARY -> "Byte array object"
+        this == null -> "N/A"
+        else -> toString()
+    }
+}
+
+
+internal fun Any?.formatToDisplayInCollection(fieldType: FieldType): String {
+    return when {
+        this is Date -> {
+            if (fieldType == FieldType.Date) {
+                val formatter = SimpleDateFormat("dd EEE yyyy")
+                formatter.format(this) ?: "N/A"
+            } else {
+                val formatter = SimpleDateFormat("dd EEE yyyy - HH:mm:ss")
+                formatter.format(this) ?: "N/A"
+            }
+        }
+
         this == null -> "N/A"
         else -> toString()
     }

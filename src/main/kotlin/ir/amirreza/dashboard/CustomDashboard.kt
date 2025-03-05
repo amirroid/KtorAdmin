@@ -159,7 +159,7 @@ class UserFileListChartSection : ListDashboardSection() {
         get() = 123
 
     override val fields: List<String>?
-        get() = listOf("title", "file", "number")
+        get() = listOf("title", "file", "number", "createdAt")
 
     override val limitCount: Int?
         get() = 3

@@ -230,6 +230,8 @@ label {
 .confirmation-value {
     padding: 8px 16px;
     font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .confirmation-button {

@@ -22,6 +22,7 @@ import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
 import dashboard.list.ListDashboardSection
 import dashboard.simple.TextDashboardSection
+import formatters.formatToDisplayInCollection
 import formatters.map
 import getters.toTypedValue
 import kotlinx.coroutines.async
@@ -290,7 +291,7 @@ internal object MongoClientRepository {
         return projection.map { values ->
             DataWithPrimaryKey(
                 primaryKey = values[table.getPrimaryKey()]!!.toString(),
-                data = fields.map { field -> values[field.fieldName]?.toString() }
+                data = fields.map { field -> values[field.fieldName].formatToDisplayInCollection(field.type) }
             )
         }
     }
@@ -725,17 +726,17 @@ internal object MongoClientRepository {
 
         // Add dynamic sorting to the pipeline if orderQuery is provided
         sortFields?.let {
-            pipeline.add(Aggregates.sort(Sorts.orderBy(it)))
+            pipeline.add(sort(Sorts.orderBy(it)))
         }
 
         // Add the limit to the pipeline if limitCount is specified
         section.limitCount?.let {
-            pipeline.add(Aggregates.limit(it))
+            pipeline.add(limit(it))
         }
 
         // Create a projection to include only the necessary fields in the result
         val projectionFields = fields.associate { it.fieldName to 1 }.toMutableMap()
-        pipeline.add(Aggregates.project(Projections.include(*projectionFields.keys.toTypedArray())))
+        pipeline.add(Aggregates.project(include(*projectionFields.keys.toTypedArray())))
 
         // Execute the aggregation pipeline to fetch the data from MongoDB
         val result = panel.getCollection().aggregate(pipeline).toList()
@@ -747,7 +748,7 @@ internal object MongoClientRepository {
 
             // Map the field values from the document to the corresponding fields in the section
             val data = fields.map { field ->
-                document.get(field.fieldName)?.toString() ?: "N/A" // Default to "N/A" if the field is missing
+                document.get(field.fieldName).formatToDisplayInCollection(field.type)
             }
 
             // Create and return a DataWithPrimaryKey object

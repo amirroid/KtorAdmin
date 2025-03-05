@@ -59,7 +59,7 @@ import java.time.LocalDateTime
     "createdAt",
     "DESC"
 )
-@PanelDisplayList("_id", "title", "number")
+@PanelDisplayList("_id", "title", "number", "createdAt", "file")
 @Serializable
 data class UserFile(
     @FieldInfo("_id")
