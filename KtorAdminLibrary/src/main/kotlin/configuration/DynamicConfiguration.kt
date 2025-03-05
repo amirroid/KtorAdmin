@@ -78,6 +78,8 @@ internal object DynamicConfiguration {
 
     var adminPath = "admin"
 
+    var debugMode = true
+
     var authenticateName: String? = null
 
     /** Value mappers (Thread-safe) */

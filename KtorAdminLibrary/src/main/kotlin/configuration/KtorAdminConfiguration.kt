@@ -78,6 +78,13 @@ class KtorAdminConfiguration {
             field = value
         }
 
+
+    var debugMode: Boolean
+        get() = DynamicConfiguration.debugMode
+        set(value) {
+            DynamicConfiguration.debugMode = value
+        }
+
     /**
      * AWS S3 pre-signed URL expiration duration.
      */

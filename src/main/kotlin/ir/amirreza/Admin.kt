@@ -56,6 +56,7 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper
         )
+        debugMode = false
         registerPreview(VideoPreview())
         registerPreview(ImagePreview())
         registerValueMapper(
