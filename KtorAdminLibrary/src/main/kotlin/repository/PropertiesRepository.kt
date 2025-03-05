@@ -21,19 +21,18 @@ import annotations.value_mapper.ValueMapper
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ksp.toClassName
-import models.*
+import models.ColumnSet
+import models.Limit
 import models.common.Reference
 import models.field.FieldSet
 import models.types.ColumnType
 import models.types.FieldType
 import processors.hibernate.HibernateTableProcessor.Companion.getListOfHibernatePackage
 import processors.qualifiedName
-import repository.PropertiesRepository.hasConfirmationAnnotation
 import utils.UploadUtils
 import utils.findArgument
 import utils.guessPropertyType
 import utils.toTableName
-import kotlin.reflect.full.memberProperties
 
 /**
  * Repository responsible for processing Kotlin Symbol Processing (KSP) property declarations

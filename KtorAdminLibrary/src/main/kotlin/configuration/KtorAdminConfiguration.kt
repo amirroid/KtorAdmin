@@ -18,6 +18,8 @@ import repository.FileRepository
 import repository.MongoClientRepository
 import tiny.TinyMCEConfig
 import java.time.Duration
+import java.time.ZoneId
+import java.util.TimeZone
 
 /**
  * Configuration class for KtorAdmin.
@@ -150,6 +152,13 @@ class KtorAdminConfiguration {
         get() = DynamicConfiguration.dashboard
         set(value) {
             DynamicConfiguration.dashboard = value
+        }
+
+
+    var zoneId: ZoneId
+        get() = DynamicConfiguration.timeZone
+        set(value) {
+            DynamicConfiguration.timeZone = value
         }
 
     /**

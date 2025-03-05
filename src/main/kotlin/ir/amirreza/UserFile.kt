@@ -69,8 +69,7 @@ data class UserFile(
     @Enumeration("Test", "Te")
     val title: String,
 
-//    @TextAreaField
-    @OverrideFieldType("INTEGER")
+    @TextAreaField
     val description: String,
 
     @LocalUpload
