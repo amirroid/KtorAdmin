@@ -276,5 +276,5 @@ private suspend fun buildTemplateModel(
             put("order", it.copy(direction = it.direction.lowercase()))
         }
         username?.let { put("username", it) }
-    }.addCommonModels(panelGroups)
+    }.addCommonModels(panel, panelGroups)
 }

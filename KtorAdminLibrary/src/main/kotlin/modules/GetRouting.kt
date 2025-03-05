@@ -86,7 +86,7 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
                     username?.let {
                         put("username", it)
                     }
-                }.addCommonModels(panelGroups)
+                }.addCommonModels(null, panelGroups)
             )
         )
     }.onFailure {

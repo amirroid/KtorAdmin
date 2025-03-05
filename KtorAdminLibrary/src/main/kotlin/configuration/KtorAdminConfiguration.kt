@@ -9,6 +9,7 @@ import hikra.KtorAdminHikariCP
 import listener.AdminEventListener
 import mapper.KtorAdminValueMapper
 import models.forms.LoginFiled
+import models.menu.Menu
 import mongo.MongoCredential
 import mongo.MongoServerAddress
 import preview.KtorAdminPreview
@@ -245,6 +246,11 @@ class KtorAdminConfiguration {
      */
     fun registerPreview(preview: KtorAdminPreview) {
         DynamicConfiguration.registerPreview(preview)
+    }
+
+
+    fun provideMenu(provide: (tableName: String?) -> List<Menu>) {
+        DynamicConfiguration.menuProvider = provide
     }
 
     /**

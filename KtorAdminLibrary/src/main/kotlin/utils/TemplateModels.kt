@@ -40,7 +40,10 @@ internal fun Map<String, Any>.addCommonUpsertModels(table: AdminMongoCollection,
     }.toMap()
 }
 
-internal suspend fun MutableMap<String, Any>.addCommonModels(panelGroups: List<PanelGroup>): Map<String, Any> =
+internal suspend fun MutableMap<String, Any>.addCommonModels(
+    currentPanel: AdminPanel?,
+    panelGroups: List<PanelGroup>
+): Map<String, Any> =
     coroutineScope {
         val panels = panelGroups.map { it.panels }.flatten()
         this@addCommonModels.apply {
@@ -63,5 +66,14 @@ internal suspend fun MutableMap<String, Any>.addCommonModels(panelGroups: List<P
             counts.putAll(mongoCounts)
 
             put("counts", counts)
+
+            DynamicConfiguration.menuProvider?.let { provider ->
+                val name = when (currentPanel) {
+                    is AdminJdbcTable -> currentPanel.getTableName()
+                    is AdminMongoCollection -> currentPanel.getCollectionName()
+                    else -> null
+                }
+                put("menus", provider.invoke(name))
+            }
         }
     }

@@ -107,7 +107,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                             table.getTableName(),
                             columnsWithValues = values.mapKeys { item -> columns.first { column -> column.columnName == item.key } }
                         )
-                    ).addCommonUpsertModels(table, username).toMutableMap().addCommonModels(panelGroups)
+                    ).addCommonUpsertModels(table, username).toMutableMap().addCommonModels(table, panelGroups)
                 )
             )
         }.onFailure {
@@ -183,7 +183,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                             panel.getCollectionName(),
                             fieldsWithValues = values.mapKeys { item -> fields.first { field -> field.fieldName == item.key } }
                         )
-                    ).addCommonUpsertModels(panel, username).toMutableMap().addCommonModels(panelGroups)
+                    ).addCommonUpsertModels(panel, username).toMutableMap().addCommonModels(panel, panelGroups)
                 )
             )
         }.onFailure {

@@ -5,6 +5,7 @@ import dashboard.KtorAdminDashboard
 import listener.AdminEventListener
 import mapper.KtorAdminValueMapper
 import models.forms.LoginFiled
+import models.menu.Menu
 import preview.KtorAdminPreview
 import tiny.TinyMCEConfig
 import java.time.ZoneId
@@ -84,6 +85,9 @@ internal object DynamicConfiguration {
     private val _previews = ConcurrentLinkedQueue<KtorAdminPreview>()
     val previews: List<KtorAdminPreview>
         get() = _previews.toList()
+
+
+    var menuProvider: ((String?) -> List<Menu>)? = null
 
     /**
      * Registers a new value mapper.

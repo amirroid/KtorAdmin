@@ -10,6 +10,7 @@ import mapper.KtorAdminValueMapper
 import models.JDBCDrivers
 import models.UploadTarget
 import models.forms.LoginFiled
+import models.menu.Menu
 import mongo.MongoCredential
 import mongo.MongoServerAddress
 import org.jetbrains.exposed.sql.Database
@@ -60,6 +61,13 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper2
         )
+        provideMenu {
+            listOf(
+                Menu(
+                    "Github", "https://github.com/Amirroid"
+                )
+            )
+        }
     }
 }
 

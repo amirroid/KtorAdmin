@@ -101,8 +101,9 @@
 }
 
 .sidebar-item-count {
-    color: var(--secondary-color);
+    color: var(--primary-color);
     font-size: 12px;
+    font-weight: bold;
     margin-right: 12px;
 }
 
@@ -117,6 +118,7 @@
 
 .menu-item.selected {
     background-color: var(--background-gradient-start);
+    color: var(--secondary-color);
 }
 
 .menu-item.selected .sidebar-item-name {
@@ -137,6 +139,7 @@
 
 .menu-item:not(.selected):hover {
     left: 12px;
+    color: var(--secondary-color);
 }
 
 .menu-item:hover .menu-icon:not(svg) {
@@ -249,6 +252,10 @@
     border-top: none;
     background-color: transparent;
     outline: none;
+}
+
+.dropdown-content a {
+    text-decoration: none;
 }
 
 .dropdown-content button:focus {

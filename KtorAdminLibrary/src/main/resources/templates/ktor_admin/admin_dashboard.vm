@@ -48,6 +48,9 @@
                 </div>
             </div>
             <div class="dropdown-content">
+                #foreach($menu in $menus)
+                    <button><a href="$menu.link">$menu.title</a></button>
+                #end
                 <button onclick="changeTheme()">Change theme</button>
                 <button onclick="logout()" id="logout">Logout</button>
             </div>

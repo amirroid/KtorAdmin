@@ -66,7 +66,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "isUpdate" to false,
                     "requestId" to requestId,
                     "hasAction" to table.hasAddAction
-                ).addCommonUpsertModels(table, username).toMutableMap().addCommonModels(panelGroups)
+                ).addCommonUpsertModels(table, username).toMutableMap().addCommonModels(table, panelGroups)
             )
         )
     }.onFailure {
@@ -98,7 +98,7 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
                     "hasAction" to panel.hasAddAction,
                     "panelGroups" to panelGroups,
                     "currentPanel" to panel.getPluralName(),
-                ).addCommonUpsertModels(panel, username).toMutableMap().addCommonModels(panelGroups)
+                ).addCommonUpsertModels(panel, username).toMutableMap().addCommonModels(panel, panelGroups)
             )
         )
     }.onFailure {
