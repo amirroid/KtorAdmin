@@ -20,6 +20,7 @@ import com.mongodb.kotlin.client.coroutine.MongoCollection
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
+import dashboard.list.ListDashboardSection
 import dashboard.simple.TextDashboardSection
 import formatters.map
 import getters.toTypedValue
@@ -34,6 +35,8 @@ import models.DataWithPrimaryKey
 import models.chart.ChartDashboardAggregationFunction
 import models.chart.ChartData
 import models.chart.ChartLabelsWithValues
+import models.chart.FieldData
+import models.chart.ListData
 import models.chart.TextDashboardAggregationFunction
 import models.chart.TextData
 import models.chart.getFieldFunctionBasedOnAggregationFunction
@@ -688,6 +691,87 @@ internal object MongoClientRepository {
             section = section
         )
     }
+
+    /**
+     * Retrieves and processes data for a specific dashboard section from the MongoDB collection.
+     * This function supports dynamic sorting, limiting results, and projecting the required fields.
+     *
+     * @param panel The MongoDB collection panel containing the data.
+     * @param section The dashboard section configuration containing fields, sorting, and limit information.
+     * @return A ListData object containing the processed data, including values and field metadata.
+     */
+    suspend fun getListSectionData(panel: AdminMongoCollection, section: ListDashboardSection): ListData {
+        // Retrieve all fields from the panel
+        val allFields = panel.getAllFields()
+
+        // Select the fields for this section based on the provided field names, or default to all fields
+        val fields = section.fields?.mapNotNull { fieldName ->
+            allFields.firstOrNull { it.fieldName == fieldName }
+        } ?: allFields  // Default to all columns if no specific fields are provided
+
+        // Parse the orderQuery for sorting fields, handling ASC/DESC sorting
+        val sortFields = section.orderQuery?.let {
+            it.trim().split(",").map { fieldSpec ->
+                val parts = fieldSpec.trim().split(" ")
+                val field = parts[0]
+                val order = if (parts.getOrNull(1)?.equals("DESC", ignoreCase = true) == true) Sorts.descending(field)
+                else Sorts.ascending(field)
+                order
+            }
+        }
+
+        // Prepare the MongoDB aggregation pipeline
+        val pipeline = mutableListOf<Bson>()
+
+        // Add dynamic sorting to the pipeline if orderQuery is provided
+        sortFields?.let {
+            pipeline.add(Aggregates.sort(Sorts.orderBy(it)))
+        }
+
+        // Add the limit to the pipeline if limitCount is specified
+        section.limitCount?.let {
+            pipeline.add(Aggregates.limit(it))
+        }
+
+        // Create a projection to include only the necessary fields in the result
+        val projectionFields = fields.associate { it.fieldName to 1 }.toMutableMap()
+        pipeline.add(Aggregates.project(Projections.include(*projectionFields.keys.toTypedArray())))
+
+        // Execute the aggregation pipeline to fetch the data from MongoDB
+        val result = panel.getCollection().aggregate(pipeline).toList()
+
+        // Map the MongoDB result documents to a list of DataWithPrimaryKey objects
+        val rows = result.map { document ->
+            // Retrieve the primary key value for each document
+            val primaryKey = document.get(panel.getPrimaryKey())!!.toString()
+
+            // Map the field values from the document to the corresponding fields in the section
+            val data = fields.map { field ->
+                document.get(field.fieldName)?.toString() ?: "N/A" // Default to "N/A" if the field is missing
+            }
+
+            // Create and return a DataWithPrimaryKey object
+            DataWithPrimaryKey(
+                primaryKey = primaryKey,
+                data = data
+            )
+        }
+
+        // Return the processed data wrapped in a ListData object
+        return ListData(
+            section = section,
+            values = rows,
+            pluralName = panel.getPluralName(),
+            fields = fields.map {
+                FieldData(
+                    name = it.verboseName,
+                    type = it.type.name,
+                    fieldName = it.fieldName.orEmpty()
+                )
+            }
+        )
+    }
+
 
     /**
      * Closes all database connections and clears the connection map.

@@ -124,9 +124,13 @@ internal suspend fun getSectionsData(panels: List<AdminPanel>): List<Any> {
                 }
 
                 is ListDashboardSection -> {
-                    val table =
-                        panels.filterIsInstance<AdminJdbcTable>().first { it.getTableName() == section.tableName }
-                    JdbcQueriesRepository.getListSectionData(table, section)
+                    val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                    val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                    when {
+                        table != null -> JdbcQueriesRepository.getListSectionData(table, section)
+                        collection != null -> MongoClientRepository.getListSectionData(collection, section)
+                        else -> null
+                    }
                 }
 
                 else -> null

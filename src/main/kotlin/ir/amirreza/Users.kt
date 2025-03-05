@@ -34,7 +34,6 @@ object Users : Table() {
     val email = varchar("email", length = 150)
 
     @Confirmation
-    @ValueMapper(key = "password")
     val password = text("password")
 
 

@@ -22,18 +22,19 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(span = 2, section = UserFilesChartSection())
             addSection(span = 3, section = TaskListChartSection())
             media(maxWidth = "600px", template = listOf(1))
-            addSection(section = UserFileTextSection(), height = "200px")
+            addSection(section = UserFileTextSection())
             addSection(section = UserFile2TextSection(), height = "200px")
             addSection(section = UserFile3TextSection(), height = "200px")
             addSection(section = UserFile4TextSection(), height = "200px")
+            addSection(section = UserFile5TextSection(), height = "200px")
             addSection(Task5TextSection())
-            addSection(span = 2, section = UserFile5TextSection())
             addSection(Task2ChartSection(2))
             addSection(Task2ChartSection(3))
             addSection(Task4ChartSection())
             addSection(Task5ChartSection())
             addSection(Task3ChartSection())
             addSection(2, Task6ChartSection())
+            addSection(4, UserFileListChartSection())
         }
     }
 }
@@ -82,6 +83,7 @@ class TaskChartSection : ChartDashboardSection() {
     override val borderWidth: Float
         get() = 2f
 }
+
 class UserFilesChartSection : ChartDashboardSection() {
     override val aggregationFunction: ChartDashboardAggregationFunction
         get() = ChartDashboardAggregationFunction.ALL
@@ -145,6 +147,25 @@ class TaskListChartSection : ListDashboardSection() {
 
     override val orderQuery: String?
         get() = "id DESC"
+}
+
+
+class UserFileListChartSection : ListDashboardSection() {
+    override val tableName: String
+        get() = "user_files"
+    override val sectionName: String
+        get() = "Users"
+    override val index: Int
+        get() = 123
+
+    override val fields: List<String>?
+        get() = listOf("title", "file", "number")
+
+    override val limitCount: Int?
+        get() = 3
+
+    override val orderQuery: String?
+        get() = "_id DESC"
 }
 
 class TaskTextSection : TextDashboardSection() {
