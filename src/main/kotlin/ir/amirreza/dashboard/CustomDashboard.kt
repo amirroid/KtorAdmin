@@ -20,9 +20,14 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(section = Task4TextSection(), height = "200px")
             addSection(span = 2, section = TaskChartSection())
             addSection(span = 2, section = UserFilesChartSection())
-            addSection(span = 2, section = TaskListChartSection())
+            addSection(span = 3, section = TaskListChartSection())
             media(maxWidth = "600px", template = listOf(1))
+            addSection(section = UserFileTextSection(), height = "200px")
+            addSection(section = UserFile2TextSection(), height = "200px")
+            addSection(section = UserFile3TextSection(), height = "200px")
+            addSection(section = UserFile4TextSection(), height = "200px")
             addSection(Task5TextSection())
+            addSection(span = 2, section = UserFile5TextSection())
             addSection(Task2ChartSection(2))
             addSection(Task2ChartSection(3))
             addSection(Task4ChartSection())
@@ -158,6 +163,96 @@ class TaskTextSection : TextDashboardSection() {
         get() = 5
     override val hintText: String
         get() = "The last item of priorities"
+}
+
+class UserFileTextSection : TextDashboardSection() {
+    override val tableName: String
+        get() = "user_files"
+    override val fieldName: String
+        get() = "number"
+    override val aggregationFunction: TextDashboardAggregationFunction
+        get() = TextDashboardAggregationFunction.LAST_ITEM
+
+    override val orderQuery: String?
+        get() = "id DESC"
+    override val sectionName: String
+        get() = "User files section"
+    override val index: Int
+        get() = 521
+    override val hintText: String
+        get() = "The last item of User files"
+}
+
+class UserFile2TextSection : TextDashboardSection() {
+    override val tableName: String
+        get() = "user_files"
+    override val fieldName: String
+        get() = "number"
+    override val aggregationFunction: TextDashboardAggregationFunction
+        get() = TextDashboardAggregationFunction.AVERAGE
+
+    override val orderQuery: String?
+        get() = "id DESC"
+    override val sectionName: String
+        get() = "User files section"
+    override val index: Int
+        get() = 522
+    override val hintText: String
+        get() = "The average of User files"
+}
+
+class UserFile3TextSection : TextDashboardSection() {
+    override val tableName: String
+        get() = "user_files"
+    override val fieldName: String
+        get() = "number"
+    override val aggregationFunction: TextDashboardAggregationFunction
+        get() = TextDashboardAggregationFunction.SUM
+
+    override val orderQuery: String?
+        get() = "id DESC"
+    override val sectionName: String
+        get() = "User files section"
+    override val index: Int
+        get() = 5243
+    override val hintText: String
+        get() = "The sum of User files"
+}
+
+class UserFile4TextSection : TextDashboardSection() {
+    override val tableName: String
+        get() = "user_files"
+    override val fieldName: String
+        get() = "number"
+    override val aggregationFunction: TextDashboardAggregationFunction
+        get() = TextDashboardAggregationFunction.PROFIT_PERCENTAGE
+
+    override val orderQuery: String?
+        get() = "id DESC"
+    override val sectionName: String
+        get() = "User files section"
+    override val index: Int
+        get() = 52432
+    override val hintText: String
+        get() = "The profit of User files"
+}
+
+class UserFile5TextSection : TextDashboardSection() {
+    override val tableName: String
+        get() = "user_files"
+    override val fieldName: String
+        get() = "number"
+    override val aggregationFunction: TextDashboardAggregationFunction
+        get() = TextDashboardAggregationFunction.COUNT
+
+    override val orderQuery: String?
+        get() = "id DESC"
+    override val sectionName: String
+        get() = "User files section"
+    override val index: Int
+        get() = 524313
+    override val hintText: String
+        get() = "The count of User files"
 }
 
 class Task2TextSection : TextDashboardSection() {

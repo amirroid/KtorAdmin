@@ -56,34 +56,6 @@ internal suspend fun ApplicationCall.handleEditItem(
     }
 }
 
-private suspend fun processValues(
-    columns: List<ColumnSet>,
-    data: List<String?>,
-    call: ApplicationCall
-): Map<String, Any?> = coroutineScope {
-    columns.mapIndexed { index, column ->
-        async {
-            column.columnName to data[index]?.let { item ->
-                handlePreviewValue(column, item, call)
-            }
-        }
-    }.awaitAll().toMap()
-}
-
-private suspend fun processValues(
-    fields: List<FieldSet>,
-    data: List<String?>,
-    call: ApplicationCall
-): Map<String, Any?> = coroutineScope {
-    fields.mapIndexed { index, field ->
-        async {
-            field.fieldName.orEmpty() to data[index]?.let { item ->
-                handlePreviewValue(field, item, call)
-            }
-        }
-    }.awaitAll().toMap()
-}
-
 internal suspend fun ApplicationCall.handleJdbcEditView(
     primaryKey: String,
     table: AdminJdbcTable,
@@ -105,7 +77,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
             val valuesWithErrors = getFlashDataAndClear(requestId)
             val errorValues = valuesWithErrors.first
             val errors = valuesWithErrors.second ?: emptyList()
-            val values = errorValues?.takeIf { it.isNotEmpty() } ?: processValues(
+            val values = errorValues?.takeIf { it.isNotEmpty() } ?: processColumnValues(
                 columns, data, this
             )
             respond(
@@ -178,7 +150,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
             val valuesWithErrors = getFlashDataAndClear(requestId)
             val errors = valuesWithErrors.second ?: emptyList()
             val errorValues = valuesWithErrors.first
-            val values = errorValues?.takeIf { it.isNotEmpty() } ?: processValues(fields, data, this)
+            val values = errorValues?.takeIf { it.isNotEmpty() } ?: processFieldValues(fields, data, this)
             respond(
                 VelocityContent(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mutableMapOf(
@@ -209,13 +181,41 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
     }
 }
 
-suspend fun handlePreviewValue(columnSet: ColumnSet, value: String, call: ApplicationCall) =
+suspend fun handleColumnPreviewValue(columnSet: ColumnSet, value: String, call: ApplicationCall) =
     when (columnSet.type) {
         ColumnType.FILE -> FileRepository.generateMediaUrl(columnSet.uploadTarget!!, value, call)
         else -> value
     }
 
-suspend fun handlePreviewValue(fieldSet: FieldSet, value: String, call: ApplicationCall) = when (fieldSet.type) {
+suspend fun handleFieldPreviewValue(fieldSet: FieldSet, value: String, call: ApplicationCall) = when (fieldSet.type) {
     FieldType.File -> FileRepository.generateMediaUrl(fieldSet.uploadTarget!!, value, call)
     else -> value
+}
+
+private suspend fun processColumnValues(
+    columns: List<ColumnSet>,
+    data: List<String?>,
+    call: ApplicationCall
+): Map<String, Any?> = coroutineScope {
+    columns.mapIndexed { index, column ->
+        async {
+            column.columnName to data[index]?.let { item ->
+                handleColumnPreviewValue(column, item, call)
+            }
+        }
+    }.awaitAll().toMap()
+}
+
+private suspend fun processFieldValues(
+    fields: List<FieldSet>,
+    data: List<String?>,
+    call: ApplicationCall
+): Map<String, Any?> = coroutineScope {
+    fields.mapIndexed { index, field ->
+        async {
+            field.fieldName.orEmpty() to data[index]?.let { item ->
+                handleFieldPreviewValue(field, item, call)
+            }
+        }
+    }.awaitAll().toMap()
 }

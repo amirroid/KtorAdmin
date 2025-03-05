@@ -108,17 +108,19 @@ internal suspend fun getSectionsData(panels: List<AdminPanel>): List<Any> {
                     val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
                     when {
                         table != null -> JdbcQueriesRepository.getChartData(table, section)
-                        collection != null -> MongoClientRepository.getChartData(collection, section).also {
-                            println("COLLECTION VLAUES ${it.labels} ${it.values.map { it.values }}")
-                        }
+                        collection != null -> MongoClientRepository.getChartData(collection, section)
                         else -> null
                     }
                 }
 
                 is TextDashboardSection -> {
-                    val table =
-                        panels.filterIsInstance<AdminJdbcTable>().first { it.getTableName() == section.tableName }
-                    JdbcQueriesRepository.getTextData(table, section)
+                    val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                    val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                    when {
+                        table != null -> JdbcQueriesRepository.getTextData(table, section)
+                        collection != null -> MongoClientRepository.getTextData(collection, section)
+                        else -> null
+                    }
                 }
 
                 is ListDashboardSection -> {

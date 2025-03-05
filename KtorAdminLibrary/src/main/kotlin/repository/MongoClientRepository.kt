@@ -10,6 +10,7 @@ import com.mongodb.client.model.Aggregates.sort
 import com.mongodb.client.model.BsonField
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.Projections
 import com.mongodb.client.model.Projections.*
 import com.mongodb.client.model.Sorts
 import com.mongodb.client.model.Updates.combine
@@ -19,6 +20,7 @@ import com.mongodb.kotlin.client.coroutine.MongoCollection
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import configuration.DynamicConfiguration
 import dashboard.chart.ChartDashboardSection
+import dashboard.simple.TextDashboardSection
 import formatters.map
 import getters.toTypedValue
 import kotlinx.coroutines.async
@@ -32,6 +34,8 @@ import models.DataWithPrimaryKey
 import models.chart.ChartDashboardAggregationFunction
 import models.chart.ChartData
 import models.chart.ChartLabelsWithValues
+import models.chart.TextDashboardAggregationFunction
+import models.chart.TextData
 import models.chart.getFieldFunctionBasedOnAggregationFunction
 import models.chart.getFieldNameBasedOnAggregationFunction
 import models.events.FileEvent
@@ -50,6 +54,7 @@ import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import panels.*
 import utils.Constants
+import utils.formatAsIntegerIfPossible
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
@@ -485,7 +490,7 @@ internal object MongoClientRepository {
                 else Sorts.ascending(field)
                 order
             }
-            pipeline.add(Aggregates.sort(Sorts.orderBy(sortFields)))
+            pipeline.add(sort(Sorts.orderBy(sortFields)))
         }
 
         // Apply limit if specified
@@ -574,6 +579,112 @@ internal object MongoClientRepository {
         return ChartData(
             labels = labels.toList(),
             values = values,
+            section = section
+        )
+    }
+
+    /**
+     * Retrieves aggregated data for a specific field in a MongoDB collection based on the given TextDashboardSection.
+     *
+     * This function dynamically constructs an aggregation pipeline to handle various aggregation functions
+     * such as LAST_ITEM, PROFIT_PERCENTAGE, COUNT, AVERAGE, and SUM. It also supports sorting based on the
+     * 'orderQuery' if specified.
+     *
+     * The following aggregation operations are supported:
+     * - LAST_ITEM: Fetches the most recent item based on sorting.
+     * - PROFIT_PERCENTAGE: Calculates the percentage difference between the two most recent items.
+     * - COUNT: Counts the total number of documents.
+     * - AVERAGE/SUM: Performs averaging or summing on the specified field.
+     *
+     * The aggregation pipeline is executed using MongoDB's aggregation framework, and the resulting data
+     * is processed based on the aggregation function applied.
+     *
+     * @param panel The AdminMongoCollection from which to fetch data.
+     * @param section The TextDashboardSection containing configuration and aggregation details.
+     * @return A TextData object containing the aggregated value and the section information.
+     */
+    suspend fun getTextData(panel: AdminMongoCollection, section: TextDashboardSection): TextData {
+        val fieldName = section.fieldName
+        val aggregationFunction = section.aggregationFunction
+        val pipeline = mutableListOf<Bson>()
+
+        // Add dynamic sorting if 'orderQuery' is provided
+        section.orderQuery?.let {
+            val sortFields = it.trim().split(",").map { fieldSpec ->
+                val parts = fieldSpec.trim().split(" ")
+                val field = parts[0]
+                val order = if (parts.getOrNull(1)?.equals("DESC", ignoreCase = true) == true) Sorts.descending(field)
+                else Sorts.ascending(field)
+                order
+            }
+            pipeline.add(sort(Sorts.orderBy(sortFields)))
+        }
+
+        // Apply aggregation function based on the aggregation type
+        when (aggregationFunction) {
+            TextDashboardAggregationFunction.LAST_ITEM -> {
+                // Get the last item (sorted by date if needed)
+                pipeline.add(Aggregates.limit(1))  // Limit to 1 document to get the last item
+                pipeline.add(Aggregates.project(include(fieldName)))  // Project only the needed field
+            }
+
+            TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
+                // Profit percentage: (nextItem - prevItem) / prevItem * 100
+                pipeline.add(Aggregates.limit(2))  // Limit to last 2 items
+                pipeline.add(Aggregates.project(include(fieldName)))  // Project the needed field
+                // To calculate the percentage, you will need to process the results after fetching
+            }
+
+            TextDashboardAggregationFunction.COUNT -> {
+                // Count the number of documents
+                pipeline.add(Aggregates.count("aggregationFunctionValue"))
+            }
+
+            else -> {
+                // For aggregation functions like AVERAGE, SUM, etc.
+                val aggregationFunctionQuery = when (aggregationFunction) {
+                    TextDashboardAggregationFunction.AVERAGE -> Accumulators.avg(fieldName, "\$$fieldName")
+                    TextDashboardAggregationFunction.SUM -> Accumulators.sum(fieldName, "\$$fieldName") // Sum values
+                    else -> null
+                }
+                aggregationFunctionQuery?.let {
+                    pipeline.add(group(null, it))  // Grouping for aggregation function (e.g., AVG or SUM)
+                }
+            }
+        }
+
+        // Execute the aggregation pipeline
+        val result = panel.getCollection().aggregate(pipeline).toList()
+
+        // Process the result based on the aggregation function
+        val value = when (aggregationFunction) {
+            TextDashboardAggregationFunction.LAST_ITEM -> {
+                if (result.isNotEmpty()) {
+                    result.first().get(fieldName)?.toString() ?: ""
+                } else ""
+            }
+
+            TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
+                if (result.size == 2) {
+                    val nextItem = result[0].get(fieldName)?.toString()?.toDoubleOrNull() ?: 0.0
+                    val prevItem = result[1].get(fieldName)?.toString()?.toDoubleOrNull() ?: 0.0
+                    runCatching {
+                        ((nextItem - prevItem) / prevItem * 100).formatAsIntegerIfPossible()
+                    }.getOrElse { "" }
+                } else ""
+            }
+
+            TextDashboardAggregationFunction.COUNT -> {
+                result.firstOrNull()?.getInteger("aggregationFunctionValue")?.toString() ?: ""
+            }
+
+            else -> {
+                result.firstOrNull()?.get(fieldName)?.toString() ?: ""
+            }
+        }
+
+        return TextData(
+            value = value,
             section = section
         )
     }

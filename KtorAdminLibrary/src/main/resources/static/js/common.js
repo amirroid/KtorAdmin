@@ -49,7 +49,9 @@ function changeTheme() {
     const sidebar = document.getElementsByClassName("sidebar")[0];
     let allNodes = document.querySelectorAll("*");
     allNodes.forEach(node => node.classList.add("no-animation"));
-    if (localStorage.getItem(themeKey) === "dark") {
+    const storageTheme = localStorage.getItem(themeKey);
+    const currentTheme = storageTheme === null ? getDefaultTheme() : storageTheme;
+    if (currentTheme === "dark") {
         localStorage.setItem(themeKey, "light")
         document.querySelector(":root").classList.remove("theme-dark")
     } else {

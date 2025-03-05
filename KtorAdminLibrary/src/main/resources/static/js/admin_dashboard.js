@@ -18,9 +18,8 @@ function handleClicks() {
     });
 }
 
-
 function redirectToEdit(pluralName, id) {
-    window.location.href = cleanUrl().toString() + "/" + pluralName + "/" + +id;
+    window.location.href = "/admin/resources/" + pluralName + "/" + id;
 }
 
 document.addEventListener('DOMContentLoaded', function () {

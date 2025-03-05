@@ -76,7 +76,7 @@ function handleClicks() {
                 element && element.contains(event.target)
             );
             if (!isTargetValid) {
-                redirectToEdit(row.dataset.primaryKey);
+                redirectToEdit(row.dataset.primaryKey, row.dataset.pluralName);
             }
         });
     });
