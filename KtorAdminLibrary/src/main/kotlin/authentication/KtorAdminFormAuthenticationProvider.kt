@@ -1,5 +1,6 @@
 package authentication
 
+import configuration.DynamicConfiguration
 import crypto.CryptoManager
 import csrf.CSRF_TOKEN_FIELD_NAME
 import csrf.CsrfManager
@@ -67,9 +68,9 @@ class KtorAdminFormAuthProvider internal constructor(
     override suspend fun onAuthenticate(context: AuthenticationContext) {
         val call = context.call
 
-        // Check if the request is for "/admin/login" with the POST method
+        // Check if the request is for "/${DynamicConfiguration.adminPath}/login" with the POST method
         val inLoginUrl =
-            call.request.uri.substringBefore("?") == "/admin/login" && call.request.httpMethod == HttpMethod.Post
+            call.request.uri.substringBefore("?") == "/${DynamicConfiguration.adminPath}/login" && call.request.httpMethod == HttpMethod.Post
 
         // Extract user credentials from the session or the request body
         val formParameters = call.takeIf { inLoginUrl }?.receiveParameters()?.apply {

@@ -1,5 +1,6 @@
 package modules
 
+import configuration.DynamicConfiguration
 import io.ktor.server.routing.*
 import modules.actions.handleActions
 import modules.add.handleAddRequest
@@ -10,7 +11,7 @@ import utils.*
 
 internal fun Routing.configureSavesRouting(panels: List<AdminPanel>, authenticateName: String? = null) {
     withAuthenticate(authenticateName) {
-        route("/admin/") {
+        route("/${DynamicConfiguration.adminPath}/") {
             post("${Constants.RESOURCES_PATH}/{pluralName}/add") {
                 handleAddRequest(panels)
             }

@@ -36,7 +36,7 @@ function handleTitleClicks() {
     for (let title of titles) {
         title.style.cursor = "pointer"
         title.onclick = function () {
-            window.location.href = "/admin"
+            window.location.href = `/${adminPath}`
         }
     }
 }
@@ -163,11 +163,11 @@ function expandSidebar(icon, container, sidebar, menuIcon) {
 
 
 function openPanel(pluralName) {
-    window.location.href = `/admin/resources/${pluralName}`
+    window.location.href = `/${adminPath}/resources/${pluralName}`
 }
 
 function openDashboard() {
-    window.location.href = `/admin`
+    window.location.href = `/${adminPath}`
 }
 
 
@@ -178,10 +178,10 @@ function logout() {
         method: "POST",
         body: null,
     }
-    fetch("/admin/logout", options).then(
+    fetch(`/${adminPath}/logout`, options).then(
         async response => {
             if (response.ok) {
-                window.location.replace("/admin/login")
+                window.location.replace(`/${adminPath}/login`)
             } else {
                 loading.style.visibility = "hidden";
                 showAlert(`ERROR`, "error")

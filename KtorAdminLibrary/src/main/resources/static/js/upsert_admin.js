@@ -134,7 +134,7 @@ async function uploadFile(file) {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("_csrf", getCsrfToken());
-    const response = await fetch("/admin/rich_editor/upload", {
+    const response = await fetch(`/${adminPath}/rich_editor/upload`, {
         method: "POST",
         body: formData
     });
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 async function downloadFile(pluralName, csrfToken, primaryKey) {
-    const url = `/admin/downloads/${pluralName}/${primaryKey}/pdf?_csrf=${encodeURIComponent(csrfToken)}`;
+    const url = `/${adminPath}/downloads/${pluralName}/${primaryKey}/pdf?_csrf=${encodeURIComponent(csrfToken)}`;
 
     const link = document.createElement("a");
     link.href = url;

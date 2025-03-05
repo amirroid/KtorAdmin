@@ -38,7 +38,7 @@ import utils.withAuthenticate
 internal fun Routing.configureGetRouting(panels: List<AdminPanel>, authenticateName: String? = null) {
     val panelGroups = panels.toTableGroups()
     withAuthenticate(authenticateName) {
-        route("/admin") {
+        route("/${DynamicConfiguration.adminPath}") {
             get {
                 call.renderAdminPanel(panelGroups, panels)
             }

@@ -95,7 +95,7 @@
                                 <path d="M3.5 12H20.33" stroke="#292D32" stroke-width="2" stroke-miterlimit="10"
                                       stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            <a href="/admin/resources/$section.pluralName">$section.section.sectionName</a>
+                            <a href="/$adminPath/resources/$section.pluralName">$section.section.sectionName</a>
                         </h2>
                         <div class="table-container">
                             <table>
@@ -230,6 +230,7 @@
 <script src="/static/js/common.js"></script>
 <script src="/static/js/admin_dashboard.js"></script>
 <script>
+    const adminPath = "$adminPath"
     document.addEventListener("DOMContentLoaded", function () {
         Chart.defaults.font.family = 'Istok Web';
         Chart.defaults.font.weight = 'normal';

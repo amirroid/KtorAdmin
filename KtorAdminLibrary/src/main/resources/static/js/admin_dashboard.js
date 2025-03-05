@@ -19,7 +19,7 @@ function handleClicks() {
 }
 
 function redirectToEdit(pluralName, id) {
-    window.location.href = "/admin/resources/" + pluralName + "/" + id;
+    window.location.href = `/${adminPath}/resources/` + pluralName + "/" + id;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -36,7 +36,7 @@ function generateUrl(fileName, pluralName, fieldName) {
         method: "POST",
         body: form,
     }
-    fetch("/admin/file_handler/generate/", options).then(
+    fetch(`/${adminPath}/file_handler/generate/`, options).then(
         async response => {
             const json = await response.json()
             if (response.ok) {

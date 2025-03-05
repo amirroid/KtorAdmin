@@ -1,5 +1,6 @@
 package authentication
 
+import configuration.DynamicConfiguration
 import crypto.CryptoManager
 import csrf.CSRF_TOKEN_FIELD_NAME
 import csrf.CsrfManager
@@ -93,7 +94,7 @@ class KtorAdminTokenAuthProvider internal constructor(
      */
     private suspend fun loginWithParameters(call: ApplicationCall, context: AuthenticationContext) {
         val inLoginUrl =
-            call.request.uri.substringBefore("?") == "/admin/login" && call.request.httpMethod == HttpMethod.Post
+            call.request.uri.substringBefore("?") == "/${DynamicConfiguration.adminPath}/login" && call.request.httpMethod == HttpMethod.Post
         if (inLoginUrl) {
             val parameters = call.receiveParameters().apply {
                 val csrfToken = get(CSRF_TOKEN_FIELD_NAME)

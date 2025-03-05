@@ -15,7 +15,7 @@ import utils.withAuthenticate
 
 fun Routing.configureUploadFileRouting(authenticationName: String?) {
     withAuthenticate(authenticationName) {
-        post("/admin/rich_editor/upload") {
+        post("/${DynamicConfiguration.adminPath}/rich_editor/upload") {
             val multipart = call.receiveMultipart()
             var fileBytes: ByteArray? = null
             var csrfToken: String? = null

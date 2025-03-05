@@ -1,5 +1,6 @@
 package modules.file
 
+import configuration.DynamicConfiguration
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -13,7 +14,7 @@ import utils.withAuthenticate
 
 fun Routing.handleGenerateFileUrl(panels: List<AdminPanel>, authenticateName: String?) {
     withAuthenticate(authenticateName) {
-        post("/admin/file_handler/generate/") {
+        post("/${DynamicConfiguration.adminPath}/file_handler/generate/") {
             val parameters = call.receiveParameters()
             val fileName = parameters["fileName"]
             val field = parameters["field"]?.split(".")

@@ -76,7 +76,7 @@ function handleClicks() {
                 element && element.contains(event.target)
             );
             if (!isTargetValid) {
-                redirectToEdit(row.dataset.primaryKey, row.dataset.pluralName);
+                redirectToEdit(row.dataset.primaryKey);
             }
         });
     });
@@ -123,12 +123,7 @@ function redirectToEdit(id) {
 
 
 function redirectToEditWithPluralName(pluralName, id) {
-    window.location.href = `/admin/resources/${pluralName}/${id}`;
-}
-
-
-function redirectToAdd() {
-    window.location.href = cleanUrl().toString() + "/add";
+    window.location.href = `/${adminPath}/resources/${pluralName}/${id}`;
 }
 
 function redirectToPage(page) {
@@ -207,7 +202,7 @@ function performSelectedAction(pluralName) {
     document.getElementById("ids").value = JSON.stringify(selectedItemsArray);
 
     const form = document.getElementById("action-form");
-    form.action = `/admin/actions/${pluralName}/${selectedActionKey}`;
+    form.action = `/${adminPath}/actions/${pluralName}/${selectedActionKey}`;
     form.submit();
 }
 
@@ -222,7 +217,7 @@ function generateUrl(fileName, pluralName, fieldName) {
         method: "POST",
         body: form,
     }
-    fetch("/admin/file_handler/generate/", options).then(
+    fetch(`/${adminPath}/file_handler/generate/`, options).then(
         async response => {
             const json = await response.json()
             if (response.ok) {
@@ -311,7 +306,7 @@ function closeActionDialog() {
 }
 
 async function downloadFile(pluralName, csrfToken) {
-    const url = `/admin/downloads/${pluralName}/csv?_csrf=${encodeURIComponent(csrfToken)}`;
+    const url = `/${adminPath}/downloads/${pluralName}/csv?_csrf=${encodeURIComponent(csrfToken)}`;
 
     const link = document.createElement("a");
     link.href = url;

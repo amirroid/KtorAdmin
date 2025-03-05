@@ -348,6 +348,7 @@
     <div class="spinner"></div>
 </div>
 <script>
+    const adminPath = "$adminPath"
         #if($tinyMCEConfig)
         const tinyConfig = JSON.parse(`$tinyMCEConfig`);
         #end

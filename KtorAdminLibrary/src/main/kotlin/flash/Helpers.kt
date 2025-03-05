@@ -39,7 +39,7 @@ internal suspend fun ApplicationCall.setFlashSessionsAndRedirect(
             httpOnly = true
         )
     }
-    respondRedirect(referer ?: "/admin")
+    respondRedirect(referer ?: "/${DynamicConfiguration.adminPath}")
 }
 
 

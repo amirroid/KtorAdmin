@@ -27,6 +27,9 @@
         <button type="submit" id="submit-button">Submit</button>
     </form>
 </div>
+<script>
+    const adminPath = "$adminPath"
+</script>
 <script src="/static/js/common.js"></script>
 </body>
 </html>

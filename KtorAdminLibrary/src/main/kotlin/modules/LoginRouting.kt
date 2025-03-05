@@ -14,7 +14,7 @@ import utils.Constants
 
 fun Routing.configureLoginRouting(authenticatedName: String) {
     withRateLimit {
-        get("/admin/login") {
+        get("/${DynamicConfiguration.adminPath}/login") {
             if (DynamicConfiguration.loginFields.isEmpty()) {
                 throw IllegalStateException("Login fields are not configured.")
             }
@@ -30,11 +30,11 @@ fun Routing.configureLoginRouting(authenticatedName: String) {
         }
     }
     authenticate(authenticatedName, strategy = AuthenticationStrategy.Required) {
-        post("/admin/login") {
-            val origin = call.parameters["origin"] ?: "/admin"
+        post("/${DynamicConfiguration.adminPath}/login") {
+            val origin = call.parameters["origin"] ?: "/${DynamicConfiguration.adminPath}"
             call.respondRedirect(origin)
         }
-        post("/admin/logout") {
+        post("/${DynamicConfiguration.adminPath}/logout") {
             call.sessions.clear(USER_SESSIONS)
             call.respond(HttpStatusCode.OK)
         }

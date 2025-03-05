@@ -162,6 +162,13 @@ class KtorAdminConfiguration {
             DynamicConfiguration.timeZone = value
         }
 
+
+    var adminPath: String
+        get() = DynamicConfiguration.adminPath
+        set(value) {
+            DynamicConfiguration.adminPath = value
+        }
+
     /**
      * Registers a custom admin action.
      */

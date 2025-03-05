@@ -456,6 +456,9 @@
         </div>
     </div>
 </div>
+<script>
+    const adminPath = "$adminPath"
+</script>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/table_list.js"></script>
 </body>

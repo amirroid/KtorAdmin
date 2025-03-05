@@ -40,7 +40,7 @@ fun Application.configureAdmin(database: Database) {
                 "amirreza", "admin", "your_password"
             ),
         )
-//        authenticateName = "admin"
+        authenticateName = "admin"
         mediaPath = MEDIA_PATH
         mediaRoot = MEDIA_ROOT
         adminDashboard = CustomDashboard()
@@ -61,6 +61,7 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper2
         )
+        adminPath = "app"
         provideMenu { tableName ->
             if (tableName == "tasks") listOf(
                 Menu(

@@ -43,37 +43,37 @@ internal fun Map<String, Any>.addCommonUpsertModels(table: AdminMongoCollection,
 internal suspend fun MutableMap<String, Any>.addCommonModels(
     currentPanel: AdminPanel?,
     panelGroups: List<PanelGroup>
-): Map<String, Any> =
-    coroutineScope {
-        val panels = panelGroups.map { it.panels }.flatten()
-        this@addCommonModels.apply {
-            val counts = mutableMapOf<String, Long>()
+): Map<String, Any> = coroutineScope {
+    val panels = panelGroups.map { it.panels }.flatten()
+    this@addCommonModels.apply {
+        val counts = mutableMapOf<String, Long>()
 
-            val tables = panels.filterIsInstance<AdminJdbcTable>()
-            val mongoPanels = panels.filterIsInstance<AdminMongoCollection>()
+        val tables = panels.filterIsInstance<AdminJdbcTable>()
+        val mongoPanels = panels.filterIsInstance<AdminMongoCollection>()
 
-            val jdbcCountsDeferred = async {
-                JdbcQueriesRepository.getCountOfTables(tables).filterValues { it != 0L }
-            }
-            val mongoCountsDeferred = async {
-                MongoClientRepository.getCountOfCollections(mongoPanels).filterValues { it != 0L }
-            }
-
-            val jdbcCounts = jdbcCountsDeferred.await()
-            val mongoCounts = mongoCountsDeferred.await()
-
-            counts.putAll(jdbcCounts)
-            counts.putAll(mongoCounts)
-
-            put("counts", counts)
-
-            DynamicConfiguration.menuProvider?.let { provider ->
-                val name = when (currentPanel) {
-                    is AdminJdbcTable -> currentPanel.getTableName()
-                    is AdminMongoCollection -> currentPanel.getCollectionName()
-                    else -> null
-                }
-                put("menus", provider.invoke(name))
-            }
+        val jdbcCountsDeferred = async {
+            JdbcQueriesRepository.getCountOfTables(tables).filterValues { it != 0L }
         }
+        val mongoCountsDeferred = async {
+            MongoClientRepository.getCountOfCollections(mongoPanels).filterValues { it != 0L }
+        }
+
+        val jdbcCounts = jdbcCountsDeferred.await()
+        val mongoCounts = mongoCountsDeferred.await()
+
+        counts.putAll(jdbcCounts)
+        counts.putAll(mongoCounts)
+
+        put("counts", counts)
+
+        DynamicConfiguration.menuProvider?.let { provider ->
+            val name = when (currentPanel) {
+                is AdminJdbcTable -> currentPanel.getTableName()
+                is AdminMongoCollection -> currentPanel.getCollectionName()
+                else -> null
+            }
+            put("menus", provider.invoke(name))
+        }
+        put("adminPath", DynamicConfiguration.adminPath)
     }
+}

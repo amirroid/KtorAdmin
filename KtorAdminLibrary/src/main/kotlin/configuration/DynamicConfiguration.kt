@@ -76,6 +76,8 @@ internal object DynamicConfiguration {
     /** Flag to enable/disable PDF data download */
     var canDownloadDataAsPdf = false
 
+    var adminPath = "admin"
+
     /** Value mappers (Thread-safe) */
     private val _valueMappers = ConcurrentLinkedQueue<KtorAdminValueMapper>()
     val valueMappers: List<KtorAdminValueMapper>

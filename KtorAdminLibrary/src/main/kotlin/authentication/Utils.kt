@@ -1,5 +1,6 @@
 package authentication
 
+import configuration.DynamicConfiguration
 import io.ktor.http.URLBuilder
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.uri
@@ -8,7 +9,7 @@ import utils.baseUrl
 import kotlin.text.orEmpty
 
 internal suspend fun redirectToLogin(call: ApplicationCall) {
-    val originUrl = if (call.request.uri.startsWith("/admin/login")) {
+    val originUrl = if (call.request.uri.startsWith("/${DynamicConfiguration.adminPath}/login")) {
         URLBuilder(call.request.uri).parameters["origin"].orEmpty()
     } else {
         URLBuilder(call.baseUrl + call.request.uri).apply {
@@ -17,5 +18,5 @@ internal suspend fun redirectToLogin(call: ApplicationCall) {
             }
         }.buildString()
     }
-    call.respondRedirect("${call.baseUrl}/admin/login?origin=$originUrl")
+    call.respondRedirect("${call.baseUrl}/${DynamicConfiguration.adminPath}/login?origin=$originUrl")
 }

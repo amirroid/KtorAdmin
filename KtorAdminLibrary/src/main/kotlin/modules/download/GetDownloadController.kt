@@ -23,7 +23,7 @@ import utils.withAuthenticate
 fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: List<AdminPanel>) {
     withAuthenticate(authenticateName) {
         // Route for downloading table data as a CSV file
-        get("/admin/${Constants.DOWNLOADS_PATH}/{pluralName}/csv") {
+        get("/${DynamicConfiguration.adminPath}/${Constants.DOWNLOADS_PATH}/{pluralName}/csv") {
             runCatching {
                 if (DynamicConfiguration.canDownloadDataAsCsv.not()) {
                     return@get call.badRequest("To use this feature, please enable this option in the configuration.")
@@ -55,7 +55,7 @@ fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: Lis
         }
 
         // Route for downloading a specific record as a PDF file
-        get("/admin/${Constants.DOWNLOADS_PATH}/{pluralName}/{primaryKey}/pdf") {
+        get("/${DynamicConfiguration.adminPath}/${Constants.DOWNLOADS_PATH}/{pluralName}/{primaryKey}/pdf") {
             runCatching {
                 if (DynamicConfiguration.canDownloadDataAsPdf.not()) {
                     return@get call.badRequest("To use this feature, please enable this option in the configuration.")
