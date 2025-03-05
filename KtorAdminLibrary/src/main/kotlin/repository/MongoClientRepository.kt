@@ -2,6 +2,12 @@ package repository
 
 import com.mongodb.MongoClientSettings
 import com.mongodb.ServerAddress
+import com.mongodb.client.model.Accumulators
+import com.mongodb.client.model.Aggregates
+import com.mongodb.client.model.Aggregates.group
+import com.mongodb.client.model.Aggregates.limit
+import com.mongodb.client.model.Aggregates.sort
+import com.mongodb.client.model.BsonField
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Projections.*
@@ -12,6 +18,7 @@ import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import configuration.DynamicConfiguration
+import dashboard.chart.ChartDashboardSection
 import formatters.map
 import getters.toTypedValue
 import kotlinx.coroutines.async
@@ -19,8 +26,14 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.toList
 import models.DataWithPrimaryKey
+import models.chart.ChartDashboardAggregationFunction
+import models.chart.ChartData
+import models.chart.ChartLabelsWithValues
+import models.chart.getFieldFunctionBasedOnAggregationFunction
+import models.chart.getFieldNameBasedOnAggregationFunction
 import models.events.FileEvent
 import models.field.FieldSet
 import models.field.getCurrentDate
@@ -28,11 +41,16 @@ import models.order.Order
 import models.types.FieldType
 import mongo.MongoCredential
 import mongo.MongoServerAddress
+import org.bson.BsonDocument
+import org.bson.BsonInt32
+import org.bson.BsonString
 import org.bson.BsonValue
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import panels.*
+import utils.Constants
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -420,13 +438,144 @@ internal object MongoClientRepository {
     }
 
     /**
-     * Safely gets a database by key, used for testing and other direct access
+     * This function retrieves chart data from a MongoDB collection based on the specified aggregation function
+     * and values fields from the provided chart dashboard section.
      *
-     * @param key The database key
-     * @return The MongoDB database or null if not found
+     * @param panel The MongoDB collection to query.
+     * @param section The chart dashboard section containing aggregation settings.
+     * @return The chart data including labels and corresponding values.
      */
-    fun getDatabaseByKey(key: String?): MongoDatabase? {
-        return databases[getActualKey(key)]
+    suspend fun getChartData(panel: AdminMongoCollection, section: ChartDashboardSection): ChartData {
+        // Destructure the section properties
+        val aggregationFunction = section.aggregationFunction
+        val labelsSet = mutableSetOf<String>()
+        val pipeline = mutableListOf<Bson>()
+
+        // Grouping stage based on labelField (not _id)
+        val groupFields = mutableListOf<BsonField>()
+        val groupId = "\$${section.labelField}"
+
+        // Apply aggregation function to each value field
+        section.valuesFields.forEach { field ->
+            val fieldName = field.fieldName
+            val aggField: BsonField = when (aggregationFunction) {
+                ChartDashboardAggregationFunction.COUNT -> Accumulators.sum(fieldName, 1) // Count occurrences
+                ChartDashboardAggregationFunction.SUM -> Accumulators.sum(fieldName, "\$$fieldName") // Sum values
+                ChartDashboardAggregationFunction.AVERAGE -> Accumulators.avg(
+                    fieldName,
+                    "\$$fieldName"
+                ) // Average values
+                ChartDashboardAggregationFunction.ALL -> Accumulators.push(
+                    fieldName,
+                    "\$$fieldName"
+                ) // Store all values without aggregation
+            }
+            groupFields.add(aggField)
+        }
+
+        // Add group stage to pipeline
+        pipeline.add(group(groupId, groupFields))
+
+        // Apply sorting if specified
+        section.orderQuery?.let {
+            val sortFields = it.trim().split(",").map { fieldSpec ->
+                val parts = fieldSpec.trim().split(" ")
+                val field = parts[0]
+                val order = if (parts.getOrNull(1)?.equals("DESC", ignoreCase = true) == true) Sorts.descending(field)
+                else Sorts.ascending(field)
+                order
+            }
+            pipeline.add(Aggregates.sort(Sorts.orderBy(sortFields)))
+        }
+
+        // Apply limit if specified
+        section.limitCount?.let {
+            pipeline.add(limit(it))
+        }
+
+        // Execute the aggregation query and collect results
+        val groupedData = mutableMapOf<String, MutableList<MutableList<Double>>>()
+        val labels = mutableListOf<String>()
+
+        // Collect the aggregation result from MongoDB
+        val documents = panel.getCollection().aggregate(pipeline).toList()
+
+        // Define a date format for labels that are Date type
+        val labelFormatter = panel.getAllFields().find { it.fieldName == section.labelField }?.let { field ->
+            when (field.type) {
+                is FieldType.Date -> SimpleDateFormat("yyyy-MM-dd")
+                is FieldType.DateTime, is FieldType.Instant -> SimpleDateFormat(Constants.LOCAL_DATETIME_FORMAT)
+                else -> null
+            }
+        }
+
+        // Iterate through the results to process each document
+        documents.forEach { document ->
+            val label = document.get("_id")
+                ?.let {
+                    when (it) {
+                        is Date -> labelFormatter?.format(it) ?: it.toString() // If it's a Date, format it
+                        else -> it.toString() // Otherwise, just convert it to string
+                    }
+                } ?: "Unknown" // Default if label is not present
+            labelsSet.add(label)
+
+            // Extract values for the specified fields based on the aggregation function
+            val values = section.valuesFields.map { field ->
+                val fieldName = field.fieldName
+                if (aggregationFunction == ChartDashboardAggregationFunction.ALL) {
+                    // For ALL aggregation, push all the values
+                    document.get(fieldName)?.let { value ->
+                        (value as? List<*>)?.mapNotNull { it?.toString()?.toDoubleOrNull() } ?: listOf(0.0)
+                    } ?: listOf(0.0)
+                } else {
+                    // For other aggregation functions (COUNT, SUM, AVERAGE)
+                    document.get(fieldName)?.toString()?.toDoubleOrNull() ?: 0.0
+                }
+            }
+
+            // Store values based on aggregation type
+            if (aggregationFunction == ChartDashboardAggregationFunction.ALL) {
+                groupedData.computeIfAbsent(label) { MutableList(section.valuesFields.size) { mutableListOf<Double>() } }
+                    .forEachIndexed { index, list ->
+                        // Ensure all values are of type Double and add to the list
+                        (values[index] as? List<*>)
+                            ?.filterIsInstance<Double>()
+                            ?.let { list.addAll(it) }
+                    }
+            } else {
+                groupedData.computeIfAbsent(label) { MutableList(section.valuesFields.size) { mutableListOf(0.0) } }
+                    .forEachIndexed { index, list ->
+                        list[0] += values[index].toString().toDoubleOrNull()
+                            ?: 0.0 // Update the list with the aggregated value
+                    }
+            }
+        }
+
+        // Prepare labels for the chart
+        labels.addAll(labelsSet)
+
+        // Construct chart values for each field
+        val values = section.valuesFields.mapIndexed { index, field ->
+            val currentValues = labels.map { label ->
+                groupedData[label]?.get(index)?.firstOrNull() ?: 0.0
+            }
+
+            // Create ChartLabelsWithValues for each field
+            ChartLabelsWithValues(
+                displayName = field.displayName,
+                values = currentValues,
+                fillColors = labels.map { section.provideFillColor(it, field.displayName) },
+                borderColors = labels.map { section.provideBorderColor(it, field.displayName) }
+            )
+        }
+
+        // Return the final chart data
+        return ChartData(
+            labels = labels.toList(),
+            values = values,
+            section = section
+        )
     }
 
     /**

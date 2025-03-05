@@ -21,8 +21,10 @@ import modules.confirmation.handleGetConfirmation
 import modules.list.handlePanelList
 import modules.update.handleEditItem
 import panels.AdminJdbcTable
+import panels.AdminMongoCollection
 import panels.AdminPanel
 import repository.JdbcQueriesRepository
+import repository.MongoClientRepository
 import utils.Constants
 import utils.addCommonModels
 import utils.forbidden
@@ -95,14 +97,22 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
 }
 
 
-internal fun getSectionsData(panels: List<AdminPanel>): List<Any> {
+internal suspend fun getSectionsData(panels: List<AdminPanel>): List<Any> {
+    val tablePanels = panels.filterIsInstance<AdminJdbcTable>()
+    val collectionPanels = panels.filterIsInstance<AdminMongoCollection>()
     return DynamicConfiguration.dashboard?.grid?.let { grid ->
         grid.sections.mapNotNull { section ->
             when (section) {
                 is ChartDashboardSection -> {
-                    val table =
-                        panels.filterIsInstance<AdminJdbcTable>().first { it.getTableName() == section.tableName }
-                    JdbcQueriesRepository.getChartData(table, section)
+                    val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                    val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                    when {
+                        table != null -> JdbcQueriesRepository.getChartData(table, section)
+                        collection != null -> MongoClientRepository.getChartData(collection, section).also {
+                            println("COLLECTION VLAUES ${it.labels} ${it.values.map { it.values }}")
+                        }
+                        else -> null
+                    }
                 }
 
                 is TextDashboardSection -> {

@@ -59,7 +59,7 @@ import java.time.LocalDateTime
     "createdAt",
     "DESC"
 )
-@PanelDisplayList("_id", "title")
+@PanelDisplayList("_id", "title", "number")
 @Serializable
 data class UserFile(
     @FieldInfo("_id")
@@ -72,9 +72,14 @@ data class UserFile(
     @TextAreaField
     val description: String,
 
+    val number: Int = 12,
+
     @LocalUpload
     @Limits(
         allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg"]
+    )
+    @FieldInfo(
+        nullable = true,
     )
     @Preview("image")
     val file: String,

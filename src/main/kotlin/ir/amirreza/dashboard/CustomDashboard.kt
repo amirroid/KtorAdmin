@@ -19,6 +19,7 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(section = Task3TextSection(), height = "200px")
             addSection(section = Task4TextSection(), height = "200px")
             addSection(span = 2, section = TaskChartSection())
+            addSection(span = 2, section = UserFilesChartSection())
             addSection(span = 2, section = TaskListChartSection())
             media(maxWidth = "600px", template = listOf(1))
             addSection(Task5TextSection())
@@ -68,6 +69,50 @@ class TaskChartSection : ChartDashboardSection() {
         get() = "TEst"
     override val index: Int
         get() = 1
+
+    override val tension: Float
+        get() = 0.49f
+
+
+    override val borderWidth: Float
+        get() = 2f
+}
+class UserFilesChartSection : ChartDashboardSection() {
+    override val aggregationFunction: ChartDashboardAggregationFunction
+        get() = ChartDashboardAggregationFunction.ALL
+    override val tableName: String
+        get() = "user_files"
+    override val labelField: String
+        get() = "createdAt"
+    override val valuesFields: List<ChartField>
+        get() = listOf(
+            ChartField(
+                fieldName = "number"
+            ),
+        )
+
+    override fun provideBorderColor(label: String, valueField: String): String? {
+        return "black"
+    }
+
+    override val orderQuery: String?
+        get() = "_id ASC"
+
+
+    override fun provideFillColor(label: String, valueField: String): String? {
+        return when (label) {
+//            Priority.Low.name -> "purple"
+//            Priority.Medium.name -> "blue"
+            else -> "wheat"
+        }
+    }
+
+    override val chartStyle: AdminChartStyle
+        get() = AdminChartStyle.LINE
+    override val sectionName: String
+        get() = "User files"
+    override val index: Int
+        get() = 112
 
     override val tension: Float
         get() = 0.49f

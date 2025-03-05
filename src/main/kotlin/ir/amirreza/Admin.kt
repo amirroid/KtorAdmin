@@ -61,12 +61,12 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper2
         )
-        provideMenu {
-            listOf(
+        provideMenu { tableName ->
+            if (tableName == "tasks") listOf(
                 Menu(
                     "Github", "https://github.com/Amirroid"
                 )
-            )
+            ) else emptyList()
         }
     }
 }
