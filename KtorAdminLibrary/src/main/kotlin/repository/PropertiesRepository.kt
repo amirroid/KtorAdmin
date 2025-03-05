@@ -16,6 +16,7 @@ import annotations.rich_editor.RichEditor
 import annotations.status.StatusStyle
 import annotations.text_area.TextAreaField
 import annotations.type.OverrideColumnType
+import annotations.type.OverrideFieldType
 import annotations.value_mapper.ValueMapper
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.symbol.*
@@ -32,6 +33,7 @@ import utils.UploadUtils
 import utils.findArgument
 import utils.guessPropertyType
 import utils.toTableName
+import kotlin.reflect.full.memberProperties
 
 /**
  * Repository responsible for processing Kotlin Symbol Processing (KSP) property declarations
@@ -419,8 +421,11 @@ object PropertiesRepository {
             UploadUtils.validatePropertyType(fieldName, type)
         }
 
+        val overrideFieldType = property.annotations.getFieldOverrideType()
+
         // Determine field type
         val fieldType = when {
+            overrideFieldType != null -> overrideFieldType
             hasEnumerationColumnAnnotation -> FieldType.Enumeration
             hasUploadAnnotation -> FieldType.File
             else -> type
@@ -552,6 +557,18 @@ object PropertiesRepository {
             ?.firstOrNull { it.name?.asString() == "type" }
             ?.value?.let { item ->
                 enumValues<ColumnType>().find { it.name == item.toString().split(".").last() }
+            }
+
+
+    private fun Sequence<KSAnnotation>.getFieldOverrideType(): FieldType? =
+        find { it.qualifiedName == OverrideFieldType::class.qualifiedName }
+            ?.arguments
+            ?.getArgument<String>("type")
+            .let { item ->
+                FieldType::class.sealedSubclasses.firstNotNullOfOrNull { subclass ->
+                    val objInstance = subclass.objectInstance
+                    if (objInstance is FieldType && objInstance.name == item.toString()) objInstance else null
+                }
             }
 
     /**

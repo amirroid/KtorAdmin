@@ -15,6 +15,7 @@ import annotations.preview.Preview
 import annotations.query.AdminQueries
 import annotations.rich_editor.RichEditor
 import annotations.text_area.TextAreaField
+import annotations.type.OverrideFieldType
 import annotations.uploads.LocalUpload
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -23,6 +24,7 @@ import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import models.actions.Action
+import models.types.FieldType
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -67,7 +69,8 @@ data class UserFile(
     @Enumeration("Test", "Te")
     val title: String,
 
-    @TextAreaField
+//    @TextAreaField
+    @OverrideFieldType("INTEGER")
     val description: String,
 
     @LocalUpload
