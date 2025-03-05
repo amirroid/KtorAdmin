@@ -11,6 +11,9 @@ import io.ktor.server.auth.principal
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.velocity.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import models.PanelGroup
 import models.chart.ChartData
 import models.chart.ListData
@@ -97,48 +100,54 @@ private suspend fun ApplicationCall.renderAdminPanel(panelGroups: List<PanelGrou
 }
 
 
-internal suspend fun getSectionsData(panels: List<AdminPanel>): List<Any> {
+internal suspend fun getSectionsData(panels: List<AdminPanel>): List<Any> = coroutineScope {
     val tablePanels = panels.filterIsInstance<AdminJdbcTable>()
     val collectionPanels = panels.filterIsInstance<AdminMongoCollection>()
-    return DynamicConfiguration.dashboard?.grid?.let { grid ->
-        grid.sections.mapNotNull { section ->
-            when (section) {
-                is ChartDashboardSection -> {
-                    val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
-                    val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
-                    when {
-                        table != null -> JdbcQueriesRepository.getChartData(table, section)
-                        collection != null -> MongoClientRepository.getChartData(collection, section)
-                        else -> null
-                    }
-                }
 
-                is TextDashboardSection -> {
-                    val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
-                    val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
-                    when {
-                        table != null -> JdbcQueriesRepository.getTextData(table, section)
-                        collection != null -> MongoClientRepository.getTextData(collection, section)
-                        else -> null
+    // Using async to launch each section's data loading concurrently
+    DynamicConfiguration.dashboard?.grid?.let { grid ->
+        val sectionJobs = grid.sections.map { section ->
+            async {
+                when (section) {
+                    is ChartDashboardSection -> {
+                        val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                        val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                        when {
+                            table != null -> JdbcQueriesRepository.getChartData(table, section)
+                            collection != null -> MongoClientRepository.getChartData(collection, section)
+                            else -> null
+                        }
                     }
-                }
 
-                is ListDashboardSection -> {
-                    val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
-                    val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
-                    when {
-                        table != null -> JdbcQueriesRepository.getListSectionData(table, section)
-                        collection != null -> MongoClientRepository.getListSectionData(collection, section)
-                        else -> null
+                    is TextDashboardSection -> {
+                        val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                        val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                        when {
+                            table != null -> JdbcQueriesRepository.getTextData(table, section)
+                            collection != null -> MongoClientRepository.getTextData(collection, section)
+                            else -> null
+                        }
                     }
-                }
 
-                else -> null
+                    is ListDashboardSection -> {
+                        val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                        val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                        when {
+                            table != null -> JdbcQueriesRepository.getListSectionData(table, section)
+                            collection != null -> MongoClientRepository.getListSectionData(collection, section)
+                            else -> null
+                        }
+                    }
+
+                    else -> null
+                }
             }
         }
+
+        // Waiting for all jobs to complete and returning the results
+        return@coroutineScope sectionJobs.awaitAll().filterNotNull()
     } ?: emptyList()
 }
-
 
 internal fun getSectionsInfo(): List<SectionInfo> {
     return DynamicConfiguration.dashboard?.grid?.toSectionInfo() ?: emptyList()
