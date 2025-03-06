@@ -8,19 +8,25 @@ plugins {
 }
 
 
-group = "com.github.amirroid"
+group = "io.github.amirroid"
 version = "0.0.1-alpha"
+
+val projectName = "KtorAdmin"
 
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
     signAllPublications()
 
-    coordinates(group.toString(), "KtorAdmin", version.toString())
-
+    coordinates(
+        groupId = group.toString(),
+        artifactId = projectName,
+        version = version.toString()
+    )
     pom {
-        name = "KtorAdmin"
-        description = "KtorAdmin is a dynamic admin panel for Ktor applications, supporting ORM structures without predefined schemas and simplifying data management with advanced features."
+        name = projectName
+        description =
+            "KtorAdmin is a dynamic admin panel for Ktor applications, supporting ORM structures without predefined schemas and simplifying data management with advanced features."
         inceptionYear = "2025"
         url = "https://github.com/Amirroid/KtorAdmin"
         licenses {
