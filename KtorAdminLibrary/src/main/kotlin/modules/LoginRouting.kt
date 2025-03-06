@@ -18,13 +18,17 @@ fun Routing.configureLoginRouting(authenticatedName: String) {
             if (DynamicConfiguration.loginFields.isEmpty()) {
                 throw IllegalStateException("Login fields are not configured.")
             }
-            val origin = call.parameters["origin"] ?: "/admin"
+            val origin = call.parameters["origin"] ?: "/${DynamicConfiguration.adminPath}"
             call.respond(
                 VelocityContent(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_login.vm", model = mutableMapOf(
                         "fields" to DynamicConfiguration.loginFields, "origin" to origin,
-                        "csrfToken" to CsrfManager.generateToken()
-                    )
+                        "csrfToken" to CsrfManager.generateToken(),
+                    ).apply {
+                        DynamicConfiguration.loginPageMessage?.let {
+                            put("message", it)
+                        }
+                    }
                 )
             )
         }

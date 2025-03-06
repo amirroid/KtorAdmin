@@ -78,6 +78,8 @@ internal object DynamicConfiguration {
 
     var adminPath = "admin"
 
+    var loginPageMessage : String? = null
+
     /**
      * If debugMode is enabled, error messages will be displayed.
      * Otherwise, no message will be shown for better security.

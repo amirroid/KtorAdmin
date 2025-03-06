@@ -78,6 +78,12 @@ class KtorAdminConfiguration {
             field = value
         }
 
+    var loginPageMessage: String?
+        get() = DynamicConfiguration.loginPageMessage
+        set(value) {
+            DynamicConfiguration.loginPageMessage = value
+        }
+
 
     /**
      * If debugMode is enabled, error messages will be displayed.

@@ -61,6 +61,8 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper2
         )
+        loginPageMessage =
+            "Enter <strong  class=\"istok-web-black\">admin</strong> as username and <strong class=\"istok-web-black\">password</strong> as password."
         adminPath = "app"
         provideMenu { tableName ->
             if (tableName == "tasks") listOf(
