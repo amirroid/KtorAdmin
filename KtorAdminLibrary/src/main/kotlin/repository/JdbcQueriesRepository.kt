@@ -74,7 +74,7 @@ internal object JdbcQueriesRepository {
         tables: List<AdminJdbcTable>,
         search: String?,
         currentPage: Int?,
-        filters: MutableList<Triple<ColumnSet, String, Any>>,
+        filters: MutableList<Triple<ColumnSet, String, Any?>>,
         order: Order?
     ): List<DataWithPrimaryKey> {
         val result = mutableListOf<DataWithPrimaryKey>()
@@ -172,7 +172,7 @@ internal object JdbcQueriesRepository {
     fun getCount(
         table: AdminJdbcTable,
         search: String?,
-        filters: List<Triple<ColumnSet, String, Any>>
+        filters: List<Triple<ColumnSet, String, Any?>>
     ): Long {
         return table.usingDataSource { session ->
             session.prepare(sqlQuery(table.createGetAllCountQuery(search = search, null, filters, null)))
@@ -486,7 +486,7 @@ internal object JdbcQueriesRepository {
     private fun PreparedStatement.prepareGetAllData(
         table: AdminJdbcTable,
         search: String?,
-        filters: List<Triple<ColumnSet, String, Any>>,
+        filters: List<Triple<ColumnSet, String, Any?>>,
         currentPage: Int?,
     ) {
         val columns = table.getAllColumns()
@@ -911,7 +911,7 @@ internal object JdbcQueriesRepository {
     private fun AdminJdbcTable.createGetAllQuery(
         search: String?,
         currentPage: Int?,
-        filters: List<Triple<ColumnSet, String, Any>>,
+        filters: List<Triple<ColumnSet, String, Any?>>,
         order: Order? = null
     ) = buildString {
         val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
@@ -946,7 +946,7 @@ internal object JdbcQueriesRepository {
     private fun AdminJdbcTable.createGetAllCountQuery(
         search: String?,
         currentPage: Int?,
-        filters: List<Triple<ColumnSet, String, Any>>,
+        filters: List<Triple<ColumnSet, String, Any?>>,
         order: Order? = null
     ) = buildString {
         val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
@@ -976,7 +976,7 @@ internal object JdbcQueriesRepository {
      */
     private fun AdminJdbcTable.createFiltersConditions(
         search: String?,
-        filters: List<Triple<ColumnSet, String, Any>>
+        filters: List<Triple<ColumnSet, String, Any?>>
     ): String {
         val joinConditions = mutableListOf<String>()
         val searchConditions = if (search != null) {

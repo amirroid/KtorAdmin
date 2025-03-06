@@ -26,14 +26,15 @@ internal object Validators {
         value: String?,
         primaryKey: String?
     ): String? {
-        val nullableValue = if (columnSet.nullable) value?.takeIf { it.isNotEmpty() } else value
+        val nullableValue =
+            if (columnSet.nullable && columnSet.type != ColumnType.STRING) value?.takeIf { it.isNotEmpty() } else value
 
         // If the column is nullable and the value is null, no validation is needed
         if (columnSet.nullable && nullableValue == null) {
             return null
         }
         // If the column is not nullable and the value is null, return an error
-        if (!columnSet.nullable && value == null) {
+        if (!columnSet.nullable && nullableValue == null) {
             return "The field cannot be null"
         }
 
@@ -85,7 +86,8 @@ internal object Validators {
     }
 
     internal fun validateFieldParameter(fieldSet: FieldSet, value: String?): String? {
-        val nullableValue = if (fieldSet.nullable) value?.takeIf { it.isNotEmpty() } else value
+        val nullableValue =
+            if (fieldSet.nullable && fieldSet.type !is FieldType.String) value?.takeIf { it.isNotEmpty() } else value
 
 
         // If the column is nullable and the value is null, no validation is needed

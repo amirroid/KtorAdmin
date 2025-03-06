@@ -7,21 +7,21 @@ import utils.Constants
 import java.sql.PreparedStatement
 import java.sql.Types
 
-internal fun String.toTypedValue(columnType: ColumnType): Any {
+internal fun String.toTypedValue(columnType: ColumnType): Any? {
     return when (columnType) {
-        ColumnType.INTEGER -> this.toIntOrNull() ?: this
-        ColumnType.UINTEGER -> this.toUIntOrNull() ?: this
-        ColumnType.SHORT -> this.toShortOrNull() ?: this
-        ColumnType.USHORT -> this.toUShortOrNull() ?: this
-        ColumnType.LONG -> this.toLongOrNull() ?: this
-        ColumnType.ULONG -> this.toULongOrNull() ?: this
-        ColumnType.DOUBLE -> this.toDoubleOrNull() ?: this
-        ColumnType.FLOAT -> this.toFloatOrNull() ?: this
-        ColumnType.BIG_DECIMAL -> this.toBigDecimalOrNull() ?: this
-        ColumnType.CHAR -> this.singleOrNull() ?: this
-        ColumnType.BOOLEAN -> this.toBoolean() ?: this
-        ColumnType.DATE -> this.toLocalDate() ?: this
-        ColumnType.DATETIME -> this.toLocalDateTime() ?: this
+        ColumnType.INTEGER -> this.toIntOrNull()
+        ColumnType.UINTEGER -> this.toUIntOrNull()
+        ColumnType.SHORT -> this.toShortOrNull()
+        ColumnType.USHORT -> this.toUShortOrNull()
+        ColumnType.LONG -> this.toLongOrNull()
+        ColumnType.ULONG -> this.toULongOrNull()
+        ColumnType.DOUBLE -> this.toDoubleOrNull()
+        ColumnType.FLOAT -> this.toFloatOrNull()
+        ColumnType.BIG_DECIMAL -> this.toBigDecimalOrNull()
+        ColumnType.CHAR -> this.singleOrNull()
+        ColumnType.BOOLEAN -> this.toBoolean()
+        ColumnType.DATE -> this.toLocalDate()
+        ColumnType.DATETIME -> this.toLocalDateTime()
         else -> this
     }
 }
@@ -54,6 +54,9 @@ internal fun String.toBoolean(): Boolean? {
 }
 
 internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, index: Int) {
+    println(
+        "ITEM $index $value $columnType ${value?.let { it::class.simpleName }}"
+    )
     if (value == null) {
         when (columnType) {
             ColumnType.INTEGER -> this.setNull(index, Types.INTEGER)

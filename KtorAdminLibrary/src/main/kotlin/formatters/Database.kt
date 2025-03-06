@@ -69,11 +69,11 @@ internal fun Any?.formatToDisplayInUpsert(columnType: ColumnType): String {
 }
 
 internal fun ResultSet.getTypedValue(type: ColumnType, name: String): Any? = when (type) {
-    ColumnType.LONG, ColumnType.ULONG -> getLong(name)
-    ColumnType.INTEGER, ColumnType.UINTEGER -> getInt(name)
-    ColumnType.SHORT, ColumnType.USHORT -> getShort(name)
-    ColumnType.FLOAT -> getFloat(name)
-    ColumnType.DOUBLE -> getDouble(name)
+    ColumnType.LONG, ColumnType.ULONG -> getObject(name)?.toString()?.toLongOrNull()
+    ColumnType.INTEGER, ColumnType.UINTEGER -> getObject(name)?.toString()?.toIntOrNull()
+    ColumnType.SHORT, ColumnType.USHORT -> getObject(name)?.toString()?.toShortOrNull()
+    ColumnType.FLOAT -> getObject(name)?.toString()?.toFloatOrNull()
+    ColumnType.DOUBLE -> getObject(name)?.toString()?.toDoubleOrNull()
 
     else -> getObject(name)
 }

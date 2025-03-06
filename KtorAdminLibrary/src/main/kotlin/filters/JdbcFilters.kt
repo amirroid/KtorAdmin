@@ -50,8 +50,8 @@ internal object JdbcFilters {
         table: AdminJdbcTable,
         jdbcTables: List<AdminJdbcTable>,
         parameters: Parameters
-    ): MutableList<Triple<ColumnSet, String, Any>> {
-        val filters = mutableListOf<Triple<ColumnSet, String, Any>>()
+    ): MutableList<Triple<ColumnSet, String, Any?>> {
+        val filters = mutableListOf<Triple<ColumnSet, String, Any?>>()
 
         table.getFilters().forEach { filterColumn ->
             val (_, columnSet) = resolveTableAndColumn(filterColumn, table, jdbcTables)
@@ -154,7 +154,7 @@ internal object JdbcFilters {
     private fun handleDateTimeFilter(
         columnSet: ColumnSet?,
         parameters: Parameters,
-        filters: MutableList<Triple<ColumnSet, String, Any>>
+        filters: MutableList<Triple<ColumnSet, String, Any?>>
     ) {
         if (columnSet == null) return
 
@@ -165,7 +165,7 @@ internal object JdbcFilters {
     private fun handleDateTimeRange(
         columnSet: ColumnSet,
         parameters: Parameters,
-        filters: MutableList<Triple<ColumnSet, String, Any>>,
+        filters: MutableList<Triple<ColumnSet, String, Any?>>,
         suffix: String,
         operator: String
     ) {
@@ -193,7 +193,7 @@ internal object JdbcFilters {
     private fun handleSimpleFilter(
         columnSet: ColumnSet,
         parameters: Parameters,
-        filters: MutableList<Triple<ColumnSet, String, Any>>
+        filters: MutableList<Triple<ColumnSet, String, Any?>>
     ) {
         parameters[Constants.FILTERS_PREFIX + columnSet.columnName]?.let { value ->
             filters.add(Triple(columnSet, "= ", value.toTypedValue(columnSet.type)))
@@ -206,7 +206,7 @@ internal object JdbcFilters {
     private fun handleReferenceFilter(
         columnSet: ColumnSet,
         parameters: Parameters,
-        filters: MutableList<Triple<ColumnSet, String, Any>>
+        filters: MutableList<Triple<ColumnSet, String, Any?>>
     ) {
         parameters[Constants.FILTERS_PREFIX + columnSet.columnName]?.let { refValue ->
             filters.add(Triple(columnSet, "= ", refValue.toTypedValue(columnSet.type)))
