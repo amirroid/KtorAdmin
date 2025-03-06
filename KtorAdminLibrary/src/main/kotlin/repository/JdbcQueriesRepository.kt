@@ -595,7 +595,7 @@ internal object JdbcQueriesRepository {
         return table.usingDataSource { session ->
             session.list(sqlQuery(table.createGetAllReferencesQuery())) { raw ->
                 val referenceKey =
-                    raw.any("${table.getTableName()}_${table.getPrimaryKey()}").toString()
+                    raw.any(table.getPrimaryKey()).toString()
                 val displayFormat = table.getDisplayFormat()
                 DisplayItem(
                     itemKey = referenceKey,
@@ -612,10 +612,10 @@ internal object JdbcQueriesRepository {
                                         table.getAllColumns()
                                             .firstOrNull { it.columnName == splitItem.last() }
                                     raw.anyOrNull(
-                                        splitItem.joinToString(separator = "_")
+                                        splitItem.joinToString("_")
                                     ).let {
                                         if (columnSet == null) it?.toString() else it.restore(columnSet)
-                                            ?.toString()
+                                            .formatToDisplayInTable(columnSet.type)
                                     }
                                 }
                             })
@@ -978,7 +978,7 @@ internal object JdbcQueriesRepository {
         search: String?,
         filters: List<Triple<ColumnSet, String, Any?>>
     ): String {
-        val joinConditions = mutableListOf<String>()
+        val joinConditions = mutableSetOf<String>()
         val searchConditions = if (search != null) {
             getSearches().map { columnPath ->
                 val pathParts = columnPath.split('.')
@@ -1058,20 +1058,21 @@ internal object JdbcQueriesRepository {
     private fun AdminJdbcTable.createBasicReference(): String {
         val columns = getDisplayFormat()?.extractTextInCurlyBraces().orEmpty()
         val selectColumns = mutableSetOf<String>()
-        val joins = mutableListOf<String>()
-
+        val joins = mutableSetOf<String>()
+        val aliasMap = mutableMapOf<String, String>()
+        val tableName = getTableName()
 
         val primaryKey = getPrimaryKey()
-        selectColumns.add("${getTableName()}.$primaryKey AS ${getTableName()}_$primaryKey")
+        selectColumns.add("$tableName.$primaryKey AS $primaryKey")
 
         val order = getDefaultOrder()
         order?.let {
-            selectColumns.add("${getTableName()}.${it.name} AS ${getTableName()}_${it.name}")
+            selectColumns.add("$tableName.${it.name} AS ${it.name}")
         }
 
         columns.forEach { column ->
             if (column.contains('.')) {
-                var currentTable = getTableName()
+                var currentTable = tableName
                 var currentColumn = ""
                 val path = column.split('.')
 
@@ -1083,24 +1084,23 @@ internal object JdbcQueriesRepository {
 
                     if (reference != null) {
                         val joinTable = reference.tableName
-                        when (reference) {
-                            is Reference.OneToOne -> {
-                                val joinColumn = reference.foreignKey
-                                currentColumn = nextColumn ?: referenceColumn
+                        val joinAlias = aliasMap.getOrPut(joinTable) { "${joinTable}_REF" } // ایجاد alias یکتا
 
-                                joins.add("LEFT JOIN $joinTable ON $currentTable.$referenceColumn = $joinTable.$joinColumn")
+                        val joinCondition = when (reference) {
+                            is Reference.OneToOne, is Reference.ManyToOne -> {
+                                val joinColumn = reference.foreignKey
+                                "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
                             }
 
-                            is Reference.ManyToOne -> {
-                                val joinColumn = reference.foreignKey
-                                currentColumn = nextColumn ?: referenceColumn
-
-                                joins.add("LEFT JOIN $joinTable ON $currentTable.$referenceColumn = $joinTable.$joinColumn")
-                            }
-
-                            else -> Unit
+                            else -> null
                         }
-                        currentTable = joinTable
+
+                        if (joinCondition != null && joinCondition !in joins) {
+                            joins.add(joinCondition)
+                        }
+
+                        currentTable = joinAlias
+                        currentColumn = nextColumn ?: referenceColumn
                     } else if (i == path.lastIndex) {
                         currentColumn = referenceColumn
                     }
@@ -1110,8 +1110,8 @@ internal object JdbcQueriesRepository {
                     selectColumns.add("$currentTable.$currentColumn AS ${path.joinToString("_")}")
                 }
             } else {
-                if (column != primaryKey && column != getPrimaryKey()) {
-                    selectColumns.add("${getTableName()}.$column")
+                if (column != primaryKey) {
+                    selectColumns.add("$tableName.$column AS $column")
                 }
             }
         }
@@ -1120,12 +1120,14 @@ internal object JdbcQueriesRepository {
             append("SELECT DISTINCT ")
             append(selectColumns.joinToString(", "))
             append(" FROM ")
-            append(getTableName())
+            append(tableName)
             joins.forEach { append(" $it") }
-            order?.let { order ->
-                if (order.name !in getAllColumns().map { column -> column.columnName } &&
-                    order.direction.lowercase() !in listOf("asc", "desc")) return@let
-                append(" ORDER BY ${order.name} ${order.direction}")
+
+            order?.let {
+                if (it.name in getAllColumns().map { col -> col.columnName } &&
+                    it.direction.lowercase() in listOf("asc", "desc")) {
+                    append(" ORDER BY ${it.name} ${it.direction}")
+                }
             }
         }
     }

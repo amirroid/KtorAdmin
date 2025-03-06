@@ -137,6 +137,10 @@
     color: var(--secondary-color);
 }
 
+.menu-item:hover .sidebar-item-count {
+    color: var(--secondary-color);
+}
+
 .menu-item:not(.selected):hover {
     left: 12px;
     color: var(--secondary-color);
