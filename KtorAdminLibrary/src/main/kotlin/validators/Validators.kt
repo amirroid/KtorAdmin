@@ -26,8 +26,10 @@ internal object Validators {
         value: String?,
         primaryKey: String?
     ): String? {
+        val nullableValue = if (columnSet.nullable) value?.takeIf { it.isNotEmpty() } else value
+
         // If the column is nullable and the value is null, no validation is needed
-        if (columnSet.nullable && value == null) {
+        if (columnSet.nullable && nullableValue == null) {
             return null
         }
         // If the column is not nullable and the value is null, return an error
@@ -47,7 +49,6 @@ internal object Validators {
         }
 
 
-        val nullableValue = if (columnSet.nullable) value?.takeIf { it.isNotEmpty() } else value
         if (nullableValue != null && nullableValue.toTypedValueNullable(columnSet.type) == null) {
             return "The provided value is not valid."
         }
