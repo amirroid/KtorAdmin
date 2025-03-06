@@ -352,9 +352,10 @@ internal object JdbcQueriesRepository {
 
                         else -> {
                             if (rs.next()) {
-                                rs.getTypedValue(column.type, "aggregationFunctionValue").restore(column).let {
-                                    it.toString().toDoubleOrNull()?.formatAsIntegerIfPossible() ?: it.toString()
-                                }
+                                rs.getObject("aggregationFunctionValue")?.toString()?.toDoubleOrNull()?.restore(column)
+                                    .let {
+                                        it?.formatAsIntegerIfPossible() ?: it.toString()
+                                    }
                             } else ""
                         }
                     }

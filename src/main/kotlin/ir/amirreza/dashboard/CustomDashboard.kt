@@ -18,6 +18,7 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(section = Task2TextSection(), height = "200px")
             addSection(section = Task3TextSection(), height = "200px")
             addSection(section = Task4TextSection(), height = "200px")
+            addSection(section = ProductsPriceDashboardSection(), height = "200px")
             addSection(span = 2, section = TaskChartSection())
             addSection(span = 2, section = UserFilesChartSection())
             addSection(span = 3, section = TaskListChartSection())
@@ -37,6 +38,21 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(4, UserFileListChartSection())
         }
     }
+}
+
+class ProductsPriceDashboardSection : TextDashboardSection() {
+    override val tableName: String
+        get() = "product"
+    override val fieldName: String
+        get() = "price"
+    override val hintText: String
+        get() = "The average of all products"
+    override val aggregationFunction: TextDashboardAggregationFunction
+        get() = TextDashboardAggregationFunction.AVERAGE
+    override val sectionName: String
+        get() = "Price AVG"
+    override val index: Int
+        get() = 1213
 }
 
 
