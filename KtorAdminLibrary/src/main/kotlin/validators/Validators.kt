@@ -47,7 +47,7 @@ internal object Validators {
         }
 
         if (value != null && value.toTypedValueNullable(columnSet.type) == null) {
-            val notError = (columnSet.reference != null || columnSet.enumerationValues != null) && value.isEmpty()
+            val notError = columnSet.nullable && value.isEmpty()
             if (!notError) {
                 return "The provided value is not valid."
             }
