@@ -8,7 +8,7 @@ plugins {
 }
 
 
-group = "ir.amirreza"
+group = "com.github.amirroid"
 version = "0.0.1-alpha"
 
 mavenPublishing {
