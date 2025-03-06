@@ -62,8 +62,6 @@ repositories {
 dependencies {
     // KtorAdmin library
     implementation("io.github.amirroid:KtorAdmin:latest_version")
-    
-    // KSP (Kotlin Symbol Processing)
     ksp("io.github.amirroid:KtorAdmin:latest_version")
 }
 ```
