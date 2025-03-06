@@ -2,6 +2,12 @@
 
 ![KtorAdmin Banner](/art/banner.jpg)
 
+![Maven Central](https://img.shields.io/maven-central/v/io.github.amirroid/KtorAdmin)
+![Ktor](https://img.shields.io/badge/Ktor-%E2%9C%94-brightgreen)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%E2%9C%94-brightgreen)
+![MySQL](https://img.shields.io/badge/MySQL-%E2%9C%94-brightgreen)
+![MongoDB](https://img.shields.io/badge/MongoDB-%E2%9C%94-brightgreen)
+
 ## **🌟 Overview**
 
 **KtorAdmin** is a **powerful and flexible** library that effortlessly creates an **admin panel** for your **Ktor-based** applications. Unlike traditional admin panels that rely on **predefined database schemas**, KtorAdmin **dynamically detects** and adapts to your ORM structure, making it a perfect solution for managing both **relational and NoSQL databases**.
@@ -37,5 +43,26 @@ KtorAdmin removes **unnecessary boilerplate code** and provides a **schema-indep
 
 ---
 
+## **🔧 Installation**
+
+To include **KtorAdmin** in your **Ktor** application, add the following dependencies to your **build.gradle.kts** file:
+
+```kotlin
+plugins {
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // KtorAdmin library
+    implementation("io.github.amirroid:KtorAdmin:0.0.1-alpha")
+    ksp("io.github.amirroid:KtorAdmin:0.0.1-alpha")
+}
+```
+
+---
 ## **License**
 This package is created and modified by [Amirroid](https://github.com/Amirroid) and has been released under the MIT License.
