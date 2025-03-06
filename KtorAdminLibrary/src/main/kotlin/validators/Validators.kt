@@ -41,7 +41,7 @@ internal object Validators {
         }
 
         if (columnSet.reference != null) {
-            if (value.isNullOrEmpty()) {
+            if (value.isNullOrEmpty() && !columnSet.nullable) {
                 return "The field cannot be empty or null when a reference is required."
             }
         }
