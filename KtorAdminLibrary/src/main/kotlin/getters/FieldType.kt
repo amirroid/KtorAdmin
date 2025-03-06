@@ -8,17 +8,16 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.Date
 
-internal fun String.toTypedValue(fieldType: FieldType): Any {
+internal fun String.toTypedValue(fieldType: FieldType): Any? {
     return when (fieldType) {
-        is FieldType.Integer -> this.toIntOrNull() ?: this
-        is FieldType.Long -> this.toLongOrNull() ?: this
-        is FieldType.Double -> this.toDoubleOrNull() ?: this
-        is FieldType.Float -> this.toFloatOrNull() ?: this
-        is FieldType.Boolean -> this.toBoolean() ?: this
-        is FieldType.Date -> this.toLocalDate()?.toDate() ?: this
-        is FieldType.DateTime -> this.toLocalDateTime()?.toDate() ?: this
-        is FieldType.Instant -> this.toLocalDateTime()?.toDate() ?: this
-
+        is FieldType.Integer -> this.toIntOrNull()
+        is FieldType.Long -> this.toLongOrNull()
+        is FieldType.Double -> this.toDoubleOrNull()
+        is FieldType.Float -> this.toFloatOrNull()
+        is FieldType.Boolean -> this.toBoolean()
+        is FieldType.Date -> this.toLocalDate()?.toDate()
+        is FieldType.DateTime -> this.toLocalDateTime()?.toDate()
+        is FieldType.Instant -> this.toLocalDateTime()?.toDate()
         is FieldType.Decimal128 -> this.toBigDecimalOrNull() ?: this
         else -> this
     }

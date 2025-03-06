@@ -72,7 +72,8 @@ data class UserFile(
     @TextAreaField
     val description: String,
 
-    val number: Int = 12,
+    @FieldInfo(nullable = true)
+    val number: Int? = 12,
 
     @LocalUpload
     @Limits(
