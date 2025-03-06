@@ -2,17 +2,21 @@
 
 ![KtorAdmin Banner](/art/banner.jpg)
 
-![Maven Central](https://img.shields.io/maven-central/v/io.github.amirroid/KtorAdmin)
-![Ktor](https://img.shields.io/badge/Ktor-%E2%9C%94-brightgreen)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%E2%9C%94-brightgreen)
-![MySQL](https://img.shields.io/badge/MySQL-%E2%9C%94-brightgreen)
-![JDBC](https://img.shields.io/badge/JDBC-%E2%9C%94-brightgreen)
-![SQL](https://img.shields.io/badge/SQL-%E2%9C%94-brightgreen)
-![MongoDB](https://img.shields.io/badge/MongoDB-%E2%9C%94-brightgreen)
+![Java 17](https://img.shields.io/badge/Java-17-blue?style=flat-square)
+![Maven Central](https://img.shields.io/maven-central/v/io.github.amirroid/KtorAdmin?style=flat-square)
+![Ktor](https://img.shields.io/badge/Ktor-%E2%9C%94-brightgreen?style=flat-square)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%E2%9C%94-brightgreen?style=flat-square)
+![MySQL](https://img.shields.io/badge/MySQL-%E2%9C%94-brightgreen?style=flat-square)
+![JDBC](https://img.shields.io/badge/JDBC-%E2%9C%94-brightgreen?style=flat-square)
+![SQL](https://img.shields.io/badge/SQL-%E2%9C%94-brightgreen?style=flat-square)
+![MongoDB](https://img.shields.io/badge/MongoDB-%E2%9C%94-brightgreen?style=flat-square)
 
 ## **🌟 Overview**
 
-**KtorAdmin** is a **powerful and flexible** library that effortlessly creates an **admin panel** for your **Ktor-based** applications. Unlike traditional admin panels that rely on **predefined database schemas**, KtorAdmin **dynamically detects** and adapts to your ORM structure, making it a perfect solution for managing both **relational and NoSQL databases**.
+**KtorAdmin** is a **powerful and flexible** library that effortlessly creates an **admin panel** for your **Ktor-based
+** applications. Unlike traditional admin panels that rely on **predefined database schemas**, KtorAdmin **dynamically
+detects** and adapts to your ORM structure, making it a perfect solution for managing both **relational and NoSQL
+databases**.
 
 | Name      | Dark Mode                        | Light Mode                         |
 |-----------|----------------------------------|------------------------------------|
@@ -39,12 +43,17 @@
 
 ## **💡 Why Choose KtorAdmin?**
 
-KtorAdmin removes **unnecessary boilerplate code** and provides a **schema-independent, dynamic, and extensible** solution for admin panel creation. Whether you're handling **relational databases** like **MySQL & PostgreSQL** or working with **NoSQL databases** like **MongoDB**, KtorAdmin gives you an effortless way to **manage and monitor** your app’s data.
+KtorAdmin removes **unnecessary boilerplate code** and provides a **schema-independent, dynamic, and extensible**
+solution for admin panel creation. Whether you're handling **relational databases** like **MySQL & PostgreSQL** or
+working with **NoSQL databases** like **MongoDB**, KtorAdmin gives you an effortless way to **manage and monitor** your
+app’s data.
 
 ---
+
 ## **🚀 Getting Started**
 
-Setting up **KtorAdmin** is straightforward and follows the same installation process as any other Ktor plugin. With just a few simple steps, you can integrate an admin panel into your Ktor application effortlessly.
+Setting up **KtorAdmin** is straightforward and follows the same installation process as any other Ktor plugin. With
+just a few simple steps, you can integrate an admin panel into your Ktor application effortlessly.
 
 ### **Step 1: Add Dependency**
 
@@ -84,7 +93,7 @@ Finally, integrate `configureAdmin()` into your application's main module:
 fun Application.module() {
     // Your existing application setup
     ...
-    
+
     // Enable KtorAdmin
     configureAdmin()
 }
@@ -98,9 +107,12 @@ Now, you can access the admin panel by navigating to:
 http://localhost:8080/admin
 ```
 
-
-📖 **Documentation:** For more detailed usage and advanced configurations, visit the [Documentation](https://amirreza-gholami.gitbook.io/ktor-admin).
+📖 **Documentation:** For more detailed usage and advanced configurations, visit
+the [Documentation](https://amirreza-gholami.gitbook.io/ktor-admin).
 
 ---
+
 ## **License**
-This package is created and modified by [Amirroid](https://github.com/Amirroid) and has been released under the MIT License.
+
+This package is created and modified by [Amirroid](https://github.com/Amirroid) and has been released under the MIT
+License.

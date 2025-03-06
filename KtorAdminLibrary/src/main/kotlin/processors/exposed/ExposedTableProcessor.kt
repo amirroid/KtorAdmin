@@ -111,7 +111,12 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
 
     private fun KSClassDeclaration.validateImplementations() {
         val hasTableSuperType = superTypes.any { superType ->
-            superType.resolve().declaration.qualifiedName?.asString() == "org.jetbrains.exposed.sql.Table"
+            superType.resolve().declaration.qualifiedName?.asString() in listOf(
+                "org.jetbrains.exposed.sql.Table",
+                "org.jetbrains.exposed.dao.id.IdTable",
+                "org.jetbrains.exposed.dao.id.IntIdTable",
+                "org.jetbrains.exposed.dao.id.LongIdTable",
+            )
         }
         if (!hasTableSuperType) {
             val message = "Class ${simpleName.asString()} must inherit from Table."
