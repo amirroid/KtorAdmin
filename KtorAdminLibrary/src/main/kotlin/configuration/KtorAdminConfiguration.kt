@@ -79,6 +79,10 @@ class KtorAdminConfiguration {
         }
 
 
+    /**
+     * If debugMode is enabled, error messages will be displayed.
+     * Otherwise, no message will be shown for better security.
+     */
     var debugMode: Boolean
         get() = DynamicConfiguration.debugMode
         set(value) {

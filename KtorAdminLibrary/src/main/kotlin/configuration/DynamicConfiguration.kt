@@ -78,8 +78,15 @@ internal object DynamicConfiguration {
 
     var adminPath = "admin"
 
+    /**
+     * If debugMode is enabled, error messages will be displayed.
+     * Otherwise, no message will be shown for better security.
+     */
     var debugMode = true
 
+    /**
+     * Authentication name (if required).
+     */
     var authenticateName: String? = null
 
     /** Value mappers (Thread-safe) */

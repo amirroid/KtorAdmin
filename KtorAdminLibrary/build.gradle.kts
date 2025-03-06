@@ -1,12 +1,49 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     kotlin("jvm")
     id("com.google.devtools.ksp") version "2.1.0-1.0.29"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
+    id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
 
 group = "ir.amirreza"
-version = "0.0.1"
+version = "0.0.1-alpha"
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+
+    signAllPublications()
+
+    coordinates(group.toString(), "KtorAdmin", version.toString())
+
+    pom {
+        name = "KtorAdmin"
+        description = "KtorAdmin is a dynamic admin panel for Ktor applications, supporting ORM structures without predefined schemas and simplifying data management with advanced features."
+        inceptionYear = "2025"
+        url = "https://github.com/Amirroid/KtorAdmin"
+        licenses {
+            license {
+                name = "The MIT License"
+                url = "https://opensource.org/licenses/MIT"
+                distribution = "https://opensource.org/licenses/MIT"
+            }
+        }
+        developers {
+            developer {
+                id = "Amirroid"
+                name = "Amirreza Gholami"
+                url = "https://github.com/Amirroid"
+            }
+        }
+        scm {
+            url = "https://github.com/Amirroid/KtorAdmin"
+            connection = "scm:git:git://github.com/Amirroid/KtorAdmin.git"
+            developerConnection = "scm:git:ssh://git@github.com/Amirroid/KtorAdmin.git"
+        }
+    }
+}
 
 repositories {
     mavenCentral()
