@@ -6,6 +6,8 @@
 ![Ktor](https://img.shields.io/badge/Ktor-%E2%9C%94-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%E2%9C%94-brightgreen)
 ![MySQL](https://img.shields.io/badge/MySQL-%E2%9C%94-brightgreen)
+![JDBC](https://img.shields.io/badge/JDBC-%E2%9C%94-brightgreen)
+![SQL](https://img.shields.io/badge/SQL-%E2%9C%94-brightgreen)
 ![MongoDB](https://img.shields.io/badge/MongoDB-%E2%9C%94-brightgreen)
 
 ## **🌟 Overview**
