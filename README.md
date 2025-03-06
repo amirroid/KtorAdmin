@@ -41,13 +41,14 @@
 
 KtorAdmin removes **unnecessary boilerplate code** and provides a **schema-independent, dynamic, and extensible** solution for admin panel creation. Whether you're handling **relational databases** like **MySQL & PostgreSQL** or working with **NoSQL databases** like **MongoDB**, KtorAdmin gives you an effortless way to **manage and monitor** your app’s data.
 
-📖 **Documentation:** [Read the Docs](https://amirreza-gholami.gitbook.io/ktor-admin) 🚀
-
 ---
+## **🚀 Getting Started**
 
-## **🔧 Installation**
+Setting up **KtorAdmin** is straightforward and follows the same installation process as any other Ktor plugin. With just a few simple steps, you can integrate an admin panel into your Ktor application effortlessly.
 
-To include **KtorAdmin** in your **Ktor** application, add the following dependencies to your **build.gradle.kts** file:
+### **Step 1: Add Dependency**
+
+First, add **KtorAdmin** to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
@@ -60,10 +61,47 @@ repositories {
 
 dependencies {
     // KtorAdmin library
-    implementation("io.github.amirroid:KtorAdmin:0.0.1-alpha")
-    ksp("io.github.amirroid:KtorAdmin:0.0.1-alpha")
+    implementation("io.github.amirroid:KtorAdmin:latest_version")
+    
+    // KSP (Kotlin Symbol Processing)
+    ksp("io.github.amirroid:KtorAdmin:latest_version")
 }
 ```
+
+### **Step 2: Install KtorAdmin Plugin**
+
+Next, install the **KtorAdmin** plugin in your Ktor application by adding the following code:
+
+```kotlin
+fun Application.configureAdmin() {
+    install(KtorAdmin)
+}
+```
+
+### **Step 3: Enable KtorAdmin in Your Application Module**
+
+Finally, integrate `configureAdmin()` into your application's main module:
+
+```kotlin
+fun Application.module() {
+    // Your existing application setup
+    ...
+    
+    // Enable KtorAdmin
+    configureAdmin()
+}
+```
+
+### **Access the Admin Panel**
+
+Now, you can access the admin panel by navigating to:
+
+```
+http://localhost:8080/admin
+```
+
+
+📖 **Documentation:** For more detailed usage and advanced configurations, visit the [Documentation](https://amirreza-gholami.gitbook.io/ktor-admin).
 
 ---
 ## **License**
