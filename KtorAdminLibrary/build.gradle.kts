@@ -9,7 +9,7 @@ plugins {
 
 
 group = "io.github.amirroid"
-version = "0.0.1-alpha4"
+version = "0.0.1-alpha5"
 
 val projectName = "KtorAdmin"
 
