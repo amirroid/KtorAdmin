@@ -47,7 +47,10 @@ internal object Validators {
         }
 
         if (value != null && value.toTypedValueNullable(columnSet.type) == null) {
-            return "The provided value is not valid."
+            val notError = (columnSet.reference != null || columnSet.enumerationValues != null) && value.isEmpty()
+            if (!notError) {
+                return "The provided value is not valid."
+            }
         }
 
         // Check if the column is marked as unique
