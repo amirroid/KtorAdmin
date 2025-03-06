@@ -3,6 +3,9 @@ package modules
 import authentication.USER_SESSIONS
 import configuration.DynamicConfiguration
 import csrf.CsrfManager
+import flash.KtorFlashHelper
+import flash.getFlashDataAndClear
+import flash.getRequestId
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -15,6 +18,8 @@ import utils.Constants
 fun Routing.configureLoginRouting(authenticatedName: String) {
     withRateLimit {
         get("/${DynamicConfiguration.adminPath}/login") {
+            val requestId = call.getRequestId()
+            val valuesWithErrors = call.getFlashDataAndClear(requestId)
             if (DynamicConfiguration.loginFields.isEmpty()) {
                 throw IllegalStateException("Login fields are not configured.")
             }
@@ -24,9 +29,13 @@ fun Routing.configureLoginRouting(authenticatedName: String) {
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_login.vm", model = mutableMapOf(
                         "fields" to DynamicConfiguration.loginFields, "origin" to origin,
                         "csrfToken" to CsrfManager.generateToken(),
+                        "requestId" to requestId,
                     ).apply {
                         DynamicConfiguration.loginPageMessage?.let {
                             put("message", it)
+                        }
+                        if (valuesWithErrors.second != null) {
+                            put("hasError", true)
                         }
                     }
                 )

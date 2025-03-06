@@ -4,6 +4,7 @@ import configuration.DynamicConfiguration
 import crypto.CryptoManager
 import csrf.CSRF_TOKEN_FIELD_NAME
 import csrf.CsrfManager
+import flash.REQUEST_ID_FORM
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -135,7 +136,7 @@ class KtorAdminFormAuthProvider internal constructor(
 
         // Default challenge function to redirect to the admin login page
         internal var challengeFunction: KtorAdminAuthChallengeFunction = {
-            redirectToLogin(call)
+            redirectToLogin(call, it?.get(REQUEST_ID_FORM))
         }
 
         /**

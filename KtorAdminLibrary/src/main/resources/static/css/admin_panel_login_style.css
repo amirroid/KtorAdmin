@@ -90,3 +90,8 @@ form {
 * {
     color: var(--primary-color);
 }
+
+.error_message {
+    color: red;
+    font-size: 14px;
+}

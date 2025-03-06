@@ -4,6 +4,7 @@ import configuration.DynamicConfiguration
 import crypto.CryptoManager
 import csrf.CSRF_TOKEN_FIELD_NAME
 import csrf.CsrfManager
+import flash.REQUEST_ID_FORM
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -95,8 +96,9 @@ class KtorAdminTokenAuthProvider internal constructor(
     private suspend fun loginWithParameters(call: ApplicationCall, context: AuthenticationContext) {
         val inLoginUrl =
             call.request.uri.substringBefore("?") == "/${DynamicConfiguration.adminPath}/login" && call.request.httpMethod == HttpMethod.Post
+        var parameters: UserForm? = null
         if (inLoginUrl) {
-            val parameters = call.receiveParameters().apply {
+            parameters = call.receiveParameters().apply {
                 val csrfToken = get(CSRF_TOKEN_FIELD_NAME)
                 if (CsrfManager.validateToken(csrfToken).not()) {
                     return call.invalidateRequest()
@@ -116,7 +118,7 @@ class KtorAdminTokenAuthProvider internal constructor(
 
         val cause = AuthenticationFailedCause.InvalidCredentials
         context.challenge(adminTokenAuthenticationChallengeKey, cause) { challenge, challengeCall ->
-            challengeFunction.invoke(KtorAdminAuthChallengeContext(challengeCall))
+            challengeFunction.invoke(KtorAdminAuthChallengeContext(challengeCall), parameters)
             if (!challenge.completed && challengeCall.response.status() != null) {
                 challenge.complete()
             }
@@ -138,7 +140,7 @@ class KtorAdminTokenAuthProvider internal constructor(
 
         // Default challenge function to redirect to the admin login page
         internal var challengeFunction: KtorAdminTokenAuthChallengeFunction = {
-            redirectToLogin(call)
+            redirectToLogin(call, it?.get(REQUEST_ID_FORM))
         }
 
         fun validateToken(body: suspend ApplicationCall.(token: String) -> Any?) {
@@ -157,7 +159,7 @@ class KtorAdminTokenAuthProvider internal constructor(
     }
 }
 
-typealias KtorAdminTokenAuthChallengeFunction = suspend KtorAdminAuthChallengeContext.() -> Unit
+typealias KtorAdminTokenAuthChallengeFunction = suspend KtorAdminAuthChallengeContext.(UserForm?) -> Unit
 
 fun AuthenticationConfig.ktorAdminTokenAuth(
     name: String,

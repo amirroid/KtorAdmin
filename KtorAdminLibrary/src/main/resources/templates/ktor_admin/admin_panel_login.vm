@@ -24,7 +24,11 @@
                        name="$field.key">
             </div>
         #end
+        #if($hasError)
+            <div class="error_message">The information provided is incorrect. Please check and try again.</div>
+        #end
         <input type="hidden" name="_csrf" value="$csrfToken">
+        <input type="hidden" value="$requestId" name="requestId">
         <button type="submit" id="submit-button">Submit</button>
     </form>
 </div>
