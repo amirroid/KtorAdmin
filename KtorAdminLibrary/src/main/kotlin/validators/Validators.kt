@@ -46,11 +46,10 @@ internal object Validators {
             }
         }
 
-        if (value != null && value.toTypedValueNullable(columnSet.type) == null) {
-            val notError = columnSet.nullable && value.isEmpty()
-            if (!notError) {
-                return "The provided value is not valid."
-            }
+
+        val nullableValue = if (columnSet.nullable) value?.takeIf { it.isNotEmpty() } else value
+        if (nullableValue != null && nullableValue.toTypedValueNullable(columnSet.type) == null) {
+            return "The provided value is not valid."
         }
 
         // Check if the column is marked as unique
@@ -85,12 +84,15 @@ internal object Validators {
     }
 
     internal fun validateFieldParameter(fieldSet: FieldSet, value: String?): String? {
+        val nullableValue = if (fieldSet.nullable) value?.takeIf { it.isNotEmpty() } else value
+
+
         // If the column is nullable and the value is null, no validation is needed
-        if (fieldSet.nullable && value == null) {
+        if (fieldSet.nullable && nullableValue == null) {
             return null
         }
         // If the column is not nullable and the value is null, return an error
-        if (!fieldSet.nullable && value == null) {
+        if (!fieldSet.nullable && nullableValue == null) {
             return "The field cannot be null"
         }
 
