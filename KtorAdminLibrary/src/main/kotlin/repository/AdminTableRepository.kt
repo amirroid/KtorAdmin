@@ -8,7 +8,7 @@ import utils.Constants
 internal object AdminTableRepository {
     fun getAll(): List<AdminPanel> {
         val tables = mutableListOf<AdminPanel>()
-        val reflections = Reflections("")
+        val reflections = Reflections("", SubTypesScanner(false))
         val subClasses = reflections.getSubTypesOf(AdminPanel::class.java)
         subClasses.forEach {
             kotlin.runCatching {
