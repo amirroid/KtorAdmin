@@ -13,6 +13,12 @@ version = "0.0.1-alpha7"
 
 val projectName = "KtorAdmin"
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
@@ -66,7 +72,7 @@ dependencies {
     implementation("com.squareup:kotlinpoet-ksp:1.12.0")
 
     // Reflection
-    implementation("org.reflections:reflections:0.9.12")
+    implementation("org.reflections:reflections:0.10.2")
 
     // Ktor Core
     val ktorVersion = "3.0.3"
