@@ -13,8 +13,7 @@
 
 ## **🌟 Overview**
 
-**KtorAdmin** is a **powerful and flexible** library that effortlessly creates an **admin panel** for your **Ktor-based
-** applications. Unlike traditional admin panels that rely on **predefined database schemas**, KtorAdmin **dynamically
+**KtorAdmin** is a **powerful and flexible** library that effortlessly creates an **admin panel** for your **Ktor-based** applications. Unlike traditional admin panels that rely on **predefined database schemas**, KtorAdmin **dynamically
 detects** and adapts to your ORM structure, making it a perfect solution for managing both **relational and NoSQL
 databases**.
 
@@ -23,6 +22,16 @@ databases**.
 | Dashboard | ![Dark](/art/dark_dashboard.png) | ![Light](/art/light_dashboard.png) |
 | Panel     | ![Dark](/art/panel_dark.png)     | ![Light](/art/panel_light.png)     |
 | Add, Edit | ![Dark](/art/upsert_dark.png)    | ![Light](/art/upsert_light.png)    |
+
+## **🎬 Demo**
+
+To see the demo, visit the following link:  
+[🔗 KtorAdmin Live Demo](https://ktoradmindemo-production.up.railway.app/admin)
+
+For the source code, check out the repository:  
+[🔗 KtorAdmin Demo Repository](https://github.com/Amirroid/KtorAdminDemo)
+
+---
 
 ## **🔥 Key Features**
 
