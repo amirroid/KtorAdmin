@@ -23,6 +23,7 @@ import panels.*
 import repository.FileRepository
 import response.ErrorResponse
 import response.Response
+import translator.KtorAdminTranslator
 import validators.Validators
 
 private fun ByteArray.toBinaryString(): String {
@@ -38,7 +39,8 @@ fun checkCsrfToken(csrfToken: String?): Boolean {
 internal suspend fun MultiPartData.toTableValues(
     table: AdminJdbcTable,
     initialData: List<String?>? = null,
-    primaryKey: String? = null
+    primaryKey: String? = null,
+    translator: KtorAdminTranslator
 ): Response<TableResponse> = coroutineScope {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val referenceItems = mutableMapOf<ColumnSet, MutableList<String>>()
@@ -75,17 +77,19 @@ internal suspend fun MultiPartData.toTableValues(
                         ColumnType.FILE -> {
                             fileBytes[column] = fileName to bytes
                             val itemErrors = listOfNotNull(
-                                Validators.validateMimeType(fileName, column.limits),
+                                Validators.validateMimeType(fileName, column.limits, translator),
                                 Validators.validateBytesSize(
                                     partSize,
-                                    column.limits
+                                    column.limits,
+                                    translator
                                 ),
                             ).plus(
                                 Validators.validateColumnParameter(
                                     table,
                                     column,
                                     fileName ?: initialData?.get(columns.indexOf(column)),
-                                    primaryKey
+                                    primaryKey,
+                                    translator
                                 )?.let {
                                     listOf(it)
                                 } ?: emptyList()
@@ -102,11 +106,12 @@ internal suspend fun MultiPartData.toTableValues(
                                     table,
                                     column,
                                     fileName ?: initialData?.get(columns.indexOf(column)),
-                                    primaryKey
+                                    primaryKey,
+                                    translator
                                 )?.let {
                                     listOf(it)
                                 } ?: emptyList()
-                            val itemErrors = Validators.validateBytesSize(partSize, column.limits)
+                            val itemErrors = Validators.validateBytesSize(partSize, column.limits, translator)
                                 ?.let { ErrorResponse(column.columnName, listOf(it) + anotherErrors) }
                             errors += itemErrors
                             if (itemErrors == null) {
@@ -121,7 +126,7 @@ internal suspend fun MultiPartData.toTableValues(
                 is PartData.FormItem -> {
                     if (column.isNotListReference) {
                         val itemErrors = Validators.validateColumnParameter(
-                            table, column, part.value, primaryKey
+                            table, column, part.value, primaryKey, translator
                         )?.let { ErrorResponse(column.columnName, listOf(it)) }
                         errors += itemErrors
                         items[name] = part.value.let { it to it.toTypedValue(column.type) }
@@ -176,7 +181,8 @@ internal suspend fun MultiPartData.toTableValues(
 
 internal suspend fun MultiPartData.toTableValues(
     table: AdminMongoCollection,
-    initialData: List<String?>? = null
+    initialData: List<String?>? = null,
+    translator: KtorAdminTranslator
 ): Response<List<Pair<String, Any?>?>> = coroutineScope {
     val items = mutableMapOf<String, Pair<String, Any?>?>()
     val fields = table.getAllAllowToShowFieldsInUpsert()
@@ -212,15 +218,17 @@ internal suspend fun MultiPartData.toTableValues(
                         FieldType.File -> {
                             fileBytes[field] = fileName to bytes
                             val itemErrors = listOfNotNull(
-                                Validators.validateMimeType(fileName, field.limits),
+                                Validators.validateMimeType(fileName, field.limits, translator),
                                 Validators.validateBytesSize(
                                     partSize,
-                                    field.limits
+                                    field.limits,
+                                    translator
                                 ),
                             ).plus(
                                 Validators.validateFieldParameter(
                                     field,
-                                    fileName ?: initialData?.get(fields.indexOf(field))
+                                    fileName ?: initialData?.get(fields.indexOf(field)),
+                                    translator
                                 )?.let {
                                     listOf(it)
                                 } ?: emptyList()
@@ -236,7 +244,7 @@ internal suspend fun MultiPartData.toTableValues(
                 }
 
                 is PartData.FormItem -> {
-                    val itemErrors = Validators.validateFieldParameter(field, part.value)
+                    val itemErrors = Validators.validateFieldParameter(field, part.value, translator)
                         ?.let { ErrorResponse(field.fieldName.toString(), listOf(it)) }
                     errors += itemErrors
                     items[name] = part.value.let { it to it.toTypedValue(field.type) }

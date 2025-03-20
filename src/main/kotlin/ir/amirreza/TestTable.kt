@@ -21,7 +21,7 @@ object TestTable : Table("test") {
     )
     @ColumnInfo(
         "task_id",
-        nullable = true
+//        nullable = true
     )
     val taskId = integer("task_id").references(Tasks.id, onDelete = ReferenceOption.SET_NULL).nullable()
 

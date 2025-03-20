@@ -18,6 +18,7 @@ import repository.MongoClientRepository
 import response.onError
 import response.onInvalidateRequest
 import response.onSuccess
+import translator.translator
 import utils.badRequest
 import utils.invalidateRequest
 import utils.respondBack
@@ -71,7 +72,8 @@ internal suspend fun RoutingContext.handleAddRequest(panels: List<AdminPanel>) {
 }
 
 private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJdbcTable, panels: List<AdminPanel>) {
-    val parametersDataResponse = call.receiveMultipart().toTableValues(table)
+    val currentTranslator = call.translator
+    val parametersDataResponse = call.receiveMultipart().toTableValues(table, translator = currentTranslator)
     val tables = panels.filterIsInstance<AdminJdbcTable>()
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.values.map { it?.first }
@@ -105,7 +107,8 @@ private suspend fun RoutingContext.insertData(pluralName: String?, table: AdminJ
 }
 
 private suspend fun RoutingContext.insertData(pluralName: String?, panel: AdminMongoCollection) {
-    val parametersDataResponse = call.receiveMultipart().toTableValues(panel)
+    val currentTranslator = call.translator
+    val parametersDataResponse = call.receiveMultipart().toTableValues(panel, translator = currentTranslator)
     parametersDataResponse.onSuccess { parametersData ->
         val parameters = parametersData.map { it?.first }
         val fields = panel.getAllAllowToShowFieldsInUpsert()

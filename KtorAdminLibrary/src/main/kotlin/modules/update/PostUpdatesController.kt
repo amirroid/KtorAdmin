@@ -17,6 +17,7 @@ import repository.MongoClientRepository
 import response.onError
 import response.onInvalidateRequest
 import response.onSuccess
+import translator.translator
 import utils.badRequest
 import utils.invalidateRequest
 import utils.notFound
@@ -91,7 +92,9 @@ private suspend fun RoutingContext.updateData(
     val tables = panels.filterIsInstance<AdminJdbcTable>()
     val columns = table.getAllAllowToShowColumnsInUpsert()
     val initialData = JdbcQueriesRepository.getData(table, primaryKey)
-    val parametersDataResponse = call.receiveMultipart().toTableValues(table, initialData, primaryKey)
+    val currentTranslator = call.translator
+    val parametersDataResponse =
+        call.receiveMultipart().toTableValues(table, initialData, primaryKey, translator = currentTranslator)
     parametersDataResponse.onSuccess { parametersData ->
         kotlin.runCatching {
             val changedDataAndId =
@@ -121,7 +124,9 @@ private suspend fun RoutingContext.updateData(
     val initialData = MongoClientRepository.getData(panel, primaryKey)
     val fields = panel.getAllAllowToShowFieldsInUpsert()
 
-    val parametersDataResponse = call.receiveMultipart().toTableValues(panel, initialData)
+    val currentTranslator = call.translator
+    val parametersDataResponse =
+        call.receiveMultipart().toTableValues(panel, initialData, translator = currentTranslator)
     parametersDataResponse.onSuccess { parametersData ->
         val fieldsWithParameter = fields.mapIndexed { index, field ->
             field to parametersData.getOrNull(index)
