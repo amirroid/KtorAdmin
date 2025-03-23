@@ -2,6 +2,7 @@ package translator
 
 abstract class KtorAdminTranslator {
     abstract val languageCode: String
+    abstract val languageName: String
     abstract val translates: Map<String, String>
     open val layoutDirection: String = "ltr"
 
@@ -25,6 +26,7 @@ abstract class KtorAdminTranslator {
         const val SEARCH = "search"
         const val LOGIN = "login"
         const val LOGOUT = "logout"
+        const val LANGUAGES = "languages"
 
         const val ERROR_NULL_FIELD = "error_null_field"
         const val ERROR_EMPTY_FIELD = "error_empty_field"

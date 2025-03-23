@@ -80,8 +80,14 @@ internal suspend fun MutableMap<String, Any>.addCommonModels(
         put("adminPath", DynamicConfiguration.adminPath)
         put("hasAuthenticate", DynamicConfiguration.authenticateName != null)
         val translator = applicationCall.translator
+        val translators = DynamicConfiguration.translators
         put("translations", translator.translates)
         put("layout_direction", translator.layoutDirection)
         put("lang", translator.languageCode)
+
+        if (translators.size > 1) {
+            put("translators", translators)
+            put("current_lang", translator.languageCode)
+        }
     }
 }

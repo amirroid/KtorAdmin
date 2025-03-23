@@ -2,9 +2,12 @@ package translator.locals.fa
 
 import translator.KtorAdminTranslator
 
-internal object PersianKtorAdminTranslator : KtorAdminTranslator() {
+object PersianKtorAdminTranslator : KtorAdminTranslator() {
     override val languageCode: String
         get() = "fa"
+
+    override val languageName: String
+        get() = "Persian"
 
     override val translates: Map<String, String> = mapOf(
         Keys.DASHBOARD to "داشبورد",
@@ -26,6 +29,7 @@ internal object PersianKtorAdminTranslator : KtorAdminTranslator() {
         Keys.SEARCH to "جستجو...",
         Keys.LOGIN to "ورود",
         Keys.LOGOUT to "خروج",
+        Keys.LANGUAGES to "زبان",
 
         Keys.ERROR_NULL_FIELD to "این فیلد نمی‌تواند مقدار null داشته باشد",
         Keys.ERROR_EMPTY_FIELD to "این فیلد نمی‌تواند خالی باشد",

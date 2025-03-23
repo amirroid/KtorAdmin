@@ -9,6 +9,7 @@ import models.menu.Menu
 import preview.KtorAdminPreview
 import tiny.TinyMCEConfig
 import translator.KtorAdminTranslator
+import translator.locals.en.EnglishKtorAdminTranslator
 import java.time.ZoneId
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
@@ -56,6 +57,9 @@ internal object DynamicConfiguration {
     /** Timezone configuration for date/time handling */
     var timeZone: ZoneId = ZoneId.systemDefault()
 
+
+    var defaultLanguage: String = "en"
+
     /** Lifetime duration for forms in milliseconds */
     var formsLifetime = 1_000 * 60L
 
@@ -99,7 +103,7 @@ internal object DynamicConfiguration {
 
 
     /** Translators mappers (Thread-safe) */
-    private val _translators = ConcurrentLinkedQueue<KtorAdminTranslator>()
+    private val _translators = ConcurrentLinkedQueue<KtorAdminTranslator>(listOf(EnglishKtorAdminTranslator))
     val translators: List<KtorAdminTranslator>
         get() = _translators.toList()
 
@@ -175,5 +179,13 @@ internal object DynamicConfiguration {
             throw IllegalArgumentException("A translator with languageCode '${translator.languageCode}' is already registered.")
         }
         _translators.add(translator)
+    }
+
+    fun getTranslator(languageCode: String?): KtorAdminTranslator {
+        return if (languageCode == null) {
+            _translators.first { it.languageCode == defaultLanguage }
+        } else {
+            _translators.first { it.languageCode == languageCode }
+        }
     }
 }

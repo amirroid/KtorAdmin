@@ -6,6 +6,8 @@ internal object EnglishKtorAdminTranslator : KtorAdminTranslator() {
     override val languageCode: String
         get() = "en"
 
+    override val languageName get() = "English"
+
     override val translates: Map<String, String> = mapOf(
         Keys.DASHBOARD to "Dashboard", // done
         Keys.ITEMS to "{count} Items", // done
@@ -27,6 +29,7 @@ internal object EnglishKtorAdminTranslator : KtorAdminTranslator() {
         Keys.LOGIN to "Login", // done
         Keys.LOGIN to "Login", // done
         Keys.LOGOUT to "Logout", // done
+        Keys.LANGUAGES to "Languages", // done
 
         Keys.ERROR_NULL_FIELD to "The field cannot be null",
         Keys.ERROR_EMPTY_FIELD to "The field cannot be empty",
