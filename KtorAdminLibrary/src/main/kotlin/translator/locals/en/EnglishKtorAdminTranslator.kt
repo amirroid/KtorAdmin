@@ -30,6 +30,13 @@ internal object EnglishKtorAdminTranslator : KtorAdminTranslator() {
         Keys.LOGIN to "Login", // done
         Keys.LOGOUT to "Logout", // done
         Keys.LANGUAGES to "Languages", // done
+        Keys.FILTER to "Filter",
+
+        Keys.SELECT_RANGE_OF to "Select range of {value}", // done
+        Keys.SELECT_AN_ITEM_FOR to "Select an item for {value}", // done
+        Keys.SELECT_AN_ITEM to "Select an item", // done
+        Keys.SELECT_A_BOOLEAN to "Select a boolean for {value}", // done
+        Keys.SELECT_AN_ACTION to "Select an action", // done
 
         Keys.ERROR_NULL_FIELD to "The field cannot be null",
         Keys.ERROR_EMPTY_FIELD to "The field cannot be empty",

@@ -27,6 +27,13 @@ abstract class KtorAdminTranslator {
         const val LOGIN = "login"
         const val LOGOUT = "logout"
         const val LANGUAGES = "languages"
+        const val FILTER = "filter"
+
+        const val SELECT_RANGE_OF = "select_range_of"
+        const val SELECT_AN_ITEM_FOR = "select_item_for"
+        const val SELECT_AN_ITEM = "select_item"
+        const val SELECT_AN_ACTION = "select_action"
+        const val SELECT_A_BOOLEAN = "select_boolean"
 
         const val ERROR_NULL_FIELD = "error_null_field"
         const val ERROR_EMPTY_FIELD = "error_empty_field"

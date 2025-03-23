@@ -272,7 +272,7 @@
                             <div class="select-input-background">
                                 <select name="$fullFieldName" class="select-input"
                                         #if($field.readOnly)disabled#end>
-                                    <option value="">Select an item</option>
+                                    <option value="">$translations['select_item']</option>
                                     #foreach($value in $field.enumerationValues)
                                         <option value="$value"
                                                 #if($value == $!defaultValue)selected#end>$value</option>

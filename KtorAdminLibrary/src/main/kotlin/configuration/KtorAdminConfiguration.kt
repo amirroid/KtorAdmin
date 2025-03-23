@@ -178,6 +178,13 @@ class KtorAdminConfiguration {
         }
 
 
+    var defaultLanguage: String
+        get() = DynamicConfiguration.defaultLanguage
+        set(value) {
+            DynamicConfiguration.defaultLanguage = value
+        }
+
+
     var zoneId: ZoneId
         get() = DynamicConfiguration.timeZone
         set(value) {

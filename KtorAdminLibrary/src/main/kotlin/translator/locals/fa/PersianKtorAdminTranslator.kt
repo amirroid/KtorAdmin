@@ -30,6 +30,13 @@ object PersianKtorAdminTranslator : KtorAdminTranslator() {
         Keys.LOGIN to "ورود",
         Keys.LOGOUT to "خروج",
         Keys.LANGUAGES to "زبان",
+        Keys.FILTER to "فیلتر",
+
+        Keys.SELECT_RANGE_OF to "محدوده‌ای از {value} را انتخاب کنید",
+        Keys.SELECT_AN_ITEM_FOR to "یک مورد برای {value} انتخاب کنید",
+        Keys.SELECT_AN_ITEM to "یک مورد انتخاب کنید",
+        Keys.SELECT_A_BOOLEAN to "یک مقدار بولین برای {value} انتخاب کنید",
+        Keys.SELECT_AN_ACTION to "یک اقدام انتخاب کنید",
 
         Keys.ERROR_NULL_FIELD to "این فیلد نمی‌تواند مقدار null داشته باشد",
         Keys.ERROR_EMPTY_FIELD to "این فیلد نمی‌تواند خالی باشد",

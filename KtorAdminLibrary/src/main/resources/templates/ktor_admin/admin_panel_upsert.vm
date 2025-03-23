@@ -101,7 +101,7 @@
                                 <div class="select-input-background">
                                     <select name="$column.columnName" class="select-input"
                                             #if($column.readOnly)disabled#end>
-                                        <option value="">Select an item</option>
+                                        <option value="">$translations['select_item']</option>
                                         #foreach($refValue in $referenceValues)
                                             <option value="$refValue.itemKey"
                                                     #if($refValue.itemKey == $!defaultValue)selected#end>$refValue.item</option>
@@ -215,7 +215,7 @@
                                 <div class="select-input-background">
                                     <select name="$column.columnName" class="select-input"
                                             #if($column.readOnly)disabled#end>
-                                        <option value="">Select an item</option>
+                                        <option value="">$translations['select_item']</option>
                                         #foreach($value in $column.enumerationValues)
                                             <option value="$value"
                                                     #if($value == $!defaultValue)selected#end>$value</option>
