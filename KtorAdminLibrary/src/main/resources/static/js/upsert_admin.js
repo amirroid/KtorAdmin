@@ -44,7 +44,8 @@ function handleFileInputs() {
             let labelElement = document.getElementById(`selected-file-${field.id}`);
 
             if (fileName) {
-                labelElement.innerHTML = `Selected file: ${fileName} 
+                const text = selectedFileText.replace("{name}", fileName)
+                labelElement.innerHTML = `${text}
                     <span class="delete-file-icon" onclick="removeFile('${field.id}')">
                         <svg width="12" height="12" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M1.16998 6.83004L6.82998 1.17004" stroke="#9A6C00" stroke-width="1.5" 

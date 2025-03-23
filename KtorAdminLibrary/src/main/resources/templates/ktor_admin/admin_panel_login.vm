@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="$lang" dir="$layout_direction">
 
 <head>
     <meta charset="UTF-8">
@@ -13,7 +13,7 @@
 <body>
 <h1 class="name"><span class="istok-web-black">Ktor</span>Admin</h1>
 <div id="login-container">
-    <h1 id="title">Login</h1>
+    <h1 id="title">$translations["login"]</h1>
     <p id="page_message">$!message</p>
     <form method="post">
         #foreach($field in $fields)
@@ -29,7 +29,7 @@
         #end
         <input type="hidden" name="_csrf" value="$csrfToken">
         <input type="hidden" value="$requestId" name="requestId">
-        <button type="submit" id="submit-button">Submit</button>
+        <button type="submit" id="submit-button">$translations["submit"]</button>
     </form>
 </div>
 <script>

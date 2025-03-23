@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="$lang" dir="$layout_direction">
 
 <head>
     <meta charset="UTF-8">
@@ -36,7 +36,7 @@
                     <path d="M18.3334 18.3333L16.6667 16.6667" stroke="#292D32" stroke-width="1.5"
                           stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <input class="search-input" type="search" placeholder="Search...">
+                <input class="search-input" type="search" placeholder="$translations['search']">
             #end
         </div>
         <div id="username-container">
@@ -55,12 +55,13 @@
                 #foreach($menu in $menus)
                     <button><a href="$menu.link">$menu.title</a></button>
                 #end
-                <button onclick="changeTheme()">Change theme</button>
+                <button onclick="changeTheme()">$translations['change_theme']</button>
                 #if($canDownload)
-                    <button onclick="downloadFile('$pluralNameBase', '$csrfToken')">Download as CSV</button>
+                    <button onclick="downloadFile('$pluralNameBase', '$csrfToken')">$translations[
+                        'download_as_csv']</button>
                 #end
                 #if($hasAuthenticate)
-                    <button onclick="logout()" id="logout">Logout</button>
+                    <button onclick="logout()" id="logout">$translations['logout']</button>
                 #end
             </div>
         </div>
@@ -74,7 +75,7 @@
                 <path d="M18.3334 18.3333L16.6667 16.6667" stroke="#292D32" stroke-width="1.5"
                       stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <input class="search-input" type="search" placeholder="Search...">
+            <input class="search-input" type="search" placeholder="$translations['search']">
         </div>
     #end
     <div class="mobile-action actions-row">
@@ -86,7 +87,7 @@
                 #end
             </select>
         </div>
-        <button class="perform-action" onclick="openActionDialog()">Perform</button>
+        <button class="perform-action" onclick="openActionDialog()">$translations['perform']</button>
         #if($filtersData.size != 0)
             <div class="filter-button" onclick="toggleFilter()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -170,11 +171,7 @@
                 <div id="top-box-row-up">
                     <div id="name-container">
                         <h1 id="name" class="istok-web-bold">$pluralName</h1>
-                        #if($count)
-                            <div id="count-text">$count Items</div>
-                        #else
-                            <div id="count-text">Empty</div>
-                        #end
+                        <div id="count-text">$count_text</div>
                     </div>
                     <div class="actions-row">
                         <div class="actions-container">
@@ -185,7 +182,7 @@
                                 #end
                             </select>
                         </div>
-                        <button class="perform-action" onclick="openActionDialog()">Perform</button>
+                        <button class="perform-action" onclick="openActionDialog()">$translations['perform']</button>
                         #if($filtersData.size != 0)
                             <div class="filter-button" onclick="toggleFilter()">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -305,7 +302,7 @@
                                 <td>
                                     <button class="file-link"
                                             onclick="generateUrl('$item', '$pluralNameBase', '$fieldName')">
-                                        Link
+                                        $translations['link']
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
                                             <path d="M13 11L21.2 2.80005" stroke="#9A6C00" stroke-width="1.5"
@@ -421,7 +418,7 @@
                     stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
                     stroke-linejoin="round"/>
         </svg>
-        Dashboard
+        $translations['dashboard']
     </button>
     #foreach($group in $panelGroups)
         <h4 class="group-text">$group.group</h4>

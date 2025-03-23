@@ -1,6 +1,7 @@
 package utils
 
 import configuration.DynamicConfiguration
+import io.ktor.server.application.ApplicationCall
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.encodeToString
@@ -13,6 +14,7 @@ import panels.getAllAllowToShowColumnsInUpsert
 import panels.getAllAllowToShowFieldsInUpsert
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
+import translator.translator
 
 internal fun Map<String, Any>.addCommonUpsertModels(table: AdminJdbcTable, username: String?): Map<String, Any> {
     return toMutableMap().apply {
@@ -42,7 +44,8 @@ internal fun Map<String, Any>.addCommonUpsertModels(table: AdminMongoCollection,
 
 internal suspend fun MutableMap<String, Any>.addCommonModels(
     currentPanel: AdminPanel?,
-    panelGroups: List<PanelGroup>
+    panelGroups: List<PanelGroup>,
+    applicationCall: ApplicationCall
 ): Map<String, Any> = coroutineScope {
     val panels = panelGroups.map { it.panels }.flatten()
     this@addCommonModels.apply {
@@ -76,5 +79,9 @@ internal suspend fun MutableMap<String, Any>.addCommonModels(
         }
         put("adminPath", DynamicConfiguration.adminPath)
         put("hasAuthenticate", DynamicConfiguration.authenticateName != null)
+        val translator = applicationCall.translator
+        put("translations", translator.translates)
+        put("layout_direction", translator.layoutDirection)
+        put("lang", translator.languageCode)
     }
 }

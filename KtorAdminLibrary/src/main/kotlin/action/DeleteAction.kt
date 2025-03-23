@@ -11,14 +11,10 @@ import repository.MongoClientRepository
  * Represents a delete action that removes selected items from an admin panel.
  * Supports deletion from both JDBC and MongoDB-based panels.
  */
-internal class DeleteAction(private val panel: AdminPanel) : CustomAdminAction {
+internal class DeleteAction(private val panel: AdminPanel, override val displayText: String) : CustomAdminAction {
 
     // Unique key representing the delete action
     override var key: String = "DELETE"
-
-    // Display text for the action
-    override val displayText: String
-        get() = "Delete selected items"
 
     /**
      * Performs the delete action based on the type of admin panel.

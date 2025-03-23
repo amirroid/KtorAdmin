@@ -7,21 +7,26 @@ internal object EnglishKtorAdminTranslator : KtorAdminTranslator() {
         get() = "en"
 
     override val translates: Map<String, String> = mapOf(
-        Keys.DASHBOARD to "Dashboard",
-        Keys.ITEMS to "Items",
-        Keys.CHANGE_THEME to "Change theme",
-        Keys.DOWNLOAD_AS_CSV to "Download as CSV",
-        Keys.DOWNLOAD_AS_PDF to "Download as PDF",
-        Keys.PERFORM to "Perform",
-        Keys.DELETE_SELECTED_ITEMS to "Delete selected items",
-        Keys.ADD_NEW_ITEM to "Add a new {value}",
-        Keys.UPDATE_ITEM to "Update {value}",
-        Keys.RESET_ITEM to "Reset {value}",
-        Keys.SUBMIT to "Submit",
-        Keys.LINK to "Link",
-        Keys.SELECTED_FILE to "Selected file",
-        Keys.CURRENT_FILE to "Current file",
-        Keys.EMPTY to "Empty",
+        Keys.DASHBOARD to "Dashboard", // done
+        Keys.ITEMS to "{count} Items", // done
+        Keys.CHANGE_THEME to "Change theme", // done
+        Keys.DOWNLOAD_AS_CSV to "Download as CSV", // done
+        Keys.DOWNLOAD_AS_PDF to "Download as PDF", // done
+        Keys.PERFORM to "Perform", // done
+        Keys.DELETE_SELECTED_ITEMS to "Delete selected items", // done
+        Keys.ADD_NEW_ITEM to "Add a new {name}", // done
+        Keys.UPDATE_ITEM to "Update {name}", // done
+        Keys.RESET_ITEM to "Reset {name}", // done
+        Keys.SUBMIT to "Submit", // done
+        Keys.LINK to "Link", // done
+        Keys.SELECTED_FILE to "Selected file: {name}", // done
+        Keys.SELECT_A_FILE to "Select a file", // done
+        Keys.CURRENT_FILE to "Current file", // done
+        Keys.EMPTY to "Empty", // done
+        Keys.SEARCH to "Search...", // done
+        Keys.LOGIN to "Login", // done
+        Keys.LOGIN to "Login", // done
+        Keys.LOGOUT to "Logout", // done
 
         Keys.ERROR_NULL_FIELD to "The field cannot be null",
         Keys.ERROR_EMPTY_FIELD to "The field cannot be empty",
@@ -74,7 +79,5 @@ internal object EnglishKtorAdminTranslator : KtorAdminTranslator() {
         Keys.ERROR_DECIMAL128_MIN_EXCEEDED to "Value is less than {min}",
         Keys.ERROR_BIG_DECIMAL_MAX_EXCEEDED to "Value exceeds {max}",
         Keys.ERROR_BIG_DECIMAL_MIN_EXCEEDED to "Value is less than {min}"
-
-
     )
 }

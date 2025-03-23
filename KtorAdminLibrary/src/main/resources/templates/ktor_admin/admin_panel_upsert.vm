@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="$lang" dir="$layout_direction">
 
 <head>
     <meta charset="UTF-8">
@@ -48,13 +48,13 @@
                 #foreach($menu in $menus)
                     <button><a href="$menu.link">$menu.title</a></button>
                 #end
-                <button onclick="changeTheme()">Change theme</button>
+                <button onclick="changeTheme()">$translations['change_theme']</button>
                 #if($canDownload)
-                    <button onclick="downloadFile('$pluralNameBase', '$csrfToken', '$primaryKey')">Download as Pdf
-                    </button>
+                    <button onclick="downloadFile('$pluralNameBase', '$csrfToken', '$primaryKey')">$translations[
+                        'download_as_pdf']</button>
                 #end
                 #if($hasAuthenticate)
-                    <button onclick="logout()" id="logout">Logout</button>
+                    <button onclick="logout()" id="logout">$translations['logout']</button>
                 #end
             </div>
         </div>
@@ -115,9 +115,9 @@
                             #if($defaultValue)
                                 <p class="confirmation-value">Current value: $!defaultValue</p>
                             #end
+                            #set($reset_text = $translations.get('reset_item').replace("{name}", $column.verboseName))
                             <button type="button" class="confirmation-button"
-                                    onclick="goToConfigurationEditUrl('$column.columnName')">
-                                Reset $column.verboseName</button>
+                                    onclick="goToConfigurationEditUrl('$column.columnName')">$reset_text</button>
                         #else
                             <!-- STRING -->
                             #if($column.type.name == "STRING")
@@ -230,8 +230,8 @@
                             <!-- BINARY -->
                             #if($column.type.name == "BINARY")
                                 <label for="$column.columnName"
-                                       class="file-input#if($column.readOnly) readonly-field#end">Select a
-                                    file</label>
+                                       class="file-input#if($column.readOnly) readonly-field#end">$translations[
+                                    'select_file']</label>
                                 <input type="file" class="file-input-field" name="$column.columnName"
                                        id="$column.columnName"
                                        #if($column.readOnly)disabled#end/>
@@ -241,8 +241,8 @@
                             <!-- FILE -->
                             #if($column.type.name == "FILE")
                                 <label for="$column.columnName"
-                                       class="file-input#if($column.readOnly) readonly-field#end">Select a
-                                    file</label>
+                                       class="file-input#if($column.readOnly) readonly-field#end">$translations[
+                                    'select_file']</label>
                                 <input type="file" class="file-input-field" name="$column.columnName"
                                        id="$column.columnName"
                                        #if($column.readOnly)disabled#end/>
@@ -250,7 +250,7 @@
                                 #if($!values.get($column.columnName))
                                     <button class="file-link" type="button"
                                             onclick="openFileLink('$!values.get($column.columnName)')">
-                                        Current file
+                                        $translations['current_file']
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
                                             <path d="M13 11L21.2 2.80005" stroke="#9A6C00" stroke-width="1.5"
@@ -281,9 +281,8 @@
                 #end
                 <input type="hidden" value="$csrfToken" name="_csrf">
                 <input type="hidden" value="$requestId" name="requestId">
-                <button id="submit-button" type="submit" #if($hasAction == false) class="disabled" #end>
-                    Submit
-                </button>
+                <button id="submit-button" type="submit" #if($hasAction == false) class="disabled" #end>$translations[
+                    'submit']</button>
             </form>
         </div>
     </div>
@@ -323,7 +322,7 @@
                     stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
                     stroke-linejoin="round"/>
         </svg>
-        Dashboard
+        $translations['dashboard']
     </button>
     #foreach($group in $panelGroups)
         <h4 class="group-text">$group.group</h4>
@@ -350,6 +349,7 @@
     <div class="spinner"></div>
 </div>
 <script>
+    const selectedFileText = "$translations['selected_file']"
     const adminPath = "$adminPath"
         #if($tinyMCEConfig)
         const tinyConfig = JSON.parse(`$tinyMCEConfig`);

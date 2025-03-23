@@ -19,8 +19,12 @@ abstract class KtorAdminTranslator {
         const val SUBMIT = "submit"
         const val LINK = "link"
         const val SELECTED_FILE = "selected_file"
+        const val SELECT_A_FILE = "select_file"
         const val CURRENT_FILE = "current_file"
         const val EMPTY = "empty"
+        const val SEARCH = "search"
+        const val LOGIN = "login"
+        const val LOGOUT = "logout"
 
         const val ERROR_NULL_FIELD = "error_null_field"
         const val ERROR_EMPTY_FIELD = "error_empty_field"

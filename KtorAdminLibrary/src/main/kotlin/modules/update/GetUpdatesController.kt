@@ -26,6 +26,8 @@ import repository.FileRepository
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.toMap
+import translator.KtorAdminTranslator
+import translator.translator
 import utils.Constants
 import utils.addCommonModels
 import utils.addCommonUpsertModels
@@ -80,6 +82,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
             val values = errorValues?.takeIf { it.isNotEmpty() } ?: processColumnValues(
                 columns, data, this
             )
+            val singularTableName = table.getSingularName().replaceFirstChar { it.uppercaseChar() }
             respond(
                 VelocityContent(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm", model = mapOf(
@@ -88,8 +91,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "primaryKey" to primaryKey,
                         "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
                         "values" to values,
-                        "singularTableName" to table.getSingularName()
-                            .replaceFirstChar { it.uppercaseChar() },
+                        "singularTableName" to singularTableName,
                         "references" to referencesItems,
                         "selectedReferences" to selectedReferences,
                         "pluralNameBase" to table.getPluralName(),
@@ -103,8 +105,13 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "previews" to extractColumnsPreviews(
                             table.getTableName(),
                             columnsWithValues = values.mapKeys { item -> columns.first { column -> column.columnName == item.key } }
+                        ),
+                        "title" to translator.translate(
+                            KtorAdminTranslator.Keys.UPDATE_ITEM,
+                            mapOf("name" to singularTableName)
                         )
-                    ).addCommonUpsertModels(table, username).toMutableMap().addCommonModels(table, panelGroups)
+                    ).addCommonUpsertModels(table, username).toMutableMap()
+                        .addCommonModels(table, panelGroups, applicationCall = this)
                 )
             )
         }.onFailure {
@@ -151,6 +158,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
             val errors = valuesWithErrors.second ?: emptyList()
             val errorValues = valuesWithErrors.first
             val values = errorValues?.takeIf { it.isNotEmpty() } ?: processFieldValues(fields, data, this)
+            val singularName = panel.getSingularName().replaceFirstChar { it.uppercaseChar() }
             respond(
                 VelocityContent(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mutableMapOf(
@@ -158,7 +166,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                         "values" to values,
                         "errors" to errors.toMap(),
                         "collectionName" to panel.getCollectionName(),
-                        "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
+                        "singularName" to singularName,
                         "pluralName" to panel.getPluralName(),
                         "primaryKey" to primaryKey,
                         "csrfToken" to CsrfManager.generateToken(),
@@ -171,8 +179,13 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                         "previews" to extractFieldsPreviews(
                             panel.getCollectionName(),
                             fieldsWithValues = values.mapKeys { item -> fields.first { field -> field.fieldName == item.key } }
+                        ),
+                        "title" to translator.translate(
+                            KtorAdminTranslator.Keys.UPDATE_ITEM,
+                            mapOf("name" to singularName)
                         )
-                    ).addCommonUpsertModels(panel, username).toMutableMap().addCommonModels(panel, panelGroups)
+                    ).addCommonUpsertModels(panel, username).toMutableMap()
+                        .addCommonModels(panel, panelGroups, applicationCall = this)
                 )
             )
         }.onFailure {

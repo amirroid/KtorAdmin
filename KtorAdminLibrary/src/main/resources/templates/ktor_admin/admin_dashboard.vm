@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="$lang" dir="$layout_direction">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>$translations['dashboard']</title>
     <link href="/static/css/admin_panel_dashboard.css" rel="stylesheet">
     <link href="/static/css/common_style.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -51,16 +51,16 @@
                 #foreach($menu in $menus)
                     <button><a href="$menu.link">$menu.title</a></button>
                 #end
-                <button onclick="changeTheme()">Change theme</button>
+                <button onclick="changeTheme()">$translations['change_theme']</button>
                 #if($hasAuthenticate)
-                    <button onclick="logout()" id="logout">Logout</button>
+                    <button onclick="logout()" id="logout">$translations['logout']</button>
                 #end
             </div>
         </div>
     </div>
     <div id="union-box">
         <div id="top-box-row-up">
-            <h1 id="name" class="istok-web-bold">Dashboard</h1>
+            <h1 id="name" class="istok-web-bold">$translations['dashboard']</h1>
         </div>
         <div id="bottom-box">
             #foreach($sectionInfo in $sectionsInfo)
@@ -137,7 +137,7 @@
                                                 <td>
                                                     <button class="file-link"
                                                             onclick="generateUrl('$value', '$section.pluralName', '$field.fieldName')">
-                                                        Link
+                                                        $translations['link']
                                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                              xmlns="http://www.w3.org/2000/svg">
                                                             <path d="M13 11L21.2 2.80005" stroke="#9A6C00"
@@ -202,7 +202,7 @@
                     stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
                     stroke-linejoin="round"/>
         </svg>
-        Dashboard
+        $translations['dashboard']
     </button>
     #foreach($group in $panelGroups)
         <h4 class="group-text">$group.group</h4>

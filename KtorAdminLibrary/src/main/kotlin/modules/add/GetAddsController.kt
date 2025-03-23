@@ -18,6 +18,8 @@ import models.PanelGroup
 import panels.*
 import response.ErrorResponse
 import response.toMap
+import translator.KtorAdminTranslator
+import translator.translator
 import utils.Constants
 import utils.addCommonModels
 import utils.addCommonUpsertModels
@@ -47,16 +49,18 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
 ) {
     val requestId = getRequestId()
     val valuesWithErrors = getFlashDataAndClear(requestId)
+    val translator = translator
     runCatching {
         val username = principal<KtorAdminPrincipal>()?.name
         val columns = table.getAllAllowToShowColumnsInUpsertView()
         val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
+        val singularTableName = table.getSingularName().replaceFirstChar { it.uppercaseChar() }
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm", model = mapOf(
                     "columns" to columns,
                     "tableName" to table.getTableName(),
-                    "singularTableName" to table.getSingularName().replaceFirstChar { it.uppercaseChar() },
+                    "singularTableName" to singularTableName,
                     "references" to referencesItems,
                     "errors" to (valuesWithErrors.second?.toMap() ?: emptyMap()),
                     "values" to (valuesWithErrors.first ?: emptyMap()),
@@ -65,8 +69,13 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "currentPanel" to table.getPluralName(),
                     "isUpdate" to false,
                     "requestId" to requestId,
-                    "hasAction" to table.hasAddAction
-                ).addCommonUpsertModels(table, username).toMutableMap().addCommonModels(table, panelGroups)
+                    "hasAction" to table.hasAddAction,
+                    "title" to translator.translate(
+                        KtorAdminTranslator.Keys.ADD_NEW_ITEM,
+                        mapOf("name" to singularTableName)
+                    )
+                ).addCommonUpsertModels(table, username).toMutableMap()
+                    .addCommonModels(table, panelGroups, applicationCall = this)
             )
         )
     }.onFailure {
@@ -85,12 +94,13 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
         val errors = valuesWithErrors.second ?: emptyList()
         val errorValues = valuesWithErrors.first
         val values = errorValues?.takeIf { it.isNotEmpty() } ?: emptyMap()
+        val singularTableName = panel.getSingularName().replaceFirstChar { it.uppercaseChar() }
         respond(
             VelocityContent(
                 "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm", model = mutableMapOf(
                     "fields" to fields,
                     "collectionName" to panel.getCollectionName(),
-                    "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
+                    "singularName" to singularTableName,
                     "values" to values,
                     "errors" to errors.toMap(),
                     "csrfToken" to CsrfManager.generateToken(),
@@ -98,7 +108,12 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
                     "hasAction" to panel.hasAddAction,
                     "panelGroups" to panelGroups,
                     "currentPanel" to panel.getPluralName(),
-                ).addCommonUpsertModels(panel, username).toMutableMap().addCommonModels(panel, panelGroups)
+                    "title" to translator.translate(
+                        KtorAdminTranslator.Keys.ADD_NEW_ITEM,
+                        mapOf("name" to singularTableName)
+                    )
+                ).addCommonUpsertModels(panel, username).toMutableMap()
+                    .addCommonModels(panel, panelGroups, applicationCall = this)
             )
         )
     }.onFailure {

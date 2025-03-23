@@ -25,7 +25,7 @@ interface AdminPanel {
 
 fun List<AdminPanel>.findWithPluralName(name: String?) = find { it.getPluralName() == name }
 
-fun AdminPanel.getAllCustomActions(): List<CustomAdminAction> {
+fun AdminPanel.getAllCustomActions(deleteActionDisplayText: String = "Delete selected items"): List<CustomAdminAction> {
     if (getCustomActions().any { it !in DynamicConfiguration.customActions.map { action -> action.key } }) {
         throw IllegalStateException("(${getPluralName()}) One or more custom actions are not registered in DynamicConfiguration.")
     }
@@ -34,7 +34,12 @@ fun AdminPanel.getAllCustomActions(): List<CustomAdminAction> {
             it.key in getCustomActions()
         })
         addAll(DynamicConfiguration.forAllCustomActions)
-        if (getDefaultActions().contains(Action.DELETE)) add(DeleteAction(this@getAllCustomActions))
+        if (getDefaultActions().contains(Action.DELETE)) add(
+            DeleteAction(
+                this@getAllCustomActions,
+                displayText = deleteActionDisplayText
+            )
+        )
     }
 }
 

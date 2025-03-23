@@ -13,6 +13,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.server.velocity.*
 import rate_limiting.withRateLimit
+import translator.translator
 import utils.Constants
 
 fun Routing.configureLoginRouting(authenticatedName: String) {
@@ -24,12 +25,16 @@ fun Routing.configureLoginRouting(authenticatedName: String) {
                 throw IllegalStateException("Login fields are not configured.")
             }
             val origin = call.parameters["origin"] ?: "/${DynamicConfiguration.adminPath}"
+            val translator = call.translator
             call.respond(
                 VelocityContent(
                     "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_login.vm", model = mutableMapOf(
                         "fields" to DynamicConfiguration.loginFields, "origin" to origin,
                         "csrfToken" to CsrfManager.generateToken(),
                         "requestId" to requestId,
+                        "translations" to translator.translates,
+                        "layout_direction" to translator.layoutDirection,
+                        "lang" to translator.languageCode,
                     ).apply {
                         DynamicConfiguration.loginPageMessage?.let {
                             put("message", it)
