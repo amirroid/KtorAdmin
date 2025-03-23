@@ -8,6 +8,7 @@ import models.forms.LoginFiled
 import models.menu.Menu
 import preview.KtorAdminPreview
 import tiny.TinyMCEConfig
+import translator.KtorAdminTranslator
 import java.time.ZoneId
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
@@ -78,7 +79,7 @@ internal object DynamicConfiguration {
 
     var adminPath = "admin"
 
-    var loginPageMessage : String? = null
+    var loginPageMessage: String? = null
 
     /**
      * If debugMode is enabled, error messages will be displayed.
@@ -95,6 +96,12 @@ internal object DynamicConfiguration {
     private val _valueMappers = ConcurrentLinkedQueue<KtorAdminValueMapper>()
     val valueMappers: List<KtorAdminValueMapper>
         get() = _valueMappers.toList()
+
+
+    /** Translators mappers (Thread-safe) */
+    private val _translators = ConcurrentLinkedQueue<KtorAdminTranslator>()
+    val translators: List<KtorAdminTranslator>
+        get() = _translators.toList()
 
     /** Previews (Thread-safe) */
     private val _previews = ConcurrentLinkedQueue<KtorAdminPreview>()
@@ -161,5 +168,12 @@ internal object DynamicConfiguration {
             throw IllegalArgumentException("A custom action with key '${customAction.key}' is already registered.")
         }
         _forAllCustomActions.add(customAction)
+    }
+
+    fun registerTranslator(translator: KtorAdminTranslator) {
+        if (_translators.any { it.languageCode == translator.languageCode }) {
+            throw IllegalArgumentException("A translator with languageCode '${translator.languageCode}' is already registered.")
+        }
+        _translators.add(translator)
     }
 }

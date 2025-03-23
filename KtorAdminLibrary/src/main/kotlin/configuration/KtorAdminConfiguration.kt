@@ -18,6 +18,7 @@ import providers.StorageProvider
 import repository.FileRepository
 import repository.MongoClientRepository
 import tiny.TinyMCEConfig
+import translator.KtorAdminTranslator
 import java.time.Duration
 import java.time.ZoneId
 import java.util.TimeZone
@@ -274,6 +275,13 @@ class KtorAdminConfiguration {
      */
     fun registerPreview(preview: KtorAdminPreview) {
         DynamicConfiguration.registerPreview(preview)
+    }
+
+    /**
+     * Registers a new translator.
+     */
+    fun registerTranslator(translator: KtorAdminTranslator) {
+        DynamicConfiguration.registerTranslator(translator)
     }
 
 
