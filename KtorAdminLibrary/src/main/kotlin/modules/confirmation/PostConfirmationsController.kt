@@ -21,6 +21,7 @@ import panels.hasEditAction
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
 import response.ErrorResponse
+import translator.translator
 import utils.badRequest
 import utils.invalidateRequest
 import utils.respondBack
@@ -125,7 +126,9 @@ private suspend fun RoutingContext.updateData(
     val requestId = params[REQUEST_ID_FORM]?.firstOrNull()
 
     // Validate the column value
-    val validateColumn = Validators.validateColumnParameter(table, columnSet, value, primaryKey)
+    val currentTranslator = call.translator
+    val validateColumn =
+        Validators.validateColumnParameter(table, columnSet, value, primaryKey, translator = currentTranslator)
     val isSameValues = value == confirmValue
 
     if (isSameValues && validateColumn == null) {
@@ -184,7 +187,8 @@ private suspend fun RoutingContext.updateFieldData(
     val requestId = params[REQUEST_ID_FORM]?.firstOrNull()
 
     // Validate the field value
-    val validateField = Validators.validateFieldParameter(fieldSet, value)
+    val currentTranslator = call.translator
+    val validateField = Validators.validateFieldParameter(fieldSet, value, translator = currentTranslator)
     val isSameValues = value == confirmValue
 
     if (isSameValues && validateField == null) {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="$lang" dir="$layout_direction">
 
 <head>
     <meta charset="UTF-8">
@@ -36,7 +36,7 @@
                     <path d="M18.3334 18.3333L16.6667 16.6667" stroke="#292D32" stroke-width="1.5"
                           stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <input class="search-input" type="search" placeholder="Search...">
+                <input class="search-input" type="search" placeholder="$translations['search']">
             #end
         </div>
         <div id="username-container">
@@ -53,14 +53,26 @@
             </div>
             <div class="dropdown-content">
                 #foreach($menu in $menus)
-                    <button><a href="$menu.link">$menu.title</a></button>
+                    <button><a href='$menu.link'>$menu.title</a></button>
                 #end
-                <button onclick="changeTheme()">Change theme</button>
+                <button onclick="changeTheme()">$translations['change_theme']</button>
+                #if($translators)
+                    <div class="submenu-container">
+                        <button class="submenu-button">$translations['languages']</button>
+                        <div class="submenu">
+                            #foreach($translator in $translators)
+                                <button onclick="changeLanguage('$translator.languageCode')"
+                                        class="#if($current_lang == $translator.languageCode) selected_lang #end">$translator.languageName</button>
+                            #end
+                        </div>
+                    </div>
+                #end
                 #if($canDownload)
-                    <button onclick="downloadFile('$pluralNameBase', '$csrfToken')">Download as CSV</button>
+                    <button onclick="downloadFile('$pluralNameBase', '$csrfToken')">$translations[
+                        'download_as_csv']</button>
                 #end
                 #if($hasAuthenticate)
-                    <button onclick="logout()" id="logout">Logout</button>
+                    <button onclick="logout()" id="logout">$translations['logout']</button>
                 #end
             </div>
         </div>
@@ -74,19 +86,19 @@
                 <path d="M18.3334 18.3333L16.6667 16.6667" stroke="#292D32" stroke-width="1.5"
                       stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <input class="search-input" type="search" placeholder="Search...">
+            <input class="search-input" type="search" placeholder="$translations['search']">
         </div>
     #end
     <div class="mobile-action actions-row">
         <div class="actions-container">
             <select class="actions-input">
-                <option value="">Select an action</option>
+                <option value="">$translations['select_action']</option>
                 #foreach($action in $actions)
                     <option value="${action.key}">${action.displayText}</option>
                 #end
             </select>
         </div>
-        <button class="perform-action" onclick="openActionDialog()">Perform</button>
+        <button class="perform-action" onclick="openActionDialog()">$translations['perform']</button>
         #if($filtersData.size != 0)
             <div class="filter-button" onclick="toggleFilter()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -109,8 +121,9 @@
                 <div id="filters-container">
                     #foreach($filter in $filtersData)
                         #if($filter.type == "DATE")
+                            #set($label = $translations['select_range_of'].replace('{value}', $filter.verboseName))
                             <div class="filter-field-container filter">
-                                <h4 class="filter-label">Select range of $filter.verboseName</h4>
+                                <h4 class="filter-label">$label</h4>
                                 <div class="filter-field-parent-date">
                                     <input type="date" class="filter-input-date" id="${filter.paramName}-start"
                                            name="${filter.paramName}">
@@ -119,8 +132,9 @@
                                 </div>
                             </div>
                         #elseif($filter.type == "DATETIME")
+                            #set($label = $translations['select_range_of'].replace('{value}', $filter.verboseName))
                             <div class="filter-field-container filter">
-                                <h4 class="filter-label">Select range of $filter.verboseName</h4>
+                                <h4 class="filter-label">$label</h4>
                                 <div class="filter-field-parent-date">
                                     <input type="datetime-local" class="filter-input-date"
                                            id="${filter.paramName}-start" name="${filter.paramName}">
@@ -129,8 +143,9 @@
                                 </div>
                             </div>
                         #elseif($filter.type == "ENUMERATION")
+                            #set($label = $translations['select_item_for'].replace('{value}', $filter.verboseName))
                             <div class="filter-field-container">
-                                <h4 class="filter-label">Select an item for $filter.verboseName</h4>
+                                <h4 class="filter-label">$label</h4>
                                 <div class="filter-field-parent filter">
                                     <select class="filter-field" name="${filter.paramName}" id="${filter.paramName}">
                                         <option value="">-- Select --</option>
@@ -141,8 +156,9 @@
                                 </div>
                             </div>
                         #elseif($filter.type == "REFERENCE")
+                            #set($label = $translations['select_item_for'].replace('{value}', $filter.verboseName))
                             <div class="filter-field-container">
-                                <h4 class="filter-label">Select an item for $filter.verboseName</h4>
+                                <h4 class="filter-label">$label</h4>
                                 <div class="filter-field-parent filter">
                                     <select class="filter-field" name="${filter.paramName}" id="${filter.paramName}">
                                         <option value="">-- Select --</option>
@@ -153,8 +169,9 @@
                                 </div>
                             </div>
                         #elseif($filter.type == "BOOLEAN")
+                            #set($label = $translations['select_boolean'].replace('{value}', $filter.verboseName))
                             <div class="filter-field-container">
-                                <h4 class="filter-label">Select a boolean for $filter.verboseName</h4>
+                                <h4 class="filter-label">$label</h4>
                                 <div class="filter-field-parent filter">
                                     <select class="filter-field" name="${filter.paramName}" id="${filter.paramName}">
                                         <option value="">-- Select --</option>
@@ -165,27 +182,23 @@
                             </div>
                         #end
                     #end
-                    <button id="filter-submit-button" onclick="onFilterApply()">Filter</button>
+                    <button id="filter-submit-button" onclick="onFilterApply()">$translations['filter']</button>
                 </div>
                 <div id="top-box-row-up">
                     <div id="name-container">
                         <h1 id="name" class="istok-web-bold">$pluralName</h1>
-                        #if($count)
-                            <div id="count-text">$count Items</div>
-                        #else
-                            <div id="count-text">Empty</div>
-                        #end
+                        <div id="count-text">$count_text</div>
                     </div>
                     <div class="actions-row">
                         <div class="actions-container">
                             <select class="actions-input">
-                                <option value="">Select an action</option>
+                                <option value="">$translations['select_action']</option>
                                 #foreach($action in $actions)
                                     <option value="${action.key}">${action.displayText}</option>
                                 #end
                             </select>
                         </div>
-                        <button class="perform-action" onclick="openActionDialog()">Perform</button>
+                        <button class="perform-action" onclick="openActionDialog()">$translations['perform']</button>
                         #if($filtersData.size != 0)
                             <div class="filter-button" onclick="toggleFilter()">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -305,7 +318,7 @@
                                 <td>
                                     <button class="file-link"
                                             onclick="generateUrl('$item', '$pluralNameBase', '$fieldName')">
-                                        Link
+                                        $translations['link']
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
                                             <path d="M13 11L21.2 2.80005" stroke="#9A6C00" stroke-width="1.5"
@@ -421,7 +434,7 @@
                     stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
                     stroke-linejoin="round"/>
         </svg>
-        Dashboard
+        $translations['dashboard']
     </button>
     #foreach($group in $panelGroups)
         <h4 class="group-text">$group.group</h4>

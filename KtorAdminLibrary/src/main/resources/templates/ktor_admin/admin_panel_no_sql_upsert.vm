@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="$lang" dir="$layout_direction">
 
 <head>
     <meta charset="UTF-8">
@@ -51,13 +51,24 @@
                 #foreach($menu in $menus)
                     <button><a href="$menu.link">$menu.title</a></button>
                 #end
-                <button onclick="changeTheme()">Change theme</button>
+                <button onclick="changeTheme()">$translations['change_theme']</button>
+                #if($translators)
+                    <div class="submenu-container">
+                        <button class="submenu-button">$translations['languages']</button>
+                        <div class="submenu">
+                            #foreach($translator in $translators)
+                                <button onclick="changeLanguage('$translator.languageCode')"
+                                        class="#if($current_lang == $translator.languageCode) selected_lang #end">$translator.languageName</button>
+                            #end
+                        </div>
+                    </div>
+                #end
                 #if($canDownload)
-                    <button onclick="downloadFile('$pluralName', '$csrfToken', '$primaryKey')">Download as Pdf
-                    </button>
+                    <button onclick="downloadFile('$pluralName', '$csrfToken', '$primaryKey')">$translations[
+                        'download_as_pdf']</button>
                 #end
                 #if($hasAuthenticate)
-                    <button onclick="logout()" id="logout">Logout</button>
+                    <button onclick="logout()" id="logout">$translations['logout']</button>
                 #end
             </div>
         </div>
@@ -201,9 +212,9 @@
                             #if($defaultValue)
                                 <p class="confirmation-value">Current value: $!defaultValue</p>
                             #end
+                            #set($reset_text = $translations.get('reset_item').replace("{name}", $field.verboseName))
                             <button type="button" class="confirmation-button"
-                                    onclick="goToConfigurationEditUrl('$field.fieldName')">
-                                Reset $field.verboseName</button>
+                                    onclick="goToConfigurationEditUrl('$field.fieldName')">$reset_text</button>
                         #elseif($field.type.name == "STRING")
                             #if($field.hasRichEditor)
                                 <textarea name="$fullFieldName" class="rich-editor-area"
@@ -218,7 +229,8 @@
                             #end
                         #elseif($field.type.name == "FILE")
                             <label for="$fullFieldName"
-                                   class="file-input#if($field.readOnly) readonly-field#end">Select a file</label>
+                                   class="file-input#if($field.readOnly) readonly-field#end">$translations[
+                                'select_file']</label>
                             <input type="file" class="file-input-field" name="$fullFieldName"
                                    id="$fullFieldName"
                                    #if($field.readOnly)disabled#end/>
@@ -226,7 +238,7 @@
                             #if($!values.get($fullFieldName))
                                 <button class="file-link" type="button"
                                         onclick="openFileLink('$!values.get($fullFieldName)')">
-                                    Current file
+                                    $translations['current_file']
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                          xmlns="http://www.w3.org/2000/svg">
                                         <path d="M13 11L21.2 2.80005" stroke="#9A6C00" stroke-width="1.5"
@@ -260,7 +272,7 @@
                             <div class="select-input-background">
                                 <select name="$fullFieldName" class="select-input"
                                         #if($field.readOnly)disabled#end>
-                                    <option value="">Select an item</option>
+                                    <option value="">$translations['select_item']</option>
                                     #foreach($value in $field.enumerationValues)
                                         <option value="$value"
                                                 #if($value == $!defaultValue)selected#end>$value</option>
@@ -295,7 +307,8 @@
                 #end
                 <input type="hidden" value="$csrfToken" name="_csrf">
                 <input type="hidden" value="$requestId" name="requestId">
-                <button id="submit-button" type="submit"  #if($hasAction == false) class="disabled" #end>Submit</button>
+                <button id="submit-button" type="submit"  #if($hasAction == false) class="disabled" #end>$translations[
+                    'submit']</button>
             </form>
 
             <script>
@@ -534,7 +547,7 @@
                     stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
                     stroke-linejoin="round"/>
         </svg>
-        Dashboard
+        $translations['dashboard']
     </button>
     #foreach($group in $panelGroups)
         <h4 class="group-text">$group.group</h4>
@@ -561,6 +574,7 @@
     <div class="spinner"></div>
 </div>
 <script>
+    const selectedFileText = "$translations['selected_file']"
     const adminPath = "$adminPath"
         #if($tinyMCEConfig)
         const tinyConfig = JSON.parse(`$tinyMCEConfig`);

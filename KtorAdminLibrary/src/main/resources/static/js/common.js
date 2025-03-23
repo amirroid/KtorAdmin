@@ -386,3 +386,9 @@ function cleanUrl() {
     currentUrl.search = ''
     return currentUrl
 }
+
+
+function changeLanguage(languageCode) {
+    document.cookie = `current_language=${languageCode}; path=/;`;
+    location.reload();
+}

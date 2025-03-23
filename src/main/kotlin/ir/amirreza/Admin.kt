@@ -17,6 +17,7 @@ import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
 import providers.StorageProvider
 import tiny.TinyMCEConfig
+import translator.locals.fa.PersianKtorAdminTranslator
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
@@ -42,6 +43,7 @@ fun Application.configureAdmin(database: Database) {
         )
 //        authenticateName = "admin"
         mediaPath = MEDIA_PATH
+        registerTranslator(PersianKtorAdminTranslator)
         mediaRoot = MEDIA_ROOT
         adminDashboard = CustomDashboard()
         defaultAwsS3Bucket = "school-data"

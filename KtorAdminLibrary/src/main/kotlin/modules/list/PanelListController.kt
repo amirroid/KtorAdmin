@@ -20,6 +20,8 @@ import org.bson.conversions.Bson
 import panels.*
 import repository.JdbcQueriesRepository
 import repository.MongoClientRepository
+import translator.KtorAdminTranslator
+import translator.translator
 import utils.Constants
 import utils.addCommonModels
 import utils.addCommonUpsertModels
@@ -228,7 +230,8 @@ private suspend fun ApplicationCall.respondWithTemplate(
         panelGroups = panelGroups,
         hasSearch = hasSearch,
         username = user?.name,
-        count = count
+        count = count,
+        applicationCall = this
     )
 
     respond(
@@ -251,7 +254,9 @@ private suspend fun buildTemplateModel(
     hasSearch: Boolean,
     username: String?,
     count: Long,
+    applicationCall: ApplicationCall
 ): Map<String, Any> {
+    val translator = applicationCall.translator
     return mutableMapOf(
         "fields" to when (panel) {
             is AdminJdbcTable -> panel.getAllAllowToShowColumns()
@@ -265,16 +270,20 @@ private suspend fun buildTemplateModel(
         "currentPage" to (currentPage?.plus(1) ?: 1),
         "maxPages" to maxPages,
         "filtersData" to filtersData,
-        "actions" to panel.getAllCustomActions(),
+        "actions" to panel.getAllCustomActions(deleteActionDisplayText = translator.translate("delete_selected_items")),
         "csrfToken" to CsrfManager.generateToken(),
         "panelGroups" to panelGroups,
         "currentPanel" to panel.getPluralName(),
         "canDownload" to DynamicConfiguration.canDownloadDataAsCsv,
-        "count" to count
+        "count" to count,
+        "count_text" to if (count == 0L) translator.translate(KtorAdminTranslator.Keys.EMPTY) else translator.translate(
+            KtorAdminTranslator.Keys.ITEMS,
+            mapOf("count" to count.toString())
+        )
     ).apply {
         order?.let {
             put("order", it.copy(direction = it.direction.lowercase()))
         }
         username?.let { put("username", it) }
-    }.addCommonModels(panel, panelGroups)
+    }.addCommonModels(panel, panelGroups, applicationCall = applicationCall)
 }

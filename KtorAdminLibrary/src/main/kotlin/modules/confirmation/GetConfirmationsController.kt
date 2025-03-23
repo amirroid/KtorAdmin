@@ -4,6 +4,7 @@ import authentication.KtorAdminPrincipal
 import csrf.CsrfManager
 import flash.getFlashDataAndClear
 import flash.getRequestId
+import formatters.map
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -17,6 +18,8 @@ import panels.AdminMongoCollection
 import panels.AdminPanel
 import panels.hasEditAction
 import response.toMap
+import translator.KtorAdminTranslator
+import translator.translator
 import utils.Constants
 import utils.badRequest
 import utils.serverError
@@ -103,7 +106,10 @@ private suspend fun ApplicationCall.handleJdbcConfirmationEditView(
                     "isUpdate" to false,
                     "requestId" to requestId,
                     "hasAction" to table.hasEditAction,
-                    "title" to "Reset ${column.verboseName}",
+                    "title" to translator.translate(
+                        KtorAdminTranslator.Keys.RESET_ITEM,
+                        mapOf("name" to column.verboseName)
+                    ),
                     "callMethod" to "application/x-www-form-urlencoded"
                 ).apply {
                     username?.let { put("username", it) }
@@ -151,7 +157,10 @@ private suspend fun ApplicationCall.handleMongoConfirmationEditView(
                     "isUpdate" to false,
                     "requestId" to requestId,
                     "hasAction" to panel.hasEditAction,
-                    "title" to "Reset ${field.verboseName}",
+                    "title" to translator.translate(
+                        KtorAdminTranslator.Keys.RESET_ITEM,
+                        mapOf("name" to field.verboseName)
+                    ),
                     "callMethod" to "application/x-www-form-urlencoded"
                 ).apply {
                     username?.let { put("username", it) }

@@ -209,11 +209,6 @@
     font-weight: 700;
     font-style: normal;
 }
-
-#username-container:hover .dropdown-icon path {
-    stroke: var(--white);
-}
-
 .dropdown-content {
     display: block;
     position: absolute;
@@ -229,26 +224,24 @@
     border-radius: 12px;
     visibility: hidden;
     min-width: 180px;
-
+    pointer-events: none;
 }
 
 #username-container:hover .dropdown-content {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    pointer-events: all;
 }
 
 .dropdown-content button {
     color: var(--primary-color);
     height: 36px;
-    margin-left: 8px;
     text-align: center;
-    text-decoration: none;
     display: flex;
     width: calc(100% - 16px);
     align-items: center;
-    margin-bottom: 8px;
-    margin-top: 8px;
+    margin: 8px;
     border-bottom: 1px solid var(--transparent-black-10);
     border-left: none;
     cursor: pointer;
@@ -258,13 +251,71 @@
     outline: none;
 }
 
+.submenu-container {
+    position: relative;
+    display: block;
+}
+
+.submenu-button {
+    width: 100%;
+    text-align: left;
+    position: relative;
+}
+
+.submenu-button::after {
+    content: '›';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+}
+
+.submenu {
+    position: absolute;
+    right: 100%;
+    top: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    min-width: 150px;
+    background-color: var(--white-transparent-80);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 5px 0;
+    z-index: 11;
+}
+
+.selected_lang {
+    color: var(--secondary-color) !important;
+}
+
+.submenu-container:hover .submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
 .dropdown-content a {
     text-decoration: none;
+    color: inherit;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
 }
 
 .dropdown-content button:focus {
     border-bottom: 1px solid var(--transparent-black-10);
     outline: none;
+}
+
+.submenu button {
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 15px;
 }
 
 body {
