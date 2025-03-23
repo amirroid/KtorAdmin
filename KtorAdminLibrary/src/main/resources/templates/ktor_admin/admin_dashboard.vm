@@ -51,6 +51,17 @@
                 #foreach($menu in $menus)
                     <button><a href="$menu.link">$menu.title</a></button>
                 #end
+                #if($translators)
+                    <div class="submenu-container">
+                        <button class="submenu-button">$translations['languages']</button>
+                        <div class="submenu">
+                            #foreach($translator in $translators)
+                                <button onclick="changeLanguage('$translator.languageCode')"
+                                        class="#if($current_lang == $translator.languageCode) selected_lang #end">$translator.languageName</button>
+                            #end
+                        </div>
+                    </div>
+                #end
                 <button onclick="changeTheme()">$translations['change_theme']</button>
                 #if($hasAuthenticate)
                     <button onclick="logout()" id="logout">$translations['logout']</button>

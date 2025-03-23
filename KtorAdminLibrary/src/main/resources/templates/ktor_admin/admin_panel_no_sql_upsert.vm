@@ -52,6 +52,17 @@
                     <button><a href="$menu.link">$menu.title</a></button>
                 #end
                 <button onclick="changeTheme()">$translations['change_theme']</button>
+                #if($translators)
+                    <div class="submenu-container">
+                        <button class="submenu-button">$translations['languages']</button>
+                        <div class="submenu">
+                            #foreach($translator in $translators)
+                                <button onclick="changeLanguage('$translator.languageCode')"
+                                        class="#if($current_lang == $translator.languageCode) selected_lang #end">$translator.languageName</button>
+                            #end
+                        </div>
+                    </div>
+                #end
                 #if($canDownload)
                     <button onclick="downloadFile('$pluralName', '$csrfToken', '$primaryKey')">$translations[
                         'download_as_pdf']</button>
