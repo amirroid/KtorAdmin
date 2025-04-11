@@ -46,17 +46,16 @@ For the source code, check out the repository:
 ✅ **Data Export** – Export data in multiple formats **with ease**.  
 ✅ **Rich Text Editor** – Built-in **content editing** support.  
 ✅ **Advanced Filtering & Search** – Quickly **filter & find data** with powerful search capabilities.  
-✅ **Optimized for Performance** – Designed for **high performance** in **production environments**.
+✅ **Optimized for Performance** – Designed for **high performance** in **production environments**.  
+✅ **Flexible Multilingual Support** – UI is ready for localization with support for multiple languages. While not all languages are pre-included, you can easily add custom translations to fit your needs.
 
 ---
-
 ## **💡 Why Choose KtorAdmin?**
 
 KtorAdmin removes **unnecessary boilerplate code** and provides a **schema-independent, dynamic, and extensible**
 solution for admin panel creation. Whether you're handling **relational databases** like **MySQL & PostgreSQL** or
 working with **NoSQL databases** like **MongoDB**, KtorAdmin gives you an effortless way to **manage and monitor** your
 app’s data.
-
 ---
 
 ## **🚀 Getting Started**
