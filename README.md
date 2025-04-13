@@ -51,11 +51,8 @@ For the source code, check out the repository:
 
 ---
 ## **💡 Why Choose KtorAdmin?**
+KtorAdmin removes **unnecessary boilerplate code** and provides a **schema-independent, dynamic, and extensible** solution for admin panel creation. Whether you're handling **relational databases** like **MySQL & PostgreSQL** or working with **NoSQL databases** like **MongoDB**, KtorAdmin gives you an effortless way to **manage and monitor** your app’s data.
 
-KtorAdmin removes **unnecessary boilerplate code** and provides a **schema-independent, dynamic, and extensible**
-solution for admin panel creation. Whether you're handling **relational databases** like **MySQL & PostgreSQL** or
-working with **NoSQL databases** like **MongoDB**, KtorAdmin gives you an effortless way to **manage and monitor** your
-app’s data.
 ---
 
 ## **🚀 Getting Started**
