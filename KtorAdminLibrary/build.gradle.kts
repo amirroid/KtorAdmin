@@ -75,7 +75,7 @@ dependencies {
     implementation("org.reflections:reflections:0.10.2")
 
     // Ktor Core
-    val ktorVersion = "3.0.3"
+    val ktorVersion = "3.2.2"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
 
     // Templating

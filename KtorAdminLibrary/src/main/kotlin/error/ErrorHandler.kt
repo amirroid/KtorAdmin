@@ -1,5 +1,6 @@
 package error
 
+import configuration.DynamicConfiguration
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.application.hooks.*
@@ -30,21 +31,25 @@ internal class KtorAdminErrorHandlerConfig {
  * A Ktor plugin that allows handling specific HTTP status codes dynamically.
  * Developers can register custom responses for different status codes.
  */
-internal val KtorAdminErrorHandler = createApplicationPlugin("KtorAdminErrorHandler", ::KtorAdminErrorHandlerConfig) {
-    /**
-     * An attribute key to prevent multiple executions for the same request.
-     */
-    val handledAttributeKey = AttributeKey<Boolean>("KtorAdminHandledStatus")
+internal val KtorAdminErrorHandler =
+    createApplicationPlugin("KtorAdminErrorHandler", ::KtorAdminErrorHandlerConfig) {
+        /**
+         * An attribute key to prevent multiple executions for the same request.
+         */
+        val handledAttributeKey = AttributeKey<Boolean>("KtorAdminHandledStatus")
 
-    /**
-     * Intercepts the response before it is sent to apply custom status handlers if defined.
-     */
-    on(ResponseBodyReadyForSend) { call, content ->
-        if (call.attributes.getOrNull(handledAttributeKey) == true || !call.request.uri.startsWith("/admin")) return@on
-        val status = content.status ?: call.response.status() ?: return@on
-        pluginConfig.statusHandlers[status]?.let { handler ->
-            call.attributes.put(handledAttributeKey, true)
-            handler(call)
+        /**
+         * Intercepts the response before it is sent to apply custom status handlers if defined.
+         */
+        on(ResponseBodyReadyForSend) { call, content ->
+            if (call.attributes.getOrNull(handledAttributeKey) == true || !call.request.uri.startsWith(
+                    "/${DynamicConfiguration.adminPath}"
+                )
+            ) return@on
+            val status = content.status ?: call.response.status() ?: return@on
+            pluginConfig.statusHandlers[status]?.let { handler ->
+                call.attributes.put(handledAttributeKey, true)
+                handler(call)
+            }
         }
     }
-}
