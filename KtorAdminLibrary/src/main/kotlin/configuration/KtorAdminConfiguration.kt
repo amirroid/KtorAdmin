@@ -222,7 +222,12 @@ class KtorAdminConfiguration {
     /**
      * Registers a new MongoDB client.
      */
-    fun mongo(key: String?, databaseName: String, address: MongoServerAddress, credential: MongoCredential? = null) {
+    fun mongo(
+        key: String?,
+        databaseName: String,
+        address: MongoServerAddress,
+        credential: MongoCredential? = null
+    ) {
         MongoClientRepository.registerNewClient(key, databaseName, address, credential)
     }
 
@@ -257,6 +262,21 @@ class KtorAdminConfiguration {
     }
 
     /**
+     * Registers a new JDBC data source.
+     */
+    fun jdbc(
+        key: String?,
+        dataSource: HikariDataSource
+    ) {
+        if (key == null) {
+            KtorAdminHikariCP.defaultCustom(dataSource)
+        } else {
+            KtorAdminHikariCP.custom(key, dataSource)
+            jdbcDataSources.add(key)
+        }
+    }
+
+    /**
      * Registers an AWS S3 client.
      */
     fun registerS3Client(
@@ -268,7 +288,8 @@ class KtorAdminConfiguration {
         AWSS3StorageProvider.register(secretKey, accessKey, region, endpoint)
     }
 
-    fun registerValueMapper(valueMapper: KtorAdminValueMapper) = DynamicConfiguration.registerValueMapper(valueMapper)
+    fun registerValueMapper(valueMapper: KtorAdminValueMapper) =
+        DynamicConfiguration.registerValueMapper(valueMapper)
 
     /**
      * Registers an event listener for admin events.
