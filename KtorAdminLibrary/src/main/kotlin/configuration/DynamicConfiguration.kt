@@ -90,6 +90,12 @@ internal object DynamicConfiguration {
      * Strategy to use when deleting rows.
      */
     var fileDeleteStrategy: FileDeleteStrategy = FileDeleteStrategy.KEEP
+        set(value) {
+            require(value != FileDeleteStrategy.INHERIT) {
+                "FileDeleteStrategy.INHERIT cannot be set directly. Use DELETE or KEEP."
+            }
+            field = value
+        }
 
 
     /**
