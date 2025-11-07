@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import models.ColumnSet
+import models.FileDeleteStrategy
 import models.Limit
 import models.UploadTarget
 import models.actions.Action
@@ -64,6 +65,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
             .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
             .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
             .addImport(Action::class.java.packageName, Action::class.java.simpleName)
+            .addImport(FileDeleteStrategy::class.java.packageName, FileDeleteStrategy::class.java.simpleName)
             .addImport(AdminChartStyle::class.java.packageName, AdminChartStyle::class.java.simpleName)
             .addType(generatedClass)
             .build()

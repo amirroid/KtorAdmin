@@ -5,6 +5,7 @@ import annotations.uploads.S3Upload
 import annotations.uploads.CustomUpload
 import annotations.uploads.LocalUpload
 import com.google.devtools.ksp.symbol.KSAnnotation
+import models.FileDeleteStrategy
 import models.UploadTarget
 import models.types.FieldType
 
@@ -25,13 +26,26 @@ object UploadUtils {
             it.shortName.asString() in annotationNames
         }?.let {
             when (it.shortName.asString()) {
-                awsS3Name -> UploadTarget.AwsS3(it.findArgumentIfIsNotEmpty("bucket"))
+                awsS3Name -> UploadTarget.AwsS3(
+                    it.findArgumentIfIsNotEmpty("bucket"),
+                    it.findDeleteStrategy()
+                )
+
                 customName -> UploadTarget.Custom(it.findArgumentIfIsNotEmpty("key"))
-                localName -> UploadTarget.LocalFile(it.findArgumentIfIsNotEmpty("path"))
+                localName -> UploadTarget.LocalFile(
+                    it.findArgumentIfIsNotEmpty("path"),
+                    it.findDeleteStrategy()
+                )
+
                 else -> null
             }
         }
     }
+
+    private fun KSAnnotation.findDeleteStrategy(key: String = "deleteStrategy") =
+        arguments.find { it.name?.asString() == key }?.let { item ->
+            enumValues<FileDeleteStrategy>().find { it.name == item.toString().split(".").last() }
+        }!!
 
     fun getAllowedMimeTypesFromAnnotation(annotations: Sequence<KSAnnotation>): List<String>? {
         return annotations.find { it.shortName.asString() == AllowedMimeTypes::class.simpleName }

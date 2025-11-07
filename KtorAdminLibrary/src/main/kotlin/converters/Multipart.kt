@@ -159,7 +159,7 @@ internal suspend fun MultiPartData.toTableValues(
                         bytes = it.second
                     )
                 }
-            column.columnName.toString() to fileData
+            column.columnName to fileData
         }
     }
 

@@ -14,6 +14,7 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.writeTo
 import models.ColumnSet
+import models.FileDeleteStrategy
 import models.Limit
 import models.UploadTarget
 import models.actions.Action
@@ -55,6 +56,7 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
             .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
             .addImport(Action::class.java.packageName, Action::class.java.simpleName)
             .addImport(AdminChartStyle::class.java.packageName, AdminChartStyle::class.java.simpleName)
+            .addImport(FileDeleteStrategy::class.java.packageName, FileDeleteStrategy::class.java.simpleName)
             .addType(generatedClass)
             .build()
         fileSpec.writeTo(

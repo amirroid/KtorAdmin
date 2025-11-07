@@ -8,6 +8,7 @@ import dashboard.KtorAdminDashboard
 import hikra.KtorAdminHikariCP
 import listener.AdminEventListener
 import mapper.KtorAdminValueMapper
+import models.FileDeleteStrategy
 import models.forms.LoginFiled
 import models.menu.Menu
 import mongo.MongoCredential
@@ -112,6 +113,15 @@ class KtorAdminConfiguration {
         get() = DynamicConfiguration.canDownloadDataAsCsv
         set(value) {
             DynamicConfiguration.canDownloadDataAsCsv = value
+        }
+
+    /**
+     * Strategy to use when deleting rows.
+     */
+    var fileDeleteStrategy: FileDeleteStrategy
+        get() = DynamicConfiguration.fileDeleteStrategy
+        set(value) {
+            DynamicConfiguration.fileDeleteStrategy = value
         }
 
     /**

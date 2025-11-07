@@ -34,4 +34,12 @@ interface StorageProvider {
      * @return The URL pointing to the requested file.
      */
     suspend fun getFileUrl(fileName: String, call: ApplicationCall): String?
+
+    /**
+     * Deletes a file from the storage provider.
+     *
+     * @param fileName The name of the file to be deleted.
+     * @return `true` if the file was successfully deleted, `false` otherwise.
+     */
+    suspend fun deleteFile(fileName: String): Boolean
 }

@@ -52,7 +52,8 @@ internal object JdbcQueriesRepository {
      * @return Result of the operation
      */
     private fun <T> AdminJdbcTable.usingDataSource(lambda: (Session) -> T): T {
-        val dataSource = getDatabaseKey()?.let { KtorAdminHikariCP.dataSource(it) } ?: KtorAdminHikariCP.dataSource()
+        val dataSource = getDatabaseKey()?.let { KtorAdminHikariCP.dataSource(it) }
+            ?: KtorAdminHikariCP.dataSource()
         val session = session(dataSource)
         val invoke = using(session, lambda)
         session.close()
@@ -95,10 +96,14 @@ internal object JdbcQueriesRepository {
                 prepareStatement.executeQuery().use { rs ->
                     while (rs.next()) {
                         val primaryKey =
-                            rs.getObject("${table.getTableName()}_${table.getPrimaryKey()}")?.toString() ?: "UNKNOWN"
+                            rs.getObject("${table.getTableName()}_${table.getPrimaryKey()}")
+                                ?.toString() ?: "UNKNOWN"
                         val data = table.getAllAllowToShowColumns().map { column ->
                             column.mapDataIfReference(
-                                value = rs.getTypedValue(column.type, "${table.getTableName()}_${column.columnName}")
+                                value = rs.getTypedValue(
+                                    column.type,
+                                    "${table.getTableName()}_${column.columnName}"
+                                )
                                     .restore(column),
                                 tables = tables
                             )
@@ -127,24 +132,25 @@ internal object JdbcQueriesRepository {
         primaryKey: String
     ) {
         table.usingDataSource { session ->
-            session.prepare(sqlQuery(table.createUpdateAColumnQuery(columnSet))).use { prepareStatement ->
+            session.prepare(sqlQuery(table.createUpdateAColumnQuery(columnSet)))
+                .use { prepareStatement ->
 
-                // Sets the new value at the first parameter position
-                prepareStatement.putColumn(
-                    columnSet.type,
-                    value?.toTypedValue(columnSet.type).map(columnSet),
-                    1
-                )
+                    // Sets the new value at the first parameter position
+                    prepareStatement.putColumn(
+                        columnSet.type,
+                        value?.toTypedValue(columnSet.type).map(columnSet),
+                        1
+                    )
 
-                // Sets the primary key value at the second parameter position
-                val primaryKeyColumn = table.getPrimaryKeyColumn()
-                prepareStatement.putColumn(
-                    primaryKeyColumn.type,
-                    primaryKey.toTypedValue(primaryKeyColumn.type).map(primaryKeyColumn),
-                    2
-                )
-                prepareStatement.executeUpdate()
-            }
+                    // Sets the primary key value at the second parameter position
+                    val primaryKeyColumn = table.getPrimaryKeyColumn()
+                    prepareStatement.putColumn(
+                        primaryKeyColumn.type,
+                        primaryKey.toTypedValue(primaryKeyColumn.type).map(primaryKeyColumn),
+                        2
+                    )
+                    prepareStatement.executeUpdate()
+                }
         }
     }
 
@@ -175,7 +181,16 @@ internal object JdbcQueriesRepository {
         filters: List<Triple<ColumnSet, String, Any?>>
     ): Long {
         return table.usingDataSource { session ->
-            session.prepare(sqlQuery(table.createGetAllCountQuery(search = search, null, filters, null)))
+            session.prepare(
+                sqlQuery(
+                    table.createGetAllCountQuery(
+                        search = search,
+                        null,
+                        filters,
+                        null
+                    )
+                )
+            )
                 .use { preparedStatement ->
                     preparedStatement.prepareGetAllData(table, search, filters, null)
                     preparedStatement.executeQuery()?.use { rs ->
@@ -227,7 +242,8 @@ internal object JdbcQueriesRepository {
      * @return A `ChartData` object containing labels and their corresponding values.
      */
     fun getChartData(table: AdminJdbcTable, section: ChartDashboardSection): ChartData {
-        val groupedData = mutableMapOf<String, MutableList<MutableList<Double>>>() // Store lists separately for "ALL"
+        val groupedData =
+            mutableMapOf<String, MutableList<MutableList<Double>>>() // Store lists separately for "ALL"
         val aggregationFunction = section.aggregationFunction
         val columns = table.getAllColumns()
         val labelsSet =
@@ -288,7 +304,8 @@ internal object JdbcQueriesRepository {
                     val currentIndexes = mutableMapOf<String, Int>()
                     labels.distinct().forEach { currentIndexes[it] = 0 }
                     labels.forEach { label ->
-                        groupedData[label]?.get(index)?.get(currentIndexes[label]!!)?.let { currentValues.add(it) }
+                        groupedData[label]?.get(index)?.get(currentIndexes[label]!!)
+                            ?.let { currentValues.add(it) }
                         currentIndexes[label] = currentIndexes[label]!! + 1
                     }
 
@@ -297,7 +314,12 @@ internal object JdbcQueriesRepository {
                         displayName = field.displayName,
                         values = currentValues,
                         fillColors = labels.map { section.provideFillColor(it, field.displayName) },
-                        borderColors = labels.map { section.provideBorderColor(it, field.displayName) }
+                        borderColors = labels.map {
+                            section.provideBorderColor(
+                                it,
+                                field.displayName
+                            )
+                        }
                     )
                 }
 
@@ -321,7 +343,8 @@ internal object JdbcQueriesRepository {
                         TextDashboardAggregationFunction.LAST_ITEM -> {
                             if (rs.next()) {
                                 val itemObject = rs.getTypedValue(column.type, section.fieldName)
-                                itemObject?.toString().restore(column)?.toDoubleOrNull()?.formatAsIntegerIfPossible()
+                                itemObject?.toString().restore(column)?.toDoubleOrNull()
+                                    ?.formatAsIntegerIfPossible()
                                     ?.toString()
                                     ?: itemObject.toString()
                             } else ""
@@ -352,7 +375,8 @@ internal object JdbcQueriesRepository {
 
                         else -> {
                             if (rs.next()) {
-                                rs.getObject("aggregationFunctionValue")?.toString()?.toDoubleOrNull()?.restore(column)
+                                rs.getObject("aggregationFunctionValue")?.toString()
+                                    ?.toDoubleOrNull()?.restore(column)
                                     .let {
                                         it?.formatAsIntegerIfPossible() ?: it.toString()
                                     }
@@ -411,21 +435,22 @@ internal object JdbcQueriesRepository {
      * @param primaryKey The primary key column name (optional, used to exclude the current record from duplication check).
      * @return A SQL query string formatted for checking existence.
      */
-    private fun AdminJdbcTable.createExistsColumnQuery(columnName: String, primaryKey: String?) = buildString {
-        append("SELECT EXISTS (SELECT 1 FROM ")
-        append(getTableName())
-        append(" WHERE ")
-        append(columnName)
-        append(" = ?")
+    private fun AdminJdbcTable.createExistsColumnQuery(columnName: String, primaryKey: String?) =
+        buildString {
+            append("SELECT EXISTS (SELECT 1 FROM ")
+            append(getTableName())
+            append(" WHERE ")
+            append(columnName)
+            append(" = ?")
 
-        if (primaryKey != null) {
-            append(" AND ")
-            append(getPrimaryKey())
-            append(" != ?")
+            if (primaryKey != null) {
+                append(" AND ")
+                append(getPrimaryKey())
+                append(" != ?")
+            }
+
+            append(")")
         }
-
-        append(")")
-    }
 
 
     /**
@@ -450,7 +475,8 @@ internal object JdbcQueriesRepository {
                     section.limitCount?.let { preparedStatement.setInt(1, it) }
                     preparedStatement.executeQuery().use { resultSet ->
                         while (resultSet.next()) {
-                            val primaryKey = resultSet.getObject(primaryKeyColumn)?.toString() ?: "N/A"
+                            val primaryKey =
+                                resultSet.getObject(primaryKeyColumn)?.toString() ?: "N/A"
                             val data = columns.map { column ->
                                 resultSet.getTypedValue(column.type, column.columnName)
                                     .restore(column)
@@ -528,7 +554,8 @@ internal object JdbcQueriesRepository {
         if (hasFilters.isNotEmpty()) {
             var currentIndex = hasSearches.size + 1
             hasFilters.forEach { columnSet ->
-                val correspondFilters = filters.filter { it.first.columnName == columnSet.columnName }
+                val correspondFilters =
+                    filters.filter { it.first.columnName == columnSet.columnName }
                 correspondFilters.forEach { filter ->
                     putColumn(
                         columnType = columnSet.type,
@@ -615,7 +642,9 @@ internal object JdbcQueriesRepository {
                                     raw.anyOrNull(
                                         splitItem.joinToString("_")
                                     ).let {
-                                        if (columnSet == null) it?.toString() else it.restore(columnSet)
+                                        if (columnSet == null) it?.toString() else it.restore(
+                                            columnSet
+                                        )
                                             .formatToDisplayInTable(columnSet.type)
                                     }
                                 }
@@ -671,10 +700,11 @@ internal object JdbcQueriesRepository {
                 )
                 prepareStatement.executeQuery().use { rs ->
                     if (rs.next()) {
-                        return@usingDataSource table.getAllAllowToShowColumnsInUpsert().map { column ->
-                            rs.getTypedValue(column.type, column.columnName)?.restore(column)
-                                ?.formatToDisplayInUpsert(column.type)
-                        }
+                        return@usingDataSource table.getAllAllowToShowColumnsInUpsert()
+                            .map { column ->
+                                rs.getTypedValue(column.type, column.columnName)?.restore(column)
+                                    ?.formatToDisplayInUpsert(column.type)
+                            }
                     }
                     return@usingDataSource null
                 }
@@ -686,21 +716,23 @@ internal object JdbcQueriesRepository {
     fun getCountOfTables(tables: List<AdminJdbcTable>) = buildMap {
         tables.groupBy { it.getDatabaseKey() }.forEach { (_, relatedTables) ->
             relatedTables.first().usingDataSource { session ->
-                session.prepare(sqlQuery(createGetCountOfTablesQuery(relatedTables))).use { prepareStatement ->
-                    prepareStatement.executeQuery().use { rs ->
-                        while (rs.next()) {
-                            put(rs.getString("table_name"), rs.getLong("record_count"))
+                session.prepare(sqlQuery(createGetCountOfTablesQuery(relatedTables)))
+                    .use { prepareStatement ->
+                        prepareStatement.executeQuery().use { rs ->
+                            while (rs.next()) {
+                                put(rs.getString("table_name"), rs.getLong("record_count"))
+                            }
                         }
                     }
-                }
             }
         }
     }
 
     // This method creates an SQL query to count records in multiple tables using UNION ALL.
-    private fun createGetCountOfTablesQuery(tables: List<AdminJdbcTable>) = tables.joinToString(" UNION ALL ") {
-        "SELECT '${it.getTableName()}' AS table_name, COUNT(*) AS record_count FROM ${it.getTableName()}"
-    }
+    private fun createGetCountOfTablesQuery(tables: List<AdminJdbcTable>) =
+        tables.joinToString(" UNION ALL ") {
+            "SELECT '${it.getTableName()}' AS table_name, COUNT(*) AS record_count FROM ${it.getTableName()}"
+        }
 
 
     /**
@@ -744,13 +776,14 @@ internal object JdbcQueriesRepository {
      * Generates the SQL query for selecting the related primary keys
      * from the join table in a Many-to-Many relationship.
      */
-    private fun AdminJdbcTable.createSelectedReferenceInListReference(reference: Reference.ManyToMany) = buildString {
-        append("SELECT ${reference.rightPrimaryKey} FROM ")
-        append(reference.joinTable)
-        append(" WHERE ")
-        append(reference.leftPrimaryKey)
-        append(" = ?")
-    }
+    private fun AdminJdbcTable.createSelectedReferenceInListReference(reference: Reference.ManyToMany) =
+        buildString {
+            append("SELECT ${reference.rightPrimaryKey} FROM ")
+            append(reference.joinTable)
+            append(" WHERE ")
+            append(reference.leftPrimaryKey)
+            append(" = ?")
+        }
 
     /**
      * Updates a many-to-many relationship by:
@@ -768,39 +801,41 @@ internal object JdbcQueriesRepository {
         val reference = columnSet.reference as Reference.ManyToMany
 
         joinTable.usingDataSource { session ->
-            session.prepare(sqlQuery(createUpdateReferenceQuery(reference, newIds))).use { preparedStatement ->
-                val primaryKeyColumn = table.getPrimaryKeyColumn()
-                val typedPrimaryKey = primaryKey.toTypedValue(primaryKeyColumn.type)
+            session.prepare(sqlQuery(createUpdateReferenceQuery(reference, newIds)))
+                .use { preparedStatement ->
+                    val primaryKeyColumn = table.getPrimaryKeyColumn()
+                    val typedPrimaryKey = primaryKey.toTypedValue(primaryKeyColumn.type)
 
-                var index = 1
-                preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, index++)
-
-                val idColumnSet = joinTable.getAllColumns().firstOrNull { it.columnName == reference.rightPrimaryKey }
-                if (idColumnSet == null) {
-                    throw IllegalStateException("Column '${reference.rightPrimaryKey}' not found in the join table.")
-                }
-
-                if (newIds.isNotEmpty()) {
-                    newIds.forEach { id ->
-                        preparedStatement.putColumn(
-                            idColumnSet.type,
-                            id.toTypedValue(idColumnSet.type),
-                            index++
-                        )
-                    }
+                    var index = 1
                     preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, index++)
-                    newIds.forEach { id ->
-                        preparedStatement.putColumn(
-                            idColumnSet.type,
-                            id.toTypedValue(idColumnSet.type),
-                            index++
-                        )
-                    }
-                    preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, index)
-                }
 
-                preparedStatement.executeUpdate()
-            }
+                    val idColumnSet = joinTable.getAllColumns()
+                        .firstOrNull { it.columnName == reference.rightPrimaryKey }
+                    if (idColumnSet == null) {
+                        throw IllegalStateException("Column '${reference.rightPrimaryKey}' not found in the join table.")
+                    }
+
+                    if (newIds.isNotEmpty()) {
+                        newIds.forEach { id ->
+                            preparedStatement.putColumn(
+                                idColumnSet.type,
+                                id.toTypedValue(idColumnSet.type),
+                                index++
+                            )
+                        }
+                        preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, index++)
+                        newIds.forEach { id ->
+                            preparedStatement.putColumn(
+                                idColumnSet.type,
+                                id.toTypedValue(idColumnSet.type),
+                                index++
+                            )
+                        }
+                        preparedStatement.putColumn(primaryKeyColumn.type, typedPrimaryKey, index)
+                    }
+
+                    preparedStatement.executeUpdate()
+                }
         }
     }
 
@@ -822,7 +857,11 @@ internal object JdbcQueriesRepository {
 
                     // Insert main columns
                     columns.forEachIndexed { index, columnSet ->
-                        preparedStatement.putColumn(columnSet.type, parameters[index].map(columnSet), index + 1)
+                        preparedStatement.putColumn(
+                            columnSet.type,
+                            parameters[index].map(columnSet),
+                            index + 1
+                        )
                     }
 
                     // Insert auto-now date columns
@@ -915,7 +954,8 @@ internal object JdbcQueriesRepository {
         filters: List<Triple<ColumnSet, String, Any?>>,
         order: Order? = null
     ) = buildString {
-        val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
+        val columns =
+            getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
         val selectColumns = columns.map { columnSet ->
             "${getTableName()}.${columnSet.columnName} AS ${getTableName()}_${columnSet.columnName}"
         }
@@ -950,7 +990,8 @@ internal object JdbcQueriesRepository {
         filters: List<Triple<ColumnSet, String, Any?>>,
         order: Order? = null
     ) = buildString {
-        val columns = getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
+        val columns =
+            getAllAllowToShowColumns().plus(getPrimaryKeyColumn()).distinctBy { it.columnName }
 
         append("SELECT COUNT(*)")
         append(" FROM ")
@@ -1001,29 +1042,30 @@ internal object JdbcQueriesRepository {
             }
         } else emptyList()
 
-        val filterConditions = if (filters.isEmpty()) emptyList() else getFilters().mapNotNull { item ->
-            val pathParts = item.split('.')
-            var currentTable = getTableName()
-            val currentColumn = pathParts.last()
+        val filterConditions =
+            if (filters.isEmpty()) emptyList() else getFilters().mapNotNull { item ->
+                val pathParts = item.split('.')
+                var currentTable = getTableName()
+                val currentColumn = pathParts.last()
 
-            pathParts.first().let { part ->
-                if (!filters.any { it.first.columnName == part }) {
-                    return@mapNotNull null
-                }
-                val columnSet = getAllColumns().find { it.columnName == part }
-                val nextTable = columnSet?.reference?.tableName
-                val currentReferenceColumn = columnSet?.reference?.foreignKey
-
-                if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
-                    joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
-                    currentTable = nextTable
-                }
-                filters.filter { it.first.columnName == columnSet?.columnName }
-                    .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
-                        "${currentTable}.${currentColumn} ${filterItem.second} ?"
+                pathParts.first().let { part ->
+                    if (!filters.any { it.first.columnName == part }) {
+                        return@mapNotNull null
                     }
+                    val columnSet = getAllColumns().find { it.columnName == part }
+                    val nextTable = columnSet?.reference?.tableName
+                    val currentReferenceColumn = columnSet?.reference?.foreignKey
+
+                    if (nextTable != null && currentReferenceColumn != null && pathParts.size > 1) {
+                        joinConditions.add("LEFT JOIN $nextTable ON ${currentTable}.${part} = ${nextTable}.${currentReferenceColumn}")
+                        currentTable = nextTable
+                    }
+                    filters.filter { it.first.columnName == columnSet?.columnName }
+                        .joinToString(" AND ", prefix = "", postfix = "") { filterItem ->
+                            "${currentTable}.${currentColumn} ${filterItem.second} ?"
+                        }
+                }
             }
-        }
         return if (filterConditions.isEmpty() && searchConditions.isEmpty()) {
             ""
         } else {
@@ -1085,7 +1127,8 @@ internal object JdbcQueriesRepository {
 
                     if (reference != null) {
                         val joinTable = reference.tableName
-                        val joinAlias = aliasMap.getOrPut(joinTable) { "${joinTable}_REF" } // ایجاد alias یکتا
+                        val joinAlias =
+                            aliasMap.getOrPut(joinTable) { "${joinTable}_REF" } // ایجاد alias یکتا
 
                         val joinCondition = when (reference) {
                             is Reference.OneToOne, is Reference.ManyToOne -> {
@@ -1176,11 +1219,16 @@ internal object JdbcQueriesRepository {
      * @param primaryKey The primary key column to ensure uniqueness in selection.
      * @return A formatted SQL query string.
      */
-    fun ListDashboardSection.createGetDataQuery(columns: List<ColumnSet>, primaryKey: String): String = buildString {
+    fun ListDashboardSection.createGetDataQuery(
+        columns: List<ColumnSet>,
+        primaryKey: String
+    ): String = buildString {
         val orderField = orderQuery?.substringBeforeLast(" ")?.trim()
         append("SELECT ")
 
-        val columnNames = columns.map { it.columnName }.plus(orderField).plus(primaryKey).filterNotNull().distinct()
+        val columnNames =
+            columns.map { it.columnName }.plus(orderField).plus(primaryKey).filterNotNull()
+                .distinct()
         append(columnNames.joinToString(", "))
 
         append(" FROM ").append(tableName)
@@ -1206,12 +1254,20 @@ internal object JdbcQueriesRepository {
         when (aggregationFunction) {
             TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
                 // Generates a query to select field values for the last 2 records, sorted by date
-                append("SELECT $fieldName FROM $tableName ${orderQuery?.let { "ORDER BY $it" }.orEmpty()} LIMIT 2")
+                append(
+                    "SELECT $fieldName FROM $tableName ${
+                        orderQuery?.let { "ORDER BY $it" }.orEmpty()
+                    } LIMIT 2"
+                )
             }
 
             TextDashboardAggregationFunction.LAST_ITEM -> {
                 // Generates a query to select the field value for the last record, sorted by date
-                append("SELECT $fieldName FROM $tableName ${orderQuery?.let { "ORDER BY $it" }.orEmpty()} LIMIT 1")
+                append(
+                    "SELECT $fieldName FROM $tableName ${
+                        orderQuery?.let { "ORDER BY $it" }.orEmpty()
+                    } LIMIT 1"
+                )
             }
 
             else -> {
@@ -1298,9 +1354,30 @@ internal object JdbcQueriesRepository {
     }
 
     /**
+     * Creates a SQL query to select specific columns for given IDs.
+     *
+     * @param selectedIds List of row IDs
+     * @param columns List of columns to retrieve
+     * @return SQL query string with placeholders for IDs
+     */
+    fun AdminJdbcTable.createGetSelectedColumnsQuery(
+        selectedIds: List<String>,
+        columns: List<ColumnSet>
+    ): String {
+        require(columns.isNotEmpty()) { "Columns cannot be empty" }
+        require(selectedIds.isNotEmpty()) { "Selected IDs cannot be empty" }
+
+        val columnNames = columns.joinToString(", ") { it.columnName }
+        val placeholders = selectedIds.joinToString(",") { "?" }
+
+        return "SELECT $columnNames FROM ${this.getTableName()} WHERE ${this.getPrimaryKey()} IN ($placeholders)"
+    }
+
+    /**
      * Gets the primary key column for the table.
      */
-    private fun AdminJdbcTable.getPrimaryKeyColumn() = getAllColumns().first { it.columnName == getPrimaryKey() }
+    private fun AdminJdbcTable.getPrimaryKeyColumn() =
+        getAllColumns().first { it.columnName == getPrimaryKey() }
 
     /**
      * Deletes multiple rows by their IDs.
@@ -1318,6 +1395,50 @@ internal object JdbcQueriesRepository {
                     preparedStatement.putColumn(primaryKeyColumn.type, item, index + 1)
                 }
                 preparedStatement.execute()
+            }
+        }
+    }
+
+    /**
+     * Retrieves the values of specified columns for the given row IDs.
+     *
+     * @param table Target AdminJdbcTable
+     * @param selectedIds List of row IDs
+     * @param columns Columns to retrieve
+     * @return List of rows, each row is a list of column values
+     */
+    fun getSelectedColumnsForIds(
+        table: AdminJdbcTable,
+        selectedIds: List<String>,
+        columns: List<ColumnSet>
+    ): List<List<Any?>> {
+        if (selectedIds.isEmpty() || columns.isEmpty()) return emptyList()
+
+        return table.usingDataSource { session ->
+            session.prepare(
+                sqlQuery(
+                    table.createGetSelectedColumnsQuery(
+                        selectedIds = selectedIds,
+                        columns = columns
+                    )
+                )
+            ).use { preparedStatement ->
+                val primaryKeyColumn = table.getPrimaryKeyColumn()
+                selectedIds.forEachIndexed { index, id ->
+                    val item = id.toTypedValue(primaryKeyColumn.type)
+                    preparedStatement.putColumn(primaryKeyColumn.type, item, index + 1)
+                }
+
+                preparedStatement.executeQuery().use { resultSet ->
+                    val rows = mutableListOf<List<Any?>>()
+                    while (resultSet.next()) {
+                        val rowValues = columns.map { column ->
+                            resultSet.getObject(column.columnName)?.restore(column)
+                        }
+                        rows.add(rowValues)
+                    }
+                    rows
+                }
             }
         }
     }

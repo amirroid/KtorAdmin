@@ -7,6 +7,7 @@ import ir.amirreza.listeners.AdminListener
 import ir.amirreza.previews.ImagePreview
 import ir.amirreza.previews.VideoPreview
 import mapper.KtorAdminValueMapper
+import models.FileDeleteStrategy
 import models.JDBCDrivers
 import models.UploadTarget
 import models.forms.LoginFiled
@@ -15,7 +16,6 @@ import mongo.MongoCredential
 import mongo.MongoServerAddress
 import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
-import providers.StorageProvider
 import tiny.TinyMCEConfig
 import translator.locals.fa.PersianKtorAdminTranslator
 import kotlin.time.Duration.Companion.minutes
@@ -41,6 +41,7 @@ fun Application.configureAdmin(database: Database) {
                 "amirreza", "admin", "your_password"
             ),
         )
+        fileDeleteStrategy = FileDeleteStrategy.DELETE
 //        authenticateName = "admin"
         mediaPath = MEDIA_PATH
         registerTranslator(PersianKtorAdminTranslator)
@@ -54,7 +55,8 @@ fun Application.configureAdmin(database: Database) {
         registerEventListener(AdminListener(database))
         canDownloadDataAsCsv = true
         canDownloadDataAsPdf = true
-        tinyMCEConfig = TinyMCEConfig.Professional.copy(uploadTarget = UploadTarget.LocalFile(path = null))
+        tinyMCEConfig =
+            TinyMCEConfig.Professional.copy(uploadTarget = UploadTarget.LocalFile(path = null))
         registerValueMapper(
             CustomValueMapper
         )

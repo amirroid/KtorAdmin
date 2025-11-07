@@ -25,6 +25,7 @@ import annotations.uploads.CustomUpload
 import annotations.uploads.S3Upload
 import annotations.uploads.LocalUpload
 import annotations.value_mapper.ValueMapper
+import models.FileDeleteStrategy
 import models.actions.Action
 import models.reference.EmptyColumn
 import models.types.ColumnType
@@ -105,9 +106,9 @@ object Tasks : Table("tasks") {
     @Preview(key = "video_preview")
     @Limits(
         maxBytes = 1024 * 1024 * 20,
-        allowedMimeTypes = ["video/mp4"]
+//        allowedMimeTypes = ["video/mp4"]
     )
-    @LocalUpload
+    @LocalUpload(deleteStrategy = FileDeleteStrategy.KEEP)
     val file = varchar("file", 1000).nullable()
 
     @AutoNowDate

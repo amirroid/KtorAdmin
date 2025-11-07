@@ -18,6 +18,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.writeTo
 import formatters.extractTextInCurlyBraces
+import models.FileDeleteStrategy
 import models.Limit
 import models.UploadTarget
 import models.actions.Action
@@ -57,6 +58,7 @@ class MongoCollectionProcessor(private val environment: SymbolProcessorEnvironme
             .addImport(FieldType::class.java.packageName, FieldType::class.java.simpleName)
             .addImport(UploadTarget::class.java.packageName, UploadTarget::class.java.simpleName)
             .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
+            .addImport(FileDeleteStrategy::class.java.packageName, FileDeleteStrategy::class.java.simpleName)
             .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
             .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
             .addImport(Action::class.java.packageName, Action::class.java.simpleName)

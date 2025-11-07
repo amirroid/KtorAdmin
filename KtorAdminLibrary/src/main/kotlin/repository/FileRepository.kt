@@ -1,15 +1,10 @@
 package repository
 
-import io.ktor.http.content.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.*
-import io.ktor.server.routing.*
-import io.ktor.utils.io.*
-import kotlinx.io.readByteArray
+import io.ktor.server.application.ApplicationCall
 import models.UploadTarget
 import providers.AWSS3StorageProvider
-import providers.StorageProvider
 import providers.LocalStorageProvider
+import providers.StorageProvider
 import java.io.File
 
 internal object FileRepository {
@@ -61,6 +56,21 @@ internal object FileRepository {
         }
     }
 
+    suspend fun deleteFile(uploadTarget: UploadTarget, fileName: String): Boolean {
+        return when (uploadTarget) {
+            is UploadTarget.LocalFile -> LocalStorageProvider.deleteFile(
+                fileName,
+                uploadTarget.path ?: defaultPath!!
+            )
+
+            is UploadTarget.AwsS3 -> AWSS3StorageProvider.deleteFile(
+                fileName,
+                uploadTarget.bucket
+            )
+
+            is UploadTarget.Custom -> getStorageProvider(uploadTarget.key).deleteFile(fileName)
+        }
+    }
 
     private fun createPath(path: String) {
         File(path).apply { if (!exists()) mkdir() }
@@ -92,7 +102,10 @@ internal object FileRepository {
                 return LocalStorageProvider.getFileUrl(fileName, call)
             }
 
-            is UploadTarget.AwsS3 -> AWSS3StorageProvider.getFileUrl(fileName, bucket = uploadTarget.bucket)
+            is UploadTarget.AwsS3 -> AWSS3StorageProvider.getFileUrl(
+                fileName,
+                bucket = uploadTarget.bucket
+            )
 
             is UploadTarget.Custom -> {
                 getStorageProvider(uploadTarget.key).getFileUrl(fileName, call)
