@@ -92,7 +92,7 @@ abstract class KtorAdminTranslator {
     internal fun translate(key: String, values: Map<String, String> = emptyMap()) = translates[key]?.let {
         var newText = it
         values.forEach { (itemKey, value) ->
-            newText = it.replace("{$itemKey}", value)
+            newText = newText.replace("{$itemKey}", value)
         }
         newText
     } ?: "undefined translated key"
