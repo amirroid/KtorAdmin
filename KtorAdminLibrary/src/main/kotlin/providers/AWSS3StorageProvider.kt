@@ -6,6 +6,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
@@ -156,5 +157,31 @@ internal object AWSS3StorageProvider {
                 accessKey, secretKey
             )
         )
+    }
+
+    /**
+     * Deletes a file from the S3 bucket.
+     *
+     * @param fileName The name of the file to delete.
+     * @param bucket Optional bucket name, falls back to default bucket if not provided.
+     * @return `true` if deletion was successful, `false` otherwise.
+     * @throws IllegalStateException if no bucket is specified and no default bucket is set
+     */
+    fun deleteFile(fileName: String, bucket: String? = null): Boolean {
+        val requiredBucket = bucket ?: defaultBucket
+        if (requiredBucket == null) {
+            throw IllegalStateException("Bucket name is required but was not provided. Please ensure a valid bucket name is specified, or set a default bucket.")
+        }
+        return try {
+            val deleteRequest = DeleteObjectRequest.builder()
+                .bucket(requiredBucket)
+                .key(fileName)
+                .build()
+            getRequiredClient().deleteObject(deleteRequest)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }

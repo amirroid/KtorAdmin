@@ -4,6 +4,7 @@ import action.CustomAdminAction
 import dashboard.KtorAdminDashboard
 import listener.AdminEventListener
 import mapper.KtorAdminValueMapper
+import models.FileDeleteStrategy
 import models.forms.LoginFiled
 import models.menu.Menu
 import preview.KtorAdminPreview
@@ -86,6 +87,12 @@ internal object DynamicConfiguration {
     var loginPageMessage: String? = null
 
     /**
+     * Strategy to use when deleting rows.
+     */
+    var fileDeleteStrategy: FileDeleteStrategy = FileDeleteStrategy.KEEP
+
+
+    /**
      * If debugMode is enabled, error messages will be displayed.
      * Otherwise, no message will be shown for better security.
      */
@@ -103,7 +110,8 @@ internal object DynamicConfiguration {
 
 
     /** Translators mappers (Thread-safe) */
-    private val _translators = ConcurrentLinkedQueue<KtorAdminTranslator>(listOf(EnglishKtorAdminTranslator))
+    private val _translators =
+        ConcurrentLinkedQueue<KtorAdminTranslator>(listOf(EnglishKtorAdminTranslator))
     val translators: List<KtorAdminTranslator>
         get() = _translators.toList()
 

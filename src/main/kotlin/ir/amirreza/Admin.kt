@@ -15,7 +15,6 @@ import mongo.MongoCredential
 import mongo.MongoServerAddress
 import org.jetbrains.exposed.sql.Database
 import plugins.KtorAdmin
-import providers.StorageProvider
 import tiny.TinyMCEConfig
 import translator.locals.fa.PersianKtorAdminTranslator
 import kotlin.time.Duration.Companion.minutes

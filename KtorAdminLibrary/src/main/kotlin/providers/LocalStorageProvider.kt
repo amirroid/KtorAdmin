@@ -43,6 +43,24 @@ internal object LocalStorageProvider {
     }
 
     /**
+     * Deletes a file from the local filesystem.
+     *
+     * @param fileName The name of the file to delete
+     * @param path The directory path where the file is stored
+     * @return `true` if the file was successfully deleted, `false` otherwise
+     */
+    fun deleteFile(fileName: String, path: String?): Boolean {
+        if (path == null) return false
+        val file = File("$path/$fileName")
+        return try {
+            if (file.exists()) file.delete() else false
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    /**
      * Ensures a unique file is created for saving content.
      * If a file with the same name exists, creates a new file with an incremented counter in parentheses.
      *
@@ -74,4 +92,5 @@ internal object LocalStorageProvider {
      * @return The complete media URL for the file
      */
     private fun ApplicationCall.getMediaUrl(filename: String) = "$mediaUrl/$filename"
+
 }

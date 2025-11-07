@@ -10,14 +10,22 @@ sealed class UploadTarget {
     /**
      * Uploads the file to a local directory.
      * @property path The path where the file should be stored locally. If `null`, a default path should be used.
+     * @property deleteStrategy Strategy to use when deleting files
      */
-    data class LocalFile(val path: String? = null) : UploadTarget()
+    data class LocalFile(
+        val path: String? = null,
+        val deleteStrategy: FileDeleteStrategy = FileDeleteStrategy.INHERIT
+    ) : UploadTarget()
 
     /**
      * Uploads the file to an AWS S3 bucket.
      * @property bucket The name of the S3 bucket where the file should be uploaded. If `null`, a default bucket should be used.
+     * @property deleteStrategy Strategy to use when deleting files
      */
-    data class AwsS3(val bucket: String? = null) : UploadTarget()
+    data class AwsS3(
+        val bucket: String? = null,
+        val deleteStrategy: FileDeleteStrategy = FileDeleteStrategy.INHERIT
+    ) : UploadTarget()
 
     /**
      * Uploads the file to a custom storage solution.
@@ -28,8 +36,8 @@ sealed class UploadTarget {
 
 fun UploadTarget.toFormattedString(): String {
     return when (this) {
-        is UploadTarget.LocalFile -> "UploadTarget.LocalFile(path=${path?.let { "\"$it\"" } ?: "null"})"
-        is UploadTarget.AwsS3 -> "UploadTarget.AwsS3(bucket= ${bucket?.let { "\"$it\"" } ?: "null"})"
+        is UploadTarget.LocalFile -> "UploadTarget.LocalFile(path=${path?.let { "\"$it\"" } ?: "null"}, deleteStrategy=FileDeleteStrategy.$deleteStrategy)"
+        is UploadTarget.AwsS3 -> "UploadTarget.AwsS3(bucket=${bucket?.let { "\"$it\"" } ?: "null"}, deleteStrategy=FileDeleteStrategy.$deleteStrategy)"
         is UploadTarget.Custom -> "UploadTarget.Custom(key=${key?.let { "\"$it\"" } ?: "null"})"
     }
 }

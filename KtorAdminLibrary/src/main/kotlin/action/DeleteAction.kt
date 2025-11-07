@@ -1,6 +1,7 @@
 package action
 
 import configuration.DynamicConfiguration
+import models.types.ColumnType
 import panels.AdminJdbcTable
 import panels.AdminMongoCollection
 import panels.AdminPanel
@@ -11,7 +12,8 @@ import repository.MongoClientRepository
  * Represents a delete action that removes selected items from an admin panel.
  * Supports deletion from both JDBC and MongoDB-based panels.
  */
-internal class DeleteAction(private val panel: AdminPanel, override val displayText: String) : CustomAdminAction {
+internal class DeleteAction(private val panel: AdminPanel, override val displayText: String) :
+    CustomAdminAction {
 
     // Unique key representing the delete action
     override var key: String = "DELETE"
