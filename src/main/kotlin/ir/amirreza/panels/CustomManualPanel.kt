@@ -1,11 +1,12 @@
 package ir.amirreza.panels
 
-import models.*
-import models.actions.Action
-import models.common.Reference
-import models.order.Order
-import models.types.ColumnType
-import panels.AdminJdbcTable
+import ir.amirroid.ktoradmin.models.ColumnSet
+import ir.amirroid.ktoradmin.models.UploadTarget
+import ir.amirroid.ktoradmin.models.actions.Action
+import ir.amirroid.ktoradmin.models.common.Reference
+import ir.amirroid.ktoradmin.models.order.Order
+import ir.amirroid.ktoradmin.models.types.ColumnType
+import ir.amirroid.ktoradmin.panels.AdminJdbcTable
 
 class CustomManualPanel : AdminJdbcTable {
     override fun getSearches(): List<String> = listOf()

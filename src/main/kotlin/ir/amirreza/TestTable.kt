@@ -1,9 +1,9 @@
 package ir.amirreza
 
-import annotations.exposed.ExposedTable
-import annotations.info.ColumnInfo
-import annotations.info.IgnoreColumn
-import annotations.references.OneToOneReferences
+import ir.amirroid.ktoradmin.annotations.exposed.ExposedTable
+import ir.amirroid.ktoradmin.annotations.info.ColumnInfo
+import ir.amirroid.ktoradmin.annotations.info.IgnoreColumn
+import ir.amirroid.ktoradmin.annotations.references.OneToOneReferences
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 

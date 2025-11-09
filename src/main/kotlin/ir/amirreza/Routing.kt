@@ -4,7 +4,6 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
-import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -12,12 +11,8 @@ import ir.amirreza.services.TaskService
 import ir.amirreza.services.TokenService
 import ir.amirreza.services.User
 import ir.amirreza.services.UserService
-import kotlinx.datetime.toKotlinLocalDateTime
 import org.jetbrains.exposed.sql.*
-import plugins.KtorAdmin
 import java.io.File
-import java.time.ZoneId
-import java.util.*
 
 fun Application.configureRouting(database: Database) {
     val tasksService = TaskService(database)

@@ -1,15 +1,13 @@
 package ir.amirreza
 
-import annotations.confirmation.Confirmation
-import annotations.display.DisplayFormat
-import annotations.exposed.ExposedTable
-import annotations.info.ColumnInfo
-import annotations.info.IgnoreColumn
-import annotations.limit.Limits
-import annotations.order.DefaultOrder
-import annotations.references.ManyToManyReferences
-import annotations.value_mapper.ValueMapper
-import models.reference.EmptyColumn
+import ir.amirroid.ktoradmin.annotations.confirmation.Confirmation
+import ir.amirroid.ktoradmin.annotations.display.DisplayFormat
+import ir.amirroid.ktoradmin.annotations.exposed.ExposedTable
+import ir.amirroid.ktoradmin.annotations.info.IgnoreColumn
+import ir.amirroid.ktoradmin.annotations.limit.Limits
+import ir.amirroid.ktoradmin.annotations.order.DefaultOrder
+import ir.amirroid.ktoradmin.annotations.references.ManyToManyReferences
+import ir.amirroid.ktoradmin.models.reference.EmptyColumn
 import org.jetbrains.exposed.sql.Table
 
 @ExposedTable(

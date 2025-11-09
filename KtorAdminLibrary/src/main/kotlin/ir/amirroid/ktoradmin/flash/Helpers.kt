@@ -1,0 +1,60 @@
+package ir.amirroid.ktoradmin.flash
+
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import ir.amirroid.ktoradmin.response.ErrorResponse
+import kotlinx.serialization.json.Json
+
+internal const val REQUEST_ID = "Request-Id"
+internal const val REQUEST_ID_FORM = "requestId"
+
+internal suspend fun ApplicationCall.setFlashSessionsAndRedirect(
+    requestId: String?,
+    errors: List<ErrorResponse>,
+    values: Map<String, String?>
+) {
+    val referer = request.headers["Referer"]
+    if (referer != null && requestId != null) {
+        response.cookies.append(
+            "${requestId}-data",
+            Json.encodeToString(values),
+            maxAge = DynamicConfiguration.formsLifetime,
+            httpOnly = true
+        )
+        response.cookies.append(
+            "${requestId}-errors",
+            Json.encodeToString(errors),
+            maxAge = DynamicConfiguration.formsLifetime,
+            httpOnly = true
+        )
+    }
+    requestId?.let {
+        response.cookies.append(
+            name = REQUEST_ID, it,
+            maxAge = DynamicConfiguration.formsLifetime,
+            httpOnly = true
+        )
+    }
+    respondRedirect(referer ?: "/${DynamicConfiguration.adminPath}")
+}
+
+
+internal fun ApplicationCall.getFlashDataAndClear(requestId: String = getRequestId()): Pair<Map<String, String?>?, List<ErrorResponse>?> {
+    var values: Map<String, String?>? = null
+    var errors: List<ErrorResponse>? = null
+    request.cookies["${requestId}-data"]?.let {
+        response.cookies.append("${requestId}-data", "", maxAge = 0)
+        values = Json.decodeFromString<Map<String, String?>>(it)
+    }
+    request.cookies["${requestId}-errors"]?.let {
+        response.cookies.append("${requestId}-errors", "", maxAge = 0)
+        errors = Json.decodeFromString(it)
+    }
+    request.cookies[REQUEST_ID]?.let { response.cookies.append(REQUEST_ID, "", maxAge = 0) }
+    return values to errors
+}
+
+internal fun ApplicationCall.getRequestId(): String {
+    return request.cookies[REQUEST_ID] ?: KtorFlashHelper.generateId()
+}

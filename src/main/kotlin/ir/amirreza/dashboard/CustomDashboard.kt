@@ -1,15 +1,14 @@
 package ir.amirreza.dashboard
 
-import dashboard.chart.ChartDashboardSection
-import models.chart.ChartDashboardAggregationFunction
-import dashboard.KtorAdminDashboard
-import dashboard.list.ListDashboardSection
-import dashboard.simple.TextDashboardSection
+import ir.amirroid.ktoradmin.dashboard.chart.ChartDashboardSection
+import ir.amirroid.ktoradmin.models.chart.ChartDashboardAggregationFunction
+import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
+import ir.amirroid.ktoradmin.dashboard.list.ListDashboardSection
+import ir.amirroid.ktoradmin.dashboard.simple.TextDashboardSection
 import ir.amirreza.Priority
-import models.chart.AdminChartStyle
-import models.chart.ChartField
-import models.chart.TextDashboardAggregationFunction
-import kotlin.math.max
+import ir.amirroid.ktoradmin.models.chart.AdminChartStyle
+import ir.amirroid.ktoradmin.models.chart.ChartField
+import ir.amirroid.ktoradmin.models.chart.TextDashboardAggregationFunction
 
 class CustomDashboard : KtorAdminDashboard() {
     override fun KtorAdminDashboard.configure() {
