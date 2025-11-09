@@ -1,6 +1,6 @@
 package ir.amirreza
 
-import annotations.mongo.MongoCollection
+import ir.amirroid.ktoradmin.annotations.mongo.MongoCollection
 import kotlinx.datetime.LocalDate
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.codecs.pojo.annotations.BsonProperty

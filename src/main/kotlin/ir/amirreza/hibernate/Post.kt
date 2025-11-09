@@ -1,17 +1,13 @@
 package ir.amirreza.hibernate
 
-import annotations.hibernate.HibernateTable
-import annotations.info.ColumnInfo
-import annotations.info.IgnoreColumn
-import annotations.limit.Limits
-import annotations.preview.Preview
-import annotations.roles.AccessRoles
-import annotations.type.OverrideColumnType
-import annotations.uploads.LocalUpload
+import ir.amirroid.ktoradmin.annotations.hibernate.HibernateTable
+import ir.amirroid.ktoradmin.annotations.info.ColumnInfo
+import ir.amirroid.ktoradmin.annotations.info.IgnoreColumn
+import ir.amirroid.ktoradmin.annotations.limit.Limits
+import ir.amirroid.ktoradmin.annotations.preview.Preview
+import ir.amirroid.ktoradmin.annotations.uploads.LocalUpload
 import ir.amirreza.Priority
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import models.types.ColumnType
 import javax.persistence.*
 
 @Entity

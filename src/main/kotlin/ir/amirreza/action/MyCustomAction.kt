@@ -1,6 +1,6 @@
 package ir.amirreza.action
 
-import action.CustomAdminAction
+import ir.amirroid.ktoradmin.action.CustomAdminAction
 
 class MyCustomAction : CustomAdminAction {
     override var key: String = "delete"

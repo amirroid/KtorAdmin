@@ -1,12 +1,11 @@
 package ir.amirreza
 
-import annotations.confirmation.Confirmation
-import annotations.date.AutoNowDate
-import annotations.exposed.ExposedTable
-import annotations.info.ColumnInfo
-import annotations.limit.Limits
-import annotations.query.AdminQueries
-import annotations.references.OneToOneReferences
+import ir.amirroid.ktoradmin.annotations.date.AutoNowDate
+import ir.amirroid.ktoradmin.annotations.exposed.ExposedTable
+import ir.amirroid.ktoradmin.annotations.info.ColumnInfo
+import ir.amirroid.ktoradmin.annotations.limit.Limits
+import ir.amirroid.ktoradmin.annotations.query.AdminQueries
+import ir.amirroid.ktoradmin.annotations.references.OneToOneReferences
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime

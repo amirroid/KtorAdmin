@@ -1,6 +1,6 @@
 package ir.amirreza.previews
 
-import preview.KtorAdminPreview
+import ir.amirroid.ktoradmin.preview.KtorAdminPreview
 
 class ImagePreview : KtorAdminPreview() {
     override val key: String
