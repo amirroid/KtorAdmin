@@ -1,7 +1,6 @@
 package formatters
 
 import configuration.DynamicConfiguration
-import io.ktor.server.util.toLocalDateTime
 import models.ColumnSet
 import models.types.ColumnType
 import models.types.FieldType
@@ -9,14 +8,12 @@ import utils.Constants
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 
 internal fun Any?.formatToDisplayInTable(columnType: ColumnType): String {
     return when {
-        this is Timestamp && columnType == ColumnType.DATETIME -> {
+        this is Timestamp && (columnType == ColumnType.DATETIME || columnType == ColumnType.TIMESTAMP_WITH_TIMEZONE) -> {
             val formatter = DateTimeFormatter.ofPattern("dd EEE yyyy - HH:mm:ss")
             toLocalDateTime().format(formatter)
         }
@@ -52,7 +49,7 @@ internal fun Any?.formatToDisplayInCollection(fieldType: FieldType): String {
 
 internal fun Any?.formatToDisplayInUpsert(columnType: ColumnType): String {
     return when {
-        this is Timestamp && columnType == ColumnType.DATETIME -> {
+        this is Timestamp && (columnType == ColumnType.DATETIME || columnType == ColumnType.TIMESTAMP_WITH_TIMEZONE) -> {
             val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
             toLocalDateTime().format(formatter)
         }

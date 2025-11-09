@@ -6,6 +6,7 @@ import models.types.ColumnType
 import utils.Constants
 import java.sql.PreparedStatement
 import java.sql.Types
+import java.time.OffsetDateTime
 
 internal fun String.toTypedValue(columnType: ColumnType): Any? {
     return when (columnType) {
@@ -22,6 +23,7 @@ internal fun String.toTypedValue(columnType: ColumnType): Any? {
         ColumnType.BOOLEAN -> this.toBoolean()
         ColumnType.DATE -> this.toLocalDate()
         ColumnType.DATETIME -> this.toLocalDateTime()
+        ColumnType.TIMESTAMP_WITH_TIMEZONE -> toOffsetDateTime()
         else -> this
     }
 }
@@ -41,6 +43,7 @@ internal fun String.toTypedValueNullable(columnType: ColumnType): Any? {
         ColumnType.BOOLEAN -> toBoolean()
         ColumnType.DATE -> toLocalDate()
         ColumnType.DATETIME -> toLocalDateTime()
+        ColumnType.TIMESTAMP_WITH_TIMEZONE -> toOffsetDateTime()
         else -> this
     }
 }
@@ -54,24 +57,32 @@ internal fun String.toBoolean(): Boolean? {
 }
 
 internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, index: Int) {
-    println(
-        "ITEM $index $value $columnType ${value?.let { it::class.simpleName }}"
-    )
     if (value == null) {
         when (columnType) {
             ColumnType.INTEGER -> this.setNull(index, Types.INTEGER)
-            ColumnType.UINTEGER -> this.setNull(index, Types.INTEGER) // For unsigned integers, use INTEGER
+            ColumnType.UINTEGER -> this.setNull(
+                index,
+                Types.INTEGER
+            ) // For unsigned integers, use INTEGER
             ColumnType.SHORT -> this.setNull(index, Types.SMALLINT)
-            ColumnType.USHORT -> this.setNull(index, Types.SMALLINT) // For unsigned short, use SMALLINT
+            ColumnType.USHORT -> this.setNull(
+                index,
+                Types.SMALLINT
+            ) // For unsigned short, use SMALLINT
             ColumnType.LONG -> this.setNull(index, Types.BIGINT)
             ColumnType.ULONG -> this.setNull(index, Types.BIGINT) // For unsigned long, use BIGINT
             ColumnType.FLOAT -> this.setNull(index, Types.FLOAT)
             ColumnType.DOUBLE -> this.setNull(index, Types.DOUBLE)
             ColumnType.BIG_DECIMAL -> this.setNull(index, Types.DECIMAL)
-            ColumnType.STRING, ColumnType.CHAR, ColumnType.FILE -> this.setNull(index, Types.VARCHAR)
+            ColumnType.STRING, ColumnType.CHAR, ColumnType.FILE -> this.setNull(
+                index,
+                Types.VARCHAR
+            )
+
             ColumnType.BOOLEAN -> this.setNull(index, Types.BOOLEAN)
             ColumnType.DATE -> this.setNull(index, Types.DATE)
             ColumnType.DATETIME -> this.setNull(index, Types.TIMESTAMP)
+            ColumnType.TIMESTAMP_WITH_TIMEZONE -> this.setNull(index, Types.TIMESTAMP_WITH_TIMEZONE)
             ColumnType.BINARY -> this.setNull(index, Types.BINARY)
             else -> throw IllegalArgumentException("Unsupported column type for null value: $columnType")
         }
@@ -155,7 +166,17 @@ internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, in
         }
 
         is java.time.LocalDateTime -> {
-            if (columnType == ColumnType.DATETIME) this.setTimestamp(index, java.sql.Timestamp.valueOf(value))
+            if (columnType == ColumnType.DATETIME) this.setTimestamp(
+                index,
+                java.sql.Timestamp.valueOf(value)
+            )
+        }
+
+        is OffsetDateTime -> {
+            if (columnType == ColumnType.TIMESTAMP_WITH_TIMEZONE) this.setTimestamp(
+                index,
+                java.sql.Timestamp.valueOf(value.toLocalDateTime())
+            )
         }
 
         is ByteArray -> {

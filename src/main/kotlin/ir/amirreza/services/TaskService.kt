@@ -5,11 +5,13 @@ import ir.amirreza.Tasks
 import ir.amirreza.TestTable
 import ir.amirreza.ref.TaskUsersCrossRef
 import kotlinx.coroutines.Dispatchers
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.format.DateTimeFormatter
 
 
 @Serializable
@@ -18,7 +20,8 @@ data class Task(
     val name: String,
     val description: String,
     val priority: Priority,
-    val user: User? = null
+    val user: User? = null,
+    val createdAt: String
 )
 
 
@@ -36,7 +39,11 @@ class TaskService(private val database: Database) {
             Tasks.selectAll().where { Tasks.id eq id }
                 .map {
 //                    val user = UserService(database).read(it[Tasks.userId])!!
-                    Task(it[Tasks.id], it[Tasks.name], it[Tasks.description], it[Tasks.priority], )
+                    Task(
+                        it[Tasks.id], it[Tasks.name], it[Tasks.description], it[Tasks.priority],
+                        user = null,
+                        createdAt = it[Tasks.createdAt].format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                    )
                 }
                 .singleOrNull()
         }
@@ -47,7 +54,14 @@ class TaskService(private val database: Database) {
             Tasks.selectAll()
                 .map {
 //                    val user = UserService(database).read(it[Tasks.userId])!!
-                    Task(it[Tasks.id], it[Tasks.name], it[Tasks.description], it[Tasks.priority])
+                    Task(
+                        it[Tasks.id],
+                        it[Tasks.name],
+                        it[Tasks.description],
+                        it[Tasks.priority],
+                        user = null,
+                        createdAt = it[Tasks.createdAt].format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                    )
                 }
         }
     }

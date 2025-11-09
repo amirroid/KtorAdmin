@@ -70,9 +70,11 @@ object PropertiesRepository {
         hibernateReference: HibernateReferenceData? = null
     ): BaseColumnInfo {
         val name = property.simpleName.asString()
-        val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
+        val infoAnnotation =
+            property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
 
-        val infoName = infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() }
+        val infoName =
+            infoAnnotation?.findArgument<String>("columnName")?.takeIf { it.isNotEmpty() }
         val columnName = nativeColumnName ?: infoName ?: hibernateReference?.columnName ?: name
 
         val infoNullable = infoAnnotation?.findArgument<Boolean>("nullable")
@@ -82,7 +84,8 @@ object PropertiesRepository {
             .mapIndexed { index, item -> if (index == 0) item.replaceFirstChar { it.uppercase() } else item }
             .joinToString(" ")
         val verboseName =
-            infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() } ?: defaultVerboseName
+            infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() }
+                ?: defaultVerboseName
 
         return BaseColumnInfo(name, columnName, verboseName, nullable)
     }
@@ -109,7 +112,8 @@ object PropertiesRepository {
         // Check for special column types
         val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
         val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
-        val infoAnnotation = property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
+        val infoAnnotation =
+            property.annotations.find { it.shortName.asString() == ColumnInfo::class.simpleName }
 
         // Validate upload configuration if present
         if (hasUploadAnnotation && genericArgument != null) {
@@ -162,7 +166,8 @@ object PropertiesRepository {
             allowedMimeTypes = if (hasUploadAnnotation)
                 UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations)
             else null,
-            defaultValue = infoAnnotation?.findArgument<String>("defaultValue")?.takeIf { it.isNotEmpty() },
+            defaultValue = infoAnnotation?.findArgument<String>("defaultValue")
+                ?.takeIf { it.isNotEmpty() },
             enumerationValues = enumValues,
             limits = property.annotations.getLimits(),
             reference = reference,
@@ -186,10 +191,15 @@ object PropertiesRepository {
      * @param type The KSType information for the property
      * @return ColumnSet configuration or null if processing fails
      */
-    fun getColumnSetsForExposed(property: KSPropertyDeclaration, type: KSType, isEmpty: Boolean = false): ColumnSet? {
+    fun getColumnSetsForExposed(
+        property: KSPropertyDeclaration,
+        type: KSType,
+        isEmpty: Boolean = false
+    ): ColumnSet? {
         val genericArgument = if (isEmpty) {
             null
-        } else type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName ?: return null
+        } else type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName
+            ?: return null
         val baseInfo = extractBaseColumnInfo(property, type)
         val enumValues = property.annotations.getEnumerations()
 
@@ -228,9 +238,11 @@ object PropertiesRepository {
 
         val nativeName = columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() }
         val nativeNullable =
-            columnAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }?.let { it == "true" }
+            columnAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }
+                ?.let { it == "true" }
 
-        val baseInfo = extractBaseColumnInfo(property, type, nativeName, nativeNullable, hibernateReference)
+        val baseInfo =
+            extractBaseColumnInfo(property, type, nativeName, nativeNullable, hibernateReference)
 
         // Handle native enumeration values
         val nativeEnumeratedValues = if (isNativeEnumerated) {
@@ -288,7 +300,8 @@ object PropertiesRepository {
 
 
         val referenceColumnName =
-            joinColumn.arguments.getArgument<String>("referencedColumnName")?.takeIf { it.isNotEmpty() }
+            joinColumn.arguments.getArgument<String>("referencedColumnName")
+                ?.takeIf { it.isNotEmpty() }
 
         // Get referenced table information
         val tableNameWithPrimaryKey = (type.declaration as? KSClassDeclaration)?.let {
@@ -361,11 +374,13 @@ object PropertiesRepository {
         referenceColumnName: String?
     ): Triple<String, String, ColumnType>? {
         // Find @Table annotation
-        val hibernateTable = classDeclaration.annotations.findReferenceAnnotation("Table") ?: return null
+        val hibernateTable =
+            classDeclaration.annotations.findReferenceAnnotation("Table") ?: return null
 
         var primaryKeyType: ColumnType? = null
         val primaryKey = referenceColumnName?.let { refColumn ->
-            classDeclaration.getDeclaredProperties().firstOrNull { it.findColumnName() == refColumn }?.let {
+            classDeclaration.getDeclaredProperties()
+                .firstOrNull { it.findColumnName() == refColumn }?.let {
                 val type = it.type.resolve().declaration.qualifiedName?.asString()
                 primaryKeyType = type?.let(::guessPropertyType)
                 refColumn
@@ -392,7 +407,8 @@ object PropertiesRepository {
         val columnAnnotation = annotations.find {
             it.qualifiedName in getListOfHibernatePackage("Column")
         }
-        return columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() } ?: simpleName.asString()
+        return columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() }
+            ?: simpleName.asString()
     }
 
     /**
@@ -411,10 +427,13 @@ object PropertiesRepository {
 
         // Extract basic field information
         val name = property.simpleName.asString()
-        val infoAnnotation = property.annotations.find { it.shortName.asString() == FieldInfo::class.simpleName }
-        val fieldName = infoAnnotation?.findArgument<String>("fieldName")?.takeIf { it.isNotEmpty() } ?: name
-        val verboseName = infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() }
-            ?: fieldName
+        val infoAnnotation =
+            property.annotations.find { it.shortName.asString() == FieldInfo::class.simpleName }
+        val fieldName =
+            infoAnnotation?.findArgument<String>("fieldName")?.takeIf { it.isNotEmpty() } ?: name
+        val verboseName =
+            infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() }
+                ?: fieldName
 
         if (hasUploadAnnotation) {
             UploadUtils.validatePropertyType(fieldName, type)
@@ -456,7 +475,8 @@ object PropertiesRepository {
             allowedMimeTypes = if (hasUploadAnnotation)
                 UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations)
             else null,
-            defaultValue = infoAnnotation?.findArgument<String>("defaultValue")?.takeIf { it.isNotEmpty() },
+            defaultValue = infoAnnotation?.findArgument<String>("defaultValue")
+                ?.takeIf { it.isNotEmpty() },
             enumerationValues = property.annotations.getEnumerations(),
             limits = property.annotations.getLimits(),
             readOnly = isReadOnly,
@@ -622,7 +642,8 @@ object PropertiesRepository {
             Limit(
                 maxLength = args.getArgument("maxLength") ?: Int.MAX_VALUE,
                 minLength = args.getArgument("minLength") ?: Int.MIN_VALUE,
-                regexPattern = args.getArgument<String?>("regexPattern")?.takeIf { it.isNotEmpty() },
+                regexPattern = args.getArgument<String?>("regexPattern")
+                    ?.takeIf { it.isNotEmpty() },
                 maxCount = args.getArgument("maxCount") ?: Double.MAX_VALUE,
                 minCount = args.getArgument("minCount") ?: Double.MIN_VALUE,
                 maxBytes = args.getArgument("maxBytes") ?: Long.MAX_VALUE,
@@ -680,8 +701,17 @@ object PropertiesRepository {
     /**
      * Validates auto-now-date configuration for columns.
      */
-    private fun validateAutoNowDate(columnType: ColumnType, autoNowDate: models.date.AutoNowDate?, columnName: String) {
-        if (columnType !in listOf(ColumnType.DATE, ColumnType.DATETIME) && autoNowDate != null) {
+    private fun validateAutoNowDate(
+        columnType: ColumnType,
+        autoNowDate: models.date.AutoNowDate?,
+        columnName: String
+    ) {
+        if (columnType !in listOf(
+                ColumnType.DATE,
+                ColumnType.DATETIME,
+                ColumnType.TIMESTAMP_WITH_TIMEZONE
+            ) && autoNowDate != null
+        ) {
             throw IllegalArgumentException(
                 "The 'autoNowDate' property can only be used with columns of type 'DATE' or 'DATETIME'. " +
                         "Column '$columnName' has type '$columnType', which is incompatible."
@@ -715,7 +745,12 @@ object PropertiesRepository {
         autoNowDate: models.date.AutoNowDate?,
         fieldName: String
     ) {
-        if (fieldType !in listOf(FieldType.Date, FieldType.DateTime, FieldType.Instant) && autoNowDate != null) {
+        if (fieldType !in listOf(
+                FieldType.Date,
+                FieldType.DateTime,
+                FieldType.Instant
+            ) && autoNowDate != null
+        ) {
             throw IllegalArgumentException(
                 "The 'autoNowDate' property can only be used with fields of type 'DATE' or 'DATETIME'. " +
                         "Field '$fieldName' has type '$fieldType', which is incompatible."

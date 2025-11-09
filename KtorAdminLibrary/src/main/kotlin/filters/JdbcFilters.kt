@@ -1,5 +1,6 @@
 package filters
 
+import configuration.DynamicConfiguration
 import getters.toTypedValue
 import io.ktor.http.Parameters
 import models.ColumnSet
@@ -99,6 +100,7 @@ internal object JdbcFilters {
         return when {
             columnSet?.type == ColumnType.DATE -> createDateFilter(columnSet)
             columnSet?.type == ColumnType.DATETIME -> createDateTimeFilter(columnSet)
+            columnSet?.type == ColumnType.TIMESTAMP_WITH_TIMEZONE -> createDateTimeFilter(columnSet)
             columnSet?.type == ColumnType.BOOLEAN -> createBooleanFilter(columnSet)
             columnSet?.type == ColumnType.ENUMERATION -> createEnumerationFilter(columnSet)
             isReferenceColumn(columnSet) -> createReferenceFilter(columnSet!!, jdbcTables)
@@ -171,14 +173,15 @@ internal object JdbcFilters {
     ) {
         val paramName = "${columnSet.columnName}$suffix"
 
-        if (parameters.contains(paramName)) {
+        if (parameters.contains(Constants.FILTERS_PREFIX + paramName)) {
             parameters[Constants.FILTERS_PREFIX + paramName]?.let { value ->
                 val timestamp = Instant.ofEpochMilli(value.toLong())
-                    .atZone(ZoneId.systemDefault())
+                    .atZone(DynamicConfiguration.timeZone)
 
                 val convertedValue = when (columnSet.type) {
                     ColumnType.DATETIME -> timestamp.toLocalDateTime()
                     ColumnType.DATE -> timestamp.toLocalDate()
+                    ColumnType.TIMESTAMP_WITH_TIMEZONE -> timestamp.toOffsetDateTime()
                     else -> return@let
                 }
 
@@ -215,7 +218,7 @@ internal object JdbcFilters {
 
     // Helper functions for type checking
     private fun isDateTimeColumn(columnSet: ColumnSet?) =
-        columnSet?.type == ColumnType.DATE || columnSet?.type == ColumnType.DATETIME
+        columnSet?.type == ColumnType.DATE || columnSet?.type == ColumnType.DATETIME || columnSet?.type == ColumnType.TIMESTAMP_WITH_TIMEZONE
 
     private fun isBooleanOrEnumColumn(columnSet: ColumnSet?) =
         columnSet?.type == ColumnType.BOOLEAN || columnSet?.type == ColumnType.ENUMERATION
