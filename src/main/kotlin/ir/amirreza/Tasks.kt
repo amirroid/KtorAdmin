@@ -31,6 +31,7 @@ import models.reference.EmptyColumn
 import models.types.ColumnType
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.kotlin.datetime.date
+import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
 
 enum class Priority {
     Low, Medium, High
@@ -40,7 +41,7 @@ enum class Priority {
 @AccessRoles("admin")
 @AdminQueries(
     searches = ["user_id.username", "description"],
-    filters = ["priority", "checked", "user_id"]
+    filters = ["priority", "checked", "user_id", "test"]
 )
 
 @DefaultOrder(
@@ -108,11 +109,16 @@ object Tasks : Table("tasks") {
         maxBytes = 1024 * 1024 * 20,
 //        allowedMimeTypes = ["video/mp4"]
     )
+    @ColumnInfo(nullable = true)
     @LocalUpload(deleteStrategy = FileDeleteStrategy.KEEP)
     val file = varchar("file", 1000).nullable()
 
     @AutoNowDate
     val date = date("date").nullable()
+
+    @ColumnInfo("test")
+    @AutoNowDate
+    val createdAt = timestampWithTimeZone("test")
 
     @ColumnInfo(
         columnName = "thumbnail",

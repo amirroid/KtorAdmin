@@ -231,7 +231,7 @@
                             #end
 
                             <!-- DATETIME -->
-                            #if($column.type.name == "DATETIME")
+                            #if($column.type.name == "DATETIME" || $column.type.name == "TIMESTAMP_WITH_TIMEZONE")
                                 <input type="datetime-local" class="form-input" name="$column.columnName"
                                        value="$!defaultValue"
                                        #if($column.readOnly)readonly#end/>

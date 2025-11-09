@@ -1,6 +1,5 @@
 package utils
 
-import models.field.FieldSet
 import models.types.ColumnType
 import models.types.FieldType
 
@@ -21,6 +20,7 @@ fun guessPropertyType(type: String) = when (type) {
     "kotlin.ByteArray" -> ColumnType.BINARY
     "kotlin.Boolean" -> ColumnType.BOOLEAN
     "kotlinx.datetime.LocalDateTime", "kotlinx.datetime.Instant" -> ColumnType.DATETIME
+    "java.time.OffsetDateTime" -> ColumnType.TIMESTAMP_WITH_TIMEZONE
     "kotlinx.datetime.LocalDate" -> ColumnType.DATE
     "kotlin.time.Duration" -> ColumnType.DURATION
     else -> ColumnType.NOT_AVAILABLE

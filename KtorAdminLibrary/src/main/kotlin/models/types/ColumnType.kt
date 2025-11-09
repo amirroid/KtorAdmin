@@ -21,6 +21,7 @@ enum class ColumnType {
     DATE,
     DURATION,
     DATETIME,
+    TIMESTAMP_WITH_TIMEZONE,
     NOT_AVAILABLE
 }
 

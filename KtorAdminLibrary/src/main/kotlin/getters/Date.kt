@@ -1,9 +1,12 @@
 package getters
 
+import configuration.DynamicConfiguration
+import io.ktor.server.util.toZonedDateTime
 import utils.Constants
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
@@ -30,6 +33,19 @@ internal fun String.toLocalDateTime(): LocalDateTime? {
     } catch (e: DateTimeParseException) {
         null
     }
+}
+
+/**
+ * Safely converts a String to [OffsetDateTime] using the defined date-time format.
+ * Returns `null` if parsing fails.
+ */
+internal fun String.toOffsetDateTime(): OffsetDateTime? {
+    return runCatching {
+        val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
+        LocalDateTime.parse(this, formatter)
+            .atZone(DynamicConfiguration.timeZone)
+            .toOffsetDateTime()
+    }.getOrNull()
 }
 
 
