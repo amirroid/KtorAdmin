@@ -117,7 +117,7 @@ object Tasks : Table("tasks") {
     val date = date("date").nullable()
 
     @ColumnInfo("test")
-    @AutoNowDate
+//    @AutoNowDate(updateOnChange = true)
     val createdAt = timestampWithTimeZone("test")
 
     @ColumnInfo(

@@ -6,6 +6,7 @@ import models.date.AutoNowDate
 import models.types.ColumnType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 /**
  * Holds metadata and configuration details for a database column.
@@ -78,6 +79,11 @@ internal fun ColumnSet.getCurrentDateClass() = when (type) {
 
     ColumnType.DATETIME -> {
         LocalDateTime.now(DynamicConfiguration.timeZone)
+    }
+
+
+    ColumnType.TIMESTAMP_WITH_TIMEZONE -> {
+        OffsetDateTime.now(DynamicConfiguration.timeZone)
     }
 
     else -> null
