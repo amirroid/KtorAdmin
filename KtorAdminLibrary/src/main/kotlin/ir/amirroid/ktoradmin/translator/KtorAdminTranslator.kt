@@ -7,7 +7,7 @@ abstract class KtorAdminTranslator {
     open val layoutDirection: String = "ltr"
 
     object Keys {
-        const val DASHBOARD = "ir/amirroid/ktoradmin/dashboardid/ktoradmin/dashboard"
+        const val DASHBOARD = "dashboard"
         const val ITEMS = "items"
         const val CHANGE_THEME = "change_theme"
         const val DOWNLOAD_AS_CSV = "download_as_csv"
