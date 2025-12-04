@@ -119,5 +119,5 @@ the [Documentation](https://amirreza-gholami.gitbook.io/ktor-admin).
 
 ## **License**
 
-This package is created and modified by [Amirroid](https://github.com/Amirroid) and has been released under the MIT
+This package is created and modified by [amirroid](https://github.com/Amirroid) and has been released under the MIT
 License.
