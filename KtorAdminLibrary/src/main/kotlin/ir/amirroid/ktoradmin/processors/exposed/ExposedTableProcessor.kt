@@ -118,6 +118,10 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
                 "org.jetbrains.exposed.dao.id.IdTable",
                 "org.jetbrains.exposed.dao.id.IntIdTable",
                 "org.jetbrains.exposed.dao.id.LongIdTable",
+                "org.jetbrains.exposed.v1.sql.Table",
+                "org.jetbrains.exposed.v1.dao.id.IdTable",
+                "org.jetbrains.exposed.v1.dao.id.IntIdTable",
+                "org.jetbrains.exposed.v1.dao.id.LongIdTable",
             )
         }
         if (!hasTableSuperType) {
