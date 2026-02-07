@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "ir.amirreza"
-version = "0.0.1"
+version = "0.0.7"
 
 
 application {
