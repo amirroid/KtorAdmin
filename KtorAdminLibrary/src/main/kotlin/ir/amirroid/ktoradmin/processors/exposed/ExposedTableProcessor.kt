@@ -113,16 +113,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
 
     private fun KSClassDeclaration.validateImplementations() {
         val hasTableSuperType = superTypes.any { superType ->
-            superType.resolve().declaration.qualifiedName?.asString() in listOf(
-                "org.jetbrains.exposed.sql.Table",
-                "org.jetbrains.exposed.dao.id.IdTable",
-                "org.jetbrains.exposed.dao.id.IntIdTable",
-                "org.jetbrains.exposed.dao.id.LongIdTable",
-                "org.jetbrains.exposed.v1.sql.Table",
-                "org.jetbrains.exposed.v1.dao.id.IdTable",
-                "org.jetbrains.exposed.v1.dao.id.IntIdTable",
-                "org.jetbrains.exposed.v1.dao.id.LongIdTable",
-            )
+            superType.resolve().declaration.qualifiedName?.asString() in TABLE_TYPES
         }
         if (!hasTableSuperType) {
             val message = "Class ${simpleName.asString()} must inherit from Table."
@@ -136,7 +127,7 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         declarations.filterIsInstance<KSPropertyDeclaration>().forEach { property ->
             val type = property.type.resolve()
             val typeName = type.toClassName().canonicalName
-            if (typeName == COLUMN_TYPE || typeName == emptyColumnName) {
+            if (typeName in COLUMN_TYPES || typeName == emptyColumnName) {
                 PropertiesRepository.getColumnSetsForExposed(property, type, isEmpty = typeName == emptyColumnName)
                     ?.let {
                         columns += it
@@ -185,6 +176,20 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
 
 
     companion object {
-        private const val COLUMN_TYPE = "org.jetbrains.exposed.sql.Column"
+        private val COLUMN_TYPES = setOf(
+            "org.jetbrains.exposed.sql.Column",
+            "org.jetbrains.exposed.v1.core.Column",
+        )
+
+        private val TABLE_TYPES = setOf(
+            "org.jetbrains.exposed.sql.Table",
+            "org.jetbrains.exposed.dao.id.IdTable",
+            "org.jetbrains.exposed.dao.id.IntIdTable",
+            "org.jetbrains.exposed.dao.id.LongIdTable",
+            "org.jetbrains.exposed.v1.core.Table",
+            "org.jetbrains.exposed.v1.dao.id.IdTable",
+            "org.jetbrains.exposed.v1.dao.id.IntIdTable",
+            "org.jetbrains.exposed.v1.dao.id.LongIdTable",
+        )
     }
 }
