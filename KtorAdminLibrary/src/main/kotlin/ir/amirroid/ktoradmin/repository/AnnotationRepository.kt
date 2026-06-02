@@ -137,7 +137,7 @@ internal object AnnotationRepository {
 
     private fun createFilterColumnsFunction(classDeclaration: KSClassDeclaration): FunSpec {
         val filterColumns = classDeclaration.getQueryColumnsArguments()
-            ?.findStringList("ir/amirroid/ktoradmin/filtersroid/ktoradmin/filters")
+            ?.findStringList("filters")
             ?: emptyList()
 
         return createStringListFunction("getFilters", filterColumns)

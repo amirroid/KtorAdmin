@@ -50,9 +50,6 @@ enum class Priority {
     pluralName = "tasks",
     iconFile = "/static/images/tasks.png",
 )
-@DisplayFormat(
-    format = "{id} - User: {user_id.username}"
-)
 object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
