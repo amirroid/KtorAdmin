@@ -12,6 +12,10 @@ internal class TestJdbcTable(
     private val tableName: String = "test_table",
     private val panelListColumns: List<String> = columns.map { it.columnName },
     private val filters: List<String> = emptyList(),
+    private val searches: List<String> = emptyList(),
+    private val displayFormat: String? = null,
+    private val defaultOrder: Order? = null,
+    private val databaseKey: String? = null,
     private val defaultActions: List<Action> = emptyList(),
     private val customActions: List<String> = emptyList(),
 ) : AdminJdbcTable {
@@ -21,13 +25,13 @@ internal class TestJdbcTable(
     override fun getSingularName(): String = "Test"
     override fun getPluralName(): String = "Tests"
     override fun getGroupName(): String? = null
-    override fun getDatabaseKey(): String? = null
+    override fun getDatabaseKey(): String? = databaseKey
     override fun getPrimaryKey(): String = "id"
-    override fun getDisplayFormat(): String? = null
-    override fun getSearches(): List<String> = emptyList()
+    override fun getDisplayFormat(): String? = displayFormat
+    override fun getSearches(): List<String> = searches
     override fun getFilters(): List<String> = filters
     override fun getAccessRoles(): List<String>? = null
-    override fun getDefaultOrder(): Order? = null
+    override fun getDefaultOrder(): Order? = defaultOrder
     override fun getDefaultActions(): List<Action> = defaultActions
     override fun getCustomActions(): List<String> = customActions
     override fun getIconFile(): String? = null

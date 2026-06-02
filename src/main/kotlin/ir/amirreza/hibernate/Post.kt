@@ -7,6 +7,7 @@ import ir.amirroid.ktoradmin.annotations.limit.Limits
 import ir.amirroid.ktoradmin.annotations.preview.Preview
 import ir.amirroid.ktoradmin.annotations.uploads.LocalUpload
 import ir.amirreza.Priority
+import ir.amirroid.ktoradmin.annotations.query.AdminQueries
 import kotlinx.serialization.Serializable
 import javax.persistence.*
 

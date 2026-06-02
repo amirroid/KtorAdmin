@@ -91,7 +91,9 @@ internal object JdbcQueriesRepository {
                         currentPage = currentPage,
                         filters = filters,
                         order = order
-                    )
+                    ).also {
+                        println(it)
+                    }
                 )
             ).use { prepareStatement ->
                 prepareStatement.prepareGetAllData(
@@ -342,14 +344,12 @@ internal object JdbcQueriesRepository {
         return table.usingDataSource { session ->
             session.prepare(sqlQuery(section.createGetAllData())).use { prepareStatement ->
                 prepareStatement.executeQuery().use { rs ->
-                    var value = ""
-                    value = when (section.aggregationFunction) {
+                    val value: String = when (section.aggregationFunction) {
                         TextDashboardAggregationFunction.LAST_ITEM -> {
                             if (rs.next()) {
                                 val itemObject = rs.getTypedValue(column.type, section.fieldName)
                                 itemObject?.toString().restore(column)?.toDoubleOrNull()
                                     ?.formatAsIntegerIfPossible()
-                                    ?.toString()
                                     ?: itemObject.toString()
                             } else ""
                         }
@@ -974,10 +974,18 @@ internal object JdbcQueriesRepository {
             append(createFiltersConditions(search, filters))
         }
         order?.let {
-            if (it.name !in columns.map { column -> column.columnName } && it.direction.lowercase() !in listOf(
-                    "asc",
-                    "desc"
-                )) return@let
+            if (it.name !in columns.map { column -> column.columnName }) {
+                throw IllegalArgumentException(
+                    "Unknown order column '${it.name}'"
+                )
+            }
+
+            if (it.direction.lowercase() !in listOf("asc", "desc")) {
+                throw IllegalArgumentException(
+                    "Invalid order direction '${it.direction}'. Expected 'ASC' or 'DESC'"
+                )
+            }
+
             append(" ORDER BY ${it.name} ${it.direction}")
         }
         currentPage?.let {
@@ -1006,10 +1014,17 @@ internal object JdbcQueriesRepository {
             append(createFiltersConditions(search, filters))
         }
         order?.let {
-            if (it.name !in columns.map { column -> column.columnName } && it.direction.lowercase() !in listOf(
-                    "asc",
-                    "desc"
-                )) return@let
+            if (it.name !in columns.map { column -> column.columnName }) {
+                throw IllegalArgumentException(
+                    "Unknown order column '${it.name}'"
+                )
+            }
+
+            if (it.direction.lowercase() !in listOf("asc", "desc")) {
+                throw IllegalArgumentException(
+                    "Invalid order direction '${it.direction}'. Expected 'ASC' or 'DESC'"
+                )
+            }
             append(" ORDER BY ${it.name} ${it.direction}")
         }
         currentPage?.let {
@@ -1266,10 +1281,21 @@ internal object JdbcQueriesRepository {
             }
 
             TextDashboardAggregationFunction.LAST_ITEM -> {
-                // Generates a query to select the field value for the last record, sorted by date
+                val reversedOrder = orderQuery?.split(",")?.joinToString(", ") { order ->
+                    when {
+                        order.trim().endsWith(" ASC", ignoreCase = true) ->
+                            order.replace(Regex("\\bASC\\b", RegexOption.IGNORE_CASE), "DESC")
+
+                        order.trim().endsWith(" DESC", ignoreCase = true) ->
+                            order.replace(Regex("\\bDESC\\b", RegexOption.IGNORE_CASE), "ASC")
+
+                        else -> "$order DESC"
+                    }
+                }
+
                 append(
                     "SELECT $fieldName FROM $tableName ${
-                        orderQuery?.let { "ORDER BY $it" }.orEmpty()
+                        reversedOrder?.let { "ORDER BY $it" }.orEmpty()
                     } LIMIT 1"
                 )
             }
