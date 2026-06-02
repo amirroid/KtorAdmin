@@ -63,6 +63,11 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    testImplementation("io.ktor:ktor-server-test-host:3.2.2")
+    testImplementation("io.ktor:ktor-server-sessions:3.2.2")
+    testImplementation("io.ktor:ktor-server-content-negotiation:3.2.2")
+    testImplementation("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
+    testImplementation("com.h2database:h2:2.3.232")
 
     // KSP
     implementation("com.google.devtools.ksp:symbol-processing-api:2.1.0-1.0.29")
