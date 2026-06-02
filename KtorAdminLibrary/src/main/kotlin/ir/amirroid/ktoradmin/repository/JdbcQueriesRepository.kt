@@ -1092,7 +1092,12 @@ internal object JdbcQueriesRepository {
                 append(joinConditions.distinct().joinToString(" "))
                 append(" WHERE ")
                 if (searchConditions.isNotEmpty()) {
-                    append(searchConditions.joinToString(" OR ") { it })
+                    append(searchConditions.joinToString(
+                        separator = " OR ",
+                        prefix = "(",
+                        postfix = ")"
+                    ))
+
                     if (filterConditions.isNotEmpty()) {
                         append(" AND ")
                     }

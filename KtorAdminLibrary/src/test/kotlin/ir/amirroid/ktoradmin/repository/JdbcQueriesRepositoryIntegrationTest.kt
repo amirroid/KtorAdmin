@@ -13,13 +13,12 @@ import ir.amirroid.ktoradmin.models.chart.AdminChartStyle
 import ir.amirroid.ktoradmin.models.chart.ChartDashboardAggregationFunction
 import ir.amirroid.ktoradmin.models.chart.ChartField
 import ir.amirroid.ktoradmin.models.chart.TextDashboardAggregationFunction
-import ir.amirroid.ktoradmin.models.common.Reference
 import ir.amirroid.ktoradmin.models.common.DisplayItem
+import ir.amirroid.ktoradmin.models.common.Reference
 import ir.amirroid.ktoradmin.models.order.Order
 import ir.amirroid.ktoradmin.models.reference.ReferenceData
 import ir.amirroid.ktoradmin.models.types.ColumnType
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumns
-import org.h2.jdbc.JdbcSQLSyntaxErrorException
 import java.sql.Connection
 import java.util.UUID
 import kotlin.test.AfterTest
@@ -80,10 +79,6 @@ class JdbcQueriesRepositoryFullTest {
     fun tearDown() {
         KtorAdminHikariCP.closeAllConnections()
     }
-
-    // -------------------------------------------------------------------------
-    // INSERT
-    // -------------------------------------------------------------------------
 
     @Test
     fun `insertData returns 1 and persists all non-null column values`() {
@@ -177,10 +172,6 @@ class JdbcQueriesRepositoryFullTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // getData (single row read)
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getData returns correct row for existing primary key`() {
         val row = JdbcQueriesRepository.getData(usersTable, "1")
@@ -206,10 +197,6 @@ class JdbcQueriesRepositoryFullTest {
         val row = JdbcQueriesRepository.getData(usersTable, "2")
         assertNull(row!![6]) // nickname is null for Linus
     }
-
-    // -------------------------------------------------------------------------
-    // updateAColumn
-    // -------------------------------------------------------------------------
 
     @Test
     fun `updateAColumn changes targeted column and leaves others intact`() {
@@ -252,10 +239,6 @@ class JdbcQueriesRepositoryFullTest {
         JdbcQueriesRepository.updateAColumn(usersTable, name, "Ghost", "9999")
         assertNull(JdbcQueriesRepository.getData(usersTable, "9999"))
     }
-
-    // -------------------------------------------------------------------------
-    // deleteRows
-    // -------------------------------------------------------------------------
 
     @Test
     fun `deleteRows removes single row by primary key`() {
@@ -315,10 +298,6 @@ class JdbcQueriesRepositoryFullTest {
         assertEquals("Ada", row[1]) // user row still exists
     }
 
-    // -------------------------------------------------------------------------
-    // getCount
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getCount returns total rows when no search and no filters`() {
         assertEquals(2, JdbcQueriesRepository.getCount(usersTable, null, emptyList()))
@@ -376,10 +355,6 @@ class JdbcQueriesRepositoryFullTest {
         assertEquals(1, JdbcQueriesRepository.getCount(usersTable, "lin", filters))
     }
 
-    // -------------------------------------------------------------------------
-    // getAllData — basic retrieval
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getAllData returns all rows when no constraints applied`() {
         val rows = JdbcQueriesRepository.getAllData(
@@ -436,10 +411,6 @@ class JdbcQueriesRepositoryFullTest {
         )
         assertEquals(listOf("1", "2"), rows.map { it.primaryKey })
     }
-
-    // -------------------------------------------------------------------------
-    // getAllData — search
-    // -------------------------------------------------------------------------
 
     @Test
     fun `getAllData filters by search on direct column`() {
@@ -533,10 +504,6 @@ class JdbcQueriesRepositoryFullTest {
         )
         assertEquals(listOf("1"), rows.map { it.primaryKey })
     }
-
-    // -------------------------------------------------------------------------
-    // getAllData — filters
-    // -------------------------------------------------------------------------
 
     @Test
     fun `getAllData filters by equality on boolean column`() {
@@ -677,10 +644,6 @@ class JdbcQueriesRepositoryFullTest {
         assertEquals(emptyList(), rows)
     }
 
-    // -------------------------------------------------------------------------
-    // getAllData — ordering
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getAllData orders ascending by id`() {
         val rows = JdbcQueriesRepository.getAllData(
@@ -748,10 +711,6 @@ class JdbcQueriesRepositoryFullTest {
             )
         }
     }
-
-    // -------------------------------------------------------------------------
-    // getAllData — pagination
-    // -------------------------------------------------------------------------
 
     @Test
     fun `getAllData paginates first page correctly`() {
@@ -833,10 +792,6 @@ class JdbcQueriesRepositoryFullTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // getAllData — reference mapping (one-to-one, many-to-one)
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getAllData wraps profile_id in ReferenceData when related table is provided`() {
         val rows = JdbcQueriesRepository.getAllData(
@@ -883,10 +838,6 @@ class JdbcQueriesRepositoryFullTest {
         assertFalse(profileCol is ReferenceData)
     }
 
-    // -------------------------------------------------------------------------
-    // getAllDataAsCsvFile
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getAllDataAsCsvFile returns comma-separated rows for all users`() {
         val csv = JdbcQueriesRepository.getAllDataAsCsvFile(usersTable)
@@ -911,10 +862,6 @@ class JdbcQueriesRepositoryFullTest {
         val csv = JdbcQueriesRepository.getAllDataAsCsvFile(usersTable)
         assertEquals(2, csv.trim().lines().size)
     }
-
-    // -------------------------------------------------------------------------
-    // checkExistSameData
-    // -------------------------------------------------------------------------
 
     @Test
     fun `checkExistSameData returns true for existing name without primary key exclusion`() {
@@ -968,10 +915,6 @@ class JdbcQueriesRepositoryFullTest {
         assertFalse(JdbcQueriesRepository.checkExistSameData(usersTable, name, "Ada"))
     }
 
-    // -------------------------------------------------------------------------
-    // getCountOfTables
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getCountOfTables returns correct counts for multiple tables`() {
         val counts = JdbcQueriesRepository.getCountOfTables(listOf(usersTable, rolesTable))
@@ -1007,10 +950,6 @@ class JdbcQueriesRepositoryFullTest {
         assertTrue(counts.containsKey("profiles"))
         assertTrue(counts.containsKey("organizations"))
     }
-
-    // -------------------------------------------------------------------------
-    // getAllReferences
-    // -------------------------------------------------------------------------
 
     @Test
     fun `getAllReferences uses displayFormat template for label`() {
@@ -1064,10 +1003,6 @@ class JdbcQueriesRepositoryFullTest {
         assertEquals(setOf("1", "2"), items.map { it.itemKey }.toSet())
     }
 
-    // -------------------------------------------------------------------------
-    // Many-to-many: getAllSelectedReferenceInListReference
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getAllSelectedReferenceInListReference returns initial role for user 1`() {
         val keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
@@ -1097,10 +1032,6 @@ class JdbcQueriesRepositoryFullTest {
         )
         assertEquals(emptyList(), keys)
     }
-
-    // -------------------------------------------------------------------------
-    // Many-to-many: updateSelectedReferenceInListReference
-    // -------------------------------------------------------------------------
 
     @Test
     fun `updateSelectedReferenceInListReference adds new roles`() {
@@ -1206,10 +1137,6 @@ class JdbcQueriesRepositoryFullTest {
         )
         assertEquals(listOf(1), user1Keys) // user 1 roles untouched
     }
-
-    // -------------------------------------------------------------------------
-    // updateChangedData
-    // -------------------------------------------------------------------------
 
     @Test
     fun `updateChangedData updates only the changed column`() {
@@ -1422,10 +1349,6 @@ class JdbcQueriesRepositoryFullTest {
         assertTrue(result!!.second.containsAll(listOf("name", "age")))
     }
 
-    // -------------------------------------------------------------------------
-    // Query builder helpers (public surface)
-    // -------------------------------------------------------------------------
-
     @Test
     fun `createUpdateAColumnQuery produces correct SQL`() {
         with(JdbcQueriesRepository) {
@@ -1481,10 +1404,6 @@ class JdbcQueriesRepositoryFullTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // getSelectedColumnsForIds
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getSelectedColumnsForIds returns correct values for existing ids`() {
         val rows = JdbcQueriesRepository.getSelectedColumnsForIds(
@@ -1534,10 +1453,6 @@ class JdbcQueriesRepositoryFullTest {
             JdbcQueriesRepository.getSelectedColumnsForIds(usersTable, listOf("9999"), listOf(name))
         assertEquals(emptyList(), rows)
     }
-
-    // -------------------------------------------------------------------------
-    // Dashboard: getListSectionData
-    // -------------------------------------------------------------------------
 
     @Test
     fun `getListSectionData returns all table columns when fields is null`() {
@@ -1596,10 +1511,6 @@ class JdbcQueriesRepositoryFullTest {
         val data = JdbcQueriesRepository.getListSectionData(usersTable, section)
         assertEquals("DOUBLE", data.fields.single().type)
     }
-
-    // -------------------------------------------------------------------------
-    // Dashboard: getChartData
-    // -------------------------------------------------------------------------
 
     @Test
     fun `getChartData ALL aggregation returns one entry per row`() {
@@ -1694,10 +1605,6 @@ class JdbcQueriesRepositoryFullTest {
         assertTrue(chart.values.single().values.isEmpty())
     }
 
-    // -------------------------------------------------------------------------
-    // Dashboard: getTextData
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getTextData COUNT returns total row count as string`() {
         val result = JdbcQueriesRepository.getTextData(
@@ -1791,10 +1698,6 @@ class JdbcQueriesRepositoryFullTest {
         assertEquals("90", result.value)
     }
 
-    // -------------------------------------------------------------------------
-    // Large-dataset and pagination stress
-    // -------------------------------------------------------------------------
-
     @Test
     fun `pagination across large dataset covers all rows`() {
         dataSource.connection.use { conn ->
@@ -1830,10 +1733,6 @@ class JdbcQueriesRepositoryFullTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Multi-database-key (same datasource) path via usingDataSource
-    // -------------------------------------------------------------------------
-
     @Test
     fun `getCountOfTables works for tables grouped under same database key`() {
         val counts = JdbcQueriesRepository.getCountOfTables(
@@ -1849,10 +1748,6 @@ class JdbcQueriesRepositoryFullTest {
         assertEquals(2L, counts["profiles"])
         assertEquals(3L, counts["roles"])
     }
-
-    // -------------------------------------------------------------------------
-    // Referential integrity — full matrix
-    // -------------------------------------------------------------------------
 
     @Test
     fun `cannot delete user referenced by user_roles without cascading`() {
@@ -1882,10 +1777,6 @@ class JdbcQueriesRepositoryFullTest {
         val counts = JdbcQueriesRepository.getCountOfTables(listOf(rolesTable))
         assertEquals(2L, counts["roles"])
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
 
     private fun deleteAllUsers() {
         dataSource.connection.use { conn ->
