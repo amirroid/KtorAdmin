@@ -31,3 +31,17 @@
 
 The automated suite focuses first on deterministic, fast unit tests that require no external database, MongoDB, AWS, browser, or network. Ktor route and repository integration tests are intentionally left as a follow-up because the library module currently lacks `ktor-server-test-host`, an embedded database dependency, and Mongo test fixtures. Adding those dependencies would change the project test framework surface.
 
+
+## Database And Authentication Expansion
+
+Added dependencies are limited to integration-test needs:
+
+- `ktor-server-test-host`: required to exercise custom Ktor authentication providers and protected routes through real request handling.
+- `ktor-server-sessions`: required because the library auth providers persist encrypted credentials/tokens in Ktor sessions.
+- `h2`: required for deterministic JDBC repository integration tests without external infrastructure.
+
+JDBC repository behavior is tested against a real H2 database for CRUD, count queries, search/filter/order query behavior, CSV mapping, uniqueness checks, selected-column reads, many-to-many reference updates, parameter validation, and constraint-failure rollback safety.
+
+MongoDB repository tests cover deterministic key normalization, missing-client failure behavior, malformed ObjectId validation, and repeated registration edge cases. Full Mongo CRUD integration is intentionally not enabled by default because the module has no embedded Mongo test fixture and adding one would introduce a heavy external process dependency. The current tests still protect important Mongo repository failure paths without requiring a live server.
+
+Authentication tests use Ktor's test host to verify form auth, token auth, encrypted session reuse, invalid credentials, missing/malformed/tampered CSRF tokens, expired encrypted sessions, challenge responses, and route-level role/dashboard permission checks.
