@@ -800,7 +800,7 @@ class JdbcQueriesRepositoryFullTest {
         )
         val profile = rows.first { it.primaryKey == "1" }.data[7]
         assertTrue(profile is ReferenceData)
-        assertEquals("1", (profile as ReferenceData).value)
+        assertEquals("1", profile.value)
     }
 
     @Test
@@ -811,7 +811,7 @@ class JdbcQueriesRepositoryFullTest {
         )
         val org = rows.first { it.primaryKey == "1" }.data[8]
         assertTrue(org is ReferenceData)
-        assertEquals("Tests", (org as ReferenceData).pluralName)
+        assertEquals("Tests", org.pluralName)
     }
 
     @Test
@@ -1158,7 +1158,7 @@ class JdbcQueriesRepositoryFullTest {
             initialData = initialData
         )
         assertNotNull(result)
-        assertEquals(listOf("name"), result!!.second)
+        assertEquals(listOf("name"), result.second)
         assertEquals("Ada Lovelace", JdbcQueriesRepository.getData(usersTable, "1")!![1])
     }
 
@@ -1203,7 +1203,7 @@ class JdbcQueriesRepositoryFullTest {
             initialData = null
         )
         assertNotNull(result)
-        assertEquals(1, result!!.first)
+        assertEquals(1, result.first)
         assertNotNull(JdbcQueriesRepository.getData(usersTable, "7"))
     }
 
@@ -1346,7 +1346,7 @@ class JdbcQueriesRepositoryFullTest {
             initialData = initial
         )
         assertNotNull(result)
-        assertTrue(result!!.second.containsAll(listOf("name", "age")))
+        assertTrue(result.second.containsAll(listOf("name", "age")))
     }
 
     @Test

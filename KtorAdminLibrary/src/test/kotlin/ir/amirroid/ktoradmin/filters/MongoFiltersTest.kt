@@ -42,7 +42,7 @@ class MongoFiltersTest {
 
         val filter = MongoFilters.extractMongoFilters(panel, Parameters.Empty)
 
-        assertTrue(filter.toBsonDocument().isEmpty)
+        assertTrue(filter.toBsonDocument().isEmpty())
     }
 
     private fun mongoPanel(fields: List<FieldSet>, filters: List<String> = emptyList()) = object : AdminMongoCollection {
