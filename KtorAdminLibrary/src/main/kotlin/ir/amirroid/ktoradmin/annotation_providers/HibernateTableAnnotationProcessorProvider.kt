@@ -6,7 +6,5 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import ir.amirroid.ktoradmin.processors.hibernate.HibernateTableProcessor
 
 class HibernateTableAnnotationProcessorProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return HibernateTableProcessor(environment)
-    }
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor = HibernateTableProcessor(environment)
 }

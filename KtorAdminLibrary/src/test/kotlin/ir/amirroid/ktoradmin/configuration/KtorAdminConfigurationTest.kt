@@ -70,26 +70,41 @@ class KtorAdminConfigurationTest {
         assertSame(translator, DynamicConfiguration.getTranslator("lang-$unique"))
     }
 
-    private fun valueMapper(key: String) = object : KtorAdminValueMapper {
-        override val key: String = key
-        override fun map(value: Any?): Any? = value
-        override fun restore(value: Any?): Any? = value
-    }
+    private fun valueMapper(key: String) =
+        object : KtorAdminValueMapper {
+            override val key: String = key
 
-    private fun preview(key: String) = object : KtorAdminPreview() {
-        override val key: String = key
-        override fun createPreview(tableName: String, name: String, value: Any?): String? = value?.toString()
-    }
+            override fun map(value: Any?): Any? = value
 
-    private fun translator(languageCode: String) = object : KtorAdminTranslator() {
-        override val languageCode: String = languageCode
-        override val languageName: String = languageCode
-        override val translates: Map<String, String> = mapOf(Keys.DASHBOARD to "Dashboard")
-    }
+            override fun restore(value: Any?): Any? = value
+        }
 
-    private fun action(key: String) = object : CustomAdminAction {
-        override var key: String = key
-        override val displayText: String = key
-        override suspend fun performAction(name: String, selectedIds: List<String>) = Unit
-    }
+    private fun preview(key: String) =
+        object : KtorAdminPreview() {
+            override val key: String = key
+
+            override fun createPreview(
+                tableName: String,
+                name: String,
+                value: Any?,
+            ): String? = value?.toString()
+        }
+
+    private fun translator(languageCode: String) =
+        object : KtorAdminTranslator() {
+            override val languageCode: String = languageCode
+            override val languageName: String = languageCode
+            override val translates: Map<String, String> = mapOf(Keys.DASHBOARD to "Dashboard")
+        }
+
+    private fun action(key: String) =
+        object : CustomAdminAction {
+            override var key: String = key
+            override val displayText: String = key
+
+            override suspend fun performAction(
+                name: String,
+                selectedIds: List<String>,
+            ) = Unit
+        }
 }

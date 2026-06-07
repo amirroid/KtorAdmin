@@ -13,5 +13,5 @@ package ir.amirroid.ktoradmin.authentication
 data class KtorAdminPrincipal(
     val name: String,
     val roles: List<String>? = null,
-    val dashboardAccess: Boolean = true
+    val dashboardAccess: Boolean = true,
 )

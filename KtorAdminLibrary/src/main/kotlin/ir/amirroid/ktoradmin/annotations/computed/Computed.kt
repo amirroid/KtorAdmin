@@ -24,5 +24,5 @@ package ir.amirroid.ktoradmin.annotations.computed
 @Target(AnnotationTarget.PROPERTY)
 annotation class Computed(
     val compute: String,
-    val readOnly: Boolean = true
+    val readOnly: Boolean = true,
 )

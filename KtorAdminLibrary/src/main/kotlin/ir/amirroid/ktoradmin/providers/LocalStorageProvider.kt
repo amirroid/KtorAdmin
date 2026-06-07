@@ -10,7 +10,6 @@ import java.io.File
  * Provides functionality for uploading files and generating URLs for stored files.
  */
 internal object LocalStorageProvider {
-
     /**
      * Uploads a file to the local filesystem.
      * If a file with the same name exists, creates a new file with an incremented counter in parentheses.
@@ -20,9 +19,13 @@ internal object LocalStorageProvider {
      * @param path The directory path where the file should be stored
      * @return The actual filename used for storage (may include counter if duplicate), or null if parameters are invalid
      */
-    fun uploadFile(bytes: ByteArray, fileName: String?, path: String?): String? {
+    fun uploadFile(
+        bytes: ByteArray,
+        fileName: String?,
+        path: String?,
+    ): String? {
         if (fileName == null || path == null || bytes.isEmpty()) return null
-        val file = File("${path}/${fileName}").requiredSave(path)
+        val file = File("$path/$fileName").requiredSave(path)
         file.writeBytes(bytes)
         return file.name
     }
@@ -35,7 +38,10 @@ internal object LocalStorageProvider {
      * @return The complete URL for accessing the file
      * @throws IllegalArgumentException if media root is not configured
      */
-    fun getFileUrl(fileName: String, call: ApplicationCall): String {
+    fun getFileUrl(
+        fileName: String,
+        call: ApplicationCall,
+    ): String {
         if (FileRepository.mediaRoot == null) {
             throw IllegalArgumentException("Media root is not provided. Please specify a valid media root.")
         }
@@ -49,7 +55,10 @@ internal object LocalStorageProvider {
      * @param path The directory path where the file is stored
      * @return `true` if the file was successfully deleted, `false` otherwise
      */
-    fun deleteFile(fileName: String, path: String?): Boolean {
+    fun deleteFile(
+        fileName: String,
+        path: String?,
+    ): Boolean {
         if (path == null) return false
         val file = File("$path/$fileName")
         return try {
@@ -78,7 +87,7 @@ internal object LocalStorageProvider {
         while (file.exists()) {
             val extension = file.extension
             val filename = "$baseName($counter).$extension"
-            file = File("${path}/${filename}")
+            file = File("$path/$filename")
             counter++
         }
         file.createNewFile()
@@ -92,5 +101,4 @@ internal object LocalStorageProvider {
      * @return The complete media URL for the file
      */
     private fun ApplicationCall.getMediaUrl(filename: String) = "$mediaUrl/$filename"
-
 }

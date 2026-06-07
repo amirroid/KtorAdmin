@@ -1,6 +1,5 @@
 package ir.amirroid.ktoradmin.annotations.collection
 
-
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
 annotation class CollectionInfo(

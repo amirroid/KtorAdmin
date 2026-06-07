@@ -1,8 +1,8 @@
 package ir.amirroid.ktoradmin.configuration
 
-import ir.amirroid.ktoradmin.action.CustomAdminAction
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import ir.amirroid.ktoradmin.action.CustomAdminAction
 import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
 import ir.amirroid.ktoradmin.hikra.KtorAdminHikariCP
@@ -30,7 +30,6 @@ import java.time.ZoneId
  * and other configurable options.
  */
 class KtorAdminConfiguration {
-
     // List to store registered JDBC data sources
     private val jdbcDataSources = mutableListOf<String>()
 
@@ -84,7 +83,6 @@ class KtorAdminConfiguration {
         set(value) {
             DynamicConfiguration.loginPageMessage = value
         }
-
 
     /**
      * If debugMode is enabled, error messages will be displayed.
@@ -186,20 +184,17 @@ class KtorAdminConfiguration {
             DynamicConfiguration.dashboard = value
         }
 
-
     var defaultLanguage: String
         get() = DynamicConfiguration.defaultLanguage
         set(value) {
             DynamicConfiguration.defaultLanguage = value
         }
 
-
     var zoneId: ZoneId
         get() = DynamicConfiguration.timeZone
         set(value) {
             DynamicConfiguration.timeZone = value
         }
-
 
     var adminPath: String
         get() = DynamicConfiguration.adminPath
@@ -235,7 +230,7 @@ class KtorAdminConfiguration {
         key: String?,
         databaseName: String,
         address: MongoServerAddress,
-        credential: MongoCredential? = null
+        credential: MongoCredential? = null,
     ) {
         MongoClientRepository.registerNewClient(key, databaseName, address, credential)
     }
@@ -250,15 +245,16 @@ class KtorAdminConfiguration {
         password: String,
         driver: String,
     ) {
-        val config = HikariConfig().apply {
-            driverClassName = driver
-            this.password = password
-            this.username = username
-            this.jdbcUrl = url
-            addDataSourceProperty("cachePrepStmts", "true")
-            addDataSourceProperty("prepStmtCacheSize", "250")
-            addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
-        }
+        val config =
+            HikariConfig().apply {
+                driverClassName = driver
+                this.password = password
+                this.username = username
+                this.jdbcUrl = url
+                addDataSourceProperty("cachePrepStmts", "true")
+                addDataSourceProperty("prepStmtCacheSize", "250")
+                addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
+            }
 
         val dataSource = HikariDataSource(config)
 
@@ -275,7 +271,7 @@ class KtorAdminConfiguration {
      */
     fun jdbc(
         key: String?,
-        dataSource: HikariDataSource
+        dataSource: HikariDataSource,
     ) {
         if (key == null) {
             KtorAdminHikariCP.defaultCustom(dataSource)
@@ -297,8 +293,7 @@ class KtorAdminConfiguration {
         AWSS3StorageProvider.register(secretKey, accessKey, region, endpoint)
     }
 
-    fun registerValueMapper(valueMapper: KtorAdminValueMapper) =
-        DynamicConfiguration.registerValueMapper(valueMapper)
+    fun registerValueMapper(valueMapper: KtorAdminValueMapper) = DynamicConfiguration.registerValueMapper(valueMapper)
 
     /**
      * Registers an event listener for admin events.
@@ -320,7 +315,6 @@ class KtorAdminConfiguration {
     fun registerTranslator(translator: KtorAdminTranslator) {
         DynamicConfiguration.registerTranslator(translator)
     }
-
 
     fun provideMenu(provide: (tableName: String?) -> List<Menu>) {
         DynamicConfiguration.menuProvider = provide

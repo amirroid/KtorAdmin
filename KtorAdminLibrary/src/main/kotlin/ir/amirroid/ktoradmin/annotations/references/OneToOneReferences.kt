@@ -4,5 +4,5 @@ package ir.amirroid.ktoradmin.annotations.references
 @Retention(AnnotationRetention.SOURCE)
 annotation class OneToOneReferences(
     val tableName: String,
-    val foreignKey: String
+    val foreignKey: String,
 )

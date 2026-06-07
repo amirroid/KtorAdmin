@@ -1,6 +1,5 @@
 package ir.amirroid.ktoradmin.annotations.display
 
-
 /**
  * An annotation to specify the format for displaying an object as a string.
  *
@@ -8,4 +7,6 @@ package ir.amirroid.ktoradmin.annotations.display
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
-annotation class DisplayFormat(val format: String)
+annotation class DisplayFormat(
+    val format: String,
+)

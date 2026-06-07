@@ -82,7 +82,7 @@ internal object MongoClientRepository {
         val port: Int,
         val databaseName: String,
         val username: String?,
-        val passwordHash: Int?
+        val passwordHash: Int?,
     )
 
     // Map to store connection configurations for client reuse
@@ -110,7 +110,7 @@ internal object MongoClientRepository {
         key: String?,
         databaseName: String,
         address: MongoServerAddress,
-        credential: MongoCredential? = null
+        credential: MongoCredential? = null,
     ) {
         val actualKey = getActualKey(key)
 
@@ -122,13 +122,14 @@ internal object MongoClientRepository {
         }
 
         // Create a configuration object to check if we already have a similar connection
-        val config = ConnectionConfig(
-            host = address.host,
-            port = address.port,
-            databaseName = databaseName,
-            username = credential?.username,
-            passwordHash = credential?.password?.hashCode()
-        )
+        val config =
+            ConnectionConfig(
+                host = address.host,
+                port = address.port,
+                databaseName = databaseName,
+                username = credential?.username,
+                passwordHash = credential?.password?.hashCode(),
+            )
 
         clientOperationsLock.write {
             // Double-check if a database was created while waiting for the lock
@@ -151,22 +152,24 @@ internal object MongoClientRepository {
             }
 
             // Create a new client if no matching configuration was found
-            val settings = MongoClientSettings.builder()
-                .let {
-                    if (credential != null) {
-                        it.credential(
-                            com.mongodb.MongoCredential.createCredential(
-                                credential.username,
-                                credential.database,
-                                credential.password.toCharArray()
+            val settings =
+                MongoClientSettings
+                    .builder()
+                    .let {
+                        if (credential != null) {
+                            it.credential(
+                                com.mongodb.MongoCredential.createCredential(
+                                    credential.username,
+                                    credential.database,
+                                    credential.password.toCharArray(),
+                                ),
                             )
-                        )
-                    } else it
-                }
-                .applyToClusterSettings { cluster ->
-                    cluster.hosts(listOf(ServerAddress(address.host, address.port)))
-                }
-                .build()
+                        } else {
+                            it
+                        }
+                    }.applyToClusterSettings { cluster ->
+                        cluster.hosts(listOf(ServerAddress(address.host, address.port)))
+                    }.build()
 
             val newClient = MongoClient.create(settings)
             val database = newClient.getDatabase(databaseName)
@@ -201,7 +204,9 @@ internal object MongoClientRepository {
     private fun AdminMongoCollection.getPrimaryKeyFilter(primaryKey: String) =
         if (getPrimaryKeyField().type == FieldType.ObjectId || getPrimaryKey() == "_id") {
             eq(getPrimaryKey(), ObjectId(primaryKey))
-        } else eq(getPrimaryKey(), primaryKey)
+        } else {
+            eq(getPrimaryKey(), primaryKey)
+        }
 
     /**
      * Converts a BsonValue to a string ID if it's an ObjectId.
@@ -222,30 +227,39 @@ internal object MongoClientRepository {
      */
     suspend fun insertData(
         values: Map<FieldSet, Any?>,
-        panel: AdminMongoCollection
+        panel: AdminMongoCollection,
     ): String? {
-        val changeDates = panel.getAllAutoNowDateInsertFields().map {
-            it to it.getCurrentDate()
-        }
-
-        val document = Document().apply {
-            values.toList().plus(changeDates).distinctBy { it.first }.forEach { (field, value) ->
-                if (field.type is FieldType.File && value is FileEvent) {
-                    put(field.fieldName, value.fileName)
-                } else put(field.fieldName, value)
+        val changeDates =
+            panel.getAllAutoNowDateInsertFields().map {
+                it to it.getCurrentDate()
             }
-        }
 
-        return panel.getCollection().insertOne(document).insertedId?.toStringId()
+        val document =
+            Document().apply {
+                values.toList().plus(changeDates).distinctBy { it.first }.forEach { (field, value) ->
+                    if (field.type is FieldType.File && value is FileEvent) {
+                        put(field.fieldName, value.fileName)
+                    } else {
+                        put(field.fieldName, value)
+                    }
+                }
+            }
+
+        return panel
+            .getCollection()
+            .insertOne(document)
+            .insertedId
+            ?.toStringId()
     }
 
     suspend fun getCountOfCollections(panels: List<AdminMongoCollection>): Map<String, Long> =
         coroutineScope {
-            val deferredCounts = panels.map { panel ->
-                async {
-                    panel.getCollection().countDocuments()
+            val deferredCounts =
+                panels.map { panel ->
+                    async {
+                        panel.getCollection().countDocuments()
+                    }
                 }
-            }
 
             // Await all results and associate them with their collection names
             panels.map { it.getCollectionName() }.zip(deferredCounts.awaitAll()).toMap()
@@ -264,52 +278,57 @@ internal object MongoClientRepository {
         table: AdminMongoCollection,
         page: Int,
         filters: Bson,
-        order: Order? = null
+        order: Order? = null,
     ): List<DataWithPrimaryKey> {
         val fields = table.getAllAllowToShowFields()
-        val projection = table.getCollection()
-            .find(filters)
-            .skip(DynamicConfiguration.maxItemsInPage * page)
-            .limit(DynamicConfiguration.maxItemsInPage)
-            .let {
-                when {
-                    order == null -> it
-                    order.direction.equals("asc", ignoreCase = true) -> it.sort(
-                        Sorts.ascending(
-                            order.name
-                        )
-                    )
+        val projection =
+            table
+                .getCollection()
+                .find(filters)
+                .skip(DynamicConfiguration.maxItemsInPage * page)
+                .limit(DynamicConfiguration.maxItemsInPage)
+                .let {
+                    when {
+                        order == null -> it
+                        order.direction.equals("asc", ignoreCase = true) ->
+                            it.sort(
+                                Sorts.ascending(
+                                    order.name,
+                                ),
+                            )
 
-                    order.direction.equals("desc", ignoreCase = true) -> it.sort(
-                        Sorts.descending(
-                            order.name
-                        )
-                    )
+                        order.direction.equals("desc", ignoreCase = true) ->
+                            it.sort(
+                                Sorts.descending(
+                                    order.name,
+                                ),
+                            )
 
-                    else -> it
-                }
-            }
-            .projection(
-                fields(
-                    *fields.plus(table.getPrimaryKeyField())
-                        .map { include(it.fieldName) }
-                        .distinct()
-                        .toTypedArray()
-                )
-            ).filterNotNull().toList()
+                        else -> it
+                    }
+                }.projection(
+                    fields(
+                        *fields
+                            .plus(table.getPrimaryKeyField())
+                            .map { include(it.fieldName) }
+                            .distinct()
+                            .toTypedArray(),
+                    ),
+                ).filterNotNull()
+                .toList()
 
         return projection.map { values ->
             DataWithPrimaryKey(
                 primaryKey = values[table.getPrimaryKey()]!!.toString(),
-                data = fields.map { field ->
-                    values[field.fieldName].formatToDisplayInCollection(
-                        field.type
-                    )
-                }
+                data =
+                    fields.map { field ->
+                        values[field.fieldName].formatToDisplayInCollection(
+                            field.type,
+                        )
+                    },
             )
         }
     }
-
 
     /**
      * Retrieves values of specified fields for given document IDs from a Mongo collection.
@@ -322,23 +341,24 @@ internal object MongoClientRepository {
     suspend fun getSelectedFieldsForIds(
         collection: AdminMongoCollection,
         selectedIds: List<String>,
-        fields: List<FieldSet>
+        fields: List<FieldSet>,
     ): List<List<Any?>> {
         if (selectedIds.isEmpty() || fields.isEmpty()) return emptyList()
 
         val bsonFilter = collection.getPrimaryKeyFilters(selectedIds)
 
-        return collection.getCollection()
+        return collection
+            .getCollection()
             .find(bsonFilter)
             .projection(
                 fields(
-                    *fields.plus(collection.getPrimaryKeyField())
+                    *fields
+                        .plus(collection.getPrimaryKeyField())
                         .map { include(it.fieldName) }
                         .distinct()
-                        .toTypedArray()
-                )
-            )
-            .toList()
+                        .toTypedArray(),
+                ),
+            ).toList()
             .map { doc ->
                 fields.map { field ->
                     doc[field.fieldName]?.formatToDisplayInCollection(field.type)
@@ -346,16 +366,20 @@ internal object MongoClientRepository {
             }
     }
 
-
     suspend fun getAllDataAsCsvFile(panel: AdminMongoCollection): String {
         val fields = panel.getAllAllowToShowFields()
-        return panel.getCollection().find().projection(
-            fields(
-                *fields.map { include(it.fieldName) }.toTypedArray()
-            )
-        ).filterNotNull().toList().joinToString("\n") { values ->
-            fields.joinToString(", ") { values[it.fieldName]?.toString() ?: "N/A" }
-        }
+        return panel
+            .getCollection()
+            .find()
+            .projection(
+                fields(
+                    *fields.map { include(it.fieldName) }.toTypedArray(),
+                ),
+            ).filterNotNull()
+            .toList()
+            .joinToString("\n") { values ->
+                fields.joinToString(", ") { values[it.fieldName]?.toString() ?: "N/A" }
+            }
     }
 
     /**
@@ -368,9 +392,7 @@ internal object MongoClientRepository {
     suspend fun getCount(
         table: AdminMongoCollection,
         filters: Bson,
-    ): Long {
-        return table.getCollection().countDocuments(filters)
-    }
+    ): Long = table.getCollection().countDocuments(filters)
 
     /**
      * Retrieves a single document by its primary key.
@@ -379,25 +401,34 @@ internal object MongoClientRepository {
      * @param primaryKey Primary key value
      * @return List of field values, or null if not found
      */
-    suspend fun getData(panel: AdminMongoCollection, primaryKey: String): List<String?>? {
-        val projection = panel.getCollection().find(
-            panel.getPrimaryKeyFilter(primaryKey)
-        ).projection(
-            fields(
-                fields(
-                    *panel.getAllAllowToShowFieldsInUpsert()
-                        .map { include(it.fieldName) }
-                        .toTypedArray()
-                )
-            )
-        ).firstOrNull()
+    suspend fun getData(
+        panel: AdminMongoCollection,
+        primaryKey: String,
+    ): List<String?>? {
+        val projection =
+            panel
+                .getCollection()
+                .find(
+                    panel.getPrimaryKeyFilter(primaryKey),
+                ).projection(
+                    fields(
+                        fields(
+                            *panel
+                                .getAllAllowToShowFieldsInUpsert()
+                                .map { include(it.fieldName) }
+                                .toTypedArray(),
+                        ),
+                    ),
+                ).firstOrNull()
 
-        return projection?.let { values ->
-            panel.getAllAllowToShowFieldsInUpsert()
-                .map { field -> values[field.fieldName]?.toString() }
-        }.also {
-            println("Data: $it")
-        }
+        return projection
+            ?.let { values ->
+                panel
+                    .getAllAllowToShowFieldsInUpsert()
+                    .map { field -> values[field.fieldName]?.toString() }
+            }.also {
+                println("Data: $it")
+            }
     }
 
     /**
@@ -421,36 +452,43 @@ internal object MongoClientRepository {
                 id to panel.getAllFields().map { it.fieldName.toString() }
             }
         } else {
-
             // Find fields that have changed values
-            val updateFields = parameters.toList().filterIndexed { index, item ->
-                val initialValue = initialData.getOrNull(index)
-                val formattedValue = item.second?.first
-                initialValue != formattedValue && !(initialValue != null && item.second == null)
-            }
+            val updateFields =
+                parameters.toList().filterIndexed { index, item ->
+                    val initialValue = initialData.getOrNull(index)
+                    val formattedValue = item.second?.first
+                    initialValue != formattedValue && !(initialValue != null && item.second == null)
+                }
 
             // If no fields changed, return null
             if (updateFields.isEmpty()) return null
 
-            val updatedFieldsBson = updateFields.mapNotNull {
-                if (it.first.type is FieldType.File && it.second?.second is FileEvent) {
-                    set(
-                        it.first.fieldName.toString(),
-                        (it.second?.second as FileEvent).fileName
+            val updatedFieldsBson =
+                updateFields
+                    .mapNotNull {
+                        if (it.first.type is FieldType.File && it.second?.second is FileEvent) {
+                            set(
+                                it.first.fieldName.toString(),
+                                (it.second?.second as FileEvent).fileName,
+                            )
+                        } else {
+                            set(
+                                it.first.fieldName.toString(),
+                                it.second?.second ?: return@mapNotNull null,
+                            )
+                        }
+                    }.plus(
+                        panel.getAllAutoNowDateUpdateFields().map {
+                            set(it.fieldName.orEmpty(), Date())
+                        },
                     )
-                } else set(
-                    it.first.fieldName.toString(),
-                    it.second?.second ?: return@mapNotNull null
-                )
-            }.plus(
-                panel.getAllAutoNowDateUpdateFields().map {
-                    set(it.fieldName.orEmpty(), Date())
-                }
-            )
 
-            val id = panel.getCollection()
-                .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updatedFieldsBson))
-                .upsertedId?.toStringId()
+            val id =
+                panel
+                    .getCollection()
+                    .updateOne(panel.getPrimaryKeyFilter(primaryKey), combine(updatedFieldsBson))
+                    .upsertedId
+                    ?.toStringId()
 
             return id to updateFields.map { it.first.fieldName.toString() }
         }
@@ -460,15 +498,19 @@ internal object MongoClientRepository {
         panel: AdminMongoCollection,
         primaryKey: String,
         field: FieldSet,
-        value: String?
+        value: String?,
     ): String? {
-        val updatedFieldBson = set(
-            field.fieldName.toString(),
-            value?.formatParameter(field) ?: return null
-        )
-        val id = panel.getCollection()
-            .updateOne(panel.getPrimaryKeyFilter(primaryKey), updatedFieldBson)
-            .upsertedId?.toStringId()
+        val updatedFieldBson =
+            set(
+                field.fieldName.toString(),
+                value?.formatParameter(field) ?: return null,
+            )
+        val id =
+            panel
+                .getCollection()
+                .updateOne(panel.getPrimaryKeyFilter(primaryKey), updatedFieldBson)
+                .upsertedId
+                ?.toStringId()
         return id
     }
 
@@ -491,9 +533,12 @@ internal object MongoClientRepository {
      * @param panel The admin collection
      * @param selectedIds List of primary key values to delete
      */
-    suspend fun deleteRows(panel: AdminMongoCollection, selectedIds: List<String>) {
+    suspend fun deleteRows(
+        panel: AdminMongoCollection,
+        selectedIds: List<String>,
+    ) {
         panel.getCollection().deleteMany(
-            panel.getPrimaryKeyFilters(selectedIds)
+            panel.getPrimaryKeyFilters(selectedIds),
         )
     }
 
@@ -507,7 +552,7 @@ internal object MongoClientRepository {
      */
     suspend fun getChartData(
         panel: AdminMongoCollection,
-        section: ChartDashboardSection
+        section: ChartDashboardSection,
     ): ChartData {
         // Destructure the section properties
         val aggregationFunction = section.aggregationFunction
@@ -521,24 +566,29 @@ internal object MongoClientRepository {
         // Apply aggregation function to each value field
         section.valuesFields.forEach { field ->
             val fieldName = field.fieldName
-            val aggField: BsonField = when (aggregationFunction) {
-                ChartDashboardAggregationFunction.COUNT -> Accumulators.sum(
-                    fieldName,
-                    1
-                ) // Count occurrences
-                ChartDashboardAggregationFunction.SUM -> Accumulators.sum(
-                    fieldName,
-                    "\$$fieldName"
-                ) // Sum values
-                ChartDashboardAggregationFunction.AVERAGE -> Accumulators.avg(
-                    fieldName,
-                    "\$$fieldName"
-                ) // Average values
-                ChartDashboardAggregationFunction.ALL -> Accumulators.push(
-                    fieldName,
-                    "\$$fieldName"
-                ) // Store all values without aggregation
-            }
+            val aggField: BsonField =
+                when (aggregationFunction) {
+                    ChartDashboardAggregationFunction.COUNT ->
+                        Accumulators.sum(
+                            fieldName,
+                            1,
+                        ) // Count occurrences
+                    ChartDashboardAggregationFunction.SUM ->
+                        Accumulators.sum(
+                            fieldName,
+                            "\$$fieldName",
+                        ) // Sum values
+                    ChartDashboardAggregationFunction.AVERAGE ->
+                        Accumulators.avg(
+                            fieldName,
+                            "\$$fieldName",
+                        ) // Average values
+                    ChartDashboardAggregationFunction.ALL ->
+                        Accumulators.push(
+                            fieldName,
+                            "\$$fieldName",
+                        ) // Store all values without aggregation
+                }
             groupFields.add(aggField)
         }
 
@@ -547,15 +597,21 @@ internal object MongoClientRepository {
 
         // Apply sorting if specified
         section.orderQuery?.let {
-            val sortFields = it.trim().split(",").map { fieldSpec ->
-                val parts = fieldSpec.trim().split(" ")
-                val field = parts[0]
-                val order = if (parts.getOrNull(1)
-                        ?.equals("DESC", ignoreCase = true) == true
-                ) Sorts.descending(field)
-                else Sorts.ascending(field)
-                order
-            }
+            val sortFields =
+                it.trim().split(",").map { fieldSpec ->
+                    val parts = fieldSpec.trim().split(" ")
+                    val field = parts[0]
+                    val order =
+                        if (parts
+                                .getOrNull(1)
+                                ?.equals("DESC", ignoreCase = true) == true
+                        ) {
+                            Sorts.descending(field)
+                        } else {
+                            Sorts.ascending(field)
+                        }
+                    order
+                }
             pipeline.add(sort(Sorts.orderBy(sortFields)))
         }
 
@@ -583,34 +639,39 @@ internal object MongoClientRepository {
 
         // Iterate through the results to process each document
         documents.forEach { document ->
-            val label = document.get("_id")
-                ?.let {
-                    when (it) {
-                        is Date -> labelFormatter?.format(it)
-                            ?: it.toString() // If it's a Date, format it
-                        else -> it.toString() // Otherwise, just convert it to string
-                    }
-                } ?: "Unknown" // Default if label is not present
+            val label =
+                document
+                    .get("_id")
+                    ?.let {
+                        when (it) {
+                            is Date ->
+                                labelFormatter?.format(it)
+                                    ?: it.toString() // If it's a Date, format it
+                            else -> it.toString() // Otherwise, just convert it to string
+                        }
+                    } ?: "Unknown" // Default if label is not present
             labelsSet.add(label)
 
             // Extract values for the specified fields based on the aggregation function
-            val values = section.valuesFields.map { field ->
-                val fieldName = field.fieldName
-                if (aggregationFunction == ChartDashboardAggregationFunction.ALL) {
-                    // For ALL aggregation, push all the values
-                    document.get(fieldName)?.let { value ->
-                        (value as? List<*>)?.mapNotNull { it?.toString()?.toDoubleOrNull() }
-                            ?: listOf(0.0)
-                    } ?: listOf(0.0)
-                } else {
-                    // For other aggregation functions (COUNT, SUM, AVERAGE)
-                    document.get(fieldName)?.toString()?.toDoubleOrNull() ?: 0.0
+            val values =
+                section.valuesFields.map { field ->
+                    val fieldName = field.fieldName
+                    if (aggregationFunction == ChartDashboardAggregationFunction.ALL) {
+                        // For ALL aggregation, push all the values
+                        document.get(fieldName)?.let { value ->
+                            (value as? List<*>)?.mapNotNull { it?.toString()?.toDoubleOrNull() }
+                                ?: listOf(0.0)
+                        } ?: listOf(0.0)
+                    } else {
+                        // For other aggregation functions (COUNT, SUM, AVERAGE)
+                        document.get(fieldName)?.toString()?.toDoubleOrNull() ?: 0.0
+                    }
                 }
-            }
 
             // Store values based on aggregation type
             if (aggregationFunction == ChartDashboardAggregationFunction.ALL) {
-                groupedData.computeIfAbsent(label) { MutableList(section.valuesFields.size) { mutableListOf<Double>() } }
+                groupedData
+                    .computeIfAbsent(label) { MutableList(section.valuesFields.size) { mutableListOf<Double>() } }
                     .forEachIndexed { index, list ->
                         // Ensure all values are of type Double and add to the list
                         (values[index] as? List<*>)
@@ -618,14 +679,14 @@ internal object MongoClientRepository {
                             ?.let { list.addAll(it) }
                     }
             } else {
-                groupedData.computeIfAbsent(label) {
-                    MutableList(section.valuesFields.size) {
-                        mutableListOf(
-                            0.0
-                        )
-                    }
-                }
-                    .forEachIndexed { index, list ->
+                groupedData
+                    .computeIfAbsent(label) {
+                        MutableList(section.valuesFields.size) {
+                            mutableListOf(
+                                0.0,
+                            )
+                        }
+                    }.forEachIndexed { index, list ->
                         list[0] += values[index].toString().toDoubleOrNull()
                             ?: 0.0 // Update the list with the aggregated value
                     }
@@ -636,25 +697,27 @@ internal object MongoClientRepository {
         labels.addAll(labelsSet)
 
         // Construct chart values for each field
-        val values = section.valuesFields.mapIndexed { index, field ->
-            val currentValues = labels.map { label ->
-                groupedData[label]?.get(index)?.firstOrNull() ?: 0.0
-            }
+        val values =
+            section.valuesFields.mapIndexed { index, field ->
+                val currentValues =
+                    labels.map { label ->
+                        groupedData[label]?.get(index)?.firstOrNull() ?: 0.0
+                    }
 
-            // Create ChartLabelsWithValues for each field
-            ChartLabelsWithValues(
-                displayName = field.displayName,
-                values = currentValues,
-                fillColors = labels.map { section.provideFillColor(it, field.displayName) },
-                borderColors = labels.map { section.provideBorderColor(it, field.displayName) }
-            )
-        }
+                // Create ChartLabelsWithValues for each field
+                ChartLabelsWithValues(
+                    displayName = field.displayName,
+                    values = currentValues,
+                    fillColors = labels.map { section.provideFillColor(it, field.displayName) },
+                    borderColors = labels.map { section.provideBorderColor(it, field.displayName) },
+                )
+            }
 
         // Return the final chart data
         return ChartData(
             labels = labels.toList(),
             values = values,
-            section = section
+            section = section,
         )
     }
 
@@ -678,22 +741,31 @@ internal object MongoClientRepository {
      * @param section The TextDashboardSection containing configuration and aggregation details.
      * @return A TextData object containing the aggregated value and the section information.
      */
-    suspend fun getTextData(panel: AdminMongoCollection, section: TextDashboardSection): TextData {
+    suspend fun getTextData(
+        panel: AdminMongoCollection,
+        section: TextDashboardSection,
+    ): TextData {
         val fieldName = section.fieldName
         val aggregationFunction = section.aggregationFunction
         val pipeline = mutableListOf<Bson>()
 
         // Add dynamic sorting if 'orderQuery' is provided
         section.orderQuery?.let {
-            val sortFields = it.trim().split(",").map { fieldSpec ->
-                val parts = fieldSpec.trim().split(" ")
-                val field = parts[0]
-                val order = if (parts.getOrNull(1)
-                        ?.equals("DESC", ignoreCase = true) == true
-                ) Sorts.descending(field)
-                else Sorts.ascending(field)
-                order
-            }
+            val sortFields =
+                it.trim().split(",").map { fieldSpec ->
+                    val parts = fieldSpec.trim().split(" ")
+                    val field = parts[0]
+                    val order =
+                        if (parts
+                                .getOrNull(1)
+                                ?.equals("DESC", ignoreCase = true) == true
+                        ) {
+                            Sorts.descending(field)
+                        } else {
+                            Sorts.ascending(field)
+                        }
+                    order
+                }
             pipeline.add(sort(Sorts.orderBy(sortFields)))
         }
 
@@ -701,14 +773,14 @@ internal object MongoClientRepository {
         when (aggregationFunction) {
             TextDashboardAggregationFunction.LAST_ITEM -> {
                 // Get the last item (sorted by date if needed)
-                pipeline.add(limit(1))  // Limit to 1 document to get the last item
-                pipeline.add(Aggregates.project(include(fieldName)))  // Project only the needed field
+                pipeline.add(limit(1)) // Limit to 1 document to get the last item
+                pipeline.add(Aggregates.project(include(fieldName))) // Project only the needed field
             }
 
             TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
                 // Profit percentage: (nextItem - prevItem) / prevItem * 100
-                pipeline.add(limit(2))  // Limit to last 2 items
-                pipeline.add(Aggregates.project(include(fieldName)))  // Project the needed field
+                pipeline.add(limit(2)) // Limit to last 2 items
+                pipeline.add(Aggregates.project(include(fieldName))) // Project the needed field
                 // To calculate the percentage, you will need to process the results after fetching
             }
 
@@ -719,25 +791,28 @@ internal object MongoClientRepository {
 
             else -> {
                 // For aggregation functions like AVERAGE, SUM, etc.
-                val aggregationFunctionQuery = when (aggregationFunction) {
-                    TextDashboardAggregationFunction.AVERAGE -> Accumulators.avg(
-                        fieldName,
-                        "$$fieldName"
-                    )
+                val aggregationFunctionQuery =
+                    when (aggregationFunction) {
+                        TextDashboardAggregationFunction.AVERAGE ->
+                            Accumulators.avg(
+                                fieldName,
+                                "$$fieldName",
+                            )
 
-                    TextDashboardAggregationFunction.SUM -> Accumulators.sum(
-                        fieldName,
-                        "$$fieldName"
-                    ) // Sum values
-                    else -> null
-                }
+                        TextDashboardAggregationFunction.SUM ->
+                            Accumulators.sum(
+                                fieldName,
+                                "$$fieldName",
+                            ) // Sum values
+                        else -> null
+                    }
                 aggregationFunctionQuery.let {
                     pipeline.add(
                         group(
                             null,
-                            it
-                        )
-                    )  // Grouping for aggregation function (e.g., AVG or SUM)
+                            it,
+                        ),
+                    ) // Grouping for aggregation function (e.g., AVG or SUM)
                 }
             }
         }
@@ -746,35 +821,40 @@ internal object MongoClientRepository {
         val result = panel.getCollection().aggregate(pipeline).toList()
 
         // Process the result based on the aggregation function
-        val value = when (aggregationFunction) {
-            TextDashboardAggregationFunction.LAST_ITEM -> {
-                if (result.isNotEmpty()) {
-                    result.first().get(fieldName)?.toString() ?: ""
-                } else ""
-            }
+        val value =
+            when (aggregationFunction) {
+                TextDashboardAggregationFunction.LAST_ITEM -> {
+                    if (result.isNotEmpty()) {
+                        result.first().get(fieldName)?.toString() ?: ""
+                    } else {
+                        ""
+                    }
+                }
 
-            TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
-                if (result.size == 2) {
-                    val nextItem = result[0][fieldName]?.toString()?.toDoubleOrNull() ?: 0.0
-                    val prevItem = result[1][fieldName]?.toString()?.toDoubleOrNull() ?: 0.0
-                    runCatching {
-                        ((nextItem - prevItem) / prevItem * 100).formatAsIntegerIfPossible()
-                    }.getOrElse { "" }
-                } else ""
-            }
+                TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
+                    if (result.size == 2) {
+                        val nextItem = result[0][fieldName]?.toString()?.toDoubleOrNull() ?: 0.0
+                        val prevItem = result[1][fieldName]?.toString()?.toDoubleOrNull() ?: 0.0
+                        runCatching {
+                            ((nextItem - prevItem) / prevItem * 100).formatAsIntegerIfPossible()
+                        }.getOrElse { "" }
+                    } else {
+                        ""
+                    }
+                }
 
-            TextDashboardAggregationFunction.COUNT -> {
-                result.firstOrNull()?.getInteger("aggregationFunctionValue")?.toString() ?: ""
-            }
+                TextDashboardAggregationFunction.COUNT -> {
+                    result.firstOrNull()?.getInteger("aggregationFunctionValue")?.toString() ?: ""
+                }
 
-            else -> {
-                result.firstOrNull()?.get(fieldName)?.toString() ?: ""
+                else -> {
+                    result.firstOrNull()?.get(fieldName)?.toString() ?: ""
+                }
             }
-        }
 
         return TextData(
             value = value,
-            section = section
+            section = section,
         )
     }
 
@@ -788,28 +868,35 @@ internal object MongoClientRepository {
      */
     suspend fun getListSectionData(
         panel: AdminMongoCollection,
-        section: ListDashboardSection
+        section: ListDashboardSection,
     ): ListData {
         // Retrieve all fields from the panel
         val allFields = panel.getAllFields()
 
         // Select the fields for this section based on the provided field names, or default to all fields
-        val fields = section.fields?.mapNotNull { fieldName ->
-            allFields.firstOrNull { it.fieldName == fieldName }
-        } ?: allFields  // Default to all columns if no specific fields are provided
+        val fields =
+            section.fields?.mapNotNull { fieldName ->
+                allFields.firstOrNull { it.fieldName == fieldName }
+            } ?: allFields // Default to all columns if no specific fields are provided
 
         // Parse the orderQuery for sorting fields, handling ASC/DESC sorting
-        val sortFields = section.orderQuery?.let {
-            it.trim().split(",").map { fieldSpec ->
-                val parts = fieldSpec.trim().split(" ")
-                val field = parts[0]
-                val order = if (parts.getOrNull(1)
-                        ?.equals("DESC", ignoreCase = true) == true
-                ) Sorts.descending(field)
-                else Sorts.ascending(field)
-                order
+        val sortFields =
+            section.orderQuery?.let {
+                it.trim().split(",").map { fieldSpec ->
+                    val parts = fieldSpec.trim().split(" ")
+                    val field = parts[0]
+                    val order =
+                        if (parts
+                                .getOrNull(1)
+                                ?.equals("DESC", ignoreCase = true) == true
+                        ) {
+                            Sorts.descending(field)
+                        } else {
+                            Sorts.ascending(field)
+                        }
+                    order
+                }
             }
-        }
 
         // Prepare the MongoDB aggregation pipeline
         val pipeline = mutableListOf<Bson>()
@@ -832,37 +919,39 @@ internal object MongoClientRepository {
         val result = panel.getCollection().aggregate(pipeline).toList()
 
         // Map the MongoDB result documents to a list of DataWithPrimaryKey objects
-        val rows = result.map { document ->
-            // Retrieve the primary key value for each document
-            val primaryKey = document.get(panel.getPrimaryKey())!!.toString()
+        val rows =
+            result.map { document ->
+                // Retrieve the primary key value for each document
+                val primaryKey = document.get(panel.getPrimaryKey())!!.toString()
 
-            // Map the field values from the document to the corresponding fields in the section
-            val data = fields.map { field ->
-                document.get(field.fieldName).formatToDisplayInCollection(field.type)
+                // Map the field values from the document to the corresponding fields in the section
+                val data =
+                    fields.map { field ->
+                        document.get(field.fieldName).formatToDisplayInCollection(field.type)
+                    }
+
+                // Create and return a DataWithPrimaryKey object
+                DataWithPrimaryKey(
+                    primaryKey = primaryKey,
+                    data = data,
+                )
             }
-
-            // Create and return a DataWithPrimaryKey object
-            DataWithPrimaryKey(
-                primaryKey = primaryKey,
-                data = data
-            )
-        }
 
         // Return the processed data wrapped in a ListData object
         return ListData(
             section = section,
             values = rows,
             pluralName = panel.getPluralName(),
-            fields = fields.map {
-                FieldData(
-                    name = it.verboseName,
-                    type = it.type.name,
-                    fieldName = it.fieldName.orEmpty()
-                )
-            }
+            fields =
+                fields.map {
+                    FieldData(
+                        name = it.verboseName,
+                        type = it.type.name,
+                        fieldName = it.fieldName.orEmpty(),
+                    )
+                },
         )
     }
-
 
     /**
      * Closes all database connections and clears the connection map.

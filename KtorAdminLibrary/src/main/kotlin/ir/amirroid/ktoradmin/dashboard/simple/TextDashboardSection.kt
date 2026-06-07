@@ -49,7 +49,6 @@ import ir.amirroid.ktoradmin.models.chart.TextDashboardAggregationFunction
  * ```
  */
 abstract class TextDashboardSection : DashboardSection {
-
     /** Defines the section type as `"text"`. */
     override val sectionType: String
         get() = SECTION_TYPE

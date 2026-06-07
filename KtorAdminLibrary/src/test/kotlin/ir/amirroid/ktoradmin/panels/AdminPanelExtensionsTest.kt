@@ -34,11 +34,16 @@ class AdminPanelExtensionsTest {
 
     @Test
     fun `should include registered custom actions and delete action`() {
-        val action = object : ir.amirroid.ktoradmin.action.CustomAdminAction {
-            override var key: String = "EXPORT"
-            override val displayText: String = "Export"
-            override suspend fun performAction(name: String, selectedIds: List<String>) = Unit
-        }
+        val action =
+            object : ir.amirroid.ktoradmin.action.CustomAdminAction {
+                override var key: String = "EXPORT"
+                override val displayText: String = "Export"
+
+                override suspend fun performAction(
+                    name: String,
+                    selectedIds: List<String>,
+                ) = Unit
+            }
         KtorAdminConfiguration().registerCustomAdminAction(action)
         val panel = adminPanel("Users", customActions = listOf("EXPORT"), defaultActions = listOf(Action.DELETE))
 
@@ -63,7 +68,11 @@ class AdminPanelExtensionsTest {
         val hidden = column("secret", showInPanel = false)
         val manyToMany = column("roles") { copy(reference = Reference.ManyToMany("roles", "user_roles", "user_id", "role_id")) }
         val autoNow = column("updated_at", ColumnType.DATETIME) { copy(autoNowDate = AutoNowDate(updateOnChange = true)) }
-        val table = TestJdbcTable(columns = listOf(id, hidden, manyToMany, autoNow), panelListColumns = listOf("id", "secret", "roles", "updated_at"))
+        val table =
+            TestJdbcTable(
+                columns = listOf(id, hidden, manyToMany, autoNow),
+                panelListColumns = listOf("id", "secret", "roles", "updated_at"),
+            )
 
         assertEquals(listOf("id", "updated_at"), table.getAllAllowToShowColumns().map { it.columnName })
         assertEquals(listOf("id"), table.getAllAllowToShowColumnsInUpsert().map { it.columnName })

@@ -13,5 +13,5 @@ import ir.amirroid.ktoradmin.models.field.FieldSet
 data class FieldEvent(
     val changed: Boolean,
     val fieldSet: FieldSet,
-    val value: Any?
+    val value: Any?,
 )

@@ -6,7 +6,5 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import ir.amirroid.ktoradmin.processors.exposed.ExposedTableProcessor
 
 class ExposedTableAnnotationProcessorProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return ExposedTableProcessor(environment)
-    }
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor = ExposedTableProcessor(environment)
 }

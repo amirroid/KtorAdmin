@@ -6,7 +6,6 @@ import io.ktor.server.application.*
  * Interface representing a storage provider responsible for handling file uploads and generating file URLs.
  */
 interface StorageProvider {
-
     /**
      * Unique identifier for the provider.
      * If `null`, this provider is considered the default provider for file storage operations.
@@ -33,7 +32,10 @@ interface StorageProvider {
      * @param call The application call, which may be used for context (such as base URL, etc.).
      * @return The URL pointing to the requested file.
      */
-    suspend fun getFileUrl(fileName: String, call: ApplicationCall): String?
+    suspend fun getFileUrl(
+        fileName: String,
+        call: ApplicationCall,
+    ): String?
 
     /**
      * Deletes a file from the storage provider.

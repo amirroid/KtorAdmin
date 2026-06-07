@@ -23,32 +23,36 @@ import kotlinx.coroutines.coroutineScope
  */
 internal suspend fun getReferencesItems(
     tables: List<AdminJdbcTable>,
-    columns: List<ColumnSet>
-): Map<ColumnSet, List<DisplayItem>> = coroutineScope {
-    // Extract columns with references early for better readability
-    val columnsWithReferences = columns.filter { it.reference != null }
+    columns: List<ColumnSet>,
+): Map<ColumnSet, List<DisplayItem>> =
+    coroutineScope {
+        // Extract columns with references early for better readability
+        val columnsWithReferences = columns.filter { it.reference != null }
 
-    // Early validation of tables
-    validateReferencedTables(columnsWithReferences, tables)
+        // Early validation of tables
+        validateReferencedTables(columnsWithReferences, tables)
 
-    // Use temporary cache for optimization
-    val tempReferenceCache = mutableMapOf<String, List<DisplayItem>>()
+        // Use temporary cache for optimization
+        val tempReferenceCache = mutableMapOf<String, List<DisplayItem>>()
 
-    // Launch async tasks for each column with reference
-    columnsWithReferences.map { column ->
-        async {
-            val referencedTableName = column.reference!!.tableName
+        // Launch async tasks for each column with reference
+        columnsWithReferences
+            .map { column ->
+                async {
+                    val referencedTableName = column.reference!!.tableName
 
-            // Get or compute references using cache
-            val references = tempReferenceCache.getOrPut(referencedTableName) {
-                val referencedTable = tables.first { it.getTableName() == referencedTableName }
-                JdbcQueriesRepository.getAllReferences(table = referencedTable)
-            }
+                    // Get or compute references using cache
+                    val references =
+                        tempReferenceCache.getOrPut(referencedTableName) {
+                            val referencedTable = tables.first { it.getTableName() == referencedTableName }
+                            JdbcQueriesRepository.getAllReferences(table = referencedTable)
+                        }
 
-            column to references
-        }
-    }.awaitAll().toMap() // Wait for all tasks to complete and return the map
-}
+                    column to references
+                }
+            }.awaitAll()
+            .toMap() // Wait for all tasks to complete and return the map
+    }
 
 /**
  * Retrieves selected reference items for many-to-many relationships in a specific table.
@@ -63,32 +67,39 @@ internal suspend fun getReferencesItems(
 internal suspend fun getSelectedReferencesItems(
     table: AdminJdbcTable,
     tables: List<AdminJdbcTable>,
-    primaryKey: String
-): Map<ColumnSet, Map<String, Any>> = coroutineScope {
-    // Get relevant columns with many-to-many references
-    val columnsWithReferences = table.getAllAllowToShowColumnsInUpsertView()
-        .filter { it.reference is Reference.ManyToMany }
+    primaryKey: String,
+): Map<ColumnSet, Map<String, Any>> =
+    coroutineScope {
+        // Get relevant columns with many-to-many references
+        val columnsWithReferences =
+            table
+                .getAllAllowToShowColumnsInUpsertView()
+                .filter { it.reference is Reference.ManyToMany }
 
-    // Validate join tables exist
-    validateManyToManyTables(columnsWithReferences, tables)
+        // Validate join tables exist
+        validateManyToManyTables(columnsWithReferences, tables)
 
-    // Launch async tasks for each reference column
-    columnsWithReferences.map { column ->
-        async {
-            val reference = column.reference as Reference.ManyToMany
-            val joinTable = tables.first { it.getTableName() == reference.joinTable }
+        // Launch async tasks for each reference column
+        columnsWithReferences
+            .map { column ->
+                async {
+                    val reference = column.reference as Reference.ManyToMany
+                    val joinTable = tables.first { it.getTableName() == reference.joinTable }
 
-            // Get selected references and map to string keys
-            val selectedReferences = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-                table = joinTable,
-                columnSet = column,
-                primaryKey = primaryKey
-            ).associateBy { it.toString() }
+                    // Get selected references and map to string keys
+                    val selectedReferences =
+                        JdbcQueriesRepository
+                            .getAllSelectedReferenceInListReference(
+                                table = joinTable,
+                                columnSet = column,
+                                primaryKey = primaryKey,
+                            ).associateBy { it.toString() }
 
-            column to selectedReferences
-        }
-    }.awaitAll().toMap()  // Wait for all tasks to complete and return the map
-}
+                    column to selectedReferences
+                }
+            }.awaitAll()
+            .toMap() // Wait for all tasks to complete and return the map
+    }
 
 /**
  * Validates that all referenced tables exist in the schema.
@@ -99,17 +110,18 @@ internal suspend fun getSelectedReferencesItems(
  */
 private fun validateReferencedTables(
     columnsWithReferences: List<ColumnSet>,
-    tables: List<AdminJdbcTable>
+    tables: List<AdminJdbcTable>,
 ) {
-    val missingTables = columnsWithReferences
-        .mapNotNull { column -> column.reference?.tableName }
-        .filter { tableName ->
-            tables.none { it.getTableName() == tableName }
-        }
+    val missingTables =
+        columnsWithReferences
+            .mapNotNull { column -> column.reference?.tableName }
+            .filter { tableName ->
+                tables.none { it.getTableName() == tableName }
+            }
 
     if (missingTables.isNotEmpty()) {
         throw IllegalArgumentException(
-            "Error: The following tables are missing from the schema: ${missingTables.joinToString()}"
+            "Error: The following tables are missing from the schema: ${missingTables.joinToString()}",
         )
     }
 }
@@ -123,17 +135,18 @@ private fun validateReferencedTables(
  */
 private fun validateManyToManyTables(
     columnsWithReferences: List<ColumnSet>,
-    tables: List<AdminJdbcTable>
+    tables: List<AdminJdbcTable>,
 ) {
-    val missingJoinTables = columnsWithReferences
-        .map { (it.reference as Reference.ManyToMany).joinTable }
-        .filter { joinTable ->
-            tables.none { it.getTableName() == joinTable }
-        }
+    val missingJoinTables =
+        columnsWithReferences
+            .map { (it.reference as Reference.ManyToMany).joinTable }
+            .filter { joinTable ->
+                tables.none { it.getTableName() == joinTable }
+            }
 
     if (missingJoinTables.isNotEmpty()) {
         throw IllegalArgumentException(
-            "Error: The following join tables are missing from the schema: ${missingJoinTables.joinToString()}"
+            "Error: The following join tables are missing from the schema: ${missingJoinTables.joinToString()}",
         )
     }
 }

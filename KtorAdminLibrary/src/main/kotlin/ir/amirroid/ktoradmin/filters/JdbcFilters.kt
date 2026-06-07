@@ -1,8 +1,8 @@
 package ir.amirroid.ktoradmin.filters
 
+import io.ktor.http.Parameters
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.getters.toTypedValue
-import io.ktor.http.Parameters
 import ir.amirroid.ktoradmin.models.ColumnSet
 import ir.amirroid.ktoradmin.models.common.Reference
 import ir.amirroid.ktoradmin.models.common.tableName
@@ -28,15 +28,14 @@ internal object JdbcFilters {
      */
     fun findFiltersData(
         table: AdminJdbcTable,
-        jdbcTables: List<AdminJdbcTable>
-    ): List<FiltersData> {
-        return table.getFilters().map { filterColumn ->
+        jdbcTables: List<AdminJdbcTable>,
+    ): List<FiltersData> =
+        table.getFilters().map { filterColumn ->
             // Parse the filter column and find corresponding table
             val (_, columnSet) = resolveTableAndColumn(filterColumn, table, jdbcTables)
 
             createFilterData(columnSet, jdbcTables)
         }
-    }
 
     /**
      * Extracts filter conditions from request parameters.
@@ -49,7 +48,7 @@ internal object JdbcFilters {
     fun extractFilters(
         table: AdminJdbcTable,
         jdbcTables: List<AdminJdbcTable>,
-        parameters: Parameters
+        parameters: Parameters,
     ): MutableList<Triple<ColumnSet, String, Any?>> {
         val filters = mutableListOf<Triple<ColumnSet, String, Any?>>()
 
@@ -72,19 +71,25 @@ internal object JdbcFilters {
     private fun resolveTableAndColumn(
         filterColumn: String,
         table: AdminJdbcTable,
-        jdbcTables: List<AdminJdbcTable>
+        jdbcTables: List<AdminJdbcTable>,
     ): Pair<AdminJdbcTable?, ColumnSet?> {
         val isNestedColumn = filterColumn.contains(".")
 
-        val filterTable = if (isNestedColumn) {
-            val paths = filterColumn.split(".")
-            jdbcTables.find { it.getTableName() == paths[paths.size - 2] }
-        } else table
+        val filterTable =
+            if (isNestedColumn) {
+                val paths = filterColumn.split(".")
+                jdbcTables.find { it.getTableName() == paths[paths.size - 2] }
+            } else {
+                table
+            }
 
-        val columnSet = if (isNestedColumn) {
-            val paths = filterColumn.split(".")
-            filterTable?.getAllColumns()?.find { it.columnName == paths.last() }
-        } else filterTable?.getAllColumns()?.find { it.columnName == filterColumn }
+        val columnSet =
+            if (isNestedColumn) {
+                val paths = filterColumn.split(".")
+                filterTable?.getAllColumns()?.find { it.columnName == paths.last() }
+            } else {
+                filterTable?.getAllColumns()?.find { it.columnName == filterColumn }
+            }
 
         return Pair(filterTable, columnSet)
     }
@@ -94,9 +99,9 @@ internal object JdbcFilters {
      */
     private fun createFilterData(
         columnSet: ColumnSet?,
-        jdbcTables: List<AdminJdbcTable>
-    ): FiltersData {
-        return when {
+        jdbcTables: List<AdminJdbcTable>,
+    ): FiltersData =
+        when {
             columnSet?.type == ColumnType.DATE -> createDateFilter(columnSet)
             columnSet?.type == ColumnType.DATETIME -> createDateTimeFilter(columnSet)
             columnSet?.type == ColumnType.TIMESTAMP_WITH_TIMEZONE -> createDateTimeFilter(columnSet)
@@ -104,48 +109,52 @@ internal object JdbcFilters {
             columnSet?.type == ColumnType.ENUMERATION -> createEnumerationFilter(columnSet)
             isReferenceColumn(columnSet) -> createReferenceFilter(columnSet!!, jdbcTables)
             else -> throw IllegalArgumentException(
-                "Filters are currently supported only for types: DATE, DATETIME, ENUMERATION, and REFERENCE"
+                "Filters are currently supported only for types: DATE, DATETIME, ENUMERATION, and REFERENCE",
             )
         }
-    }
 
-    private fun createDateFilter(columnSet: ColumnSet) = FiltersData(
-        paramName = columnSet.columnName,
-        verboseName = columnSet.verboseName,
-        type = FilterTypes.DATE
-    )
+    private fun createDateFilter(columnSet: ColumnSet) =
+        FiltersData(
+            paramName = columnSet.columnName,
+            verboseName = columnSet.verboseName,
+            type = FilterTypes.DATE,
+        )
 
-    private fun createDateTimeFilter(columnSet: ColumnSet) = FiltersData(
-        paramName = columnSet.columnName,
-        verboseName = columnSet.verboseName,
-        type = FilterTypes.DATETIME
-    )
+    private fun createDateTimeFilter(columnSet: ColumnSet) =
+        FiltersData(
+            paramName = columnSet.columnName,
+            verboseName = columnSet.verboseName,
+            type = FilterTypes.DATETIME,
+        )
 
-    private fun createBooleanFilter(columnSet: ColumnSet) = FiltersData(
-        paramName = columnSet.columnName,
-        verboseName = columnSet.verboseName,
-        type = FilterTypes.BOOLEAN
-    )
+    private fun createBooleanFilter(columnSet: ColumnSet) =
+        FiltersData(
+            paramName = columnSet.columnName,
+            verboseName = columnSet.verboseName,
+            type = FilterTypes.BOOLEAN,
+        )
 
-    private fun createEnumerationFilter(columnSet: ColumnSet) = FiltersData(
-        paramName = columnSet.columnName,
-        verboseName = columnSet.verboseName,
-        type = FilterTypes.ENUMERATION,
-        values = columnSet.enumerationValues
-    )
+    private fun createEnumerationFilter(columnSet: ColumnSet) =
+        FiltersData(
+            paramName = columnSet.columnName,
+            verboseName = columnSet.verboseName,
+            type = FilterTypes.ENUMERATION,
+            values = columnSet.enumerationValues,
+        )
 
     private fun createReferenceFilter(
         columnSet: ColumnSet,
-        jdbcTables: List<AdminJdbcTable>
+        jdbcTables: List<AdminJdbcTable>,
     ): FiltersData {
-        val referenceTable = jdbcTables.find { it.getTableName() == columnSet.reference?.tableName }
-            ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference?.tableName}")
+        val referenceTable =
+            jdbcTables.find { it.getTableName() == columnSet.reference?.tableName }
+                ?: throw IllegalArgumentException("Reference table not found for ${columnSet.reference?.tableName}")
 
         return FiltersData(
             paramName = columnSet.columnName,
             verboseName = columnSet.verboseName,
             type = FilterTypes.REFERENCE,
-            values = JdbcQueriesRepository.getAllReferences(referenceTable)
+            values = JdbcQueriesRepository.getAllReferences(referenceTable),
         )
     }
 
@@ -155,7 +164,7 @@ internal object JdbcFilters {
     private fun handleDateTimeFilter(
         columnSet: ColumnSet?,
         parameters: Parameters,
-        filters: MutableList<Triple<ColumnSet, String, Any?>>
+        filters: MutableList<Triple<ColumnSet, String, Any?>>,
     ) {
         if (columnSet == null) return
 
@@ -168,21 +177,24 @@ internal object JdbcFilters {
         parameters: Parameters,
         filters: MutableList<Triple<ColumnSet, String, Any?>>,
         suffix: String,
-        operator: String
+        operator: String,
     ) {
         val paramName = "${columnSet.columnName}$suffix"
 
         if (parameters.contains(Constants.FILTERS_PREFIX + paramName)) {
             parameters[Constants.FILTERS_PREFIX + paramName]?.let { value ->
-                val timestamp = Instant.ofEpochMilli(value.toLong())
-                    .atZone(DynamicConfiguration.timeZone)
+                val timestamp =
+                    Instant
+                        .ofEpochMilli(value.toLong())
+                        .atZone(DynamicConfiguration.timeZone)
 
-                val convertedValue = when (columnSet.type) {
-                    ColumnType.DATETIME -> timestamp.toLocalDateTime()
-                    ColumnType.DATE -> timestamp.toLocalDate()
-                    ColumnType.TIMESTAMP_WITH_TIMEZONE -> timestamp.toOffsetDateTime()
-                    else -> return@let
-                }
+                val convertedValue =
+                    when (columnSet.type) {
+                        ColumnType.DATETIME -> timestamp.toLocalDateTime()
+                        ColumnType.DATE -> timestamp.toLocalDate()
+                        ColumnType.TIMESTAMP_WITH_TIMEZONE -> timestamp.toOffsetDateTime()
+                        else -> return@let
+                    }
 
                 filters.add(Triple(columnSet, operator, convertedValue))
             }
@@ -195,7 +207,7 @@ internal object JdbcFilters {
     private fun handleSimpleFilter(
         columnSet: ColumnSet,
         parameters: Parameters,
-        filters: MutableList<Triple<ColumnSet, String, Any?>>
+        filters: MutableList<Triple<ColumnSet, String, Any?>>,
     ) {
         parameters[Constants.FILTERS_PREFIX + columnSet.columnName]?.let { value ->
             filters.add(Triple(columnSet, "= ", value.toTypedValue(columnSet.type)))
@@ -208,7 +220,7 @@ internal object JdbcFilters {
     private fun handleReferenceFilter(
         columnSet: ColumnSet,
         parameters: Parameters,
-        filters: MutableList<Triple<ColumnSet, String, Any?>>
+        filters: MutableList<Triple<ColumnSet, String, Any?>>,
     ) {
         parameters[Constants.FILTERS_PREFIX + columnSet.columnName]?.let { refValue ->
             filters.add(Triple(columnSet, "= ", refValue.toTypedValue(columnSet.type)))
@@ -217,11 +229,11 @@ internal object JdbcFilters {
 
     // Helper functions for type checking
     private fun isDateTimeColumn(columnSet: ColumnSet?) =
-        columnSet?.type == ColumnType.DATE || columnSet?.type == ColumnType.DATETIME || columnSet?.type == ColumnType.TIMESTAMP_WITH_TIMEZONE
+        columnSet?.type == ColumnType.DATE ||
+            columnSet?.type == ColumnType.DATETIME ||
+            columnSet?.type == ColumnType.TIMESTAMP_WITH_TIMEZONE
 
-    private fun isBooleanOrEnumColumn(columnSet: ColumnSet?) =
-        columnSet?.type == ColumnType.BOOLEAN || columnSet?.type == ColumnType.ENUMERATION
+    private fun isBooleanOrEnumColumn(columnSet: ColumnSet?) = columnSet?.type == ColumnType.BOOLEAN || columnSet?.type == ColumnType.ENUMERATION
 
-    private fun isReferenceColumn(columnSet: ColumnSet?) =
-        columnSet?.reference is Reference.OneToOne || columnSet?.reference is Reference.ManyToOne
+    private fun isReferenceColumn(columnSet: ColumnSet?) = columnSet?.reference is Reference.OneToOne || columnSet?.reference is Reference.ManyToOne
 }

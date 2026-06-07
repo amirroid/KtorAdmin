@@ -1,8 +1,8 @@
 package ir.amirroid.ktoradmin.dashboard.chart
 
-import ir.amirroid.ktoradmin.models.chart.ChartDashboardAggregationFunction
 import ir.amirroid.ktoradmin.dashboard.base.DashboardSection
 import ir.amirroid.ktoradmin.models.chart.AdminChartStyle
+import ir.amirroid.ktoradmin.models.chart.ChartDashboardAggregationFunction
 import ir.amirroid.ktoradmin.models.chart.ChartField
 
 /**
@@ -69,7 +69,10 @@ abstract class ChartDashboardSection : DashboardSection {
      * @param valueField The field representing the data value.
      * @return The border color as a string (e.g., hex code or predefined color name).
      */
-    abstract fun provideBorderColor(label: String, valueField: String): String?
+    abstract fun provideBorderColor(
+        label: String,
+        valueField: String,
+    ): String?
 
     /**
      * Returns a custom fill color for a given label and value field.
@@ -77,7 +80,10 @@ abstract class ChartDashboardSection : DashboardSection {
      * @param valueField The field representing the data value.
      * @return The fill color as a string (e.g., hex code or predefined color name).
      */
-    abstract fun provideFillColor(label: String, valueField: String): String?
+    abstract fun provideFillColor(
+        label: String,
+        valueField: String,
+    ): String?
 
     /** Maximum number of data points to display (null for unlimited). */
     open val limitCount: Int? = null

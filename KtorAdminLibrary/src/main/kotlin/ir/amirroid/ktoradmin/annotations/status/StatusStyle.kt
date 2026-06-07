@@ -9,5 +9,5 @@ package ir.amirroid.ktoradmin.annotations.status
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.PROPERTY)
 annotation class StatusStyle(
-    vararg val color: String
+    vararg val color: String,
 )

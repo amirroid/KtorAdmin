@@ -12,10 +12,9 @@ internal object FileRepository {
     var mediaRoot: String? = null
     private val storageProviders = mutableListOf<StorageProvider>()
 
-    private fun getStorageProvider(key: String?): StorageProvider {
-        return storageProviders.find { it.key == key }
+    private fun getStorageProvider(key: String?): StorageProvider =
+        storageProviders.find { it.key == key }
             ?: throw NoSuchElementException("Storage provider with key '$key' not found.")
-    }
 
     fun registerStorageProvider(storageProvider: StorageProvider) {
         if (storageProviders.any { it.key == storageProvider.key }) {
@@ -27,9 +26,9 @@ internal object FileRepository {
     suspend fun uploadFile(
         uploadTarget: UploadTarget,
         bytes: ByteArray,
-        originalFileName: String?
-    ): Pair<String, ByteArray>? {
-        return when (uploadTarget) {
+        originalFileName: String?,
+    ): Pair<String, ByteArray>? =
+        when (uploadTarget) {
             is UploadTarget.LocalFile -> {
                 if (defaultPath == null && uploadTarget.path == null) {
                     throw IllegalArgumentException("Upload path is not provided")
@@ -40,59 +39,63 @@ internal object FileRepository {
             }
 
             is UploadTarget.AwsS3 -> {
-                AWSS3StorageProvider.uploadFile(
-                    bytes = bytes,
-                    fileName = originalFileName,
-                    bucket = uploadTarget.bucket
-                )?.let { it to bytes }
+                AWSS3StorageProvider
+                    .uploadFile(
+                        bytes = bytes,
+                        fileName = originalFileName,
+                        bucket = uploadTarget.bucket,
+                    )?.let { it to bytes }
             }
 
             is UploadTarget.Custom -> {
-                getStorageProvider(uploadTarget.key).uploadFile(
-                    bytes = bytes,
-                    fileName = originalFileName,
-                )?.let { it to bytes }
+                getStorageProvider(uploadTarget.key)
+                    .uploadFile(
+                        bytes = bytes,
+                        fileName = originalFileName,
+                    )?.let { it to bytes }
             }
         }
-    }
 
-    suspend fun deleteFile(uploadTarget: UploadTarget, fileName: String): Boolean {
-        return when (uploadTarget) {
-            is UploadTarget.LocalFile -> LocalStorageProvider.deleteFile(
-                fileName,
-                uploadTarget.path ?: defaultPath!!
-            )
+    suspend fun deleteFile(
+        uploadTarget: UploadTarget,
+        fileName: String,
+    ): Boolean =
+        when (uploadTarget) {
+            is UploadTarget.LocalFile ->
+                LocalStorageProvider.deleteFile(
+                    fileName,
+                    uploadTarget.path ?: defaultPath!!,
+                )
 
-            is UploadTarget.AwsS3 -> AWSS3StorageProvider.deleteFile(
-                fileName,
-                uploadTarget.bucket
-            )
+            is UploadTarget.AwsS3 ->
+                AWSS3StorageProvider.deleteFile(
+                    fileName,
+                    uploadTarget.bucket,
+                )
 
             is UploadTarget.Custom -> getStorageProvider(uploadTarget.key).deleteFile(fileName)
         }
-    }
 
     private fun createPath(path: String) {
         File(path).apply { if (!exists()) mkdir() }
     }
 
-
     private fun saveToLocal(
         path: String,
         bytes: ByteArray,
-        originalFileName: String?
-    ): Pair<String, ByteArray>? {
-        return LocalStorageProvider.uploadFile(
-            bytes = bytes,
-            fileName = originalFileName,
-            path = path
-        )?.let { it to bytes }
-    }
+        originalFileName: String?,
+    ): Pair<String, ByteArray>? =
+        LocalStorageProvider
+            .uploadFile(
+                bytes = bytes,
+                fileName = originalFileName,
+                path = path,
+            )?.let { it to bytes }
 
     suspend fun generateMediaUrl(
         uploadTarget: UploadTarget,
         fileName: String,
-        call: ApplicationCall
+        call: ApplicationCall,
     ): String? {
         return when (uploadTarget) {
             is UploadTarget.LocalFile -> {
@@ -102,10 +105,11 @@ internal object FileRepository {
                 return LocalStorageProvider.getFileUrl(fileName, call)
             }
 
-            is UploadTarget.AwsS3 -> AWSS3StorageProvider.getFileUrl(
-                fileName,
-                bucket = uploadTarget.bucket
-            )
+            is UploadTarget.AwsS3 ->
+                AWSS3StorageProvider.getFileUrl(
+                    fileName,
+                    bucket = uploadTarget.bucket,
+                )
 
             is UploadTarget.Custom -> {
                 getStorageProvider(uploadTarget.key).getFileUrl(fileName, call)

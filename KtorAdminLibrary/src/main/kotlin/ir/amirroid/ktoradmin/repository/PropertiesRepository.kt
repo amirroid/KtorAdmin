@@ -1,5 +1,8 @@
 package ir.amirroid.ktoradmin.repository
 
+import com.google.devtools.ksp.getDeclaredProperties
+import com.google.devtools.ksp.symbol.*
+import com.squareup.kotlinpoet.ksp.toClassName
 import ir.amirroid.ktoradmin.annotations.computed.Computed
 import ir.amirroid.ktoradmin.annotations.confirmation.Confirmation
 import ir.amirroid.ktoradmin.annotations.date.AutoNowDate
@@ -18,9 +21,6 @@ import ir.amirroid.ktoradmin.annotations.text_area.TextAreaField
 import ir.amirroid.ktoradmin.annotations.type.OverrideColumnType
 import ir.amirroid.ktoradmin.annotations.type.OverrideFieldType
 import ir.amirroid.ktoradmin.annotations.value_mapper.ValueMapper
-import com.google.devtools.ksp.getDeclaredProperties
-import com.google.devtools.ksp.symbol.*
-import com.squareup.kotlinpoet.ksp.toClassName
 import ir.amirroid.ktoradmin.models.ColumnSet
 import ir.amirroid.ktoradmin.models.Limit
 import ir.amirroid.ktoradmin.models.common.Reference
@@ -49,7 +49,7 @@ object PropertiesRepository {
         val name: String,
         val columnName: String,
         val verboseName: String,
-        val nullable: Boolean
+        val nullable: Boolean,
     )
 
     /**
@@ -67,7 +67,7 @@ object PropertiesRepository {
         type: KSType,
         nativeColumnName: String? = null,
         nativeNullable: Boolean? = null,
-        hibernateReference: HibernateReferenceData? = null
+        hibernateReference: HibernateReferenceData? = null,
     ): BaseColumnInfo {
         val name = property.simpleName.asString()
         val infoAnnotation =
@@ -80,9 +80,11 @@ object PropertiesRepository {
         val infoNullable = infoAnnotation?.findArgument<Boolean>("nullable")
         val nullable = nativeNullable ?: infoNullable ?: type.isMarkedNullable
 
-        val defaultVerboseName = columnName.split("_")
-            .mapIndexed { index, item -> if (index == 0) item.replaceFirstChar { it.uppercase() } else item }
-            .joinToString(" ")
+        val defaultVerboseName =
+            columnName
+                .split("_")
+                .mapIndexed { index, item -> if (index == 0) item.replaceFirstChar { it.uppercase() } else item }
+                .joinToString(" ")
         val verboseName =
             infoAnnotation?.findArgument<String>("verboseName")?.takeIf { it.isNotEmpty() }
                 ?: defaultVerboseName
@@ -107,7 +109,7 @@ object PropertiesRepository {
         genericArgument: String?,
         enumValues: List<String>?,
         isNativeEnumerated: Boolean = false,
-        referenceData: HibernateReferenceData? = null
+        referenceData: HibernateReferenceData? = null,
     ): ColumnSet {
         // Check for special column types
         val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
@@ -123,14 +125,15 @@ object PropertiesRepository {
         val overrideType = property.annotations.getOverrideType()
 
         // Determine the column type based on annotations and property type
-        val columnType = when {
-            hasEnumerationColumnAnnotation || isNativeEnumerated -> ColumnType.ENUMERATION
-            hasUploadAnnotation -> ColumnType.FILE
-            overrideType != null -> overrideType
-            genericArgument == null -> ColumnType.NOT_AVAILABLE
-            referenceData != null -> referenceData.type
-            else -> guessPropertyType(genericArgument)
-        }
+        val columnType =
+            when {
+                hasEnumerationColumnAnnotation || isNativeEnumerated -> ColumnType.ENUMERATION
+                hasUploadAnnotation -> ColumnType.FILE
+                overrideType != null -> overrideType
+                genericArgument == null -> ColumnType.NOT_AVAILABLE
+                referenceData != null -> referenceData.type
+                else -> guessPropertyType(genericArgument)
+            }
 
         // Process and validate status styles
         val statusColors = property.annotations.getStatusStyles()
@@ -138,7 +141,8 @@ object PropertiesRepository {
 
         // Process additional column properties
         val computedColumnInfo = property.annotations.getComputed()
-        val isReadOnly = (infoAnnotation?.findArgument<Boolean>("readOnly") == true) ||
+        val isReadOnly =
+            (infoAnnotation?.findArgument<Boolean>("readOnly") == true) ||
                 (computedColumnInfo?.second == true)
 
         val autoNowDate = getAutoNowDateAnnotation(property.annotations)
@@ -159,15 +163,21 @@ object PropertiesRepository {
             verboseName = baseInfo.verboseName,
             nullable = referenceData?.nullable ?: baseInfo.nullable,
             blank = infoAnnotation?.findArgument<Boolean>("blank") != false,
-            unique = referenceData?.unique
-                ?: (infoAnnotation?.findArgument<Boolean>("unique") == true || reference is Reference.OneToOne),
+            unique =
+                referenceData?.unique
+                    ?: (infoAnnotation?.findArgument<Boolean>("unique") == true || reference is Reference.OneToOne),
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
             uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
-            allowedMimeTypes = if (hasUploadAnnotation)
-                UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations)
-            else null,
-            defaultValue = infoAnnotation?.findArgument<String>("defaultValue")
-                ?.takeIf { it.isNotEmpty() },
+            allowedMimeTypes =
+                if (hasUploadAnnotation) {
+                    UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations)
+                } else {
+                    null
+                },
+            defaultValue =
+                infoAnnotation
+                    ?.findArgument<String>("defaultValue")
+                    ?.takeIf { it.isNotEmpty() },
             enumerationValues = enumValues,
             limits = property.annotations.getLimits(),
             reference = reference,
@@ -194,12 +204,20 @@ object PropertiesRepository {
     fun getColumnSetsForExposed(
         property: KSPropertyDeclaration,
         type: KSType,
-        isEmpty: Boolean = false
+        isEmpty: Boolean = false,
     ): ColumnSet? {
-        val genericArgument = if (isEmpty) {
-            null
-        } else type.arguments.firstOrNull()?.type?.resolve()?.toClassName()?.canonicalName
-            ?: return null
+        val genericArgument =
+            if (isEmpty) {
+                null
+            } else {
+                type.arguments
+                    .firstOrNull()
+                    ?.type
+                    ?.resolve()
+                    ?.toClassName()
+                    ?.canonicalName
+                    ?: return null
+            }
         val baseInfo = extractBaseColumnInfo(property, type)
         val enumValues = property.annotations.getEnumerations()
 
@@ -207,7 +225,7 @@ object PropertiesRepository {
             property = property,
             baseInfo = baseInfo,
             genericArgument = genericArgument,
-            enumValues = enumValues
+            enumValues = enumValues,
         )
     }
 
@@ -219,40 +237,52 @@ object PropertiesRepository {
      * @param type The KSType information for the property
      * @return ColumnSet configuration or null if processing fails
      */
-    fun getColumnSetsForHibernate(property: KSPropertyDeclaration, type: KSType): ColumnSet? {
+    fun getColumnSetsForHibernate(
+        property: KSPropertyDeclaration,
+        type: KSType,
+    ): ColumnSet? {
         val genericArgument = type.declaration.qualifiedName?.asString() ?: return null
 
         // Check for native Hibernate enumeration
-        val isNativeEnumerated = type.declaration is KSClassDeclaration &&
+        val isNativeEnumerated =
+            type.declaration is KSClassDeclaration &&
                 (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS &&
                 property.annotations.any {
-                    it.qualifiedName in HibernateTableProcessor.Companion.getListOfHibernatePackage(
-                        "Enumerated"
-                    )
+                    it.qualifiedName in
+                        HibernateTableProcessor.Companion.getListOfHibernatePackage(
+                            "Enumerated",
+                        )
                 }
 
         // Process Hibernate-specific column annotation
-        val columnAnnotation = property.annotations.find {
-            it.qualifiedName in HibernateTableProcessor.Companion.getListOfHibernatePackage("Column")
-        }
+        val columnAnnotation =
+            property.annotations.find {
+                it.qualifiedName in HibernateTableProcessor.Companion.getListOfHibernatePackage("Column")
+            }
 
         val hibernateReference = detectReferenceAnnotationForHibernateTable(property, type)
 
         val nativeName = columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() }
         val nativeNullable =
-            columnAnnotation?.findArgument<String>("nullable")?.takeIf { it.isNotEmpty() }
+            columnAnnotation
+                ?.findArgument<String>("nullable")
+                ?.takeIf { it.isNotEmpty() }
                 ?.let { it == "true" }
 
         val baseInfo =
             extractBaseColumnInfo(property, type, nativeName, nativeNullable, hibernateReference)
 
         // Handle native enumeration values
-        val nativeEnumeratedValues = if (isNativeEnumerated) {
-            (type.declaration as KSDeclarationContainer).declarations
-                .filterIsInstance<KSClassDeclaration>()
-                .map { it.simpleName.asString() }
-                .toList()
-        } else null
+        val nativeEnumeratedValues =
+            if (isNativeEnumerated) {
+                (type.declaration as KSDeclarationContainer)
+                    .declarations
+                    .filterIsInstance<KSClassDeclaration>()
+                    .map { it.simpleName.asString() }
+                    .toList()
+            } else {
+                null
+            }
 
         val enumValues = property.annotations.getEnumerations() ?: nativeEnumeratedValues
 
@@ -284,7 +314,7 @@ object PropertiesRepository {
      */
     private fun detectReferenceAnnotationForHibernateTable(
         property: KSPropertyDeclaration,
-        type: KSType
+        type: KSType,
     ): HibernateReferenceData? {
         // Find relevant Hibernate annotations on the property
         val annotations = property.annotations
@@ -296,19 +326,22 @@ object PropertiesRepository {
         if (joinColumn == null) return null
 
         // Extract column name from JoinColumn annotation or use property name as fallback
-        val columnName = joinColumn.arguments.getArgument<String>("name")
-            ?.takeIf { it.isNotEmpty() }
-            ?: property.simpleName.asString()
-
+        val columnName =
+            joinColumn.arguments
+                .getArgument<String>("name")
+                ?.takeIf { it.isNotEmpty() }
+                ?: property.simpleName.asString()
 
         val referenceColumnName =
-            joinColumn.arguments.getArgument<String>("referencedColumnName")
+            joinColumn.arguments
+                .getArgument<String>("referencedColumnName")
                 ?.takeIf { it.isNotEmpty() }
 
         // Get referenced table information
-        val tableNameWithPrimaryKey = (type.declaration as? KSClassDeclaration)?.let {
-            getTableNameWithPrimaryKey(it, referenceColumnName)
-        } ?: return null
+        val tableNameWithPrimaryKey =
+            (type.declaration as? KSClassDeclaration)?.let {
+                getTableNameWithPrimaryKey(it, referenceColumnName)
+            } ?: return null
 
         // Extract nullable and unique constraints from JoinColumn
         val nullable = joinColumn.findArgument<Boolean>("nullable")
@@ -316,27 +349,29 @@ object PropertiesRepository {
 
         // Create appropriate reference data based on annotation type
         return when {
-            oneToOneReference != null -> createReferenceData(
-                tableNameWithPrimaryKey,
-                Reference.OneToOne(
-                    tableNameWithPrimaryKey.first,
-                    tableNameWithPrimaryKey.second
-                ),
-                columnName,
-                unique,
-                nullable
-            )
+            oneToOneReference != null ->
+                createReferenceData(
+                    tableNameWithPrimaryKey,
+                    Reference.OneToOne(
+                        tableNameWithPrimaryKey.first,
+                        tableNameWithPrimaryKey.second,
+                    ),
+                    columnName,
+                    unique,
+                    nullable,
+                )
 
-            manyToOneReference != null -> createReferenceData(
-                tableNameWithPrimaryKey,
-                Reference.ManyToOne(
-                    tableNameWithPrimaryKey.first,
-                    tableNameWithPrimaryKey.second
-                ),
-                columnName,
-                unique,
-                nullable
-            )
+            manyToOneReference != null ->
+                createReferenceData(
+                    tableNameWithPrimaryKey,
+                    Reference.ManyToOne(
+                        tableNameWithPrimaryKey.first,
+                        tableNameWithPrimaryKey.second,
+                    ),
+                    columnName,
+                    unique,
+                    nullable,
+                )
 
             else -> null
         }
@@ -346,9 +381,11 @@ object PropertiesRepository {
      * Helper function to find a specific Hibernate annotation
      */
     private fun Sequence<KSAnnotation>.findReferenceAnnotation(annotationName: String): KSAnnotation? =
-        firstOrNull { it.qualifiedName in HibernateTableProcessor.Companion.getListOfHibernatePackage(
-            annotationName
-        )
+        firstOrNull {
+            it.qualifiedName in
+                HibernateTableProcessor.Companion.getListOfHibernatePackage(
+                    annotationName,
+                )
         }
 
     /**
@@ -359,14 +396,15 @@ object PropertiesRepository {
         reference: Reference,
         columnName: String,
         unique: Boolean?,
-        nullable: Boolean?
-    ): HibernateReferenceData = HibernateReferenceData(
-        type = tableInfo.third,
-        reference = reference,
-        columnName = columnName,
-        unique = unique,
-        nullable = nullable
-    )
+        nullable: Boolean?,
+    ): HibernateReferenceData =
+        HibernateReferenceData(
+            type = tableInfo.third,
+            reference = reference,
+            columnName = columnName,
+            unique = unique,
+            nullable = nullable,
+        )
 
     /**
      * Extracts table name and primary key information from a class declaration with Hibernate annotations.
@@ -376,42 +414,56 @@ object PropertiesRepository {
      */
     fun getTableNameWithPrimaryKey(
         classDeclaration: KSClassDeclaration,
-        referenceColumnName: String?
+        referenceColumnName: String?,
     ): Triple<String, String, ColumnType>? {
         // Find @Table annotation
         val hibernateTable =
             classDeclaration.annotations.findReferenceAnnotation("Table") ?: return null
 
         var primaryKeyType: ColumnType? = null
-        val primaryKey = referenceColumnName?.let { refColumn ->
-            classDeclaration.getDeclaredProperties()
-                .firstOrNull { it.findColumnName() == refColumn }?.let {
-                val type = it.type.resolve().declaration.qualifiedName?.asString()
-                primaryKeyType = type?.let(::guessPropertyType)
-                refColumn
-            } ?: throw IllegalArgumentException("Reference column '$refColumn' not found")
-        } ?: run {
-            classDeclaration.getDeclaredProperties().firstOrNull { property ->
-                property.annotations.findReferenceAnnotation("Id")?.also {
-                    val type = property.type.resolve().declaration.qualifiedName?.asString()
-                    primaryKeyType = type?.let(::guessPropertyType)
-                } != null
-            }?.findColumnName()
-        }
+        val primaryKey =
+            referenceColumnName?.let { refColumn ->
+                classDeclaration
+                    .getDeclaredProperties()
+                    .firstOrNull { it.findColumnName() == refColumn }
+                    ?.let {
+                        val type =
+                            it.type
+                                .resolve()
+                                .declaration.qualifiedName
+                                ?.asString()
+                        primaryKeyType = type?.let(::guessPropertyType)
+                        refColumn
+                    } ?: throw IllegalArgumentException("Reference column '$refColumn' not found")
+            } ?: run {
+                classDeclaration
+                    .getDeclaredProperties()
+                    .firstOrNull { property ->
+                        property.annotations.findReferenceAnnotation("Id")?.also {
+                            val type =
+                                property.type
+                                    .resolve()
+                                    .declaration.qualifiedName
+                                    ?.asString()
+                            primaryKeyType = type?.let(::guessPropertyType)
+                        } != null
+                    }?.findColumnName()
+            }
 
         primaryKeyType ?: return null
 
         return Triple(
             hibernateTable.arguments.getArgument("name") ?: classDeclaration.toTableName(),
             primaryKey ?: throw IllegalStateException("Primary key not found"),
-            primaryKeyType
+            primaryKeyType,
         )
     }
 
     private fun KSPropertyDeclaration.findColumnName(): String? {
-        val columnAnnotation = annotations.find {
-            it.qualifiedName in HibernateTableProcessor.Companion.getListOfHibernatePackage("Column")
-        }
+        val columnAnnotation =
+            annotations.find {
+                it.qualifiedName in HibernateTableProcessor.Companion.getListOfHibernatePackage("Column")
+            }
         return columnAnnotation?.findArgument<String>("name")?.takeIf { it.isNotEmpty() }
             ?: simpleName.asString()
     }
@@ -426,7 +478,10 @@ object PropertiesRepository {
      * @return FieldSet configuration or null if the property cannot be processed
      * @throws IllegalArgumentException if annotation combinations are invalid
      */
-    fun getFieldSet(property: KSPropertyDeclaration, type: FieldType): FieldSet? {
+    fun getFieldSet(
+        property: KSPropertyDeclaration,
+        type: FieldType,
+    ): FieldSet? {
         val hasUploadAnnotation = UploadUtils.hasUploadAnnotation(property.annotations)
         val hasEnumerationColumnAnnotation = hasEnumerationColumnAnnotation(property.annotations)
 
@@ -447,16 +502,18 @@ object PropertiesRepository {
         val overrideFieldType = property.annotations.getFieldOverrideType()
 
         // Determine field type
-        val fieldType = when {
-            overrideFieldType != null -> overrideFieldType
-            hasEnumerationColumnAnnotation -> FieldType.Enumeration
-            hasUploadAnnotation -> FieldType.File
-            else -> type
-        }
+        val fieldType =
+            when {
+                overrideFieldType != null -> overrideFieldType
+                hasEnumerationColumnAnnotation -> FieldType.Enumeration
+                hasUploadAnnotation -> FieldType.File
+                else -> type
+            }
 
         // Process computed field information
         val computedFieldInfo = property.annotations.getComputed()
-        val isReadOnly = (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) ||
+        val isReadOnly =
+            (infoAnnotation?.findArgument<Boolean>("readOnly") ?: false) ||
                 (computedFieldInfo?.second == true)
 
         // Validate date-related configurations
@@ -467,7 +524,9 @@ object PropertiesRepository {
         val hasTextAreaField = hasTextAreaFieldAnnotation(property.annotations)
 
         if ((hasTextAreaField || hasRichEditor) && fieldType !is FieldType.String) {
-            throw IllegalArgumentException("($fieldName) Fields annotated with @TextAreaField or marked as rich editors must be of type String.")
+            throw IllegalArgumentException(
+                "($fieldName) Fields annotated with @TextAreaField or marked as rich editors must be of type String.",
+            )
         }
 
         return FieldSet(
@@ -477,11 +536,16 @@ object PropertiesRepository {
             nullable = infoAnnotation?.findArgument<Boolean>("nullable") == true,
             showInPanel = !hasIgnoreColumnAnnotation(property.annotations),
             uploadTarget = UploadUtils.getUploadTargetFromAnnotation(property.annotations),
-            allowedMimeTypes = if (hasUploadAnnotation)
-                UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations)
-            else null,
-            defaultValue = infoAnnotation?.findArgument<String>("defaultValue")
-                ?.takeIf { it.isNotEmpty() },
+            allowedMimeTypes =
+                if (hasUploadAnnotation) {
+                    UploadUtils.getAllowedMimeTypesFromAnnotation(property.annotations)
+                } else {
+                    null
+                },
+            defaultValue =
+                infoAnnotation
+                    ?.findArgument<String>("defaultValue")
+                    ?.takeIf { it.isNotEmpty() },
             enumerationValues = property.annotations.getEnumerations(),
             limits = property.annotations.getLimits(),
             readOnly = isReadOnly,
@@ -503,8 +567,7 @@ object PropertiesRepository {
     /**
      * Checks if a property has the RichEditor annotation.
      */
-    private fun hasRichEditorAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
-        annotations.any { it.qualifiedName == RichEditor::class.qualifiedName }
+    private fun hasRichEditorAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any { it.qualifiedName == RichEditor::class.qualifiedName }
 
     /**
      * Checks if a property has the TextAreaField annotation.
@@ -522,10 +585,11 @@ object PropertiesRepository {
      * Extracts AutoNowDate annotation configuration if present.
      */
     private fun getAutoNowDateAnnotation(annotations: Sequence<KSAnnotation>) =
-        annotations.firstOrNull { it.qualifiedName == AutoNowDate::class.qualifiedName }
+        annotations
+            .firstOrNull { it.qualifiedName == AutoNowDate::class.qualifiedName }
             ?.let {
                 ir.amirroid.ktoradmin.models.date.AutoNowDate(
-                    updateOnChange = it.arguments.getArgument<Boolean>("updateOnChange") == true
+                    updateOnChange = it.arguments.getArgument<Boolean>("updateOnChange") == true,
                 )
             }
 
@@ -533,15 +597,17 @@ object PropertiesRepository {
      * Extracts Preview annotation configuration if present.
      */
     private fun getPreviewAnnotation(annotations: Sequence<KSAnnotation>) =
-        annotations.firstOrNull { it.qualifiedName == Preview::class.qualifiedName }
-            ?.arguments?.getArgument<String>("key")
+        annotations
+            .firstOrNull { it.qualifiedName == Preview::class.qualifiedName }
+            ?.arguments
+            ?.getArgument<String>("key")
 
     /**
      * Extracts ValueMapper annotation configuration if present.
      */
     private fun getValueMapperAnnotation(annotations: Sequence<KSAnnotation>) =
         annotations.firstOrNull { it.qualifiedName == ValueMapper::class.qualifiedName }?.arguments?.getArgument<String>(
-            "key"
+            "key",
         )
 
     /**
@@ -574,15 +640,14 @@ object PropertiesRepository {
             ?.filterIsInstance<String>()
             ?.takeIf { it.isNotEmpty() }
 
-
     private fun Sequence<KSAnnotation>.getOverrideType(): ColumnType? =
         find { it.qualifiedName == OverrideColumnType::class.qualifiedName }
             ?.arguments
             ?.firstOrNull { it.name?.asString() == "type" }
-            ?.value?.let { item ->
+            ?.value
+            ?.let { item ->
                 enumValues<ColumnType>().find { it.name == item.toString().split(".").last() }
             }
-
 
     private fun Sequence<KSAnnotation>.getFieldOverrideType(): FieldType? =
         find { it.qualifiedName == OverrideFieldType::class.qualifiedName }
@@ -602,24 +667,25 @@ object PropertiesRepository {
 
     private fun Sequence<KSAnnotation>.getReferences(): Reference? =
         find {
-            it.qualifiedName.orEmpty() in listOf(
-                OneToOneReferencesQualifiedName,
-                ManyToManyReferencesQualifiedName,
-                ManyToOneReferencesQualifiedName
-            )
+            it.qualifiedName.orEmpty() in
+                listOf(
+                    OneToOneReferencesQualifiedName,
+                    ManyToManyReferencesQualifiedName,
+                    ManyToOneReferencesQualifiedName,
+                )
         }?.let {
             when (it.qualifiedName) {
                 OneToOneReferencesQualifiedName -> {
                     Reference.OneToOne(
                         relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
-                        foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String
+                        foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String,
                     )
                 }
 
                 ManyToOneReferencesQualifiedName -> {
                     Reference.ManyToOne(
                         relatedTable = it.arguments.firstOrNull { arg -> arg.name?.asString() == "tableName" }!!.value as String,
-                        foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String
+                        foreignKey = it.arguments.firstOrNull { arg -> arg.name?.asString() == "foreignKey" }!!.value as String,
                     )
                 }
 
@@ -644,19 +710,22 @@ object PropertiesRepository {
             Limit(
                 maxLength = args.getArgument("maxLength") ?: Int.MAX_VALUE,
                 minLength = args.getArgument("minLength") ?: Int.MIN_VALUE,
-                regexPattern = args.getArgument<String?>("regexPattern")
-                    ?.takeIf { it.isNotEmpty() },
+                regexPattern =
+                    args
+                        .getArgument<String?>("regexPattern")
+                        ?.takeIf { it.isNotEmpty() },
                 maxCount = args.getArgument("maxCount") ?: Double.MAX_VALUE,
                 minCount = args.getArgument("minCount") ?: Double.MIN_VALUE,
                 maxBytes = args.getArgument("maxBytes") ?: Long.MAX_VALUE,
                 minDateRelativeToNow = args.getArgument("minDateRelativeToNow") ?: Long.MAX_VALUE,
                 maxDateRelativeToNow = args.getArgument("maxDateRelativeToNow") ?: Long.MAX_VALUE,
-                allowedMimeTypes = args
-                    .firstOrNull { it.name?.asString() == "allowedMimeTypes" }
-                    ?.value
-                    ?.let { it as? List<*> }
-                    ?.filterIsInstance<String>()
-                    ?.takeIf { it.isNotEmpty() }
+                allowedMimeTypes =
+                    args
+                        .firstOrNull { it.name?.asString() == "allowedMimeTypes" }
+                        ?.value
+                        ?.let { it as? List<*> }
+                        ?.filterIsInstance<String>()
+                        ?.takeIf { it.isNotEmpty() },
             )
         }
 
@@ -665,15 +734,15 @@ object PropertiesRepository {
      */
     private fun Sequence<KSAnnotation>.getComputed(): Pair<String, Boolean>? =
         find { it.qualifiedName == Computed::class.qualifiedName }
-            ?.arguments?.let {
+            ?.arguments
+            ?.let {
                 it.getArgument<String>("compute")!! to it.getArgument<Boolean>("readOnly")!!
             }
 
     /**
      * Helper function to extract typed arguments from KSValueArgument list.
      */
-    private inline fun <reified D> List<KSValueArgument>.getArgument(name: String): D? =
-        firstOrNull { it.name?.asString() == name }?.value as? D
+    private inline fun <reified D> List<KSValueArgument>.getArgument(name: String): D? = firstOrNull { it.name?.asString() == name }?.value as? D
 
     /**
      * Validates status color configuration.
@@ -682,7 +751,7 @@ object PropertiesRepository {
         columnType: ColumnType,
         statusColors: List<String>?,
         enumValues: List<String>?,
-        name: String
+        name: String,
     ) {
         if (columnType != ColumnType.ENUMERATION && statusColors != null) {
             throw IllegalArgumentException("StatusStyle can only be used with ENUMERATION column types.")
@@ -690,12 +759,14 @@ object PropertiesRepository {
 
         val hexColorPattern = "^#([A-Fa-f0-9]{6})$".toRegex()
         if ((statusColors != null && enumValues != null) &&
-            (statusColors.count() != enumValues.count() ||
-                    statusColors.any { !hexColorPattern.matches(it) })
+            (
+                statusColors.count() != enumValues.count() ||
+                    statusColors.any { !hexColorPattern.matches(it) }
+            )
         ) {
             throw IllegalArgumentException(
                 "($name) Invalid status colors: The number of status colors must match the number of " +
-                        "enumeration values, and all colors must be valid hex codes (excluding #000000)."
+                    "enumeration values, and all colors must be valid hex codes (excluding #000000).",
             )
         }
     }
@@ -706,17 +777,19 @@ object PropertiesRepository {
     private fun validateAutoNowDate(
         columnType: ColumnType,
         autoNowDate: ir.amirroid.ktoradmin.models.date.AutoNowDate?,
-        columnName: String
+        columnName: String,
     ) {
-        if (columnType !in listOf(
+        if (columnType !in
+            listOf(
                 ColumnType.DATE,
                 ColumnType.DATETIME,
-                ColumnType.TIMESTAMP_WITH_TIMEZONE
-            ) && autoNowDate != null
+                ColumnType.TIMESTAMP_WITH_TIMEZONE,
+            ) &&
+            autoNowDate != null
         ) {
             throw IllegalArgumentException(
                 "The 'autoNowDate' property can only be used with columns of type 'DATE' or 'DATETIME'. " +
-                        "Column '$columnName' has type '$columnType', which is incompatible."
+                    "Column '$columnName' has type '$columnType', which is incompatible.",
             )
         }
     }
@@ -724,7 +797,10 @@ object PropertiesRepository {
     /**
      * Validates rich editor configuration.
      */
-    private fun validateRichEditor(hasRichEditor: Boolean, columnType: ColumnType) {
+    private fun validateRichEditor(
+        hasRichEditor: Boolean,
+        columnType: ColumnType,
+    ) {
         if (hasRichEditor && columnType != ColumnType.STRING) {
             throw IllegalArgumentException("Rich editor can only be used with columns of type STRING.")
         }
@@ -733,7 +809,10 @@ object PropertiesRepository {
     /**
      * Validates text area configuration.
      */
-    private fun validateTextArea(hasTextArea: Boolean, columnType: ColumnType) {
+    private fun validateTextArea(
+        hasTextArea: Boolean,
+        columnType: ColumnType,
+    ) {
         if (hasTextArea && columnType != ColumnType.STRING) {
             throw IllegalArgumentException("Text area can only be used with columns of type STRING.")
         }
@@ -745,17 +824,19 @@ object PropertiesRepository {
     private fun validateFieldAutoNowDate(
         fieldType: FieldType,
         autoNowDate: ir.amirroid.ktoradmin.models.date.AutoNowDate?,
-        fieldName: String
+        fieldName: String,
     ) {
-        if (fieldType !in listOf(
+        if (fieldType !in
+            listOf(
                 FieldType.Date,
                 FieldType.DateTime,
-                FieldType.Instant
-            ) && autoNowDate != null
+                FieldType.Instant,
+            ) &&
+            autoNowDate != null
         ) {
             throw IllegalArgumentException(
                 "The 'autoNowDate' property can only be used with fields of type 'DATE' or 'DATETIME'. " +
-                        "Field '$fieldName' has type '$fieldType', which is incompatible."
+                    "Field '$fieldName' has type '$fieldType', which is incompatible.",
             )
         }
     }

@@ -1,10 +1,9 @@
 package ir.amirroid.ktoradmin.modules
 
-import ir.amirroid.ktoradmin.authentication.configureAdminCookies
 import io.ktor.server.application.*
 import io.ktor.server.sessions.*
+import ir.amirroid.ktoradmin.authentication.configureAdminCookies
 import kotlin.time.Duration.Companion.days
-
 
 fun Application.configureSessions() {
     if (pluginOrNull(Sessions) == null) {

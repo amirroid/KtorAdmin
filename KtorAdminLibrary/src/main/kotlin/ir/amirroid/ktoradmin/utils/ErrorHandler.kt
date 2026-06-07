@@ -1,20 +1,22 @@
 package ir.amirroid.ktoradmin.utils
 
-import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 
-suspend fun ApplicationCall.badRequest(message: String, throwable: Throwable? = null) {
+suspend fun ApplicationCall.badRequest(
+    message: String,
+    throwable: Throwable? = null,
+) {
     respondText(status = HttpStatusCode.BadRequest, contentType = ContentType.Text.Html) {
         generateErrorHtml(
             "400 - Bad Request",
             if (DynamicConfiguration.debugMode) message else "",
-            throwable?.stackTraceToString()
+            throwable?.stackTraceToString(),
         )
     }
 }
-
 
 suspend fun ApplicationCall.tooManyRequests() {
     response.headers.append("Retry-After", "60")
@@ -23,19 +25,21 @@ suspend fun ApplicationCall.tooManyRequests() {
     }
 }
 
-
 suspend fun ApplicationCall.forbidden(message: String) {
     respondText(status = HttpStatusCode.Forbidden, contentType = ContentType.Text.Html) {
         generateErrorHtml("403 - Forbidden", message)
     }
 }
 
-suspend fun ApplicationCall.serverError(message: String, throwable: Throwable? = null) {
+suspend fun ApplicationCall.serverError(
+    message: String,
+    throwable: Throwable? = null,
+) {
     respondText(status = HttpStatusCode.InternalServerError, contentType = ContentType.Text.Html) {
         generateErrorHtml(
             "500 - Internal Server Error",
             if (DynamicConfiguration.debugMode) message else "",
-            throwable?.stackTraceToString()
+            throwable?.stackTraceToString(),
         )
     }
 }
@@ -50,8 +54,12 @@ suspend fun ApplicationCall.notFound(message: String) {
     }
 }
 
-private fun generateErrorHtml(errorCode: String, errorMessage: String, stackTrace: String? = null): String {
-    return """
+private fun generateErrorHtml(
+    errorCode: String,
+    errorMessage: String,
+    stackTrace: String? = null,
+): String =
+    """
         <html>
         <head>
             <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -117,10 +125,11 @@ private fun generateErrorHtml(errorCode: String, errorMessage: String, stackTrac
                 ${
         if (DynamicConfiguration.debugMode) {
             stackTrace?.let { "<div class='stack-trace'>$it</div>" } ?: ""
-        } else ""
+        } else {
+            ""
+        }
     }
         </div >
         </body >
         </html >
-                """.trimIndent()
-}
+    """.trimIndent()

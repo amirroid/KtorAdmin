@@ -16,12 +16,13 @@ import kotlin.test.assertFailsWith
 class JdbcFiltersTest {
     @Test
     fun `should create filter metadata for date datetime boolean and enumeration columns`() {
-        val columns = listOf(
-            column("created", ColumnType.DATE),
-            column("updated", ColumnType.DATETIME),
-            column("enabled", ColumnType.BOOLEAN),
-            column("status", ColumnType.ENUMERATION) { copy(enumerationValues = listOf("ACTIVE", "BLOCKED")) },
-        )
+        val columns =
+            listOf(
+                column("created", ColumnType.DATE),
+                column("updated", ColumnType.DATETIME),
+                column("enabled", ColumnType.BOOLEAN),
+                column("status", ColumnType.ENUMERATION) { copy(enumerationValues = listOf("ACTIVE", "BLOCKED")) },
+            )
         val table = TestJdbcTable(columns = columns, filters = columns.map { it.columnName })
 
         val filters = JdbcFilters.findFiltersData(table, listOf(table))
@@ -48,14 +49,19 @@ class JdbcFiltersTest {
             val enabled = column("enabled", ColumnType.BOOLEAN)
             val status = column("status", ColumnType.ENUMERATION) { copy(enumerationValues = listOf("ACTIVE")) }
             val userId = column("user_id", ColumnType.INTEGER) { copy(reference = Reference.ManyToOne("users", "id")) }
-            val table = TestJdbcTable(columns = listOf(created, enabled, status, userId), filters = listOf("created", "enabled", "status", "user_id"))
-            val parameters = Parameters.build {
-                append("filters.created-start", Instant.parse("2025-01-01T00:00:00Z").toEpochMilli().toString())
-                append("filters.created-end", Instant.parse("2025-01-31T00:00:00Z").toEpochMilli().toString())
-                append("filters.enabled", "on")
-                append("filters.status", "ACTIVE")
-                append("filters.user_id", "42")
-            }
+            val table =
+                TestJdbcTable(
+                    columns = listOf(created, enabled, status, userId),
+                    filters = listOf("created", "enabled", "status", "user_id"),
+                )
+            val parameters =
+                Parameters.build {
+                    append("filters.created-start", Instant.parse("2025-01-01T00:00:00Z").toEpochMilli().toString())
+                    append("filters.created-end", Instant.parse("2025-01-31T00:00:00Z").toEpochMilli().toString())
+                    append("filters.enabled", "on")
+                    append("filters.status", "ACTIVE")
+                    append("filters.user_id", "42")
+                }
 
             val filters = JdbcFilters.extractFilters(table, listOf(table), parameters)
 

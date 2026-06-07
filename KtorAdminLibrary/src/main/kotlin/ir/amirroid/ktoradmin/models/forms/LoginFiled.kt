@@ -12,5 +12,5 @@ data class LoginFiled(
     val name: String,
     val key: String,
     val type: String = "text",
-    val autoComplete: String? = null
+    val autoComplete: String? = null,
 )

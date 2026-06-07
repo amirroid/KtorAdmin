@@ -1,11 +1,11 @@
 package ir.amirroid.ktoradmin.modules.download
 
-import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
-import ir.amirroid.ktoradmin.csrf.CSRF_TOKEN_FIELD_NAME
-import ir.amirroid.ktoradmin.csrf.CsrfManager
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import ir.amirroid.ktoradmin.csrf.CSRF_TOKEN_FIELD_NAME
+import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.panels.AdminJdbcTable
 import ir.amirroid.ktoradmin.panels.AdminMongoCollection
 import ir.amirroid.ktoradmin.panels.AdminPanel
@@ -19,7 +19,10 @@ import ir.amirroid.ktoradmin.utils.notFound
 import ir.amirroid.ktoradmin.utils.serverError
 import ir.amirroid.ktoradmin.utils.withAuthenticate
 
-fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: List<AdminPanel>) {
+fun Routing.configureDownloadFilesRouting(
+    authenticateName: String?,
+    panels: List<AdminPanel>,
+) {
     withAuthenticate(authenticateName) {
         // Route for downloading table data as a CSV file
         get("/${DynamicConfiguration.adminPath}/${Constants.DOWNLOADS_PATH}/{pluralName}/csv") {
@@ -38,13 +41,14 @@ fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: Lis
                 } else {
                     call.response.header(
                         HttpHeaders.ContentDisposition,
-                        "attachment; filename=\"${pluralName}_data.csv\""
+                        "attachment; filename=\"${pluralName}_data.csv\"",
                     )
-                    val file = when (panel) {
-                        is AdminJdbcTable -> JdbcQueriesRepository.getAllDataAsCsvFile(panel)
-                        is AdminMongoCollection -> MongoClientRepository.getAllDataAsCsvFile(panel)
-                        else -> "return@get"
-                    }
+                    val file =
+                        when (panel) {
+                            is AdminJdbcTable -> JdbcQueriesRepository.getAllDataAsCsvFile(panel)
+                            is AdminMongoCollection -> MongoClientRepository.getAllDataAsCsvFile(panel)
+                            else -> "return@get"
+                        }
                     val bytes = file.toByteArray()
                     call.respondBytes(contentType = ContentType.Text.CSV) { bytes }
                 }
@@ -67,15 +71,17 @@ fun Routing.configureDownloadFilesRouting(authenticateName: String?, panels: Lis
                     return@get call.invalidateRequest()
                 }
 
-                val panel = panels.find { it.getPluralName() == pluralName }?.takeIf { it.isShowInAdminPanel() }
-                    ?: return@get call.notFound("No table found with plural name: $pluralName")
+                val panel =
+                    panels.find { it.getPluralName() == pluralName }?.takeIf { it.isShowInAdminPanel() }
+                        ?: return@get call.notFound("No table found with plural name: $pluralName")
 
-                val pdfData = PdfHelper.generatePdf(panel, primaryKey, call)
-                    ?: return@get call.badRequest("Error generating PDF")
+                val pdfData =
+                    PdfHelper.generatePdf(panel, primaryKey, call)
+                        ?: return@get call.badRequest("Error generating PDF")
 
                 call.response.header(
                     HttpHeaders.ContentDisposition,
-                    "attachment; filename=\"output_${pluralName}_${primaryKey}.pdf\""
+                    "attachment; filename=\"output_${pluralName}_$primaryKey.pdf\"",
                 )
                 call.respondBytes(pdfData, ContentType.Application.Pdf)
             }.onFailure {

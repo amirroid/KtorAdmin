@@ -1,8 +1,8 @@
 package ir.amirroid.ktoradmin.plugins
 
-import ir.amirroid.ktoradmin.configuration.KtorAdminConfiguration
 import io.ktor.server.application.*
 import io.ktor.util.*
+import ir.amirroid.ktoradmin.configuration.KtorAdminConfiguration
 import ir.amirroid.ktoradmin.modules.configureRouting
 import ir.amirroid.ktoradmin.modules.configureSessions
 import ir.amirroid.ktoradmin.modules.configureTemplating
@@ -15,7 +15,10 @@ class KtorAdmin {
         override val key: AttributeKey<KtorAdmin>
             get() = AttributeKey("Ktor Admin")
 
-        override fun install(pipeline: Application, configure: KtorAdminConfiguration.() -> Unit): KtorAdmin {
+        override fun install(
+            pipeline: Application,
+            configure: KtorAdminConfiguration.() -> Unit,
+        ): KtorAdmin {
             val tables = AdminTableRepository.getAll()
             val configuration = KtorAdminConfiguration().apply(configure)
             val authenticateName = configuration.authenticateName

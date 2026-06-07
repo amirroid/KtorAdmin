@@ -12,9 +12,8 @@ data class Limit(
     val allowedMimeTypes: List<String>? = null,
 )
 
-
-fun Limit.toFormattedString(): String {
-    return """
+fun Limit.toFormattedString(): String =
+    """
         |Limit(
         |      maxLength = $maxLength,
         |      minLength = $minLength,
@@ -28,9 +27,8 @@ fun Limit.toFormattedString(): String {
         allowedMimeTypes?.joinToString(
             prefix = "listOf(",
             postfix = ")",
-            separator = ", "
+            separator = ", ",
         ) { "\"${it}\"" } ?: "null"
     },
         |   )
     """.trimMargin("|")
-}

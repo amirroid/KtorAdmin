@@ -16,8 +16,8 @@ internal object CsrfManager {
     private const val GCM_TAG_SIZE = 128
 
     private val secureRandom = SecureRandom()
-    private val hmacSecretKey = generateRandomKey()  // Secret key for HMAC
-    private val aesSecretKey = generateRandomKey()   // Secret key for AES encryption
+    private val hmacSecretKey = generateRandomKey() // Secret key for HMAC
+    private val aesSecretKey = generateRandomKey() // Secret key for AES encryption
 
     /**
      * Generates a secure random key (256-bit).
@@ -85,8 +85,8 @@ internal object CsrfManager {
     /**
      * Decrypts the AES-GCM encrypted timestamp.
      */
-    private fun decryptTimestamp(encryptedTimestamp: String): String? {
-        return try {
+    private fun decryptTimestamp(encryptedTimestamp: String): String? =
+        try {
             val decodedData = Base64.getDecoder().decode(encryptedTimestamp)
             val iv = decodedData.copyOfRange(0, GCM_IV_SIZE)
             val encryptedBytes = decodedData.copyOfRange(GCM_IV_SIZE, decodedData.size)
@@ -97,5 +97,4 @@ internal object CsrfManager {
         } catch (e: Exception) {
             null // Return null if decryption fails
         }
-    }
 }

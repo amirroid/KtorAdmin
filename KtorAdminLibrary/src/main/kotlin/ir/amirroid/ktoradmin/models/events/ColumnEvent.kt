@@ -13,5 +13,5 @@ import ir.amirroid.ktoradmin.models.ColumnSet
 data class ColumnEvent(
     val changed: Boolean,
     val columnSet: ColumnSet,
-    val value: Any?
+    val value: Any?,
 )

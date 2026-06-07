@@ -1,7 +1,7 @@
 package ir.amirroid.ktoradmin.models
 
-import ir.amirroid.ktoradmin.models.common.Reference
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import ir.amirroid.ktoradmin.models.common.Reference
 import ir.amirroid.ktoradmin.models.date.AutoNowDate
 import ir.amirroid.ktoradmin.models.types.ColumnType
 import java.time.LocalDate
@@ -68,27 +68,25 @@ data class ColumnSet(
     val hasTextArea: Boolean = false,
     val hasConfirmation: Boolean = false,
     val valueMapper: String? = null,
-    val preview: String? = null
+    val preview: String? = null,
 )
 
+internal fun ColumnSet.getCurrentDateClass() =
+    when (type) {
+        ColumnType.DATE -> {
+            LocalDate.now(DynamicConfiguration.timeZone)
+        }
 
-internal fun ColumnSet.getCurrentDateClass() = when (type) {
-    ColumnType.DATE -> {
-        LocalDate.now(DynamicConfiguration.timeZone)
+        ColumnType.DATETIME -> {
+            LocalDateTime.now(DynamicConfiguration.timeZone)
+        }
+
+        ColumnType.TIMESTAMP_WITH_TIMEZONE -> {
+            OffsetDateTime.now(DynamicConfiguration.timeZone)
+        }
+
+        else -> null
     }
-
-    ColumnType.DATETIME -> {
-        LocalDateTime.now(DynamicConfiguration.timeZone)
-    }
-
-
-    ColumnType.TIMESTAMP_WITH_TIMEZONE -> {
-        OffsetDateTime.now(DynamicConfiguration.timeZone)
-    }
-
-    else -> null
-}
-
 
 internal val ColumnSet.isNotListReference: Boolean
     get() = reference !is Reference.ManyToMany

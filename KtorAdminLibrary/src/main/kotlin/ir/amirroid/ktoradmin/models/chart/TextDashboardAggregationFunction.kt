@@ -10,7 +10,6 @@ package ir.amirroid.ktoradmin.models.chart
  * - **`LAST_ITEM`** is the only function that supports non-numeric fields.
  */
 enum class TextDashboardAggregationFunction {
-
     /** Computes the sum of numerical values in the specified field. */
     SUM,
 
@@ -24,5 +23,5 @@ enum class TextDashboardAggregationFunction {
     PROFIT_PERCENTAGE,
 
     /** Retrieves the last entered item in the specified field (supports non-numeric values). */
-    LAST_ITEM
+    LAST_ITEM,
 }

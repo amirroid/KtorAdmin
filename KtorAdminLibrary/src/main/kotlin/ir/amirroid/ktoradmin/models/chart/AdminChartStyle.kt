@@ -14,7 +14,9 @@ package ir.amirroid.ktoradmin.models.chart
  * - **`RADAR`** → Displays multivariate data in a circular layout, useful for comparing multiple variables.
  * - **`POLAR_AREA`** → Similar to a radar chart but with fixed angular widths, effective for cyclical data.
  */
-enum class AdminChartStyle(val chartType: String) {
+enum class AdminChartStyle(
+    val chartType: String,
+) {
     LINE("line"),
     BAR("bar"),
     PIE("pie"),

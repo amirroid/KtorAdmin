@@ -31,5 +31,5 @@ annotation class MongoCollection(
     val groupName: String = "",
     val databaseKey: String = "",
     val iconFile: String = "",
-    val showInAdminPanel: Boolean = true
+    val showInAdminPanel: Boolean = true,
 )

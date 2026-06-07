@@ -9,7 +9,7 @@ enum class ChartDashboardAggregationFunction {
 
 internal fun getFieldNameBasedOnAggregationFunction(
     aggregationFunction: ChartDashboardAggregationFunction,
-    field: String
+    field: String,
 ) = when (aggregationFunction) {
     ChartDashboardAggregationFunction.COUNT -> "${field}_count"
     ChartDashboardAggregationFunction.SUM -> "${field}_sum"
@@ -19,7 +19,7 @@ internal fun getFieldNameBasedOnAggregationFunction(
 
 internal fun getFieldFunctionBasedOnAggregationFunction(
     aggregationFunction: ChartDashboardAggregationFunction,
-    field: String
+    field: String,
 ) = when (aggregationFunction) {
     ChartDashboardAggregationFunction.COUNT -> "COUNT($field) AS ${field}_count"
     ChartDashboardAggregationFunction.SUM -> "SUM($field) AS ${field}_sum"

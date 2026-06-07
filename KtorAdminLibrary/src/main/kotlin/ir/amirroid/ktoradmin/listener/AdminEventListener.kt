@@ -9,7 +9,6 @@ import ir.amirroid.ktoradmin.models.events.FieldEvent
  * It can be extended to define specific behaviors for different data operations.
  */
 open class AdminEventListener {
-
     /**
      * Handles the insertion of new data into a relational database table.
      *
@@ -20,7 +19,7 @@ open class AdminEventListener {
     open suspend fun onInsertJdbcData(
         tableName: String,
         objectPrimaryKey: String,
-        events: List<ColumnEvent>
+        events: List<ColumnEvent>,
     ) = Unit
 
     /**
@@ -33,7 +32,7 @@ open class AdminEventListener {
     open suspend fun onInsertMongoData(
         collectionName: String,
         objectPrimaryKey: String,
-        events: List<FieldEvent>
+        events: List<FieldEvent>,
     ) = Unit
 
     /**
@@ -46,7 +45,7 @@ open class AdminEventListener {
     open suspend fun onUpdateJdbcData(
         tableName: String,
         objectPrimaryKey: String,
-        events: List<ColumnEvent>
+        events: List<ColumnEvent>,
     ) = Unit
 
     /**
@@ -59,7 +58,7 @@ open class AdminEventListener {
     open suspend fun onUpdateMongoData(
         collectionName: String,
         objectPrimaryKey: String,
-        events: List<FieldEvent>
+        events: List<FieldEvent>,
     ) = Unit
 
     /**

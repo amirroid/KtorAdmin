@@ -14,8 +14,14 @@ import kotlin.test.assertTrue
 class ModelFormattingTest {
     @Test
     fun `should format upload targets with nullable values and delete strategies`() {
-        assertEquals("UploadTarget.LocalFile(path=\"/tmp/uploads\", deleteStrategy=FileDeleteStrategy.DELETE)", UploadTarget.LocalFile("/tmp/uploads", FileDeleteStrategy.DELETE).toFormattedString())
-        assertEquals("UploadTarget.AwsS3(bucket=null, deleteStrategy=FileDeleteStrategy.KEEP)", UploadTarget.AwsS3(deleteStrategy = FileDeleteStrategy.KEEP).toFormattedString())
+        assertEquals(
+            "UploadTarget.LocalFile(path=\"/tmp/uploads\", deleteStrategy=FileDeleteStrategy.DELETE)",
+            UploadTarget.LocalFile("/tmp/uploads", FileDeleteStrategy.DELETE).toFormattedString(),
+        )
+        assertEquals(
+            "UploadTarget.AwsS3(bucket=null, deleteStrategy=FileDeleteStrategy.KEEP)",
+            UploadTarget.AwsS3(deleteStrategy = FileDeleteStrategy.KEEP).toFormattedString(),
+        )
         assertEquals("UploadTarget.Custom(key=\"images\")", UploadTarget.Custom("images").toFormattedString())
     }
 

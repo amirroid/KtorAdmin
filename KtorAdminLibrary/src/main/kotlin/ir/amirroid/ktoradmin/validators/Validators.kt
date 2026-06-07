@@ -86,7 +86,11 @@ internal object Validators {
         }
     }
 
-    internal fun validateFieldParameter(fieldSet: FieldSet, value: String?, translator: KtorAdminTranslator): String? {
+    internal fun validateFieldParameter(
+        fieldSet: FieldSet,
+        value: String?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val nullableValue =
             if (fieldSet.nullable && fieldSet.type !is FieldType.String) value?.takeIf { it.isNotEmpty() } else value
 
@@ -122,10 +126,32 @@ internal object Validators {
     }
 
     // Validation for STRING type
-    private fun validateString(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateString(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         limits?.let {
-            if (value.length > it.maxLength) return translator.translate(KtorAdminTranslator.Keys.ERROR_MAX_LENGTH_EXCEEDED, mapOf("length" to it.maxLength.toString()))
-            if (value.length < it.minLength) return translator.translate(KtorAdminTranslator.Keys.ERROR_MIN_LENGTH_NOT_MET, mapOf("length" to it.minLength.toString()))
+            if (value.length >
+                it.maxLength
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_MAX_LENGTH_EXCEEDED,
+                    mapOf(
+                        "length" to it.maxLength.toString(),
+                    ),
+                )
+            }
+            if (value.length <
+                it.minLength
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_MIN_LENGTH_NOT_MET,
+                    mapOf(
+                        "length" to it.minLength.toString(),
+                    ),
+                )
+            }
             if (it.regexPattern != null && !value.matches(Regex(it.regexPattern))) {
                 return translator.translate(KtorAdminTranslator.Keys.ERROR_REGEX_MISMATCH, mapOf("pattern" to it.regexPattern))
             }
@@ -134,142 +160,326 @@ internal object Validators {
     }
 
     // Validation for INTEGER type
-    private fun validateInteger(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateInteger(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val intValue = value.toIntOrNull() ?: return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_INTEGER)
         limits?.let {
             val maxCount = it.maxCount.coerceAtMost(Int.MAX_VALUE.toDouble()).toInt()
             val minCount = it.minCount.coerceAtLeast(Int.MIN_VALUE.toDouble()).toInt()
 
-            if (intValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_INTEGER_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (intValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_INTEGER_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (intValue >
+                maxCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_INTEGER_MAX_EXCEEDED,
+                    mapOf(
+                        "max" to maxCount.toString(),
+                    ),
+                )
+            }
+            if (intValue <
+                minCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_INTEGER_MIN_EXCEEDED,
+                    mapOf(
+                        "min" to minCount.toString(),
+                    ),
+                )
+            }
         }
         return null
     }
 
     // Validation for UINTEGER type
-    private fun validateUnsignedInteger(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateUnsignedInteger(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val uintValue = value.toUIntOrNull() ?: return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_UNSIGNED_INTEGER)
         limits?.let {
             val maxCount = it.maxCount.coerceAtMost(UInt.MAX_VALUE.toDouble()).toUInt()
             val minCount = it.minCount.coerceAtLeast(UInt.MIN_VALUE.toDouble()).toUInt()
 
-            if (uintValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_UNSIGNED_INTEGER_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (uintValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_UNSIGNED_INTEGER_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (uintValue >
+                maxCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_UNSIGNED_INTEGER_MAX_EXCEEDED,
+                    mapOf(
+                        "max" to maxCount.toString(),
+                    ),
+                )
+            }
+            if (uintValue <
+                minCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_UNSIGNED_INTEGER_MIN_EXCEEDED,
+                    mapOf(
+                        "min" to minCount.toString(),
+                    ),
+                )
+            }
         }
         return null
     }
 
     // Validation for SHORT type
-    private fun validateShort(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateShort(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val shortValue = value.toShortOrNull() ?: return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_SHORT)
         limits?.let {
-            val maxCount = it.maxCount.coerceAtMost(Short.MAX_VALUE.toDouble()).toInt().toShort()
-            val minCount = it.minCount.coerceAtLeast(Short.MIN_VALUE.toDouble()).toInt().toShort()
+            val maxCount =
+                it.maxCount
+                    .coerceAtMost(Short.MAX_VALUE.toDouble())
+                    .toInt()
+                    .toShort()
+            val minCount =
+                it.minCount
+                    .coerceAtLeast(Short.MIN_VALUE.toDouble())
+                    .toInt()
+                    .toShort()
 
-            if (shortValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_SHORT_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (shortValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_SHORT_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (shortValue >
+                maxCount
+            ) {
+                return translator.translate(KtorAdminTranslator.Keys.ERROR_SHORT_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
+            }
+            if (shortValue <
+                minCount
+            ) {
+                return translator.translate(KtorAdminTranslator.Keys.ERROR_SHORT_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            }
         }
         return null
     }
 
     // Validation for USHORT type
-    private fun validateUnsignedShort(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateUnsignedShort(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val ushortValue = value.toUShortOrNull() ?: return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_UNSIGNED_SHORT)
         limits?.let {
-            val maxCount = it.maxCount.coerceAtMost(UShort.MAX_VALUE.toDouble()).toInt().toUShort()
-            val minCount = it.minCount.coerceAtLeast(UShort.MIN_VALUE.toDouble()).toInt().toUShort()
+            val maxCount =
+                it.maxCount
+                    .coerceAtMost(UShort.MAX_VALUE.toDouble())
+                    .toInt()
+                    .toUShort()
+            val minCount =
+                it.minCount
+                    .coerceAtLeast(UShort.MIN_VALUE.toDouble())
+                    .toInt()
+                    .toUShort()
 
-            if (ushortValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_UNSIGNED_SHORT_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (ushortValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_UNSIGNED_SHORT_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (ushortValue >
+                maxCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_UNSIGNED_SHORT_MAX_EXCEEDED,
+                    mapOf(
+                        "max" to maxCount.toString(),
+                    ),
+                )
+            }
+            if (ushortValue <
+                minCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_UNSIGNED_SHORT_MIN_EXCEEDED,
+                    mapOf(
+                        "min" to minCount.toString(),
+                    ),
+                )
+            }
         }
         return null
     }
 
     // Validation for LONG type
-    private fun validateLong(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateLong(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val longValue = value.toLongOrNull() ?: return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_LONG)
         limits?.let {
             val maxCount = it.maxCount.coerceAtMost(Long.MAX_VALUE.toDouble()).toLong()
             val minCount = it.minCount.coerceAtLeast(Long.MIN_VALUE.toDouble()).toLong()
 
-            if (longValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_LONG_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (longValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_LONG_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (longValue >
+                maxCount
+            ) {
+                return translator.translate(KtorAdminTranslator.Keys.ERROR_LONG_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
+            }
+            if (longValue <
+                minCount
+            ) {
+                return translator.translate(KtorAdminTranslator.Keys.ERROR_LONG_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            }
         }
         return null
     }
 
     // Validation for ULONG type
-    private fun validateUnsignedLong(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateUnsignedLong(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val ulongValue = value.toULongOrNull() ?: return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_UNSIGNED_LONG)
         limits?.let {
             val maxCount = it.maxCount.coerceAtMost(ULong.MAX_VALUE.toDouble()).toULong()
             val minCount = it.minCount.coerceAtLeast(ULong.MIN_VALUE.toDouble()).toULong()
 
-            if (ulongValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_UNSIGNED_LONG_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (ulongValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_UNSIGNED_LONG_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (ulongValue >
+                maxCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_UNSIGNED_LONG_MAX_EXCEEDED,
+                    mapOf(
+                        "max" to maxCount.toString(),
+                    ),
+                )
+            }
+            if (ulongValue <
+                minCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_UNSIGNED_LONG_MIN_EXCEEDED,
+                    mapOf(
+                        "min" to minCount.toString(),
+                    ),
+                )
+            }
         }
         return null
     }
 
     // Validation for DOUBLE type
-    private fun validateDouble(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateDouble(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val doubleValue = value.toDoubleOrNull() ?: return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_DOUBLE)
         limits?.let {
             val maxCount = it.maxCount
             val minCount = it.minCount
-            if (doubleValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_DOUBLE_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (doubleValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_DOUBLE_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (doubleValue >
+                maxCount
+            ) {
+                return translator.translate(KtorAdminTranslator.Keys.ERROR_DOUBLE_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
+            }
+            if (doubleValue <
+                minCount
+            ) {
+                return translator.translate(KtorAdminTranslator.Keys.ERROR_DOUBLE_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            }
         }
         return null
     }
 
     // Validation for FLOAT type
-    private fun validateFloat(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateFloat(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         val floatValue = value.toFloatOrNull() ?: return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_FLOAT)
         limits?.let {
             val maxCount = it.maxCount.coerceAtMost(Float.MAX_VALUE.toDouble()).toFloat()
             val minCount = it.minCount.coerceAtLeast(-Float.MAX_VALUE.toDouble()).toFloat()
 
-            if (floatValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_FLOAT_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (floatValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_FLOAT_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (floatValue >
+                maxCount
+            ) {
+                return translator.translate(KtorAdminTranslator.Keys.ERROR_FLOAT_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
+            }
+            if (floatValue <
+                minCount
+            ) {
+                return translator.translate(KtorAdminTranslator.Keys.ERROR_FLOAT_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            }
         }
         return null
     }
 
     // Validation for BIG_DECIMAL type
-    private fun validateBigDecimal(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
-        val bigDecimalValue = value.toBigDecimalOrNull() ?: return translator.translate(
-            KtorAdminTranslator.Keys.ERROR_INVALID_BIG_DECIMAL)
+    private fun validateBigDecimal(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
+        val bigDecimalValue =
+            value.toBigDecimalOrNull() ?: return translator.translate(
+                KtorAdminTranslator.Keys.ERROR_INVALID_BIG_DECIMAL,
+            )
         limits?.let {
-            if (bigDecimalValue > it.maxCount.toBigDecimal()) return translator.translate(
-                KtorAdminTranslator.Keys.ERROR_BIG_DECIMAL_MAX_EXCEEDED, mapOf("max" to it.maxCount.toString()))
-            if (bigDecimalValue < it.minCount.toBigDecimal()) return translator.translate(
-                KtorAdminTranslator.Keys.ERROR_BIG_DECIMAL_MIN_EXCEEDED, mapOf("min" to it.minCount.toString()))
+            if (bigDecimalValue > it.maxCount.toBigDecimal()) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_BIG_DECIMAL_MAX_EXCEEDED,
+                    mapOf("max" to it.maxCount.toString()),
+                )
+            }
+            if (bigDecimalValue < it.minCount.toBigDecimal()) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_BIG_DECIMAL_MIN_EXCEEDED,
+                    mapOf("min" to it.minCount.toString()),
+                )
+            }
         }
         return null
     }
 
     // Validation for CHAR type
-    private fun validateChar(value: String, translator: KtorAdminTranslator): String? {
+    private fun validateChar(
+        value: String,
+        translator: KtorAdminTranslator,
+    ): String? {
         if (value.length != 1) return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_CHAR)
         return null
     }
 
     // Validation for BOOLEAN type
-    private fun validateBoolean(value: String, translator: KtorAdminTranslator): String? {
+    private fun validateBoolean(
+        value: String,
+        translator: KtorAdminTranslator,
+    ): String? {
         if (value !in Constants.booleanForms) return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_BOOLEAN)
         return null
     }
 
     // Validation for ENUMERATION type
-    private fun validateEnumeration(value: String, enumValues: List<String>?, translator: KtorAdminTranslator): String? {
-        if (enumValues == null || value !in enumValues) return translator.translate(
-            KtorAdminTranslator.Keys.ERROR_INVALID_ENUMERATION, mapOf("values" to (enumValues?.joinToString() ?: "")))
+    private fun validateEnumeration(
+        value: String,
+        enumValues: List<String>?,
+        translator: KtorAdminTranslator,
+    ): String? {
+        if (enumValues == null || value !in enumValues) {
+            return translator.translate(
+                KtorAdminTranslator.Keys.ERROR_INVALID_ENUMERATION,
+                mapOf("values" to (enumValues?.joinToString() ?: "")),
+            )
+        }
         return null
     }
 
     // Validation for DATE type
-    private fun validateDate(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateDate(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         try {
             // Parse the input value to LocalDate
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -281,8 +491,14 @@ internal object Validators {
                 val now = LocalDate.now(DynamicConfiguration.timeZone)
 
                 // Convert minDateRelativeToNow and maxDateRelativeToNow from milliseconds to days
-                val minDateInDays = java.time.Duration.ofMillis(it.minDateRelativeToNow).toDays()
-                val maxDateInDays = java.time.Duration.ofMillis(it.maxDateRelativeToNow).toDays()
+                val minDateInDays =
+                    java.time.Duration
+                        .ofMillis(it.minDateRelativeToNow)
+                        .toDays()
+                val maxDateInDays =
+                    java.time.Duration
+                        .ofMillis(it.maxDateRelativeToNow)
+                        .toDays()
 
                 // Check if the date is before the minimum allowed date
                 if (it.minDateRelativeToNow != Long.MAX_VALUE && date.isBefore(now.minusDays(minDateInDays))) {
@@ -306,7 +522,10 @@ internal object Validators {
     }
 
     // Validation for DURATION type
-    private fun validateDuration(value: String, translator: KtorAdminTranslator): String? {
+    private fun validateDuration(
+        value: String,
+        translator: KtorAdminTranslator,
+    ): String? {
         try {
             Duration.parse(value)
         } catch (e: Exception) {
@@ -316,7 +535,11 @@ internal object Validators {
     }
 
     // Validation for DATETIME type
-    private fun validateDateTime(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateDateTime(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         try {
             // Parse the input value to Instant
             val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
@@ -334,12 +557,22 @@ internal object Validators {
                 // Check if the parsed date is before the minimum allowed date
                 if (limits.minDateRelativeToNow != Long.MAX_VALUE && instant.isBefore(minDate)) {
                     val minDateTime = minDate.atOffset(ZoneOffset.of(DynamicConfiguration.timeZone.id))
-                    return translator.translate(KtorAdminTranslator.Keys.ERROR_DATETIME_BEFORE_MIN, mapOf("datetime" to minDateTime.toString()))
+                    return translator.translate(
+                        KtorAdminTranslator.Keys.ERROR_DATETIME_BEFORE_MIN,
+                        mapOf(
+                            "datetime" to minDateTime.toString(),
+                        ),
+                    )
                 }
                 // Check if the parsed date is after the maximum allowed date
                 if (limits.maxDateRelativeToNow != Long.MAX_VALUE && instant.isAfter(maxDate)) {
                     val maxDateTime = maxDate.atOffset(ZoneOffset.of(DynamicConfiguration.timeZone.id))
-                    return translator.translate(KtorAdminTranslator.Keys.ERROR_DATETIME_AFTER_MAX, mapOf("datetime" to maxDateTime.toString()))
+                    return translator.translate(
+                        KtorAdminTranslator.Keys.ERROR_DATETIME_AFTER_MAX,
+                        mapOf(
+                            "datetime" to maxDateTime.toString(),
+                        ),
+                    )
                 }
             }
         } catch (e: Exception) {
@@ -352,46 +585,91 @@ internal object Validators {
     }
 
     // Validation for FILE and BINARY size
-    fun validateBytesSize(bytesSize: Long, limits: Limit?, translator: KtorAdminTranslator): String? {
+    fun validateBytesSize(
+        bytesSize: Long,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         if (limits == null) return null
-        if (bytesSize > limits.maxBytes) return translator.translate(KtorAdminTranslator.Keys.ERROR_FILE_SIZE_EXCEEDED, mapOf("size" to limits.maxBytes.toString()))
-        return null
-    }
-
-    // Validation for FILE mimetype
-    fun validateMimeType(fileName: String?, limits: Limit?, translator: KtorAdminTranslator): String? {
-        if (limits?.allowedMimeTypes == null) return null
-        val mimeType = getMimeType(fileName ?: return null)
-        if (mimeType !in limits.allowedMimeTypes) {
+        if (bytesSize >
+            limits.maxBytes
+        ) {
             return translator.translate(
-                KtorAdminTranslator.Keys.ERROR_INVALID_MIME_TYPE, mapOf(
-                "file" to fileName,
-                "types" to limits.allowedMimeTypes.joinToString()
-            ))
+                KtorAdminTranslator.Keys.ERROR_FILE_SIZE_EXCEEDED,
+                mapOf(
+                    "size" to limits.maxBytes.toString(),
+                ),
+            )
         }
         return null
     }
 
-    private fun getMimeType(fileName: String): String {
-        return URLConnection.guessContentTypeFromName(fileName) ?: "unknown"
+    // Validation for FILE mimetype
+    fun validateMimeType(
+        fileName: String?,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
+        if (limits?.allowedMimeTypes == null) return null
+        val mimeType = getMimeType(fileName ?: return null)
+        if (mimeType !in limits.allowedMimeTypes) {
+            return translator.translate(
+                KtorAdminTranslator.Keys.ERROR_INVALID_MIME_TYPE,
+                mapOf(
+                    "file" to fileName,
+                    "types" to limits.allowedMimeTypes.joinToString(),
+                ),
+            )
+        }
+        return null
     }
 
+    private fun getMimeType(fileName: String): String = URLConnection.guessContentTypeFromName(fileName) ?: "unknown"
+
     // Validation for Instant type
-    private fun validateInstant(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
+    private fun validateInstant(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
         // Return null if the value is valid
         return validateDateTime(value, limits, translator)
     }
 
     // Validation for Decimal28 type
-    private fun validateDecimal128(value: String, limits: Limit?, translator: KtorAdminTranslator): String? {
-        val decimalValue = value.toBigDecimalOrNull() ?: return translator.translate(
-            KtorAdminTranslator.Keys.ERROR_INVALID_DECIMAL128)
+    private fun validateDecimal128(
+        value: String,
+        limits: Limit?,
+        translator: KtorAdminTranslator,
+    ): String? {
+        val decimalValue =
+            value.toBigDecimalOrNull() ?: return translator.translate(
+                KtorAdminTranslator.Keys.ERROR_INVALID_DECIMAL128,
+            )
         limits?.let {
             val maxCount = it.maxCount.toBigDecimal()
             val minCount = it.minCount.toBigDecimal()
 
-            if (decimalValue > maxCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_DECIMAL128_MAX_EXCEEDED, mapOf("max" to maxCount.toString()))
-            if (decimalValue < minCount) return translator.translate(KtorAdminTranslator.Keys.ERROR_DECIMAL128_MIN_EXCEEDED, mapOf("min" to minCount.toString()))
+            if (decimalValue >
+                maxCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_DECIMAL128_MAX_EXCEEDED,
+                    mapOf(
+                        "max" to maxCount.toString(),
+                    ),
+                )
+            }
+            if (decimalValue <
+                minCount
+            ) {
+                return translator.translate(
+                    KtorAdminTranslator.Keys.ERROR_DECIMAL128_MIN_EXCEEDED,
+                    mapOf(
+                        "min" to minCount.toString(),
+                    ),
+                )
+            }
         }
         return null
     }

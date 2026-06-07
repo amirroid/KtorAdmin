@@ -32,7 +32,11 @@ class Grid {
      * @param height The height of the section, defaults to [DEFAULT_HEIGHT].
      * @throws IllegalArgumentException if a section with the same index already exists.
      */
-    fun addSection(span: Int, section: DashboardSection, height: String = DEFAULT_HEIGHT) {
+    fun addSection(
+        span: Int,
+        section: DashboardSection,
+        height: String = DEFAULT_HEIGHT,
+    ) {
         if (sections.any { it.index == section.index }) {
             throw IllegalArgumentException("Section with index ${section.index} already exists")
         }
@@ -56,7 +60,10 @@ class Grid {
      * @param maxWidth The maximum screen width for this template to apply.
      * @param template The grid column layout for the given screen width.
      */
-    fun media(maxWidth: String, template: List<Int>) {
+    fun media(
+        maxWidth: String,
+        template: List<Int>,
+    ) {
         mediaTemplates.add(GridTemplate(maxWidth, template))
     }
 
@@ -66,19 +73,22 @@ class Grid {
      * @param section The dashboard section to add.
      * @param height The height of the section, defaults to [DEFAULT_HEIGHT].
      */
-    fun addSection(section: DashboardSection, height: String = DEFAULT_HEIGHT) =
-        addSection(1, section, height)
+    fun addSection(
+        section: DashboardSection,
+        height: String = DEFAULT_HEIGHT,
+    ) = addSection(1, section, height)
 
     /**
      * Converts the stored sections into a list of [SectionInfo] objects.
      */
-    internal fun toSectionInfo(): List<SectionInfo> = sections.map {
-        SectionInfo(
-            span = spans[it.index] ?: 1,
-            itemIndex = it.index,
-            height = heights[it.index] ?: DEFAULT_HEIGHT
-        )
-    }
+    internal fun toSectionInfo(): List<SectionInfo> =
+        sections.map {
+            SectionInfo(
+                span = spans[it.index] ?: 1,
+                itemIndex = it.index,
+                height = heights[it.index] ?: DEFAULT_HEIGHT,
+            )
+        }
 
     companion object {
         private const val DEFAULT_HEIGHT = "350px"

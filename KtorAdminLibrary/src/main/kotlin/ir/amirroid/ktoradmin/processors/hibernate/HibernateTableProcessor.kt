@@ -1,6 +1,5 @@
 package ir.amirroid.ktoradmin.processors.hibernate
 
-import ir.amirroid.ktoradmin.annotations.hibernate.HibernateTable
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -13,6 +12,7 @@ import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.writeTo
+import ir.amirroid.ktoradmin.annotations.hibernate.HibernateTable
 import ir.amirroid.ktoradmin.models.ColumnSet
 import ir.amirroid.ktoradmin.models.FileDeleteStrategy
 import ir.amirroid.ktoradmin.models.Limit
@@ -31,7 +31,9 @@ import ir.amirroid.ktoradmin.utils.PackagesUtils
 import ir.amirroid.ktoradmin.utils.toTableName
 import kotlin.collections.find
 
-class HibernateTableProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
+class HibernateTableProcessor(
+    private val environment: SymbolProcessorEnvironment,
+) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver
             .getSymbolsWithAnnotation(HibernateTable::class.qualifiedName ?: return emptyList())
@@ -48,23 +50,25 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
         val fileName = FileUtils.getGeneratedFileName(simpleFileName)
         val columns = classDeclaration.getAllColumnSets()
         val generatedClass = generateClass(classDeclaration, fileName, columns.first, columns.second)
-        val fileSpec = FileSpec.builder(packageName, fileName)
-            .addImport(ColumnType::class.java.packageName, ColumnType::class.java.simpleName)
-            .addImport(UploadTarget::class.java.packageName, UploadTarget::class.java.simpleName)
-            .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
-            .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
-            .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
-            .addImport(Action::class.java.packageName, Action::class.java.simpleName)
-            .addImport(AdminChartStyle::class.java.packageName, AdminChartStyle::class.java.simpleName)
-            .addImport(FileDeleteStrategy::class.java.packageName, FileDeleteStrategy::class.java.simpleName)
-            .addType(generatedClass)
-            .build()
+        val fileSpec =
+            FileSpec
+                .builder(packageName, fileName)
+                .addImport(ColumnType::class.java.packageName, ColumnType::class.java.simpleName)
+                .addImport(UploadTarget::class.java.packageName, UploadTarget::class.java.simpleName)
+                .addImport(Limit::class.java.packageName, Limit::class.java.simpleName)
+                .addImport(Reference::class.java.packageName, Reference::class.java.simpleName)
+                .addImport(AutoNowDate::class.java.packageName, AutoNowDate::class.java.simpleName)
+                .addImport(Action::class.java.packageName, Action::class.java.simpleName)
+                .addImport(AdminChartStyle::class.java.packageName, AdminChartStyle::class.java.simpleName)
+                .addImport(FileDeleteStrategy::class.java.packageName, FileDeleteStrategy::class.java.simpleName)
+                .addType(generatedClass)
+                .build()
         fileSpec.writeTo(
             environment.codeGenerator,
             Dependencies(
                 false,
-                containingFile
-            )
+                containingFile,
+            ),
         )
     }
 
@@ -72,12 +76,13 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
         classDeclaration: KSClassDeclaration,
         fileName: String,
         columnSets: List<ColumnSet>,
-        primaryKey: ColumnSet
+        primaryKey: ColumnSet,
     ): TypeSpec {
         val adminTable = PackagesUtils.getAdminTableClass()
 
         val tableName = classDeclaration.getTableName()
-        return TypeSpec.classBuilder(fileName)
+        return TypeSpec
+            .classBuilder(fileName)
             .addSuperinterfaces(listOf(adminTable))
             .let {
                 AnnotationRepository.addCommonFunctionsToClass(
@@ -93,8 +98,7 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
                     iconFile = classDeclaration.getIconFile(),
                     isShowInAdminPanel = classDeclaration.getShowInAdminPanel(),
                 )
-            }
-            .build()
+            }.build()
     }
 
     private fun KSClassDeclaration.getAllColumnSets(): Pair<List<ColumnSet>, ColumnSet> {
@@ -106,9 +110,10 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
 
             PropertiesRepository.getColumnSetsForHibernate(property, type)?.let { columnSet ->
                 columns += columnSet
-                val idAnnotationQualifiedNames = getListOfHibernatePackage(
-                    HIBERNATE_ID_ANNOTATION_CLASSNAME
-                )
+                val idAnnotationQualifiedNames =
+                    getListOfHibernatePackage(
+                        HIBERNATE_ID_ANNOTATION_CLASSNAME,
+                    )
                 if (property.annotations.any { annotation -> annotation.qualifiedName.orEmpty() in idAnnotationQualifiedNames }) {
                     primaryKey = columnSet
                 }
@@ -118,49 +123,67 @@ class HibernateTableProcessor(private val environment: SymbolProcessorEnvironmen
         return columns to (primaryKey ?: throw IllegalStateException("(${getTableName()}) No primary key found"))
     }
 
-    private fun KSClassDeclaration.getTableName(): String {
-        return annotations.find { it.qualifiedName in getListOfHibernatePackage("Table") }?.arguments?.find { it.name?.asString() == "name" }
+    private fun KSClassDeclaration.getTableName(): String =
+        annotations
+            .find { it.qualifiedName in getListOfHibernatePackage("Table") }
+            ?.arguments
+            ?.find { it.name?.asString() == "name" }
             ?.value as? String ?: toTableName()
-    }
 
+    private fun KSClassDeclaration.getIconFile() =
+        (
+            getAnnotationArguments()
+                ?.find { it.name?.asString() == "iconFile" }
+                ?.value as? String
+        )?.takeIf { it.isNotEmpty() }
 
-    private fun KSClassDeclaration.getIconFile() = (getAnnotationArguments()
-        ?.find { it.name?.asString() == "iconFile" }
-        ?.value as? String)?.takeIf { it.isNotEmpty() }
+    private fun KSClassDeclaration.getShowInAdminPanel() =
+        (
+            getAnnotationArguments()
+                ?.find { it.name?.asString() == "showInAdminPanel" }
+                ?.value as? Boolean
+        )!!
 
+    private fun KSClassDeclaration.getGroupName() =
+        (
+            getAnnotationArguments()
+                ?.find { it.name?.asString() == "groupName" }
+                ?.value as? String
+        )?.takeIf { it.isNotEmpty() }
 
-    private fun KSClassDeclaration.getShowInAdminPanel() = (getAnnotationArguments()
-        ?.find { it.name?.asString() == "showInAdminPanel" }
-        ?.value as? Boolean)!!
+    private fun KSClassDeclaration.getDatabaseKey() =
+        (
+            getAnnotationArguments()
+                ?.find { it.name?.asString() == "databaseKey" }
+                ?.value as? String
+        )?.takeIf { it.isNotEmpty() }
 
+    private fun KSClassDeclaration.getPluralName(tableName: String) =
+        (
+            getAnnotationArguments()
+                ?.find { it.name?.asString() == "pluralName" }
+                ?.value as? String
+        )?.takeIf { it.isNotEmpty() } ?: (tableName + "s")
 
-    private fun KSClassDeclaration.getGroupName() = (getAnnotationArguments()
-        ?.find { it.name?.asString() == "groupName" }
-        ?.value as? String)?.takeIf { it.isNotEmpty() }
+    private fun KSClassDeclaration.getSingularName(tableName: String) =
+        (
+            getAnnotationArguments()
+                ?.find { it.name?.asString() == "singularName" }
+                ?.value as? String
+        )?.takeIf { it.isNotEmpty() } ?: (tableName + "s")
 
-    private fun KSClassDeclaration.getDatabaseKey() = (getAnnotationArguments()
-        ?.find { it.name?.asString() == "databaseKey" }
-        ?.value as? String)?.takeIf { it.isNotEmpty() }
-
-    private fun KSClassDeclaration.getPluralName(tableName: String) = (getAnnotationArguments()
-        ?.find { it.name?.asString() == "pluralName" }
-        ?.value as? String)?.takeIf { it.isNotEmpty() } ?: (tableName + "s")
-
-    private fun KSClassDeclaration.getSingularName(tableName: String) = (getAnnotationArguments()
-        ?.find { it.name?.asString() == "singularName" }
-        ?.value as? String)?.takeIf { it.isNotEmpty() } ?: (tableName + "s")
-
-    private fun KSClassDeclaration.getAnnotationArguments() = annotations
-        .find { it.shortName.asString() == HibernateTable::class.simpleName }
-        ?.arguments
+    private fun KSClassDeclaration.getAnnotationArguments() =
+        annotations
+            .find { it.shortName.asString() == HibernateTable::class.simpleName }
+            ?.arguments
 
     companion object {
         internal const val HIBERNATE_ID_ANNOTATION_CLASSNAME = "Id"
-        fun getListOfHibernatePackage(className: String): List<String> {
-            return listOf(
+
+        fun getListOfHibernatePackage(className: String): List<String> =
+            listOf(
                 "jakarta.persistence.$className",
                 "javax.persistence.$className",
             )
-        }
     }
 }
