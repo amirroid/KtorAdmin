@@ -1,16 +1,9 @@
-val exposed_version: String by project
-val h2_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
-val kmongoDbVersion = "5.2.1"
-
-
 plugins {
-    kotlin("jvm") version "2.1.0"
-    id("io.ktor.plugin") version "3.0.3"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
-    kotlin("plugin.jpa") version "2.1.0"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ktor)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.jpa)
 }
 
 group = "ir.amirreza"
@@ -29,41 +22,42 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core")
-    implementation("io.ktor:ktor-server-content-negotiation")
-    implementation("io.ktor:ktor-serialization-kotlinx-json")
-    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
-    implementation("com.h2database:h2:$h2_version")
-    implementation("io.ktor:ktor-server-thymeleaf")
-    implementation("io.ktor:ktor-server-netty")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    implementation("io.ktor:ktor-server-config-yaml")
-    testImplementation("io.ktor:ktor-server-test-host")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
-    implementation("io.ktor:ktor-server-auth")
-    implementation("io.ktor:ktor-server-status-pages")
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.json)
 
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.kotlin.datetime)
 
-    // Postgres
-    implementation("org.postgresql:postgresql:42.7.4")
+    implementation(libs.h2)
+
+    implementation(libs.ktor.server.thymeleaf)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.logback)
+    implementation(libs.ktor.server.config.yaml)
+
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotlin.test.junit)
+
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.status.pages)
+
+    implementation(libs.postgresql)
 
     implementation(project(":KtorAdminLibrary"))
     ksp(project(":KtorAdminLibrary"))
 
-    implementation("org.jcodec:jcodec:0.2.5")
-    implementation("org.jcodec:jcodec-javase:0.2.5")
+    implementation(libs.jcodec)
+    implementation(libs.jcodec.javase)
 
-    // MongoDB Kotlin driver dependency
-    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$kmongoDbVersion")
-    implementation("org.mongodb:bson-kotlinx:$kmongoDbVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1")
+    implementation(libs.mongodb.coroutine)
+    implementation(libs.mongodb.bson.kotlinx)
 
-    // Hibernate
-    implementation("org.hibernate:hibernate-core:5.6.15.Final")
-    implementation("javax.persistence:javax.persistence-api:2.2")
-    implementation("org.hibernate.validator:hibernate-validator:6.2.5.Final")
+    implementation(libs.kotlinx.serialization.core)
+
+    implementation(libs.hibernate.core)
+    implementation(libs.javax.persistence.api)
+    implementation(libs.hibernate.validator)
 }
-

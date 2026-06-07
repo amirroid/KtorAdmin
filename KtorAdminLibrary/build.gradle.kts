@@ -1,10 +1,11 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.1.0"
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
-    id("com.vanniktech.maven.publish") version "0.30.0"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.maven.publish)
 }
 
 
@@ -62,49 +63,39 @@ repositories {
 }
 
 dependencies {
+    implementation(kotlin("reflect"))
+
     testImplementation(kotlin("test"))
-    testImplementation("io.ktor:ktor-server-test-host:3.2.2")
-    testImplementation("io.ktor:ktor-server-sessions:3.2.2")
-    testImplementation("io.ktor:ktor-server-content-negotiation:3.2.2")
-    testImplementation("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
-    testImplementation("com.h2database:h2:2.3.232")
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.server.sessions)
+    testImplementation(libs.ktor.server.content.negotiation)
+    testImplementation(libs.ktor.serialization.json)
+    testImplementation(libs.h2)
 
-    // KSP
-    implementation("com.google.devtools.ksp:symbol-processing-api:2.1.0-1.0.29")
+    implementation(libs.ksp.api)
 
-    // Kotlin Poet
-    implementation("com.squareup:kotlinpoet:1.11.0")
-    implementation("com.squareup:kotlinpoet-ksp:1.12.0")
+    implementation(libs.kotlinpoet)
+    implementation(libs.kotlinpoet.ksp)
 
-    // Reflection
-    implementation("org.reflections:reflections:0.10.2")
+    implementation(libs.reflections)
 
-    // Ktor Core
-    val ktorVersion = "3.2.2"
-    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.velocity)
 
-    // Templating
-    implementation("io.ktor:ktor-server-velocity:$ktorVersion")
+    implementation(libs.kotlin.jdbc)
+    implementation(libs.hikari)
 
-    // JDBC
-    implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.0")
-    implementation("com.zaxxer:HikariCP:6.2.1")
+    implementation(libs.aws.s3)
 
-    // S3
-    implementation("software.amazon.awssdk:s3:2.30.2")
+    implementation(libs.ktor.server.auth)
 
-    // Authentication
-    implementation("io.ktor:ktor-server-auth:$ktorVersion")
+    implementation(libs.mongodb.coroutine)
 
-    // MongoDB Kotlin driver dependency
-    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.10.1")
+    implementation(libs.ktor.server.rate.limit)
 
-    // Rate Limiting
-    implementation("io.ktor:ktor-server-rate-limit:$ktorVersion")
-
-    // IText
-    implementation("com.itextpdf:itext7-core:7.2.3")
+    implementation(libs.itext7.core)
 }
+
 tasks.test {
     useJUnitPlatform()
 }

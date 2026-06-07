@@ -8,5 +8,5 @@ import io.ktor.util.*
 typealias UserForm = Map<String, String?>
 
 internal fun Parameters.toUserForm(): UserForm {
-    return toMap().filter { it.key != CSRF_TOKEN_FIELD_NAME }.mapValues { it.value.firstOrNull()?.toString() }
+    return toMap().filter { it.key != CSRF_TOKEN_FIELD_NAME }.mapValues { it.value.firstOrNull() }
 }

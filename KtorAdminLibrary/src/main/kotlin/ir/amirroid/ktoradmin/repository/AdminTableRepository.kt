@@ -13,8 +13,8 @@ internal object AdminTableRepository {
         subClasses.forEach {
             runCatching {
                 it.getDeclaredConstructor().newInstance() as AdminPanel
-            }.getOrNull()?.let {
-                tables += it
+            }.getOrNull()?.let { table ->
+                tables += table
             }
         }
         return tables.toList()

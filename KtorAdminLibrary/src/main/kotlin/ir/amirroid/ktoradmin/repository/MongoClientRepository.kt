@@ -172,7 +172,7 @@ internal object MongoClientRepository {
             val database = newClient.getDatabase(databaseName)
 
             // Store client and database with proper key
-            val clientKey = key?.toString() ?: "default-${System.currentTimeMillis()}"
+            val clientKey = key ?: "default-${System.currentTimeMillis()}"
             mongoClients[clientKey] = newClient
             databases[actualKey] = database
             connectionConfigs[actualKey] = config
@@ -722,16 +722,16 @@ internal object MongoClientRepository {
                 val aggregationFunctionQuery = when (aggregationFunction) {
                     TextDashboardAggregationFunction.AVERAGE -> Accumulators.avg(
                         fieldName,
-                        "\$$fieldName"
+                        "$$fieldName"
                     )
 
                     TextDashboardAggregationFunction.SUM -> Accumulators.sum(
                         fieldName,
-                        "\$$fieldName"
+                        "$$fieldName"
                     ) // Sum values
                     else -> null
                 }
-                aggregationFunctionQuery?.let {
+                aggregationFunctionQuery.let {
                     pipeline.add(
                         group(
                             null,
@@ -755,8 +755,8 @@ internal object MongoClientRepository {
 
             TextDashboardAggregationFunction.PROFIT_PERCENTAGE -> {
                 if (result.size == 2) {
-                    val nextItem = result[0].get(fieldName)?.toString()?.toDoubleOrNull() ?: 0.0
-                    val prevItem = result[1].get(fieldName)?.toString()?.toDoubleOrNull() ?: 0.0
+                    val nextItem = result[0][fieldName]?.toString()?.toDoubleOrNull() ?: 0.0
+                    val prevItem = result[1][fieldName]?.toString()?.toDoubleOrNull() ?: 0.0
                     runCatching {
                         ((nextItem - prevItem) / prevItem * 100).formatAsIntegerIfPossible()
                     }.getOrElse { "" }
