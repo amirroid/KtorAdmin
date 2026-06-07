@@ -2,7 +2,7 @@
 awsS3 = "2.46.5"
 exposed = "1.3.0"
 h2 = "2.4.240"
-hibernate = "8.0.0.Alpha1"
+hibernate = "7.4.0.Final"
 hibernateValidator = "9.1.0.Final"
 hikari = "7.0.2"
 itext = "9.6.0"
@@ -28,7 +28,7 @@ exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exp
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
 exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
-hibernate-core = { module = "org.hibernate:hibernate-core", version.ref = "hibernate" }
+hibernate-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "hibernate" }
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernateValidator" }
 hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 itext7-core = { module = "com.itextpdf:itext7-core", version.ref = "itext" }
