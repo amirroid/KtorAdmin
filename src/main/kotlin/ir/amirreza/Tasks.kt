@@ -2,7 +2,6 @@ package ir.amirreza
 
 import ir.amirroid.ktoradmin.annotations.computed.Computed
 import ir.amirroid.ktoradmin.annotations.date.AutoNowDate
-import ir.amirroid.ktoradmin.annotations.display.DisplayFormat
 import ir.amirroid.ktoradmin.annotations.display.PanelDisplayList
 import ir.amirroid.ktoradmin.annotations.enumeration.Enumeration
 import ir.amirroid.ktoradmin.annotations.exposed.ExposedTable
@@ -21,9 +20,9 @@ import ir.amirroid.ktoradmin.annotations.uploads.LocalUpload
 import ir.amirroid.ktoradmin.annotations.value_mapper.ValueMapper
 import ir.amirroid.ktoradmin.models.FileDeleteStrategy
 import ir.amirroid.ktoradmin.models.reference.EmptyColumn
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.kotlin.datetime.date
-import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.datetime.date
+import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 
 enum class Priority {
     Low, Medium, High

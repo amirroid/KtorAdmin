@@ -126,7 +126,9 @@ class ExposedTableProcessor(private val environment: SymbolProcessorEnvironment)
         val columns = mutableListOf<ColumnSet>()
         declarations.filterIsInstance<KSPropertyDeclaration>().forEach { property ->
             val type = property.type.resolve()
-            val typeName = type.toClassName().canonicalName
+            val typeName = (type.declaration as? KSClassDeclaration)
+                ?.toClassName()
+                ?.canonicalName
             if (typeName in COLUMN_TYPES || typeName == emptyColumnName) {
                 PropertiesRepository.getColumnSetsForExposed(property, type, isEmpty = typeName == emptyColumnName)
                     ?.let {

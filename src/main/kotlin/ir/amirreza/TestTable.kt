@@ -4,8 +4,8 @@ import ir.amirroid.ktoradmin.annotations.exposed.ExposedTable
 import ir.amirroid.ktoradmin.annotations.info.ColumnInfo
 import ir.amirroid.ktoradmin.annotations.info.IgnoreColumn
 import ir.amirroid.ktoradmin.annotations.references.OneToOneReferences
-import org.jetbrains.exposed.sql.ReferenceOption
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.ReferenceOption
+import org.jetbrains.exposed.v1.core.Table
 
 @ExposedTable(
     tableName = "test",

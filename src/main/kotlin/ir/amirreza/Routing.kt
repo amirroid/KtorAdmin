@@ -11,7 +11,7 @@ import ir.amirreza.services.TaskService
 import ir.amirreza.services.TokenService
 import ir.amirreza.services.User
 import ir.amirreza.services.UserService
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.v1.jdbc.Database
 import java.io.File
 
 fun Application.configureRouting(database: Database) {

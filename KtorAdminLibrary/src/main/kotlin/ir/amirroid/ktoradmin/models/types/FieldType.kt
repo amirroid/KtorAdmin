@@ -21,6 +21,29 @@ sealed class FieldType(val name: kotlin.String, val fieldType: kotlin.String) {
 
     data class Map(val fields: kotlin.collections.List<FieldSet>) : FieldType("MAP", "map")
     data class List(val fields: kotlin.collections.List<FieldSet>) : FieldType("LIST", "list")
+
+    companion object {
+        val entries: kotlin.collections.List<FieldType>
+            get() = listOf(
+                String,
+                Integer,
+                Long,
+                Double,
+                Float,
+                Boolean,
+                Date,
+                DateTime,
+                Enumeration,
+                Instant,
+                File,
+                Decimal128,
+                ObjectId,
+                NotAvailable
+            )
+
+        fun fromName(name: kotlin.String?): FieldType? =
+            entries.firstOrNull { it.name == name }
+    }
 }
 
 fun FieldType.toSuitableStringForFile(): String = when (this) {
