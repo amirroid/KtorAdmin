@@ -90,7 +90,7 @@ dependencies {
 
     implementation(libs.ktor.server.rate.limit)
 
-    implementation(libs.itext7.core)
+    implementation(libs.itext.core)
 }
 
 tasks.test {

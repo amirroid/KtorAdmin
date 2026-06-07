@@ -31,7 +31,7 @@ h2 = { module = "com.h2database:h2", version.ref = "h2" }
 hibernate-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "hibernate" }
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernateValidator" }
 hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
-itext7-core = { module = "com.itextpdf:itext7-core", version.ref = "itext" }
+itext-core = { module = "com.itextpdf:itext-core", version.ref = "itext" }
 javax-persistence-api = { module = "javax.persistence:javax.persistence-api", version.ref = "javaxPersistence" }
 jcodec = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
