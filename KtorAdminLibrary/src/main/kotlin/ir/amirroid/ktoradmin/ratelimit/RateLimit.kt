@@ -1,4 +1,4 @@
-package ir.amirroid.ktoradmin.rate_limiting
+package ir.amirroid.ktoradmin.ratelimit
 
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

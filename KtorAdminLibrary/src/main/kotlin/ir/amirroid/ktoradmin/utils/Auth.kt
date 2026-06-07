@@ -2,7 +2,7 @@ package ir.amirroid.ktoradmin.utils
 
 import io.ktor.server.auth.*
 import io.ktor.server.routing.*
-import ir.amirroid.ktoradmin.rate_limiting.withRateLimit
+import ir.amirroid.ktoradmin.ratelimit.withRateLimit
 
 fun Routing.withAuthenticate(
     name: String?,
