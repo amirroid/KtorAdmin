@@ -20,5 +20,5 @@ annotation class ColumnInfo(
     val nullable: Boolean = false,
     val unique: Boolean = false,
     val blank: Boolean = true,
-    val readOnly: Boolean = false
+    val readOnly: Boolean = false,
 )

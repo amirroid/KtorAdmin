@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.maven.publish)
+    alias(libs.plugins.ktlint)
 }
-
 
 group = "io.github.amirroid"
 version = "0.0.7"
@@ -25,8 +25,9 @@ mavenPublishing {
     coordinates(
         groupId = group.toString(),
         artifactId = projectName,
-        version = version.toString()
+        version = version.toString(),
     )
+
     pom {
         name = projectName
         description =
@@ -95,4 +96,11 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+ktlint {
+    filter {
+        exclude("**/generated/**")
+        exclude("**/build/**")
+    }
 }

@@ -4,22 +4,19 @@ import ir.amirroid.ktoradmin.models.field.FieldSet
 
 interface AdminMongoCollection : AdminPanel {
     fun getAllFields(): List<FieldSet>
+
     fun getCollectionName(): String
+
     fun getPanelListFields(): List<String>
 }
 
-fun AdminMongoCollection.getAllAllowToShowFields() =
-    getAllFields().filter { it.fieldName in getPanelListFields() }
+fun AdminMongoCollection.getAllAllowToShowFields() = getAllFields().filter { it.fieldName in getPanelListFields() }
 
-fun AdminMongoCollection.getPrimaryKeyField() =
-    getAllFields().first { it.fieldName == getPrimaryKey() }
+fun AdminMongoCollection.getPrimaryKeyField() = getAllFields().first { it.fieldName == getPrimaryKey() }
 
 fun AdminMongoCollection.getAllAllowToShowFieldsInUpsert() =
     getAllFields().filter { it.showInPanel && it.fieldName != getPrimaryKey() && it.autoNowDate == null }
 
+fun AdminMongoCollection.getAllAutoNowDateInsertFields() = getAllFields().filter { it.autoNowDate != null }
 
-fun AdminMongoCollection.getAllAutoNowDateInsertFields() =
-    getAllFields().filter { it.autoNowDate != null }
-
-fun AdminMongoCollection.getAllAutoNowDateUpdateFields() =
-    getAllFields().filter { it.autoNowDate != null && it.autoNowDate.updateOnChange }
+fun AdminMongoCollection.getAllAutoNowDateUpdateFields() = getAllFields().filter { it.autoNowDate != null && it.autoNowDate.updateOnChange }

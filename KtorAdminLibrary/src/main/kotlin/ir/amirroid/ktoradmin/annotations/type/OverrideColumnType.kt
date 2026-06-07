@@ -4,4 +4,6 @@ import ir.amirroid.ktoradmin.models.types.ColumnType
 
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.PROPERTY)
-annotation class OverrideColumnType(val type: ColumnType)
+annotation class OverrideColumnType(
+    val type: ColumnType,
+)

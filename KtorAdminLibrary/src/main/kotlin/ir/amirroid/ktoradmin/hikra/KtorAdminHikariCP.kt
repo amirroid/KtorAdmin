@@ -26,7 +26,10 @@ object KtorAdminHikariCP {
      * @param poolName Unique name for the connection pool
      * @param dataSource Pre-configured HikariDataSource
      */
-    fun custom(poolName: String, dataSource: HikariDataSource) {
+    fun custom(
+        poolName: String,
+        dataSource: HikariDataSource,
+    ) {
         // Close existing connection pool if it's closed
         connectionPools[poolName]?.takeIf { it.isClosed }?.close()
         connectionPools[poolName] = dataSource

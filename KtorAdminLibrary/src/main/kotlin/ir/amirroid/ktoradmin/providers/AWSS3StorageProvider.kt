@@ -48,16 +48,24 @@ internal object AWSS3StorageProvider {
      * @return The filename if upload is successful, null otherwise
      * @throws IllegalStateException if no bucket is specified and no default bucket is set
      */
-    fun uploadFile(bytes: ByteArray, fileName: String?, bucket: String?): String? {
+    fun uploadFile(
+        bytes: ByteArray,
+        fileName: String?,
+        bucket: String?,
+    ): String? {
         if (fileName == null || bytes.isEmpty()) return null
         val requiredBucket = bucket ?: defaultBucket
         if (requiredBucket == null) {
-            throw IllegalStateException("Bucket name is required but was not provided. Please ensure a valid bucket name is specified, or set a default bucket.")
+            throw IllegalStateException(
+                "Bucket name is required but was not provided. Please ensure a valid bucket name is specified, or set a default bucket.",
+            )
         }
-        val putObjectRequest = PutObjectRequest.builder()
-            .bucket(requiredBucket)
-            .key(fileName)
-            .build()
+        val putObjectRequest =
+            PutObjectRequest
+                .builder()
+                .bucket(requiredBucket)
+                .key(fileName)
+                .build()
         getRequiredClient().putObject(putObjectRequest, RequestBody.fromBytes(bytes))
         return fileName
     }
@@ -71,17 +79,24 @@ internal object AWSS3StorageProvider {
      * @return The generated URL as string, or null if generation fails
      * @throws IllegalStateException if no bucket is specified and no default bucket is set
      */
-    fun getFileUrl(fileName: String, bucket: String?): String? {
+    fun getFileUrl(
+        fileName: String,
+        bucket: String?,
+    ): String? {
         val requiredBucket = bucket ?: defaultBucket
         if (requiredBucket == null) {
-            throw IllegalStateException("Bucket name is required but was not provided. Please ensure a valid bucket name is specified, or set a default bucket.")
+            throw IllegalStateException(
+                "Bucket name is required but was not provided. Please ensure a valid bucket name is specified, or set a default bucket.",
+            )
         }
         return if (signatureDuration != null) {
             getUrlWithDuration(fileName, requiredBucket)
         } else {
-            return getRequiredClient().utilities().getUrl {
-                it.bucket(requiredBucket).key(fileName)
-            }.toExternalForm()
+            return getRequiredClient()
+                .utilities()
+                .getUrl {
+                    it.bucket(requiredBucket).key(fileName)
+                }.toExternalForm()
         }
     }
 
@@ -93,18 +108,25 @@ internal object AWSS3StorageProvider {
      * @return The presigned URL as string, or null if generation fails
      * @throws IllegalStateException if the presigner is not initialized
      */
-    private fun getUrlWithDuration(fileName: String, bucket: String?): String? {
+    private fun getUrlWithDuration(
+        fileName: String,
+        bucket: String?,
+    ): String? {
         if (presigner == null) {
             throw IllegalStateException("S3 client is not initialized. Please ensure the client is properly configured before using it.")
         }
-        val getObjectRequest = GetObjectRequest.builder()
-            .bucket(bucket)
-            .key(fileName)
-            .build()
-        val presignRequest = GetObjectPresignRequest.builder()
-            .signatureDuration(signatureDuration)
-            .getObjectRequest(getObjectRequest)
-            .build()
+        val getObjectRequest =
+            GetObjectRequest
+                .builder()
+                .bucket(bucket)
+                .key(fileName)
+                .build()
+        val presignRequest =
+            GetObjectPresignRequest
+                .builder()
+                .signatureDuration(signatureDuration)
+                .getObjectRequest(getObjectRequest)
+                .build()
         val presignedUrl = presigner!!.presignGetObject(presignRequest)
         return presignedUrl.url()?.toString()
     }
@@ -121,27 +143,38 @@ internal object AWSS3StorageProvider {
         secretKey: String,
         accessKey: String,
         region: String,
-        endpoint: String?
+        endpoint: String?,
     ) {
         val currentRegion = Region.of(region)
         val credentials = createCredentials(secretKey = secretKey, accessKey = accessKey)
-        client = S3Client.builder()
-            .region(currentRegion)
-            .let {
-                if (endpoint != null) {
-                    it.endpointOverride(URI(endpoint))
-                } else it
-            }
-            .credentialsProvider(
-                credentials
-            ).build()
-        presigner = S3Presigner.builder().s3Client(getRequiredClient()).region(currentRegion).let {
-            if (endpoint != null) {
-                it.endpointOverride(URI(endpoint))
-            } else it
-        }.s3Client(client).credentialsProvider(
-            credentials
-        ).build()
+        client =
+            S3Client
+                .builder()
+                .region(currentRegion)
+                .let {
+                    if (endpoint != null) {
+                        it.endpointOverride(URI(endpoint))
+                    } else {
+                        it
+                    }
+                }.credentialsProvider(
+                    credentials,
+                ).build()
+        presigner =
+            S3Presigner
+                .builder()
+                .s3Client(getRequiredClient())
+                .region(currentRegion)
+                .let {
+                    if (endpoint != null) {
+                        it.endpointOverride(URI(endpoint))
+                    } else {
+                        it
+                    }
+                }.s3Client(client)
+                .credentialsProvider(
+                    credentials,
+                ).build()
     }
 
     /**
@@ -151,13 +184,16 @@ internal object AWSS3StorageProvider {
      * @param accessKey AWS access key
      * @return AWS credentials provider
      */
-    private fun createCredentials(secretKey: String, accessKey: String): AwsCredentialsProvider? {
-        return StaticCredentialsProvider.create(
+    private fun createCredentials(
+        secretKey: String,
+        accessKey: String,
+    ): AwsCredentialsProvider? =
+        StaticCredentialsProvider.create(
             AwsBasicCredentials.create(
-                accessKey, secretKey
-            )
+                accessKey,
+                secretKey,
+            ),
         )
-    }
 
     /**
      * Deletes a file from the S3 bucket.
@@ -167,16 +203,23 @@ internal object AWSS3StorageProvider {
      * @return `true` if deletion was successful, `false` otherwise.
      * @throws IllegalStateException if no bucket is specified and no default bucket is set
      */
-    fun deleteFile(fileName: String, bucket: String? = null): Boolean {
+    fun deleteFile(
+        fileName: String,
+        bucket: String? = null,
+    ): Boolean {
         val requiredBucket = bucket ?: defaultBucket
         if (requiredBucket == null) {
-            throw IllegalStateException("Bucket name is required but was not provided. Please ensure a valid bucket name is specified, or set a default bucket.")
+            throw IllegalStateException(
+                "Bucket name is required but was not provided. Please ensure a valid bucket name is specified, or set a default bucket.",
+            )
         }
         return try {
-            val deleteRequest = DeleteObjectRequest.builder()
-                .bucket(requiredBucket)
-                .key(fileName)
-                .build()
+            val deleteRequest =
+                DeleteObjectRequest
+                    .builder()
+                    .bucket(requiredBucket)
+                    .key(fileName)
+                    .build()
             getRequiredClient().deleteObject(deleteRequest)
             true
         } catch (e: Exception) {

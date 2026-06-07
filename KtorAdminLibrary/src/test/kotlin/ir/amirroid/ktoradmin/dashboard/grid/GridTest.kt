@@ -14,7 +14,10 @@ class GridTest {
 
         val info = grid.toSectionInfo()
 
-        assertEquals(listOf(SectionInfo(span = 2, itemIndex = 1, height = "420px"), SectionInfo(span = 1, itemIndex = 2, height = "350px")), info)
+        assertEquals(
+            listOf(SectionInfo(span = 2, itemIndex = 1, height = "420px"), SectionInfo(span = 1, itemIndex = 2, height = "350px")),
+            info,
+        )
     }
 
     @Test
@@ -22,9 +25,10 @@ class GridTest {
         val grid = Grid()
         grid.addSection(section(index = 1))
 
-        val exception = assertFailsWith<IllegalArgumentException> {
-            grid.addSection(section(index = 1))
-        }
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                grid.addSection(section(index = 1))
+            }
 
         assertEquals("Section with index 1 already exists", exception.message)
     }
@@ -40,9 +44,10 @@ class GridTest {
         assertEquals(listOf(GridTemplate("768px", listOf(1))), grid.mediaTemplates)
     }
 
-    private fun section(index: Int) = object : DashboardSection {
-        override val sectionType: String = "test"
-        override val sectionName: String = "Section $index"
-        override val index: Int = index
-    }
+    private fun section(index: Int) =
+        object : DashboardSection {
+            override val sectionType: String = "test"
+            override val sectionName: String = "Section $index"
+            override val index: Int = index
+        }
 }

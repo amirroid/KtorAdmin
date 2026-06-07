@@ -1,9 +1,9 @@
 package ir.amirroid.ktoradmin.tiny
 
+import ir.amirroid.ktoradmin.models.UploadTarget
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import ir.amirroid.ktoradmin.models.UploadTarget
 
 /**
  * Configuration for TinyMCE editor with basic and professional presets.
@@ -33,46 +33,51 @@ data class TinyMCEConfig(
     @SerialName("font_formats")
     val fontFormats: String?,
     @Transient
-    val uploadTarget: UploadTarget? = null
+    val uploadTarget: UploadTarget? = null,
 ) {
     companion object {
         /**
          * Basic configuration with minimal features.
          */
-        val Basic = TinyMCEConfig(
-            height = 400,
-            language = "en",
-            directionality = "ltr",
-            plugins = "lists link image code table hr charmap preview",
-            toolbar = "undo redo | styleselect | bold italic underline | alignleft aligncenter alignright | " +
-                    "bullist numlist | table | link image | code preview",
-            branding = false,
-            menubar = true,
-            statusbar = true,
-            fontFormats = null,
-            uploadTarget = null
-        )
+        val Basic =
+            TinyMCEConfig(
+                height = 400,
+                language = "en",
+                directionality = "ltr",
+                plugins = "lists link image code table hr charmap preview",
+                toolbar =
+                    "undo redo | styleselect | bold italic underline | alignleft aligncenter alignright | " +
+                        "bullist numlist | table | link image | code preview",
+                branding = false,
+                menubar = true,
+                statusbar = true,
+                fontFormats = null,
+                uploadTarget = null,
+            )
 
         /**
          * Professional configuration with all advanced features enabled.
          */
-        val Professional = TinyMCEConfig(
-            height = 500,
-            language = "en",
-            directionality = "ltr",
-            plugins = "advlist autolink lists link image charmap print preview hr anchor " +
-                    "pagebreak searchreplace wordcount visualblocks visualchars code fullscreen " +
-                    "insertdatetime media nonbreaking save table directionality emoticons template " +
-                    "paste textpattern help autosave",
-            toolbar = "undo redo | styleselect | bold italic underline strikethrough | " +
-                    "alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | " +
-                    "link image media table | code preview fullscreen | charmap emoticons | " +
-                    "forecolor backcolor | removeformat",
-            branding = false,
-            menubar = true,
-            statusbar = true,
-            fontFormats = "Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times,serif; Courier New=courier new,courier,monospace;",
-            uploadTarget = null
-        )
+        val Professional =
+            TinyMCEConfig(
+                height = 500,
+                language = "en",
+                directionality = "ltr",
+                plugins =
+                    "advlist autolink lists link image charmap print preview hr anchor " +
+                        "pagebreak searchreplace wordcount visualblocks visualchars code fullscreen " +
+                        "insertdatetime media nonbreaking save table directionality emoticons template " +
+                        "paste textpattern help autosave",
+                toolbar =
+                    "undo redo | styleselect | bold italic underline strikethrough | " +
+                        "alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | " +
+                        "link image media table | code preview fullscreen | charmap emoticons | " +
+                        "forecolor backcolor | removeformat",
+                branding = false,
+                menubar = true,
+                statusbar = true,
+                fontFormats = "Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times,serif; Courier New=courier new,courier,monospace;",
+                uploadTarget = null,
+            )
     }
 }

@@ -16,9 +16,10 @@ import ir.amirroid.ktoradmin.repository.MongoClientRepository
  * Represents a delete action that removes selected items from an admin panel.
  * Supports deletion from both JDBC and MongoDB-based panels.
  */
-internal class DeleteAction(private val panel: AdminPanel, override val displayText: String) :
-    CustomAdminAction {
-
+internal class DeleteAction(
+    private val panel: AdminPanel,
+    override val displayText: String,
+) : CustomAdminAction {
     // Unique key representing the delete action
     override var key: String = "DELETE"
 
@@ -28,7 +29,10 @@ internal class DeleteAction(private val panel: AdminPanel, override val displayT
      * @param name The name of the entity being deleted.
      * @param selectedIds The list of IDs of the items to be deleted.
      */
-    override suspend fun performAction(name: String, selectedIds: List<String>) {
+    override suspend fun performAction(
+        name: String,
+        selectedIds: List<String>,
+    ) {
         when (panel) {
             is AdminJdbcTable -> {
                 // Deletes rows from a JDBC-based table
@@ -58,26 +62,30 @@ internal class DeleteAction(private val panel: AdminPanel, override val displayT
      */
     private suspend fun deleteJdbcFiles(
         table: AdminJdbcTable,
-        selectedIds: List<String>
+        selectedIds: List<String>,
     ) {
-        val fileColumns = table.getAllColumns()
-            .filter { it.type == ColumnType.FILE && it.uploadTarget != null }
-            .filter {
-                val uploadTarget = it.uploadTarget!!
-                val deleteStrategy = when (uploadTarget) {
-                    is UploadTarget.LocalFile -> uploadTarget.deleteStrategy
-                    is UploadTarget.AwsS3 -> uploadTarget.deleteStrategy
-                    is UploadTarget.Custom -> return@filter true
+        val fileColumns =
+            table
+                .getAllColumns()
+                .filter { it.type == ColumnType.FILE && it.uploadTarget != null }
+                .filter {
+                    val uploadTarget = it.uploadTarget!!
+                    val deleteStrategy =
+                        when (uploadTarget) {
+                            is UploadTarget.LocalFile -> uploadTarget.deleteStrategy
+                            is UploadTarget.AwsS3 -> uploadTarget.deleteStrategy
+                            is UploadTarget.Custom -> return@filter true
+                        }
+
+                    when (deleteStrategy) {
+                        FileDeleteStrategy.DELETE -> true
+                        FileDeleteStrategy.KEEP -> false
+                        FileDeleteStrategy.INHERIT -> DynamicConfiguration.fileDeleteStrategy == FileDeleteStrategy.DELETE
+                    }
                 }
 
-                when (deleteStrategy) {
-                    FileDeleteStrategy.DELETE -> true
-                    FileDeleteStrategy.KEEP -> false
-                    FileDeleteStrategy.INHERIT -> DynamicConfiguration.fileDeleteStrategy == FileDeleteStrategy.DELETE
-                }
-            }
-
-        JdbcQueriesRepository.getSelectedColumnsForIds(table, selectedIds, fileColumns)
+        JdbcQueriesRepository
+            .getSelectedColumnsForIds(table, selectedIds, fileColumns)
             .forEach { rows ->
                 rows.forEachIndexed { index, value ->
                     if (value == null) return@forEachIndexed
@@ -88,7 +96,6 @@ internal class DeleteAction(private val panel: AdminPanel, override val displayT
                 }
             }
     }
-
 
     /**
      * Deletes files associated with the specified documents in a Mongo collection.
@@ -101,26 +108,30 @@ internal class DeleteAction(private val panel: AdminPanel, override val displayT
      */
     private suspend fun deleteMongoFiles(
         collection: AdminMongoCollection,
-        selectedIds: List<String>
+        selectedIds: List<String>,
     ) {
-        val fileFields = collection.getAllFields()
-            .filter { it.type is FieldType.File && it.uploadTarget != null }
-            .filter {
-                val uploadTarget = it.uploadTarget!!
-                val deleteStrategy = when (uploadTarget) {
-                    is UploadTarget.LocalFile -> uploadTarget.deleteStrategy
-                    is UploadTarget.AwsS3 -> uploadTarget.deleteStrategy
-                    is UploadTarget.Custom -> return@filter true
+        val fileFields =
+            collection
+                .getAllFields()
+                .filter { it.type is FieldType.File && it.uploadTarget != null }
+                .filter {
+                    val uploadTarget = it.uploadTarget!!
+                    val deleteStrategy =
+                        when (uploadTarget) {
+                            is UploadTarget.LocalFile -> uploadTarget.deleteStrategy
+                            is UploadTarget.AwsS3 -> uploadTarget.deleteStrategy
+                            is UploadTarget.Custom -> return@filter true
+                        }
+
+                    when (deleteStrategy) {
+                        FileDeleteStrategy.DELETE -> true
+                        FileDeleteStrategy.KEEP -> false
+                        FileDeleteStrategy.INHERIT -> DynamicConfiguration.fileDeleteStrategy == FileDeleteStrategy.DELETE
+                    }
                 }
 
-                when (deleteStrategy) {
-                    FileDeleteStrategy.DELETE -> true
-                    FileDeleteStrategy.KEEP -> false
-                    FileDeleteStrategy.INHERIT -> DynamicConfiguration.fileDeleteStrategy == FileDeleteStrategy.DELETE
-                }
-            }
-
-        MongoClientRepository.getSelectedFieldsForIds(collection, selectedIds, fileFields)
+        MongoClientRepository
+            .getSelectedFieldsForIds(collection, selectedIds, fileFields)
             .forEach { rows ->
                 rows.forEachIndexed { index, value ->
                     if (value == null) return@forEachIndexed
@@ -138,7 +149,10 @@ internal class DeleteAction(private val panel: AdminPanel, override val displayT
      * @param name The name of the entity being deleted.
      * @param selectedIds The list of deleted item IDs.
      */
-    private suspend fun sendEvent(name: String, selectedIds: List<String>) {
+    private suspend fun sendEvent(
+        name: String,
+        selectedIds: List<String>,
+    ) {
         DynamicConfiguration.currentEventListener?.let { eventListener ->
             when (panel) {
                 is AdminJdbcTable -> eventListener.onDeleteJdbcObjects(name, selectedIds)

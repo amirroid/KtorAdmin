@@ -1,6 +1,5 @@
 package ir.amirroid.ktoradmin.getters
 
-
 import ir.amirroid.ktoradmin.models.events.FileEvent
 import ir.amirroid.ktoradmin.models.types.ColumnType
 import ir.amirroid.ktoradmin.utils.Constants
@@ -13,8 +12,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
-internal fun String.toTypedValue(columnType: ColumnType): Any? {
-    return when (columnType) {
+internal fun String.toTypedValue(columnType: ColumnType): Any? =
+    when (columnType) {
         ColumnType.INTEGER -> this.toIntOrNull()
         ColumnType.UINTEGER -> this.toUIntOrNull()
         ColumnType.SHORT -> this.toShortOrNull()
@@ -31,10 +30,9 @@ internal fun String.toTypedValue(columnType: ColumnType): Any? {
         ColumnType.TIMESTAMP_WITH_TIMEZONE -> toOffsetDateTime()
         else -> this
     }
-}
 
-internal fun String.toTypedValueNullable(columnType: ColumnType): Any? {
-    return when (columnType) {
+internal fun String.toTypedValueNullable(columnType: ColumnType): Any? =
+    when (columnType) {
         ColumnType.INTEGER -> toIntOrNull()
         ColumnType.UINTEGER -> toUIntOrNull()
         ColumnType.SHORT -> toShortOrNull()
@@ -51,38 +49,43 @@ internal fun String.toTypedValueNullable(columnType: ColumnType): Any? {
         ColumnType.TIMESTAMP_WITH_TIMEZONE -> toOffsetDateTime()
         else -> this
     }
-}
 
-internal fun String.toBoolean(): Boolean? {
-    return when (this) {
+internal fun String.toBoolean(): Boolean? =
+    when (this) {
         Constants.TRUE_FORM -> true
         Constants.FALSE_FORM -> false
         else -> null
     }
-}
 
-internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, index: Int) {
+internal fun PreparedStatement.putColumn(
+    columnType: ColumnType,
+    value: Any?,
+    index: Int,
+) {
     if (value == null) {
         when (columnType) {
             ColumnType.INTEGER -> this.setNull(index, Types.INTEGER)
-            ColumnType.UINTEGER -> this.setNull(
-                index,
-                Types.INTEGER
-            ) // For unsigned integers, use INTEGER
+            ColumnType.UINTEGER ->
+                this.setNull(
+                    index,
+                    Types.INTEGER,
+                ) // For unsigned integers, use INTEGER
             ColumnType.SHORT -> this.setNull(index, Types.SMALLINT)
-            ColumnType.USHORT -> this.setNull(
-                index,
-                Types.SMALLINT
-            ) // For unsigned short, use SMALLINT
+            ColumnType.USHORT ->
+                this.setNull(
+                    index,
+                    Types.SMALLINT,
+                ) // For unsigned short, use SMALLINT
             ColumnType.LONG -> this.setNull(index, Types.BIGINT)
             ColumnType.ULONG -> this.setNull(index, Types.BIGINT) // For unsigned long, use BIGINT
             ColumnType.FLOAT -> this.setNull(index, Types.FLOAT)
             ColumnType.DOUBLE -> this.setNull(index, Types.DOUBLE)
             ColumnType.BIG_DECIMAL -> this.setNull(index, Types.DECIMAL)
-            ColumnType.STRING, ColumnType.CHAR, ColumnType.FILE -> this.setNull(
-                index,
-                Types.VARCHAR
-            )
+            ColumnType.STRING, ColumnType.CHAR, ColumnType.FILE ->
+                this.setNull(
+                    index,
+                    Types.VARCHAR,
+                )
 
             ColumnType.BOOLEAN -> this.setNull(index, Types.BOOLEAN)
             ColumnType.DATE -> this.setNull(index, Types.DATE)
@@ -104,10 +107,12 @@ internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, in
         }
 
         is UInt -> {
-            if (columnType == ColumnType.UINTEGER) this.setInt(
-                index,
-                value.toInt()
-            ) // UInt doesn't have a direct set function
+            if (columnType == ColumnType.UINTEGER) {
+                this.setInt(
+                    index,
+                    value.toInt(),
+                ) // UInt doesn't have a direct set function
+            }
         }
 
         is Short -> {
@@ -115,10 +120,12 @@ internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, in
         }
 
         is UShort -> {
-            if (columnType == ColumnType.USHORT) this.setShort(
-                index,
-                value.toShort()
-            ) // UShort doesn't have a direct set function
+            if (columnType == ColumnType.USHORT) {
+                this.setShort(
+                    index,
+                    value.toShort(),
+                ) // UShort doesn't have a direct set function
+            }
         }
 
         is Long -> {
@@ -126,10 +133,12 @@ internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, in
         }
 
         is ULong -> {
-            if (columnType == ColumnType.ULONG) this.setLong(
-                index,
-                value.toLong()
-            ) // ULong doesn't have a direct set function
+            if (columnType == ColumnType.ULONG) {
+                this.setLong(
+                    index,
+                    value.toLong(),
+                ) // ULong doesn't have a direct set function
+            }
         }
 
         is Float -> {
@@ -141,17 +150,21 @@ internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, in
         }
 
         is String -> {
-            if (columnType == ColumnType.STRING || columnType == ColumnType.CHAR || columnType == ColumnType.ENUMERATION) this.setString(
-                index,
-                value
-            )
+            if (columnType == ColumnType.STRING || columnType == ColumnType.CHAR || columnType == ColumnType.ENUMERATION) {
+                this.setString(
+                    index,
+                    value,
+                )
+            }
         }
 
         is FileEvent -> {
-            if (columnType == ColumnType.FILE) this.setString(
-                index,
-                value.fileName
-            )
+            if (columnType == ColumnType.FILE) {
+                this.setString(
+                    index,
+                    value.fileName,
+                )
+            }
         }
 
         is BigDecimal -> {
@@ -171,17 +184,21 @@ internal fun PreparedStatement.putColumn(columnType: ColumnType, value: Any?, in
         }
 
         is LocalDateTime -> {
-            if (columnType == ColumnType.DATETIME) this.setTimestamp(
-                index,
-                Timestamp.valueOf(value)
-            )
+            if (columnType == ColumnType.DATETIME) {
+                this.setTimestamp(
+                    index,
+                    Timestamp.valueOf(value),
+                )
+            }
         }
 
         is OffsetDateTime -> {
-            if (columnType == ColumnType.TIMESTAMP_WITH_TIMEZONE) this.setTimestamp(
-                index,
-                Timestamp.valueOf(value.toLocalDateTime())
-            )
+            if (columnType == ColumnType.TIMESTAMP_WITH_TIMEZONE) {
+                this.setTimestamp(
+                    index,
+                    Timestamp.valueOf(value.toLocalDateTime()),
+                )
+            }
         }
 
         is ByteArray -> {

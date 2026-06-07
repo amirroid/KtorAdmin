@@ -69,7 +69,6 @@ abstract class KtorAdminTranslator {
         const val ERROR_FLOAT_MIN_EXCEEDED = "error_float_min_exceeded"
         const val ERROR_INVALID_BIG_DECIMAL = "error_invalid_big_decimal"
 
-
         const val ERROR_INVALID_CHAR = "error_invalid_char"
         const val ERROR_INVALID_BOOLEAN = "error_invalid_boolean"
         const val ERROR_INVALID_ENUMERATION = "error_invalid_enumeration"
@@ -89,7 +88,10 @@ abstract class KtorAdminTranslator {
         const val ERROR_BIG_DECIMAL_MIN_EXCEEDED = "error_big_decimal_min_exceeded"
     }
 
-    internal fun translate(key: String, values: Map<String, String> = emptyMap()) = translates[key]?.let {
+    internal fun translate(
+        key: String,
+        values: Map<String, String> = emptyMap(),
+    ) = translates[key]?.let {
         var newText = it
         values.forEach { (itemKey, value) ->
             newText = newText.replace("{$itemKey}", value)

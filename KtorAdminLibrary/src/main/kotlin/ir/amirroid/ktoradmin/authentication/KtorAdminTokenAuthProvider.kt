@@ -1,15 +1,15 @@
 package ir.amirroid.ktoradmin.authentication
 
-import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
-import ir.amirroid.ktoradmin.crypto.CryptoManager
-import ir.amirroid.ktoradmin.csrf.CSRF_TOKEN_FIELD_NAME
-import ir.amirroid.ktoradmin.csrf.CsrfManager
-import ir.amirroid.ktoradmin.flash.REQUEST_ID_FORM
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.sessions.*
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import ir.amirroid.ktoradmin.crypto.CryptoManager
+import ir.amirroid.ktoradmin.csrf.CSRF_TOKEN_FIELD_NAME
+import ir.amirroid.ktoradmin.csrf.CsrfManager
+import ir.amirroid.ktoradmin.flash.REQUEST_ID_FORM
 import ir.amirroid.ktoradmin.models.forms.UserForm
 import ir.amirroid.ktoradmin.models.forms.toUserForm
 import ir.amirroid.ktoradmin.utils.invalidateRequest
@@ -18,6 +18,7 @@ import ir.amirroid.ktoradmin.utils.invalidateRequest
  * Key used to identify the authentication challenge for admin token authentication.
  * This is used internally to handle authentication failures for admin-related routes.
  */
+@Suppress("ktlint:standard:property-naming")
 private const val adminTokenAuthenticationChallengeKey = "AdminTokenAuthenticationChallenge"
 
 /**
@@ -31,9 +32,8 @@ private const val adminTokenAuthenticationChallengeKey = "AdminTokenAuthenticati
  * @property challengeFunction Function invoked when authentication fails to handle the challenge process.
  */
 class KtorAdminTokenAuthProvider internal constructor(
-    config: KtorAdminTokenAuthConfig
+    config: KtorAdminTokenAuthConfig,
 ) : AuthenticationProvider(config) {
-
     // Function to validate form-based authentication credentials
     private val formAuthenticateFunction: AuthenticationFunction<UserForm> = config.formAuthenticationFunction
 
@@ -43,7 +43,6 @@ class KtorAdminTokenAuthProvider internal constructor(
     // Function to handle authentication failure challenges
     private val challengeFunction: KtorAdminTokenAuthChallengeFunction = config.challengeFunction
 
-
     // Instance of CryptoManager for handling session encryption and decryption
     private val cryptoManager = CryptoManager()
 
@@ -52,11 +51,10 @@ class KtorAdminTokenAuthProvider internal constructor(
      *
      * @return The token stored in the session, or null if no token is present.
      */
-    private fun ApplicationCall.getTokenFromSessions(): String? {
-        return (sessions.get(USER_SESSIONS) as? String)?.let {
+    private fun ApplicationCall.getTokenFromSessions(): String? =
+        (sessions.get(USER_SESSIONS) as? String)?.let {
             runCatching { cryptoManager.decryptData(it) }.getOrNull()
         }
-    }
 
     /**
      * Called during the authentication process to validate user tokens and set the principal.
@@ -93,17 +91,24 @@ class KtorAdminTokenAuthProvider internal constructor(
      * @param call The [ApplicationCall] containing the request data.
      * @param context The [AuthenticationContext] used to manage authentication state.
      */
-    private suspend fun loginWithParameters(call: ApplicationCall, context: AuthenticationContext) {
+    private suspend fun loginWithParameters(
+        call: ApplicationCall,
+        context: AuthenticationContext,
+    ) {
         val inLoginUrl =
-            call.request.uri.substringBefore("?") == "/${DynamicConfiguration.adminPath}/login" && call.request.httpMethod == HttpMethod.Post
+            call.request.uri.substringBefore("?") == "/${DynamicConfiguration.adminPath}/login" &&
+                call.request.httpMethod == HttpMethod.Post
         var parameters: UserForm? = null
         if (inLoginUrl) {
-            parameters = call.receiveParameters().apply {
-                val csrfToken = get(CSRF_TOKEN_FIELD_NAME)
-                if (CsrfManager.validateToken(csrfToken).not()) {
-                    return call.invalidateRequest()
-                }
-            }.toUserForm()
+            parameters =
+                call
+                    .receiveParameters()
+                    .apply {
+                        val csrfToken = get(CSRF_TOKEN_FIELD_NAME)
+                        if (CsrfManager.validateToken(csrfToken).not()) {
+                            return call.invalidateRequest()
+                        }
+                    }.toUserForm()
             val token = parameters.let { formAuthenticateFunction.invoke(call, it) }
 
             if (token is String) {
@@ -134,7 +139,9 @@ class KtorAdminTokenAuthProvider internal constructor(
      * @property tokenAuthenticationFunction Function to validate token-based authentication.
      * @property challengeFunction Function that handles challenges when authentication fails.
      */
-    class KtorAdminTokenAuthConfig internal constructor(name: String? = null) : Config(name) {
+    class KtorAdminTokenAuthConfig internal constructor(
+        name: String? = null,
+    ) : Config(name) {
         internal var formAuthenticationFunction: AuthenticationFunction<UserForm> = { null }
         internal var tokenAuthenticationFunction: AuthenticationFunction<String> = { null }
 
@@ -163,7 +170,7 @@ typealias KtorAdminTokenAuthChallengeFunction = suspend KtorAdminAuthChallengeCo
 
 fun AuthenticationConfig.ktorAdminTokenAuth(
     name: String,
-    configure: KtorAdminTokenAuthProvider.KtorAdminTokenAuthConfig.() -> Unit
+    configure: KtorAdminTokenAuthProvider.KtorAdminTokenAuthConfig.() -> Unit,
 ) {
     val provider = KtorAdminTokenAuthProvider.KtorAdminTokenAuthConfig(name).apply(configure).build()
     register(provider)

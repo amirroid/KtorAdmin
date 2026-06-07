@@ -38,7 +38,6 @@ import ir.amirroid.ktoradmin.dashboard.base.DashboardSection
  * ```
  */
 abstract class ListDashboardSection : DashboardSection {
-
     /** Defines the section type as `"list"`. */
     override val sectionType: String
         get() = SECTION_TYPE

@@ -58,7 +58,6 @@ internal object DynamicConfiguration {
     /** Timezone configuration for date/time handling */
     var timeZone: ZoneId = ZoneId.systemDefault()
 
-
     var defaultLanguage: String = "en"
 
     /** Lifetime duration for forms in milliseconds */
@@ -97,7 +96,6 @@ internal object DynamicConfiguration {
             field = value
         }
 
-
     /**
      * If debugMode is enabled, error messages will be displayed.
      * Otherwise, no message will be shown for better security.
@@ -114,7 +112,6 @@ internal object DynamicConfiguration {
     val valueMappers: List<KtorAdminValueMapper>
         get() = _valueMappers.toList()
 
-
     /** Translators mappers (Thread-safe) */
     private val _translators =
         ConcurrentLinkedQueue<KtorAdminTranslator>(listOf(EnglishKtorAdminTranslator))
@@ -125,7 +122,6 @@ internal object DynamicConfiguration {
     private val _previews = ConcurrentLinkedQueue<KtorAdminPreview>()
     val previews: List<KtorAdminPreview>
         get() = _previews.toList()
-
 
     var menuProvider: ((String?) -> List<Menu>)? = null
 
@@ -159,10 +155,9 @@ internal object DynamicConfiguration {
      * @return The corresponding preview.
      * @throws NoSuchElementException if no preview is found with the given key.
      */
-    fun getPreview(key: String): KtorAdminPreview {
-        return previews.firstOrNull { it.key == key }
+    fun getPreview(key: String): KtorAdminPreview =
+        previews.firstOrNull { it.key == key }
             ?: throw NoSuchElementException("No preview found with key '$key'.")
-    }
 
     /**
      * Registers a custom admin action for specific sections.
@@ -195,11 +190,10 @@ internal object DynamicConfiguration {
         _translators.add(translator)
     }
 
-    fun getTranslator(languageCode: String?): KtorAdminTranslator {
-        return if (languageCode == null) {
+    fun getTranslator(languageCode: String?): KtorAdminTranslator =
+        if (languageCode == null) {
             _translators.first { it.languageCode == defaultLanguage }
         } else {
             _translators.first { it.languageCode == languageCode }
         }
-    }
 }

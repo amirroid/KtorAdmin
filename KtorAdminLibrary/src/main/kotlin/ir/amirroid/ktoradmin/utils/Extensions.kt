@@ -12,9 +12,7 @@ import ir.amirroid.ktoradmin.models.types.toSuitableStringForFile
 /**
  * Utility functions for converting model objects and collections to formatted strings
  * suitable for code generation and file output.
- */
-
-/**
+ *
  * Converts a ColumnSet instance to a formatted string representation.
  * This generates a multi-line string that can be used in generated Kotlin files,
  * properly formatting all properties of the ColumnSet including nullable values
@@ -22,11 +20,12 @@ import ir.amirroid.ktoradmin.models.types.toSuitableStringForFile
  *
  * @return A properly formatted string representation of the ColumnSet
  */
-internal fun ColumnSet.toSuitableStringForFile() = """
+internal fun ColumnSet.toSuitableStringForFile() =
+    """
     |ColumnSet(
     |    columnName = "$columnName",
     |    verboseName = "$verboseName",
-    |    type = ColumnType.${type},
+    |    type = ColumnType.$type,
     |    nullable = $nullable,
     |    showInPanel = $showInPanel,
     |    uploadTarget = ${uploadTarget?.toFormattedString()},
@@ -39,11 +38,11 @@ internal fun ColumnSet.toSuitableStringForFile() = """
     |    readOnly = $readOnly,
     |    computedColumn = ${computedColumn?.let { "\"${it}\"" }},
     |    autoNowDate = ${autoNowDate?.toFormattedString()},
-    |    hasRichEditor = ${hasRichEditor},
+    |    hasRichEditor = $hasRichEditor,
     |    hasTextArea = $hasTextArea,
-    |    unique = ${unique},
-    |    blank = ${blank},
-    |    hasConfirmation = ${hasConfirmation},
+    |    unique = $unique,
+    |    blank = $blank,
+    |    hasConfirmation = $hasConfirmation,
     |    valueMapper = ${valueMapper?.let { "\"${it}\"" }},
     |    preview = ${preview?.let { "\"${it}\"" }},
     |)
@@ -57,7 +56,8 @@ internal fun ColumnSet.toSuitableStringForFile() = """
  *
  * @return A properly formatted string representation of the FieldSet
  */
-internal fun FieldSet.toSuitableStringForFile() = """
+internal fun FieldSet.toSuitableStringForFile() =
+    """
     |FieldSet(
     |    fieldName = ${fieldName?.let { "\"${it}\"" }},
     |    verboseName = "$verboseName",
@@ -75,7 +75,7 @@ internal fun FieldSet.toSuitableStringForFile() = """
     |    computedField = ${computedField?.let { "\"${it}\"" }},
     |    autoNowDate = ${autoNowDate?.toFormattedString()},
     |    preview = ${preview?.let { "\"${it}\"" }},
-    |    hasConfirmation = ${hasConfirmation},
+    |    hasConfirmation = $hasConfirmation,
     |)
 """.trimMargin("|")
 
@@ -86,11 +86,12 @@ internal fun FieldSet.toSuitableStringForFile() = """
  *
  * @return A string representation of the list in Kotlin listOf format
  */
-internal fun List<String>.toSuitableStringForFile(): String = joinToString(
-    prefix = "listOf(",
-    postfix = ")",
-    separator = ", "
-) { "\"$it\"" }
+internal fun List<String>.toSuitableStringForFile(): String =
+    joinToString(
+        prefix = "listOf(",
+        postfix = ")",
+        separator = ", ",
+    ) { "\"$it\"" }
 
 /**
  * Finds and casts an argument value from a KSAnnotation by property name.
@@ -98,8 +99,7 @@ internal fun List<String>.toSuitableStringForFile(): String = joinToString(
  * @param property The name of the argument to find
  * @return The value of the argument cast to type D, or null if not found or wrong type
  */
-internal inline fun <reified D> KSAnnotation.findArgument(property: String) =
-    arguments.find { it.name?.asString() == property }?.value as? D
+internal inline fun <reified D> KSAnnotation.findArgument(property: String) = arguments.find { it.name?.asString() == property }?.value as? D
 
 /**
  * Finds a string argument from a KSAnnotation and returns it only if non-empty.
@@ -131,9 +131,6 @@ internal inline fun <T> Iterable<T>.allIndexed(predicate: (index: Int, T) -> Boo
  *
  * @return A string representation of the number without unnecessary decimal places
  */
-internal fun Double.formatAsIntegerIfPossible(): String {
-    return if (this % 1.0 == 0.0) toLong().toString() else toString()
-}
-
+internal fun Double.formatAsIntegerIfPossible(): String = if (this % 1.0 == 0.0) toLong().toString() else toString()
 
 internal fun KSClassDeclaration.toTableName() = simpleName.asString().split(" ").joinToString("_") { it.lowercase() }

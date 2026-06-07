@@ -1,6 +1,5 @@
 package ir.amirroid.ktoradmin.models
 
-
 /**
  * Strategy for handling file deletion in storage providers.
  */
@@ -12,5 +11,5 @@ enum class FileDeleteStrategy {
     KEEP,
 
     /** Inherit strategy from default configuration */
-    INHERIT
+    INHERIT,
 }

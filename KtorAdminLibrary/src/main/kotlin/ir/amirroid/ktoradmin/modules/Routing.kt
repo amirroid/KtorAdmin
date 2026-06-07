@@ -10,7 +10,7 @@ import ir.amirroid.ktoradmin.panels.AdminPanel
 
 fun Application.configureRouting(
     authenticateName: String?,
-    panels: List<AdminPanel>
+    panels: List<AdminPanel>,
 ) {
     routing {
         staticResources("/static", "static")

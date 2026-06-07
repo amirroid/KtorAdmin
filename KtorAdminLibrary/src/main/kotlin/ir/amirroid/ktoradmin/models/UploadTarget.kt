@@ -6,7 +6,6 @@ package ir.amirroid.ktoradmin.models
  * If properties are `null`, the default values should be used.
  */
 sealed class UploadTarget {
-
     /**
      * Uploads the file to a local directory.
      * @property path The path where the file should be stored locally. If `null`, a default path should be used.
@@ -14,7 +13,7 @@ sealed class UploadTarget {
      */
     data class LocalFile(
         val path: String? = null,
-        val deleteStrategy: FileDeleteStrategy = FileDeleteStrategy.INHERIT
+        val deleteStrategy: FileDeleteStrategy = FileDeleteStrategy.INHERIT,
     ) : UploadTarget()
 
     /**
@@ -24,20 +23,25 @@ sealed class UploadTarget {
      */
     data class AwsS3(
         val bucket: String? = null,
-        val deleteStrategy: FileDeleteStrategy = FileDeleteStrategy.INHERIT
+        val deleteStrategy: FileDeleteStrategy = FileDeleteStrategy.INHERIT,
     ) : UploadTarget()
 
     /**
      * Uploads the file to a custom storage solution.
      * @property key The key or identifier for the custom storage location. If `null`, a default key should be used.
      */
-    data class Custom(val key: String? = null) : UploadTarget()
+    data class Custom(
+        val key: String? = null,
+    ) : UploadTarget()
 }
 
-fun UploadTarget.toFormattedString(): String {
-    return when (this) {
-        is UploadTarget.LocalFile -> "UploadTarget.LocalFile(path=${path?.let { "\"$it\"" } ?: "null"}, deleteStrategy=FileDeleteStrategy.$deleteStrategy)"
-        is UploadTarget.AwsS3 -> "UploadTarget.AwsS3(bucket=${bucket?.let { "\"$it\"" } ?: "null"}, deleteStrategy=FileDeleteStrategy.$deleteStrategy)"
+fun UploadTarget.toFormattedString(): String =
+    when (this) {
+        is UploadTarget.LocalFile -> "UploadTarget.LocalFile(path=${path?.let {
+            "\"$it\""
+        } ?: "null"}, deleteStrategy=FileDeleteStrategy.$deleteStrategy)"
+        is UploadTarget.AwsS3 -> "UploadTarget.AwsS3(bucket=${bucket?.let {
+            "\"$it\""
+        } ?: "null"}, deleteStrategy=FileDeleteStrategy.$deleteStrategy)"
         is UploadTarget.Custom -> "UploadTarget.Custom(key=${key?.let { "\"$it\"" } ?: "null"})"
     }
-}

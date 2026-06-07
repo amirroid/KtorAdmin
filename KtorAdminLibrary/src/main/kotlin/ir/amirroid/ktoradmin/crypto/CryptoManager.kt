@@ -13,13 +13,12 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 internal class CryptoManager {
-
     companion object {
         private const val AES_KEY_SIZE = 256 // AES key size in bits
-        private const val GCM_IV_SIZE = 12   // 12-byte IV for AES-GCM encryption
+        private const val GCM_IV_SIZE = 12 // 12-byte IV for AES-GCM encryption
         private const val GCM_TAG_SIZE = 128 // 128-bit authentication tag
-        private const val SALT_SIZE = 16  // 16-byte salt for key derivation
-        private const val HMAC_SIZE = 32  // 32-byte HMAC for data integrity
+        private const val SALT_SIZE = 16 // 16-byte salt for key derivation
+        private const val HMAC_SIZE = 32 // 32-byte HMAC for data integrity
         private const val TIMESTAMP_SIZE = Long.SIZE_BYTES // 8-byte timestamp
         private const val HMAC_ALGORITHM = "HmacSHA256"
         private const val AES_ALGORITHM = "AES/GCM/NoPadding"
@@ -36,9 +35,7 @@ internal class CryptoManager {
         /**
          * Generates a random salt.
          */
-        private fun generateSalt(): ByteArray {
-            return ByteArray(SALT_SIZE).apply { secureRandom.nextBytes(this) }
-        }
+        private fun generateSalt(): ByteArray = ByteArray(SALT_SIZE).apply { secureRandom.nextBytes(this) }
 
         /**
          * Derives AES key using PBKDF2 with a fixed passphrase.
@@ -62,14 +59,15 @@ internal class CryptoManager {
     /**
      * Retrieves the secure current time in milliseconds.
      */
-    private fun getSecureTime(): Long {
-        return System.currentTimeMillis()
-    }
+    private fun getSecureTime(): Long = System.currentTimeMillis()
 
     /**
      * Generates an HMAC for data integrity verification.
      */
-    private fun generateHMAC(data: ByteArray, key: ByteArray): ByteArray {
+    private fun generateHMAC(
+        data: ByteArray,
+        key: ByteArray,
+    ): ByteArray {
         val mac = Mac.getInstance(HMAC_ALGORITHM).apply { init(SecretKeySpec(key, HMAC_ALGORITHM)) }
         return mac.doFinal(data)
     }

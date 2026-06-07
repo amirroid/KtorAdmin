@@ -1,6 +1,5 @@
 package ir.amirroid.ktoradmin.action
 
-
 /**
  * Interface for defining custom administrative actions that can be performed on a database table or collection.
  *

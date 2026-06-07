@@ -1,11 +1,11 @@
 package ir.amirroid.ktoradmin.utils
 
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.response.respondRedirect
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
-import io.ktor.server.application.*
-import io.ktor.server.response.*
 
 suspend fun ApplicationCall.respondBack(pluralName: String?) {
     respondRedirect(
-        "/${DynamicConfiguration.adminPath}/${Constants.RESOURCES_PATH}/${pluralName.orEmpty()}"
+        "/${DynamicConfiguration.adminPath}/${Constants.RESOURCES_PATH}/${pluralName.orEmpty()}",
     )
 }

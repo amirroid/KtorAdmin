@@ -14,4 +14,6 @@ package ir.amirroid.ktoradmin.annotations.type
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.PROPERTY)
-annotation class OverrideFieldType(val type: String)
+annotation class OverrideFieldType(
+    val type: String,
+)

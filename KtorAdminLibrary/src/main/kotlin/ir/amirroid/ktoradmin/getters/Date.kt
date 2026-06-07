@@ -9,18 +9,16 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-
 /**
  * Extension function to convert a String to LocalDate.
  */
-internal fun String.toLocalDate(): LocalDate? {
-    return try {
+internal fun String.toLocalDate(): LocalDate? =
+    try {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         LocalDate.parse(this, formatter)
     } catch (e: DateTimeParseException) {
         null
     }
-}
 
 /**
  * Extension function to convert a String to LocalDateTime.
@@ -38,20 +36,18 @@ internal fun String.toLocalDateTime(): LocalDateTime? {
  * Safely converts a String to [OffsetDateTime] using the defined date-time format.
  * Returns `null` if parsing fails.
  */
-internal fun String.toOffsetDateTime(): OffsetDateTime? {
-    return runCatching {
+internal fun String.toOffsetDateTime(): OffsetDateTime? =
+    runCatching {
         val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
-        LocalDateTime.parse(this, formatter)
+        LocalDateTime
+            .parse(this, formatter)
             .atZone(DynamicConfiguration.timeZone)
             .toOffsetDateTime()
     }.getOrNull()
-}
 
-
-internal fun String.toInstant(): Instant? {
-    return try {
+internal fun String.toInstant(): Instant? =
+    try {
         Instant.parse(this)
     } catch (e: DateTimeParseException) {
         null
     }
-}

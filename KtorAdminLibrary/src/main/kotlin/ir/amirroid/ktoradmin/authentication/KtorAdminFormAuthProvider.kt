@@ -1,10 +1,5 @@
 package ir.amirroid.ktoradmin.authentication
 
-import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
-import ir.amirroid.ktoradmin.crypto.CryptoManager
-import ir.amirroid.ktoradmin.csrf.CSRF_TOKEN_FIELD_NAME
-import ir.amirroid.ktoradmin.csrf.CsrfManager
-import ir.amirroid.ktoradmin.flash.REQUEST_ID_FORM
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -12,6 +7,11 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.server.sessions.clear
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import ir.amirroid.ktoradmin.crypto.CryptoManager
+import ir.amirroid.ktoradmin.csrf.CSRF_TOKEN_FIELD_NAME
+import ir.amirroid.ktoradmin.csrf.CsrfManager
+import ir.amirroid.ktoradmin.flash.REQUEST_ID_FORM
 import ir.amirroid.ktoradmin.models.forms.UserForm
 import ir.amirroid.ktoradmin.models.forms.toUserForm
 import ir.amirroid.ktoradmin.utils.invalidateRequest
@@ -21,6 +21,7 @@ import kotlinx.serialization.json.Json
  * Key used to identify the authentication challenge for admin form authentication.
  * This is used internally to handle authentication failures for admin-related routes.
  */
+@Suppress("ktlint:standard:property-naming")
 private const val adminFormAuthenticationChallengeKey = "AdminFormAuthenticationChallenge"
 
 /**
@@ -33,9 +34,8 @@ private const val adminFormAuthenticationChallengeKey = "AdminFormAuthentication
  * @property challengeFunction Function invoked when authentication fails to handle the challenge process.
  */
 class KtorAdminFormAuthProvider internal constructor(
-    config: KtorAdminFormAuthConfig
+    config: KtorAdminFormAuthConfig,
 ) : AuthenticationProvider(config) {
-
     // Function to validate authentication credentials
     private val authenticateFunction: AuthenticationFunction<UserForm> = config.authenticationFunction
 
@@ -50,13 +50,12 @@ class KtorAdminFormAuthProvider internal constructor(
      *
      * @return The user object stored in the session, or null if no user is present.
      */
-    private fun ApplicationCall.getUserFromSessions(): UserForm? {
-        return (sessions.get(USER_SESSIONS) as? String)?.let {
+    private fun ApplicationCall.getUserFromSessions(): UserForm? =
+        (sessions.get(USER_SESSIONS) as? String)?.let {
             runCatching { cryptoManager.decryptData(it) }.getOrNull()?.let {
                 runCatching { Json.decodeFromString<UserForm>(it) }.getOrNull()
             }
         }
-    }
 
     /**
      * Called during the authentication process to validate user credentials and set the principal.
@@ -71,15 +70,20 @@ class KtorAdminFormAuthProvider internal constructor(
 
         // Check if the request is for "/${DynamicConfiguration.adminPath}/login" with the POST method
         val inLoginUrl =
-            call.request.uri.substringBefore("?") == "/${DynamicConfiguration.adminPath}/login" && call.request.httpMethod == HttpMethod.Post
+            call.request.uri.substringBefore("?") == "/${DynamicConfiguration.adminPath}/login" &&
+                call.request.httpMethod == HttpMethod.Post
 
         // Extract user credentials from the session or the request body
-        val formParameters = call.takeIf { inLoginUrl }?.receiveParameters()?.apply {
-            val csrfToken = get(CSRF_TOKEN_FIELD_NAME)
-            if (CsrfManager.validateToken(csrfToken).not()) {
-                return call.invalidateRequest()
-            }
-        }?.toUserForm()
+        val formParameters =
+            call
+                .takeIf { inLoginUrl }
+                ?.receiveParameters()
+                ?.apply {
+                    val csrfToken = get(CSRF_TOKEN_FIELD_NAME)
+                    if (CsrfManager.validateToken(csrfToken).not()) {
+                        return call.invalidateRequest()
+                    }
+                }?.toUserForm()
 
         val userSession = call.getUserFromSessions()
         val parameters = userSession ?: formParameters
@@ -107,10 +111,11 @@ class KtorAdminFormAuthProvider internal constructor(
         }
 
         // Determine the cause of authentication failure
-        val cause = when {
-            parameters.isNullOrEmpty() -> AuthenticationFailedCause.NoCredentials
-            else -> AuthenticationFailedCause.InvalidCredentials
-        }
+        val cause =
+            when {
+                parameters.isNullOrEmpty() -> AuthenticationFailedCause.NoCredentials
+                else -> AuthenticationFailedCause.InvalidCredentials
+            }
 
         // Handle authentication failure with the configured challenge function
         context.challenge(adminFormAuthenticationChallengeKey, cause) { challenge, challengeCall ->
@@ -129,8 +134,9 @@ class KtorAdminFormAuthProvider internal constructor(
      * @property authenticationFunction Function to validate the credentials.
      * @property challengeFunction Function that handles challenges when authentication fails.
      */
-    class KtorAdminFormAuthConfig internal constructor(name: String? = null) : Config(name) {
-
+    class KtorAdminFormAuthConfig internal constructor(
+        name: String? = null,
+    ) : Config(name) {
         // Function to validate user credentials
         internal var authenticationFunction: AuthenticationFunction<UserForm> = { null }
 
@@ -184,7 +190,9 @@ class KtorAdminFormAuthProvider internal constructor(
  *
  * @property call The current [ApplicationCall].
  */
-class KtorAdminAuthChallengeContext(val call: ApplicationCall)
+class KtorAdminAuthChallengeContext(
+    val call: ApplicationCall,
+)
 
 /**
  * A type alias for the admin form authentication challenge function.
@@ -203,7 +211,7 @@ typealias KtorAdminAuthChallengeFunction = suspend KtorAdminAuthChallengeContext
  */
 fun AuthenticationConfig.ktorAdminFormAuth(
     name: String,
-    configure: KtorAdminFormAuthProvider.KtorAdminFormAuthConfig.() -> Unit
+    configure: KtorAdminFormAuthProvider.KtorAdminFormAuthConfig.() -> Unit,
 ) {
     val provider = KtorAdminFormAuthProvider.KtorAdminFormAuthConfig(name).apply(configure).build()
     register(provider)

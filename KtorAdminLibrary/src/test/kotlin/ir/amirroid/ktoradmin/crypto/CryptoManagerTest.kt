@@ -4,10 +4,10 @@ import ir.amirroid.ktoradmin.configuration.KtorAdminConfiguration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
 import kotlin.test.assertNotEquals
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.milliseconds
 
 class CryptoManagerTest {
     private val crypto = CryptoManager()

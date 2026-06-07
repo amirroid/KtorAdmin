@@ -19,5 +19,5 @@ package ir.amirroid.ktoradmin.annotations.order
 @Retention(AnnotationRetention.SOURCE)
 annotation class DefaultOrder(
     val name: String,
-    val direction: String = "ASC"
+    val direction: String = "ASC",
 )

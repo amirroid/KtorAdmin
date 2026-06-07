@@ -1,3 +1,3 @@
 package ir.amirroid.ktoradmin.models.reference
 
-class EmptyColumn()
+class EmptyColumn

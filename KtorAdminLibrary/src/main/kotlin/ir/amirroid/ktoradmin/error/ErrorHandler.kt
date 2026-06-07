@@ -1,11 +1,11 @@
 package ir.amirroid.ktoradmin.error
 
-import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.application.hooks.*
 import io.ktor.server.request.uri
 import io.ktor.util.*
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 
 /**
  * Configuration class for the KtorAdminErrorHandler plugin.
@@ -22,7 +22,10 @@ internal class KtorAdminErrorHandlerConfig {
      * @param status The HTTP status code to handle.
      * @param handler The function to execute when the specified status occurs.
      */
-    fun handle(status: HttpStatusCode, handler: suspend (ApplicationCall) -> Unit) {
+    fun handle(
+        status: HttpStatusCode,
+        handler: suspend (ApplicationCall) -> Unit,
+    ) {
         statusHandlers[status] = handler
     }
 }
@@ -42,10 +45,13 @@ internal val KtorAdminErrorHandler =
          * Intercepts the response before it is sent to apply custom status handlers if defined.
          */
         on(ResponseBodyReadyForSend) { call, content ->
-            if (call.attributes.getOrNull(handledAttributeKey) == true || !call.request.uri.startsWith(
-                    "/${DynamicConfiguration.adminPath}"
+            if (call.attributes.getOrNull(handledAttributeKey) == true ||
+                !call.request.uri.startsWith(
+                    "/${DynamicConfiguration.adminPath}",
                 )
-            ) return@on
+            ) {
+                return@on
+            }
             val status = content.status ?: call.response.status() ?: return@on
             pluginConfig.statusHandlers[status]?.let { handler ->
                 call.attributes.put(handledAttributeKey, true)

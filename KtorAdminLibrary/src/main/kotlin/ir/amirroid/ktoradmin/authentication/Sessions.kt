@@ -1,7 +1,7 @@
 package ir.amirroid.ktoradmin.authentication
 
-import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import io.ktor.server.sessions.*
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import kotlin.time.Duration
 
 internal const val USER_SESSIONS = "admin_user_sessions"

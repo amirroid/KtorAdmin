@@ -1,15 +1,15 @@
 package ir.amirroid.ktoradmin.modules.confirmation
 
-import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
-import ir.amirroid.ktoradmin.csrf.CSRF_TOKEN_FIELD_NAME
-import ir.amirroid.ktoradmin.csrf.CsrfManager
-import ir.amirroid.ktoradmin.flash.REQUEST_ID_FORM
-import ir.amirroid.ktoradmin.flash.setFlashSessionsAndRedirect
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import ir.amirroid.ktoradmin.csrf.CSRF_TOKEN_FIELD_NAME
+import ir.amirroid.ktoradmin.csrf.CsrfManager
+import ir.amirroid.ktoradmin.flash.REQUEST_ID_FORM
+import ir.amirroid.ktoradmin.flash.setFlashSessionsAndRedirect
 import ir.amirroid.ktoradmin.models.ColumnSet
 import ir.amirroid.ktoradmin.models.events.ColumnEvent
 import ir.amirroid.ktoradmin.models.events.FieldEvent
@@ -47,7 +47,7 @@ internal suspend fun RoutingContext.handleSaveConfirmation(panels: List<AdminPan
         panel == null || !panel.isShowInAdminPanel() ->
             call.respondText(
                 "No table or collection found with plural name: $pluralName",
-                status = HttpStatusCode.NotFound
+                status = HttpStatusCode.NotFound,
             )
 
         // Primary key is missing
@@ -78,7 +78,7 @@ internal suspend fun RoutingContext.handleSaveConfirmation(panels: List<AdminPan
                                 columnSet = column,
                                 table = panel,
                                 params = parameters.toMap(),
-                                primaryKey = primaryKey
+                                primaryKey = primaryKey,
                             )
                         } else {
                             call.badRequest("Invalid column name: $field in table $pluralName")
@@ -93,7 +93,7 @@ internal suspend fun RoutingContext.handleSaveConfirmation(panels: List<AdminPan
                                 fieldSet = mongoField,
                                 panel = panel,
                                 params = parameters.toMap(),
-                                primaryKey = primaryKey
+                                primaryKey = primaryKey,
                             )
                         } else {
                             call.badRequest("Invalid field name: $field in collection $pluralName")
@@ -119,7 +119,7 @@ private suspend fun RoutingContext.updateData(
     columnSet: ColumnSet,
     table: AdminJdbcTable,
     params: Map<String, List<String>>,
-    primaryKey: String
+    primaryKey: String,
 ) {
     val value = params[columnSet.columnName]?.firstOrNull()
     val confirmationColumnName = "${columnSet.columnName}.confirmation"
@@ -139,14 +139,14 @@ private suspend fun RoutingContext.updateData(
                 table = table,
                 columnSet = columnSet,
                 value = value,
-                primaryKey = primaryKey
+                primaryKey = primaryKey,
             )
 
             // Notify event listeners about the update
             DynamicConfiguration.currentEventListener?.onUpdateJdbcData(
                 table.getTableName(),
                 primaryKey,
-                listOf(ColumnEvent(true, columnSet, value))
+                listOf(ColumnEvent(true, columnSet, value)),
             )
 
             // Redirect back after successful update
@@ -164,16 +164,17 @@ private suspend fun RoutingContext.updateData(
             errors.add(
                 ErrorResponse(
                     confirmationColumnName,
-                    listOf("The confirmation value does not match.")
-                )
+                    listOf("The confirmation value does not match."),
+                ),
             )
         }
 
         // Store input values for potential correction
-        val values = mutableMapOf(
-            columnSet.columnName to value,
-            confirmationColumnName to confirmValue
-        )
+        val values =
+            mutableMapOf(
+                columnSet.columnName to value,
+                confirmationColumnName to confirmValue,
+            )
 
         // Redirect with validation errors
         call.setFlashSessionsAndRedirect(requestId, errors, values)
@@ -185,7 +186,7 @@ private suspend fun RoutingContext.updateFieldData(
     fieldSet: FieldSet,
     panel: AdminMongoCollection,
     params: Map<String, List<String>>,
-    primaryKey: String
+    primaryKey: String,
 ) {
     val value = params[fieldSet.fieldName]?.firstOrNull()
     val confirmationColumnName = "${fieldSet.fieldName}.confirmation"
@@ -211,7 +212,7 @@ private suspend fun RoutingContext.updateFieldData(
             DynamicConfiguration.currentEventListener?.onUpdateMongoData(
                 panel.getCollectionName(),
                 primaryKey,
-                listOf(FieldEvent(true, fieldSet, value))
+                listOf(FieldEvent(true, fieldSet, value)),
             )
 
             // Redirect back after successful update
@@ -229,16 +230,17 @@ private suspend fun RoutingContext.updateFieldData(
             errors.add(
                 ErrorResponse(
                     confirmationColumnName,
-                    listOf("The confirmation value does not match.")
-                )
+                    listOf("The confirmation value does not match."),
+                ),
             )
         }
 
         // Store input values for potential correction
-        val values = mutableMapOf(
-            fieldSet.fieldName.orEmpty() to value,
-            confirmationColumnName to confirmValue
-        )
+        val values =
+            mutableMapOf(
+                fieldSet.fieldName.orEmpty() to value,
+                confirmationColumnName to confirmValue,
+            )
 
         // Redirect with validation errors
         call.setFlashSessionsAndRedirect(requestId, errors, values)

@@ -22,14 +22,16 @@ enum class ColumnType {
     DURATION,
     DATETIME,
     TIMESTAMP_WITH_TIMEZONE,
-    NOT_AVAILABLE
+    NOT_AVAILABLE,
 }
 
 internal val ColumnType.isNumeric: Boolean
-    get() = when (this) {
-        ColumnType.INTEGER, ColumnType.UINTEGER, ColumnType.SHORT, ColumnType.USHORT,
-        ColumnType.LONG, ColumnType.ULONG, ColumnType.DOUBLE, ColumnType.FLOAT,
-        ColumnType.BIG_DECIMAL -> true
+    get() =
+        when (this) {
+            ColumnType.INTEGER, ColumnType.UINTEGER, ColumnType.SHORT, ColumnType.USHORT,
+            ColumnType.LONG, ColumnType.ULONG, ColumnType.DOUBLE, ColumnType.FLOAT,
+            ColumnType.BIG_DECIMAL,
+            -> true
 
-        else -> false
-    }
+            else -> false
+        }

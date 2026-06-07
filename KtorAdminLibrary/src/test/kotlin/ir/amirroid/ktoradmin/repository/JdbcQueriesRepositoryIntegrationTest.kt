@@ -31,8 +31,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class JdbcQueriesRepositoryFullTest {
-
+class JdbcQueriesRepositoryIntegrationTest {
     private lateinit var dataSource: HikariDataSource
     private lateinit var usersTable: TestJdbcTable
     private lateinit var rolesTable: TestJdbcTable
@@ -45,31 +44,38 @@ class JdbcQueriesRepositoryFullTest {
     private val name = col("name", ColumnType.STRING)
     private val age = col("age", ColumnType.INTEGER)
     private val active = col("active", ColumnType.BOOLEAN)
-    private val status = col("status", ColumnType.ENUMERATION) {
-        copy(enumerationValues = listOf("ACTIVE", "BLOCKED", "PENDING"))
-    }
+    private val status =
+        col("status", ColumnType.ENUMERATION) {
+            copy(enumerationValues = listOf("ACTIVE", "BLOCKED", "PENDING"))
+        }
     private val score = col("score", ColumnType.DOUBLE)
     private val nickname = col("nickname", ColumnType.STRING) { copy(nullable = true) }
-    private val profileId = col("profile_id", ColumnType.INTEGER) {
-        copy(reference = Reference.OneToOne("profiles", "id"))
-    }
-    private val organizationId = col("organization_id", ColumnType.INTEGER) {
-        copy(reference = Reference.ManyToOne("organizations", "id"))
-    }
-    private val roleReference = col("roles", ColumnType.INTEGER) {
-        copy(reference = Reference.ManyToMany("roles", "user_roles", "user_id", "role_id"))
-    }
+    private val profileId =
+        col("profile_id", ColumnType.INTEGER) {
+            copy(reference = Reference.OneToOne("profiles", "id"))
+        }
+    private val organizationId =
+        col("organization_id", ColumnType.INTEGER) {
+            copy(reference = Reference.ManyToOne("organizations", "id"))
+        }
+    private val roleReference =
+        col("roles", ColumnType.INTEGER) {
+            copy(reference = Reference.ManyToMany("roles", "user_roles", "user_id", "role_id"))
+        }
 
     @BeforeTest
     fun setUp() {
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl =
-                "jdbc:h2:mem:${UUID.randomUUID()};MODE=PostgreSQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1"
-            driverClassName = "org.h2.Driver"
-            username = "sa"
-            password = ""
-            maximumPoolSize = 4
-        })
+        dataSource =
+            HikariDataSource(
+                HikariConfig().apply {
+                    jdbcUrl =
+                        "jdbc:h2:mem:${UUID.randomUUID()};MODE=PostgreSQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1"
+                    driverClassName = "org.h2.Driver"
+                    username = "sa"
+                    password = ""
+                    maximumPoolSize = 4
+                },
+            )
         KtorAdminHikariCP.defaultCustom(dataSource)
         createSchema()
         buildTables()
@@ -82,10 +88,11 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `insertData returns 1 and persists all non-null column values`() {
-        val result = JdbcQueriesRepository.insertData(
-            usersTable,
-            listOf(10, "Turing", 41, true, "ACTIVE", 9.9, "Alan", null, 1)
-        )
+        val result =
+            JdbcQueriesRepository.insertData(
+                usersTable,
+                listOf(10, "Turing", 41, true, "ACTIVE", 9.9, "Alan", null, 1),
+            )
         assertEquals(1, result)
         val row = JdbcQueriesRepository.getData(usersTable, "10")
         assertEquals(listOf("10", "Turing", "41", "true", "ACTIVE", "9.9", "Alan", null, "1"), row)
@@ -95,19 +102,20 @@ class JdbcQueriesRepositoryFullTest {
     fun `insertData persists nullable columns as null when passed null`() {
         JdbcQueriesRepository.insertData(
             usersTable,
-            listOf(11, "Hopper", 30, false, "PENDING", 5.0, null, null, null)
+            listOf(11, "Hopper", 30, false, "PENDING", 5.0, null, null, null),
         )
         val row = JdbcQueriesRepository.getData(usersTable, "11")
         assertNull(row!![6]) // nickname
-        assertNull(row[7])   // profile_id
-        assertNull(row[8])   // organization_id
+        assertNull(row[7]) // profile_id
+        assertNull(row[8]) // organization_id
     }
 
     @Test
     fun `insertData throws when parameter count is less than columns`() {
-        val ex = assertFailsWith<IllegalArgumentException> {
-            JdbcQueriesRepository.insertData(usersTable, listOf(20, "Short"))
-        }
+        val ex =
+            assertFailsWith<IllegalArgumentException> {
+                JdbcQueriesRepository.insertData(usersTable, listOf(20, "Short"))
+            }
         assertEquals("The number of parameters does not match the number of columns", ex.message)
     }
 
@@ -116,7 +124,7 @@ class JdbcQueriesRepositoryFullTest {
         assertFailsWith<IllegalArgumentException> {
             JdbcQueriesRepository.insertData(
                 usersTable,
-                listOf(21, "Long", 1, true, "ACTIVE", 1.0, null, null, 1, "extra")
+                listOf(21, "Long", 1, true, "ACTIVE", 1.0, null, null, 1, "extra"),
             )
         }
     }
@@ -126,7 +134,7 @@ class JdbcQueriesRepositoryFullTest {
         assertFailsWith<Exception> {
             JdbcQueriesRepository.insertData(
                 usersTable,
-                listOf(1, "Duplicate", 20, true, "ACTIVE", 1.0, null, null, 1)
+                listOf(1, "Duplicate", 20, true, "ACTIVE", 1.0, null, null, 1),
             )
         }
         assertEquals(2, JdbcQueriesRepository.getCount(usersTable, null, emptyList()))
@@ -137,7 +145,7 @@ class JdbcQueriesRepositoryFullTest {
         assertFailsWith<Exception> {
             JdbcQueriesRepository.insertData(
                 usersTable,
-                listOf(30, "Ada", 25, true, "ACTIVE", 1.0, null, null, 1)
+                listOf(30, "Ada", 25, true, "ACTIVE", 1.0, null, null, 1),
             )
         }
     }
@@ -147,7 +155,7 @@ class JdbcQueriesRepositoryFullTest {
         assertFailsWith<Exception> {
             JdbcQueriesRepository.insertData(
                 usersTable,
-                listOf(31, "Ghost", 20, true, "ACTIVE", 1.0, null, 9999, 1)
+                listOf(31, "Ghost", 20, true, "ACTIVE", 1.0, null, 9999, 1),
             )
         }
     }
@@ -157,7 +165,7 @@ class JdbcQueriesRepositoryFullTest {
         assertFailsWith<Exception> {
             JdbcQueriesRepository.insertData(
                 usersTable,
-                listOf(32, "Ghost2", 20, true, "ACTIVE", 1.0, null, null, 9999)
+                listOf(32, "Ghost2", 20, true, "ACTIVE", 1.0, null, null, 9999),
             )
         }
     }
@@ -167,7 +175,7 @@ class JdbcQueriesRepositoryFullTest {
         assertFailsWith<Exception> {
             JdbcQueriesRepository.insertData(
                 usersTable,
-                listOf(33, "NewUser", 20, true, "ACTIVE", 1.0, null, 1, 1)
+                listOf(33, "NewUser", 20, true, "ACTIVE", 1.0, null, 1, 1),
             )
         }
     }
@@ -251,7 +259,7 @@ class JdbcQueriesRepositoryFullTest {
     fun `deleteRows removes multiple rows in a single call`() {
         JdbcQueriesRepository.insertData(
             usersTable,
-            listOf(5, "User5", 25, true, "ACTIVE", 1.0, null, null, 1)
+            listOf(5, "User5", 25, true, "ACTIVE", 1.0, null, null, 1),
         )
         JdbcQueriesRepository.deleteRows(usersTable, listOf("1", "2", "5"))
         assertEquals(0, JdbcQueriesRepository.getCount(usersTable, null, emptyList()))
@@ -266,11 +274,12 @@ class JdbcQueriesRepositoryFullTest {
     @Test
     fun `deleteRows cascades user_roles join rows when user is deleted`() {
         JdbcQueriesRepository.deleteRows(usersTable, listOf("1"))
-        val remaining = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "1"
-        )
+        val remaining =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "1",
+            )
         assertEquals(emptyList(), remaining)
     }
 
@@ -279,7 +288,7 @@ class JdbcQueriesRepositoryFullTest {
         assertFailsWith<Exception> {
             JdbcQueriesRepository.deleteRows(
                 organizationsTable,
-                listOf("1")
+                listOf("1"),
             )
         }
         assertEquals(2, JdbcQueriesRepository.getCount(usersTable, null, emptyList()))
@@ -329,11 +338,11 @@ class JdbcQueriesRepositoryFullTest {
     fun `getCount respects equality filter on boolean column`() {
         assertEquals(
             1,
-            JdbcQueriesRepository.getCount(usersTable, null, listOf(Triple(active, "= ", true)))
+            JdbcQueriesRepository.getCount(usersTable, null, listOf(Triple(active, "= ", true))),
         )
         assertEquals(
             1,
-            JdbcQueriesRepository.getCount(usersTable, null, listOf(Triple(active, "= ", false)))
+            JdbcQueriesRepository.getCount(usersTable, null, listOf(Triple(active, "= ", false))),
         )
     }
 
@@ -341,11 +350,11 @@ class JdbcQueriesRepositoryFullTest {
     fun `getCount respects range filter on numeric column`() {
         assertEquals(
             1,
-            JdbcQueriesRepository.getCount(usersTable, null, listOf(Triple(age, ">=", 50)))
+            JdbcQueriesRepository.getCount(usersTable, null, listOf(Triple(age, ">=", 50))),
         )
         assertEquals(
             2,
-            JdbcQueriesRepository.getCount(usersTable, null, listOf(Triple(age, ">=", 30)))
+            JdbcQueriesRepository.getCount(usersTable, null, listOf(Triple(age, ">=", 30))),
         )
     }
 
@@ -357,71 +366,76 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getAllData returns all rows when no constraints applied`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(),
+                null,
+            )
         assertEquals(2, rows.size)
     }
 
     @Test
     fun `getAllData returns empty list when table is empty`() {
         deleteAllUsers()
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(),
+                null,
+            )
         assertEquals(emptyList(), rows)
     }
 
     @Test
     fun `getAllData returns correct data columns in declared order`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(),
-            Order("id", "ASC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(),
+                Order("id", "ASC"),
+            )
         val first = rows.first()
         assertEquals(
             listOf("1", "Ada", "36", "true", "ACTIVE", "10.5", "Countess", "1", "1"),
-            first.data
+            first.data,
         )
     }
 
     @Test
     fun `getAllData includes primaryKey field in each row`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(),
-            Order("id", "ASC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(),
+                Order("id", "ASC"),
+            )
         assertEquals(listOf("1", "2"), rows.map { it.primaryKey })
     }
 
     @Test
     fun `getAllData filters by search on direct column`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            "Linus",
-            null,
-            mutableListOf(),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                "Linus",
+                null,
+                mutableListOf(),
+                null,
+            )
         assertEquals(1, rows.size)
         assertEquals("2", rows.single().primaryKey)
     }
@@ -430,256 +444,277 @@ class JdbcQueriesRepositoryFullTest {
     fun `getAllData search is case insensitive`() {
         assertEquals(
             1,
-            JdbcQueriesRepository.getAllData(
-                usersTable,
-                listOf(usersTable),
-                "linus",
-                null,
-                mutableListOf(),
-                null
-            ).size
+            JdbcQueriesRepository
+                .getAllData(
+                    usersTable,
+                    listOf(usersTable),
+                    "linus",
+                    null,
+                    mutableListOf(),
+                    null,
+                ).size,
         )
         assertEquals(
             1,
-            JdbcQueriesRepository.getAllData(
-                usersTable,
-                listOf(usersTable),
-                "LINUS",
-                null,
-                mutableListOf(),
-                null
-            ).size
+            JdbcQueriesRepository
+                .getAllData(
+                    usersTable,
+                    listOf(usersTable),
+                    "LINUS",
+                    null,
+                    mutableListOf(),
+                    null,
+                ).size,
         )
     }
 
     @Test
     fun `getAllData search matches partial string`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            "in",
-            null,
-            mutableListOf(),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                "in",
+                null,
+                mutableListOf(),
+                null,
+            )
         assertTrue(rows.any { it.primaryKey == "2" })
     }
 
     @Test
     fun `getAllData returns empty when search matches nothing`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            "zzznomatch",
-            null,
-            mutableListOf(),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                "zzznomatch",
+                null,
+                mutableListOf(),
+                null,
+            )
         assertEquals(emptyList(), rows)
     }
 
     @Test
     fun `getAllData searches across joined column (organization name)`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            "Kernel",
-            null,
-            mutableListOf(),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                "Kernel",
+                null,
+                mutableListOf(),
+                null,
+            )
         assertEquals(listOf("2"), rows.map { it.primaryKey })
     }
 
     @Test
     fun `getAllData search matching both direct and joined column returns union`() {
         // "a" matches Ada (name) and Analytical Engines (org name for user 1), Kernel Labs doesn't contain "a" - just user 1 expected
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            "Analytical",
-            null,
-            mutableListOf(),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                "Analytical",
+                null,
+                mutableListOf(),
+                null,
+            )
         assertEquals(listOf("1"), rows.map { it.primaryKey })
     }
 
     @Test
     fun `getAllData filters by equality on boolean column`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(Triple(active, "= ", true)),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(Triple(active, "= ", true)),
+                null,
+            )
         assertEquals(1, rows.size)
         assertEquals("1", rows.single().primaryKey)
     }
 
     @Test
     fun `getAllData filters by greater-than-or-equal on integer column`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(Triple(age, ">=", 50)),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(Triple(age, ">=", 50)),
+                null,
+            )
         assertEquals(1, rows.size)
         assertEquals("2", rows.single().primaryKey)
     }
 
     @Test
     fun `getAllData filters by less-than-or-equal on double column`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(Triple(score, "<=", 5.0)),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(Triple(score, "<=", 5.0)),
+                null,
+            )
         assertEquals(1, rows.size)
         assertEquals("2", rows.single().primaryKey)
     }
 
     @Test
     fun `getAllData filters by equality on enumeration column`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(Triple(status, "= ", "BLOCKED")),
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(Triple(status, "= ", "BLOCKED")),
+                null,
+            )
         assertEquals(1, rows.size)
         assertEquals("2", rows.single().primaryKey)
     }
 
     @Test
     fun `getAllData multiple filters combined (AND) narrow results`() {
-        val filters = mutableListOf<Triple<ColumnSet, String, Any?>>(
-            Triple(active, "= ", true),
-            Triple(score, ">=", 10.0)
-        )
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            filters,
-            null
-        )
+        val filters =
+            mutableListOf<Triple<ColumnSet, String, Any?>>(
+                Triple(active, "= ", true),
+                Triple(score, ">=", 10.0),
+            )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                filters,
+                null,
+            )
         assertEquals(1, rows.size)
         assertEquals("1", rows.single().primaryKey)
     }
 
     @Test
     fun `getAllData multiple filters where no row matches returns empty`() {
-        val filters = mutableListOf<Triple<ColumnSet, String, Any?>>(
-            Triple(active, "= ", true),
-            Triple(score, ">=", 100.0)
-        )
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            filters,
-            null
-        )
+        val filters =
+            mutableListOf<Triple<ColumnSet, String, Any?>>(
+                Triple(active, "= ", true),
+                Triple(score, ">=", 100.0),
+            )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                filters,
+                null,
+            )
         assertEquals(emptyList(), rows)
     }
 
     @Test
     fun `getAllData filter on joined column via organization name`() {
-        val filters = mutableListOf<Triple<ColumnSet, String, Any?>>(
-            Triple(
-                organizationId,
-                "= ",
-                1
+        val filters =
+            mutableListOf<Triple<ColumnSet, String, Any?>>(
+                Triple(
+                    organizationId,
+                    "= ",
+                    1,
+                ),
             )
-        )
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            filters,
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                filters,
+                null,
+            )
         assertEquals(listOf("1"), rows.map { it.primaryKey })
     }
 
     @Test
     fun `getAllData search and filter combined`() {
         val filters = mutableListOf<Triple<ColumnSet, String, Any?>>(Triple(active, "= ", true))
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            "Ada",
-            null,
-            filters,
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                "Ada",
+                null,
+                filters,
+                null,
+            )
         assertEquals(listOf("1"), rows.map { it.primaryKey })
     }
 
     @Test
     fun `getAllData search with filter that excludes search match returns empty`() {
         val filters = mutableListOf<Triple<ColumnSet, String, Any?>>(Triple(active, "= ", false))
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            "Ada",
-            null,
-            filters,
-            null
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                "Ada",
+                null,
+                filters,
+                null,
+            )
         assertEquals(emptyList(), rows)
     }
 
     @Test
     fun `getAllData orders ascending by id`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(),
-            Order("id", "ASC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(),
+                Order("id", "ASC"),
+            )
         assertEquals(listOf("1", "2"), rows.map { it.primaryKey })
     }
 
     @Test
     fun `getAllData orders descending by id`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(),
-            Order("id", "DESC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(),
+                Order("id", "DESC"),
+            )
         assertEquals(listOf("2", "1"), rows.map { it.primaryKey })
     }
 
     @Test
     fun `getAllData orders by name ascending`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable,
-            listOf(usersTable),
-            null,
-            null,
-            mutableListOf(),
-            Order("name", "ASC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable),
+                null,
+                null,
+                mutableListOf(),
+                Order("name", "ASC"),
+            )
         assertEquals("Ada", rows.first().data[1])
     }
 
@@ -692,11 +727,10 @@ class JdbcQueriesRepositoryFullTest {
                 null,
                 null,
                 mutableListOf(),
-                Order("id", "INVALID")
+                Order("id", "INVALID"),
             )
         }
     }
-
 
     @Test
     fun `getAllData throws when order column does not exist`() {
@@ -707,7 +741,7 @@ class JdbcQueriesRepositoryFullTest {
                 null,
                 null,
                 mutableListOf(),
-                Order("nonexistent_col", "ASC")
+                Order("nonexistent_col", "ASC"),
             )
         }
     }
@@ -718,14 +752,15 @@ class JdbcQueriesRepositoryFullTest {
         val original = config.maxItemsInPage
         try {
             config.maxItemsInPage = 1
-            val page0 = JdbcQueriesRepository.getAllData(
-                usersTable,
-                listOf(usersTable),
-                null,
-                0,
-                mutableListOf(),
-                Order("id", "ASC")
-            )
+            val page0 =
+                JdbcQueriesRepository.getAllData(
+                    usersTable,
+                    listOf(usersTable),
+                    null,
+                    0,
+                    mutableListOf(),
+                    Order("id", "ASC"),
+                )
             assertEquals(listOf("1"), page0.map { it.primaryKey })
         } finally {
             config.maxItemsInPage = original
@@ -738,14 +773,15 @@ class JdbcQueriesRepositoryFullTest {
         val original = config.maxItemsInPage
         try {
             config.maxItemsInPage = 1
-            val page1 = JdbcQueriesRepository.getAllData(
-                usersTable,
-                listOf(usersTable),
-                null,
-                1,
-                mutableListOf(),
-                Order("id", "ASC")
-            )
+            val page1 =
+                JdbcQueriesRepository.getAllData(
+                    usersTable,
+                    listOf(usersTable),
+                    null,
+                    1,
+                    mutableListOf(),
+                    Order("id", "ASC"),
+                )
             assertEquals(listOf("2"), page1.map { it.primaryKey })
         } finally {
             config.maxItemsInPage = original
@@ -758,14 +794,15 @@ class JdbcQueriesRepositoryFullTest {
         val original = config.maxItemsInPage
         try {
             config.maxItemsInPage = 2
-            val page1 = JdbcQueriesRepository.getAllData(
-                usersTable,
-                listOf(usersTable),
-                null,
-                1,
-                mutableListOf(),
-                Order("id", "ASC")
-            )
+            val page1 =
+                JdbcQueriesRepository.getAllData(
+                    usersTable,
+                    listOf(usersTable),
+                    null,
+                    1,
+                    mutableListOf(),
+                    Order("id", "ASC"),
+                )
             assertEquals(emptyList(), page1)
         } finally {
             config.maxItemsInPage = original
@@ -778,14 +815,15 @@ class JdbcQueriesRepositoryFullTest {
         val original = config.maxItemsInPage
         try {
             config.maxItemsInPage = 1
-            val all = JdbcQueriesRepository.getAllData(
-                usersTable,
-                listOf(usersTable),
-                null,
-                null,
-                mutableListOf(),
-                null
-            )
+            val all =
+                JdbcQueriesRepository.getAllData(
+                    usersTable,
+                    listOf(usersTable),
+                    null,
+                    null,
+                    mutableListOf(),
+                    null,
+                )
             assertEquals(2, all.size)
         } finally {
             config.maxItemsInPage = original
@@ -794,10 +832,15 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getAllData wraps profile_id in ReferenceData when related table is provided`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable, listOf(usersTable, profilesTable, organizationsTable),
-            null, null, mutableListOf(), Order("id", "ASC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable, profilesTable, organizationsTable),
+                null,
+                null,
+                mutableListOf(),
+                Order("id", "ASC"),
+            )
         val profile = rows.first { it.primaryKey == "1" }.data[7]
         assertTrue(profile is ReferenceData)
         assertEquals("1", profile.value)
@@ -805,10 +848,15 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getAllData wraps organization_id in ReferenceData with correct pluralName`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable, listOf(usersTable, profilesTable, organizationsTable),
-            null, null, mutableListOf(), Order("id", "ASC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable, profilesTable, organizationsTable),
+                null,
+                null,
+                mutableListOf(),
+                Order("id", "ASC"),
+            )
         val org = rows.first { it.primaryKey == "1" }.data[8]
         assertTrue(org is ReferenceData)
         assertEquals("Tests", org.pluralName)
@@ -816,10 +864,15 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getAllData returns raw string for reference column when related table is absent`() {
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable, listOf(usersTable), // no profilesTable or organizationsTable
-            null, null, mutableListOf(), Order("id", "ASC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable), // no profilesTable or organizationsTable
+                null,
+                null,
+                mutableListOf(),
+                Order("id", "ASC"),
+            )
         val profileCol = rows.first { it.primaryKey == "1" }.data[7]
         assertFalse(profileCol is ReferenceData)
     }
@@ -828,10 +881,15 @@ class JdbcQueriesRepositoryFullTest {
     fun `getAllData returns null-mapped value for null reference column`() {
         // User 2 has profile_id set; delete it to produce a null FK
         JdbcQueriesRepository.deleteRows(profilesTable, listOf("2"))
-        val rows = JdbcQueriesRepository.getAllData(
-            usersTable, listOf(usersTable, profilesTable),
-            null, null, mutableListOf(), Order("id", "ASC")
-        )
+        val rows =
+            JdbcQueriesRepository.getAllData(
+                usersTable,
+                listOf(usersTable, profilesTable),
+                null,
+                null,
+                mutableListOf(),
+                Order("id", "ASC"),
+            )
         val row2 = rows.first { it.primaryKey == "2" }
         // Null reference should not be ReferenceData
         val profileCol = row2.data[7]
@@ -875,8 +933,8 @@ class JdbcQueriesRepositoryFullTest {
                 usersTable,
                 name,
                 "Ada",
-                primaryKey = "1"
-            )
+                primaryKey = "1",
+            ),
         )
     }
 
@@ -893,8 +951,8 @@ class JdbcQueriesRepositoryFullTest {
                 usersTable,
                 name,
                 "Ada",
-                primaryKey = "2"
-            )
+                primaryKey = "2",
+            ),
         )
     }
 
@@ -937,14 +995,15 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getCountOfTables includes all tables in result map`() {
-        val counts = JdbcQueriesRepository.getCountOfTables(
-            listOf(
-                usersTable,
-                rolesTable,
-                profilesTable,
-                organizationsTable
+        val counts =
+            JdbcQueriesRepository.getCountOfTables(
+                listOf(
+                    usersTable,
+                    rolesTable,
+                    profilesTable,
+                    organizationsTable,
+                ),
             )
-        )
         assertTrue(counts.containsKey("users"))
         assertTrue(counts.containsKey("roles"))
         assertTrue(counts.containsKey("profiles"))
@@ -957,19 +1016,21 @@ class JdbcQueriesRepositoryFullTest {
         assertEquals(
             listOf(
                 DisplayItem("1", "Profile 1: Ada Bio"),
-                DisplayItem("2", "Profile 2: Linus Bio")
-            ), items
+                DisplayItem("2", "Profile 2: Linus Bio"),
+            ),
+            items,
         )
     }
 
     @Test
     fun `getAllReferences uses displayFormat with nested join field`() {
-        val tableWithJoinFormat = TestJdbcTable(
-            columns = usersTable.getAllColumns(),
-            tableName = "users",
-            panelListColumns = usersTable.getPanelListColumns(),
-            displayFormat = "{id}: {name} @ {organization_id.name}",
-        )
+        val tableWithJoinFormat =
+            TestJdbcTable(
+                columns = usersTable.getAllColumns(),
+                tableName = "users",
+                panelListColumns = usersTable.getPanelListColumns(),
+                displayFormat = "{id}: {name} @ {organization_id.name}",
+            )
         val items = JdbcQueriesRepository.getAllReferences(tableWithJoinFormat)
         assertTrue(items.any { it.item.contains("Ada") && it.item.contains("Analytical Engines") })
         assertTrue(items.any { it.item.contains("Linus") && it.item.contains("Kernel Labs") })
@@ -1005,31 +1066,34 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getAllSelectedReferenceInListReference returns initial role for user 1`() {
-        val keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "1"
-        )
+        val keys =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "1",
+            )
         assertEquals(listOf(1), keys)
     }
 
     @Test
     fun `getAllSelectedReferenceInListReference returns empty for user with no roles`() {
-        val keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "2"
-        )
+        val keys =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "2",
+            )
         assertEquals(emptyList(), keys)
     }
 
     @Test
     fun `getAllSelectedReferenceInListReference returns empty for non-existent user`() {
-        val keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "9999"
-        )
+        val keys =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "9999",
+            )
         assertEquals(emptyList(), keys)
     }
 
@@ -1040,13 +1104,14 @@ class JdbcQueriesRepositoryFullTest {
             userRolesTable,
             roleReference,
             "1",
-            listOf("1", "2", "3")
+            listOf("1", "2", "3"),
         )
-        val keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "1"
-        )
+        val keys =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "1",
+            )
         assertEquals(listOf(1, 2, 3).sorted(), keys.map { (it as Int) }.sorted())
     }
 
@@ -1057,13 +1122,14 @@ class JdbcQueriesRepositoryFullTest {
             userRolesTable,
             roleReference,
             "1",
-            listOf("2")
+            listOf("2"),
         )
-        val keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "1"
-        )
+        val keys =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "1",
+            )
         assertEquals(listOf(2), keys)
     }
 
@@ -1074,13 +1140,14 @@ class JdbcQueriesRepositoryFullTest {
             userRolesTable,
             roleReference,
             "1",
-            emptyList()
+            emptyList(),
         )
-        val keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "1"
-        )
+        val keys =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "1",
+            )
         assertEquals(emptyList(), keys)
     }
 
@@ -1091,20 +1158,21 @@ class JdbcQueriesRepositoryFullTest {
             userRolesTable,
             roleReference,
             "1",
-            listOf("1")
+            listOf("1"),
         )
         JdbcQueriesRepository.updateSelectedReferenceInListReference(
             usersTable,
             userRolesTable,
             roleReference,
             "1",
-            listOf("1")
+            listOf("1"),
         )
-        val keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "1"
-        )
+        val keys =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "1",
+            )
         assertEquals(listOf(1), keys)
     }
 
@@ -1116,7 +1184,7 @@ class JdbcQueriesRepositoryFullTest {
                 userRolesTable,
                 roleReference,
                 "1",
-                listOf("999")
+                listOf("999"),
             )
         }
     }
@@ -1128,35 +1196,38 @@ class JdbcQueriesRepositoryFullTest {
             userRolesTable,
             roleReference,
             "2",
-            listOf("2")
+            listOf("2"),
         )
-        val user1Keys = JdbcQueriesRepository.getAllSelectedReferenceInListReference(
-            usersTable,
-            roleReference,
-            "1"
-        )
+        val user1Keys =
+            JdbcQueriesRepository.getAllSelectedReferenceInListReference(
+                usersTable,
+                roleReference,
+                "1",
+            )
         assertEquals(listOf(1), user1Keys) // user 1 roles untouched
     }
 
     @Test
     fun `updateChangedData updates only the changed column`() {
         val initialData = JdbcQueriesRepository.getData(usersTable, "1")
-        val result = JdbcQueriesRepository.updateChangedData(
-            usersTable,
-            parameters = listOf(
-                "1" to 1,
-                "Ada Lovelace" to "Ada Lovelace",
-                "36" to 36,
-                "on" to true,
-                "ACTIVE" to "ACTIVE",
-                "10.5" to 10.5,
-                "Countess" to "Countess",
-                "1" to 1,
-                "1" to 1
-            ),
-            primaryKey = "1",
-            initialData = initialData
-        )
+        val result =
+            JdbcQueriesRepository.updateChangedData(
+                usersTable,
+                parameters =
+                    listOf(
+                        "1" to 1,
+                        "Ada Lovelace" to "Ada Lovelace",
+                        "36" to 36,
+                        "on" to true,
+                        "ACTIVE" to "ACTIVE",
+                        "10.5" to 10.5,
+                        "Countess" to "Countess",
+                        "1" to 1,
+                        "1" to 1,
+                    ),
+                primaryKey = "1",
+                initialData = initialData,
+            )
         assertNotNull(result)
         assertEquals(listOf("name"), result.second)
         assertEquals("Ada Lovelace", JdbcQueriesRepository.getData(usersTable, "1")!![1])
@@ -1165,43 +1236,47 @@ class JdbcQueriesRepositoryFullTest {
     @Test
     fun `updateChangedData returns null when nothing changed`() {
         val initialData = JdbcQueriesRepository.getData(usersTable, "1")
-        val result = JdbcQueriesRepository.updateChangedData(
-            usersTable,
-            parameters = listOf(
-                "1" to 1,
-                "Ada" to "Ada",
-                "36" to 36,
-                "on" to true,
-                "ACTIVE" to "ACTIVE",
-                "10.5" to 10.5,
-                "Countess" to "Countess",
-                "1" to 1,
-                "1" to 1
-            ),
-            primaryKey = "1",
-            initialData = initialData
-        )
+        val result =
+            JdbcQueriesRepository.updateChangedData(
+                usersTable,
+                parameters =
+                    listOf(
+                        "1" to 1,
+                        "Ada" to "Ada",
+                        "36" to 36,
+                        "on" to true,
+                        "ACTIVE" to "ACTIVE",
+                        "10.5" to 10.5,
+                        "Countess" to "Countess",
+                        "1" to 1,
+                        "1" to 1,
+                    ),
+                primaryKey = "1",
+                initialData = initialData,
+            )
         assertNull(result)
     }
 
     @Test
     fun `updateChangedData inserts new row when initialData is null`() {
-        val result = JdbcQueriesRepository.updateChangedData(
-            usersTable,
-            parameters = listOf(
-                "7" to 7,
-                "New" to "New",
-                "22" to 22,
-                "off" to false,
-                "ACTIVE" to "ACTIVE",
-                "0.1" to 0.1,
-                null,
-                null,
-                "1" to 1
-            ),
-            primaryKey = "7",
-            initialData = null
-        )
+        val result =
+            JdbcQueriesRepository.updateChangedData(
+                usersTable,
+                parameters =
+                    listOf(
+                        "7" to 7,
+                        "New" to "New",
+                        "22" to 22,
+                        "off" to false,
+                        "ACTIVE" to "ACTIVE",
+                        "0.1" to 0.1,
+                        null,
+                        null,
+                        "1" to 1,
+                    ),
+                primaryKey = "7",
+                initialData = null,
+            )
         assertNotNull(result)
         assertEquals(1, result.first)
         assertNotNull(JdbcQueriesRepository.getData(usersTable, "7"))
@@ -1210,51 +1285,55 @@ class JdbcQueriesRepositoryFullTest {
     @Test
     fun `updateChangedData skips column with hasConfirmation true`() {
         val confirmedAge = age.copy(hasConfirmation = true)
-        val tableWithConfirm = TestJdbcTable(
-            columns = listOf(
-                id,
-                name,
-                confirmedAge,
-                active,
-                status,
-                score,
-                nickname,
-                profileId,
-                organizationId
-            ),
-            tableName = "users",
-            panelListColumns = listOf(
-                "id",
-                "name",
-                "age",
-                "active",
-                "status",
-                "score",
-                "nickname",
-                "profile_id",
-                "organization_id"
-            ),
-        )
+        val tableWithConfirm =
+            TestJdbcTable(
+                columns =
+                    listOf(
+                        id,
+                        name,
+                        confirmedAge,
+                        active,
+                        status,
+                        score,
+                        nickname,
+                        profileId,
+                        organizationId,
+                    ),
+                tableName = "users",
+                panelListColumns =
+                    listOf(
+                        "id",
+                        "name",
+                        "age",
+                        "active",
+                        "status",
+                        "score",
+                        "nickname",
+                        "profile_id",
+                        "organization_id",
+                    ),
+            )
         val initial = JdbcQueriesRepository.getData(tableWithConfirm, "1")
         JdbcQueriesRepository.updateChangedData(
             tableWithConfirm,
-            parameters = listOf(
-                "1" to 1,
-                "Ada" to "Ada",
-                "99" to 99,
-                "on" to true,
-                "ACTIVE" to "ACTIVE",
-                "10.5" to 10.5,
-                "Countess" to "Countess",
-                "1" to 1,
-                "1" to 1
-            ),
+            parameters =
+                listOf(
+                    "1" to 1,
+                    "Ada" to "Ada",
+                    "99" to 99,
+                    "on" to true,
+                    "ACTIVE" to "ACTIVE",
+                    "10.5" to 10.5,
+                    "Countess" to "Countess",
+                    "1" to 1,
+                    "1" to 1,
+                ),
             primaryKey = "1",
-            initialData = initial
+            initialData = initial,
         )
         assertEquals(
             "36",
-            JdbcQueriesRepository.getData(tableWithConfirm, "1")!![2]
+            JdbcQueriesRepository.getData(tableWithConfirm, "1")!![2],
         ) // age unchanged
     }
 
@@ -1263,19 +1342,20 @@ class JdbcQueriesRepositoryFullTest {
         val initial = JdbcQueriesRepository.getData(usersTable, "1")
         JdbcQueriesRepository.updateChangedData(
             usersTable,
-            parameters = listOf(
-                "1" to 1,
-                "Ada" to "Ada",
-                "36" to 36,
-                "on" to true,
-                "ACTIVE" to "ACTIVE",
-                "10.5" to 10.5,
-                null,
-                "1" to 1,
-                "1" to 1
-            ),
+            parameters =
+                listOf(
+                    "1" to 1,
+                    "Ada" to "Ada",
+                    "36" to 36,
+                    "on" to true,
+                    "ACTIVE" to "ACTIVE",
+                    "10.5" to 10.5,
+                    null,
+                    "1" to 1,
+                    "1" to 1,
+                ),
             primaryKey = "1",
-            initialData = initial
+            initialData = initial,
         )
         // nickname was "Countess"; null passed → should NOT be cleared per implementation
         assertEquals("Countess", JdbcQueriesRepository.getData(usersTable, "1")!![6])
@@ -1285,66 +1365,72 @@ class JdbcQueriesRepositoryFullTest {
     fun `updateChangedData handles boolean on-value compared to stored true`() {
         // "on" should be considered same as true → no change expected
         val initial = JdbcQueriesRepository.getData(usersTable, "1")
-        val result = JdbcQueriesRepository.updateChangedData(
-            usersTable,
-            parameters = listOf(
-                "1" to 1,
-                "Ada" to "Ada",
-                "36" to 36,
-                "on" to true,
-                "ACTIVE" to "ACTIVE",
-                "10.5" to 10.5,
-                "Countess" to "Countess",
-                "1" to 1,
-                "1" to 1
-            ),
-            primaryKey = "1",
-            initialData = initial
-        )
+        val result =
+            JdbcQueriesRepository.updateChangedData(
+                usersTable,
+                parameters =
+                    listOf(
+                        "1" to 1,
+                        "Ada" to "Ada",
+                        "36" to 36,
+                        "on" to true,
+                        "ACTIVE" to "ACTIVE",
+                        "10.5" to 10.5,
+                        "Countess" to "Countess",
+                        "1" to 1,
+                        "1" to 1,
+                    ),
+                primaryKey = "1",
+                initialData = initial,
+            )
         assertNull(result)
     }
 
     @Test
     fun `updateChangedData handles boolean off-value compared to stored false`() {
         val initial = JdbcQueriesRepository.getData(usersTable, "2")
-        val result = JdbcQueriesRepository.updateChangedData(
-            usersTable,
-            parameters = listOf(
-                "2" to 2,
-                "Linus" to "Linus",
-                "54" to 54,
-                "off" to false,
-                "BLOCKED" to "BLOCKED",
-                "2.0" to 2.0,
-                null,
-                "2" to 2,
-                "2" to 2
-            ),
-            primaryKey = "2",
-            initialData = initial
-        )
+        val result =
+            JdbcQueriesRepository.updateChangedData(
+                usersTable,
+                parameters =
+                    listOf(
+                        "2" to 2,
+                        "Linus" to "Linus",
+                        "54" to 54,
+                        "off" to false,
+                        "BLOCKED" to "BLOCKED",
+                        "2.0" to 2.0,
+                        null,
+                        "2" to 2,
+                        "2" to 2,
+                    ),
+                primaryKey = "2",
+                initialData = initial,
+            )
         assertNull(result)
     }
 
     @Test
     fun `updateChangedData returns list of changed column names`() {
         val initial = JdbcQueriesRepository.getData(usersTable, "1")
-        val result = JdbcQueriesRepository.updateChangedData(
-            usersTable,
-            parameters = listOf(
-                "1" to 1,
-                "Ada Updated" to "Ada Updated",
-                "40" to 40,
-                "on" to true,
-                "ACTIVE" to "ACTIVE",
-                "10.5" to 10.5,
-                "Countess" to "Countess",
-                "1" to 1,
-                "1" to 1
-            ),
-            primaryKey = "1",
-            initialData = initial
-        )
+        val result =
+            JdbcQueriesRepository.updateChangedData(
+                usersTable,
+                parameters =
+                    listOf(
+                        "1" to 1,
+                        "Ada Updated" to "Ada Updated",
+                        "40" to 40,
+                        "on" to true,
+                        "ACTIVE" to "ACTIVE",
+                        "10.5" to 10.5,
+                        "Countess" to "Countess",
+                        "1" to 1,
+                        "1" to 1,
+                    ),
+                primaryKey = "1",
+                initialData = initial,
+            )
         assertNotNull(result)
         assertTrue(result.second.containsAll(listOf("name", "age")))
     }
@@ -1354,7 +1440,7 @@ class JdbcQueriesRepositoryFullTest {
         with(JdbcQueriesRepository) {
             assertEquals(
                 "UPDATE users SET age = ? WHERE id = ?",
-                usersTable.createUpdateAColumnQuery(age)
+                usersTable.createUpdateAColumnQuery(age),
             )
         }
     }
@@ -1371,7 +1457,7 @@ class JdbcQueriesRepositoryFullTest {
         with(JdbcQueriesRepository) {
             assertEquals(
                 "SELECT name, status FROM users WHERE id IN (?,?)",
-                usersTable.createGetSelectedColumnsQuery(listOf("1", "2"), listOf(name, status))
+                usersTable.createGetSelectedColumnsQuery(listOf("1", "2"), listOf(name, status)),
             )
         }
     }
@@ -1381,7 +1467,7 @@ class JdbcQueriesRepositoryFullTest {
         with(JdbcQueriesRepository) {
             assertEquals(
                 "SELECT name FROM users WHERE id IN (?)",
-                usersTable.createGetSelectedColumnsQuery(listOf("1"), listOf(name))
+                usersTable.createGetSelectedColumnsQuery(listOf("1"), listOf(name)),
             )
         }
     }
@@ -1406,11 +1492,12 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getSelectedColumnsForIds returns correct values for existing ids`() {
-        val rows = JdbcQueriesRepository.getSelectedColumnsForIds(
-            usersTable,
-            listOf("1", "2"),
-            listOf(name, status)
-        )
+        val rows =
+            JdbcQueriesRepository.getSelectedColumnsForIds(
+                usersTable,
+                listOf("1", "2"),
+                listOf(name, status),
+            )
         assertEquals(listOf(listOf("Ada", "ACTIVE"), listOf("Linus", "BLOCKED")), rows)
     }
 
@@ -1418,7 +1505,7 @@ class JdbcQueriesRepositoryFullTest {
     fun `getSelectedColumnsForIds returns empty list for empty selectedIds`() {
         assertEquals(
             emptyList(),
-            JdbcQueriesRepository.getSelectedColumnsForIds(usersTable, emptyList(), listOf(name))
+            JdbcQueriesRepository.getSelectedColumnsForIds(usersTable, emptyList(), listOf(name)),
         )
     }
 
@@ -1426,17 +1513,18 @@ class JdbcQueriesRepositoryFullTest {
     fun `getSelectedColumnsForIds returns empty list for empty columns`() {
         assertEquals(
             emptyList(),
-            JdbcQueriesRepository.getSelectedColumnsForIds(usersTable, listOf("1"), emptyList())
+            JdbcQueriesRepository.getSelectedColumnsForIds(usersTable, listOf("1"), emptyList()),
         )
     }
 
     @Test
     fun `getSelectedColumnsForIds returns null for null column values`() {
-        val rows = JdbcQueriesRepository.getSelectedColumnsForIds(
-            usersTable,
-            listOf("2"),
-            listOf(nickname)
-        )
+        val rows =
+            JdbcQueriesRepository.getSelectedColumnsForIds(
+                usersTable,
+                listOf("2"),
+                listOf(nickname),
+            )
         assertEquals(listOf(listOf(null)), rows)
     }
 
@@ -1514,73 +1602,85 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getChartData ALL aggregation returns one entry per row`() {
-        val chart = JdbcQueriesRepository.getChartData(
-            usersTable,
-            chartSection(ChartDashboardAggregationFunction.ALL, orderQuery = "id ASC")
-        )
+        val chart =
+            JdbcQueriesRepository.getChartData(
+                usersTable,
+                chartSection(ChartDashboardAggregationFunction.ALL, orderQuery = "id ASC"),
+            )
         assertEquals(2, chart.labels.size)
-        assertEquals(2, chart.values.single().values.size)
+        assertEquals(
+            2,
+            chart.values
+                .single()
+                .values.size,
+        )
     }
 
     @Test
     fun `getChartData ALL preserves individual values without aggregating`() {
-        val chart = JdbcQueriesRepository.getChartData(
-            usersTable,
-            chartSection(ChartDashboardAggregationFunction.ALL, orderQuery = "id ASC")
-        )
+        val chart =
+            JdbcQueriesRepository.getChartData(
+                usersTable,
+                chartSection(ChartDashboardAggregationFunction.ALL, orderQuery = "id ASC"),
+            )
         assertEquals(listOf("ACTIVE", "BLOCKED"), chart.labels)
         assertEquals(listOf(10.5, 2.0), chart.values.single().values)
     }
 
     @Test
     fun `getChartData SUM aggregates values per label`() {
-        val chart = JdbcQueriesRepository.getChartData(
-            usersTable,
-            chartSection(ChartDashboardAggregationFunction.SUM, orderQuery = "status ASC")
-        )
+        val chart =
+            JdbcQueriesRepository.getChartData(
+                usersTable,
+                chartSection(ChartDashboardAggregationFunction.SUM, orderQuery = "status ASC"),
+            )
         val activeIdx = chart.labels.indexOf("ACTIVE")
         assertEquals(10.5, chart.values.single().values[activeIdx])
     }
 
     @Test
     fun `getChartData AVERAGE aggregates values per label`() {
-        val chart = JdbcQueriesRepository.getChartData(
-            usersTable,
-            chartSection(ChartDashboardAggregationFunction.AVERAGE, orderQuery = "status ASC")
-        )
+        val chart =
+            JdbcQueriesRepository.getChartData(
+                usersTable,
+                chartSection(ChartDashboardAggregationFunction.AVERAGE, orderQuery = "status ASC"),
+            )
         val activeIdx = chart.labels.indexOf("ACTIVE")
         assertEquals(10.5, chart.values.single().values[activeIdx])
     }
 
     @Test
     fun `getChartData COUNT returns integer count per label`() {
-        val chart = JdbcQueriesRepository.getChartData(
-            usersTable,
-            chartSection(ChartDashboardAggregationFunction.COUNT, orderQuery = "status ASC")
-        )
+        val chart =
+            JdbcQueriesRepository.getChartData(
+                usersTable,
+                chartSection(ChartDashboardAggregationFunction.COUNT, orderQuery = "status ASC"),
+            )
         val activeIdx = chart.labels.indexOf("ACTIVE")
         assertEquals(1.0, chart.values.single().values[activeIdx])
     }
 
     @Test
     fun `getChartData respects limitCount`() {
-        val chart = JdbcQueriesRepository.getChartData(
-            usersTable,
-            chartSection(
-                ChartDashboardAggregationFunction.COUNT,
-                orderQuery = "status ASC",
-                limitCount = 1
+        val chart =
+            JdbcQueriesRepository.getChartData(
+                usersTable,
+                chartSection(
+                    ChartDashboardAggregationFunction.COUNT,
+                    orderQuery = "status ASC",
+                    limitCount = 1,
+                ),
             )
-        )
         assertEquals(1, chart.labels.size)
     }
 
     @Test
     fun `getChartData provides fill and border colors via callbacks`() {
-        val chart = JdbcQueriesRepository.getChartData(
-            usersTable,
-            chartSection(ChartDashboardAggregationFunction.SUM, orderQuery = "status ASC")
-        )
+        val chart =
+            JdbcQueriesRepository.getChartData(
+                usersTable,
+                chartSection(ChartDashboardAggregationFunction.SUM, orderQuery = "status ASC"),
+            )
         val fills = chart.values.single().fillColors
         val borders = chart.values.single().borderColors
         assertTrue(fills.all { it?.startsWith("fill-") == true })
@@ -1597,65 +1697,77 @@ class JdbcQueriesRepositoryFullTest {
     @Test
     fun `getChartData returns empty labels and values for empty table`() {
         deleteAllUsers()
-        val chart = JdbcQueriesRepository.getChartData(
-            usersTable,
-            chartSection(ChartDashboardAggregationFunction.SUM)
-        )
+        val chart =
+            JdbcQueriesRepository.getChartData(
+                usersTable,
+                chartSection(ChartDashboardAggregationFunction.SUM),
+            )
         assertEquals(emptyList(), chart.labels)
-        assertTrue(chart.values.single().values.isEmpty())
+        assertTrue(
+            chart.values
+                .single()
+                .values
+                .isEmpty(),
+        )
     }
 
     @Test
     fun `getTextData COUNT returns total row count as string`() {
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("id", TextDashboardAggregationFunction.COUNT)
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("id", TextDashboardAggregationFunction.COUNT),
+            )
         assertEquals("2", result.value)
     }
 
     @Test
     fun `getTextData SUM returns sum of values`() {
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("score", TextDashboardAggregationFunction.SUM)
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("score", TextDashboardAggregationFunction.SUM),
+            )
         assertEquals("12.5", result.value)
     }
 
     @Test
     fun `getTextData AVERAGE returns average of values`() {
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("score", TextDashboardAggregationFunction.AVERAGE)
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("score", TextDashboardAggregationFunction.AVERAGE),
+            )
         assertEquals("6.25", result.value)
     }
 
     @Test
     fun `getTextData LAST_ITEM returns last ordered value`() {
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("name", TextDashboardAggregationFunction.LAST_ITEM, "id DESC")
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("name", TextDashboardAggregationFunction.LAST_ITEM, "id DESC"),
+            )
         assertEquals("Ada", result.value)
     }
 
     @Test
     fun `getTextData LAST_ITEM with ascending order returns first row`() {
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("name", TextDashboardAggregationFunction.LAST_ITEM, "id ASC")
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("name", TextDashboardAggregationFunction.LAST_ITEM, "id ASC"),
+            )
         assertEquals("Linus", result.value)
     }
 
     @Test
     fun `getTextData PROFIT_PERCENTAGE calculates growth correctly`() {
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("score", TextDashboardAggregationFunction.PROFIT_PERCENTAGE, "id ASC")
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("score", TextDashboardAggregationFunction.PROFIT_PERCENTAGE, "id ASC"),
+            )
         // (2.0 - 10.5) / 10.5 * 100 ≈ -80.95% OR (10.5 - 2.0) / 2.0 * 100 = 425%
         // Based on existing test showing 425% with id ASC, second item (Linus=2.0) is "previous"
         assertEquals("425%", result.value)
@@ -1664,20 +1776,22 @@ class JdbcQueriesRepositoryFullTest {
     @Test
     fun `getTextData COUNT returns 0 for empty table`() {
         deleteAllUsers()
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("id", TextDashboardAggregationFunction.COUNT)
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("id", TextDashboardAggregationFunction.COUNT),
+            )
         assertEquals("0", result.value)
     }
 
     @Test
     fun `getTextData LAST_ITEM returns empty string for empty table`() {
         deleteAllUsers()
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("name", TextDashboardAggregationFunction.LAST_ITEM, "id DESC")
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("name", TextDashboardAggregationFunction.LAST_ITEM, "id DESC"),
+            )
         assertEquals("", result.value)
     }
 
@@ -1690,10 +1804,11 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getTextData SUM with integer field formats as integer when possible`() {
-        val result = JdbcQueriesRepository.getTextData(
-            usersTable,
-            textSection("age", TextDashboardAggregationFunction.SUM)
-        )
+        val result =
+            JdbcQueriesRepository.getTextData(
+                usersTable,
+                textSection("age", TextDashboardAggregationFunction.SUM),
+            )
         // 36 + 54 = 90
         assertEquals("90", result.value)
     }
@@ -1702,7 +1817,9 @@ class JdbcQueriesRepositoryFullTest {
     fun `pagination across large dataset covers all rows`() {
         dataSource.connection.use { conn ->
             (3..22).forEach { i ->
-                conn.execute("INSERT INTO users (id, name, age, active, status, score, nickname, profile_id, organization_id) VALUES ($i, 'User$i', ${20 + i}, true, 'ACTIVE', ${i}.0, NULL, NULL, 1)")
+                conn.execute(
+                    "INSERT INTO users (id, name, age, active, status, score, nickname, profile_id, organization_id) VALUES ($i, 'User$i', ${20 + i}, true, 'ACTIVE', $i.0, NULL, NULL, 1)",
+                )
             }
         }
         val config = KtorAdminConfiguration()
@@ -1714,14 +1831,15 @@ class JdbcQueriesRepositoryFullTest {
             val allIds = mutableListOf<String>()
             var page = 0
             while (true) {
-                val rows = JdbcQueriesRepository.getAllData(
-                    usersTable,
-                    listOf(usersTable),
-                    null,
-                    page,
-                    mutableListOf(),
-                    Order("id", "ASC")
-                )
+                val rows =
+                    JdbcQueriesRepository.getAllData(
+                        usersTable,
+                        listOf(usersTable),
+                        null,
+                        page,
+                        mutableListOf(),
+                        Order("id", "ASC"),
+                    )
                 if (rows.isEmpty()) break
                 allIds += rows.map { it.primaryKey }
                 page++
@@ -1735,14 +1853,15 @@ class JdbcQueriesRepositoryFullTest {
 
     @Test
     fun `getCountOfTables works for tables grouped under same database key`() {
-        val counts = JdbcQueriesRepository.getCountOfTables(
-            listOf(
-                usersTable,
-                organizationsTable,
-                profilesTable,
-                rolesTable
+        val counts =
+            JdbcQueriesRepository.getCountOfTables(
+                listOf(
+                    usersTable,
+                    organizationsTable,
+                    profilesTable,
+                    rolesTable,
+                ),
             )
-        )
         assertEquals(2L, counts["users"])
         assertEquals(2L, counts["organizations"])
         assertEquals(2L, counts["profiles"])
@@ -1758,8 +1877,8 @@ class JdbcQueriesRepositoryFullTest {
             JdbcQueriesRepository.getAllSelectedReferenceInListReference(
                 usersTable,
                 roleReference,
-                "1"
-            )
+                "1",
+            ),
         )
     }
 
@@ -1786,80 +1905,97 @@ class JdbcQueriesRepositoryFullTest {
     }
 
     private fun buildTables() {
-        usersTable = TestJdbcTable(
-            columns = listOf(
-                id,
-                name,
-                age,
-                active,
-                status,
-                score,
-                nickname,
-                profileId,
-                organizationId,
-                roleReference
-            ),
-            tableName = "users",
-            panelListColumns = listOf(
-                "id",
-                "name",
-                "age",
-                "active",
-                "status",
-                "score",
-                "nickname",
-                "profile_id",
-                "organization_id",
-                "roles"
-            ),
-            filters = listOf("active", "status", "age", "score", "organization_id"),
-            searches = listOf("name", "organization_id.name"),
-        )
-        rolesTable = TestJdbcTable(
-            columns = listOf(col("id", ColumnType.INTEGER), col("label", ColumnType.STRING)),
-            tableName = "roles",
-            panelListColumns = listOf("id", "label"),
-        )
-        userRolesTable = TestJdbcTable(
-            columns = listOf(
-                col("user_id", ColumnType.INTEGER),
-                col("role_id", ColumnType.INTEGER)
-            ),
-            tableName = "user_roles",
-            panelListColumns = listOf("user_id", "role_id"),
-        )
-        profilesTable = TestJdbcTable(
-            columns = listOf(col("id", ColumnType.INTEGER), col("bio", ColumnType.STRING)),
-            tableName = "profiles",
-            panelListColumns = listOf("id", "bio"),
-            displayFormat = "Profile {id}: {bio}",
-        )
-        organizationsTable = TestJdbcTable(
-            columns = listOf(col("id", ColumnType.INTEGER), col("name", ColumnType.STRING)),
-            tableName = "organizations",
-            panelListColumns = listOf("id", "name"),
-            displayFormat = "{id} - {name}",
-            defaultOrder = Order("name", "ASC"),
-        )
+        usersTable =
+            TestJdbcTable(
+                columns =
+                    listOf(
+                        id,
+                        name,
+                        age,
+                        active,
+                        status,
+                        score,
+                        nickname,
+                        profileId,
+                        organizationId,
+                        roleReference,
+                    ),
+                tableName = "users",
+                panelListColumns =
+                    listOf(
+                        "id",
+                        "name",
+                        "age",
+                        "active",
+                        "status",
+                        "score",
+                        "nickname",
+                        "profile_id",
+                        "organization_id",
+                        "roles",
+                    ),
+                filters = listOf("active", "status", "age", "score", "organization_id"),
+                searches = listOf("name", "organization_id.name"),
+            )
+        rolesTable =
+            TestJdbcTable(
+                columns = listOf(col("id", ColumnType.INTEGER), col("label", ColumnType.STRING)),
+                tableName = "roles",
+                panelListColumns = listOf("id", "label"),
+            )
+        userRolesTable =
+            TestJdbcTable(
+                columns =
+                    listOf(
+                        col("user_id", ColumnType.INTEGER),
+                        col("role_id", ColumnType.INTEGER),
+                    ),
+                tableName = "user_roles",
+                panelListColumns = listOf("user_id", "role_id"),
+            )
+        profilesTable =
+            TestJdbcTable(
+                columns = listOf(col("id", ColumnType.INTEGER), col("bio", ColumnType.STRING)),
+                tableName = "profiles",
+                panelListColumns = listOf("id", "bio"),
+                displayFormat = "Profile {id}: {bio}",
+            )
+        organizationsTable =
+            TestJdbcTable(
+                columns = listOf(col("id", ColumnType.INTEGER), col("name", ColumnType.STRING)),
+                tableName = "organizations",
+                panelListColumns = listOf("id", "name"),
+                displayFormat = "{id} - {name}",
+                defaultOrder = Order("name", "ASC"),
+            )
     }
 
-    private fun createSchema() = dataSource.connection.use { connection ->
-        connection.execute("CREATE TABLE profiles (id INT PRIMARY KEY, bio VARCHAR(100) NOT NULL)")
-        connection.execute("CREATE TABLE organizations (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE)")
-        connection.execute("CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE, age INT NOT NULL, active BOOLEAN NOT NULL, status VARCHAR(20) NOT NULL, score DOUBLE NOT NULL, nickname VARCHAR(100), profile_id INT UNIQUE, organization_id INT, CONSTRAINT fk_profile FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE SET NULL, CONSTRAINT fk_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE RESTRICT)")
-        connection.execute("CREATE TABLE roles (id INT PRIMARY KEY, label VARCHAR(100) NOT NULL)")
-        connection.execute("CREATE TABLE user_roles (user_id INT NOT NULL, role_id INT NOT NULL, PRIMARY KEY (user_id, role_id), CONSTRAINT fk_user_role_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, CONSTRAINT fk_user_role_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT)")
-        connection.execute("INSERT INTO profiles (id, bio) VALUES (1, 'Ada Bio')")
-        connection.execute("INSERT INTO profiles (id, bio) VALUES (2, 'Linus Bio')")
-        connection.execute("INSERT INTO organizations (id, name) VALUES (1, 'Analytical Engines')")
-        connection.execute("INSERT INTO organizations (id, name) VALUES (2, 'Kernel Labs')")
-        connection.execute("INSERT INTO users (id, name, age, active, status, score, nickname, profile_id, organization_id) VALUES (1, 'Ada', 36, TRUE, 'ACTIVE', 10.5, 'Countess', 1, 1)")
-        connection.execute("INSERT INTO users (id, name, age, active, status, score, nickname, profile_id, organization_id) VALUES (2, 'Linus', 54, FALSE, 'BLOCKED', 2.0, NULL, 2, 2)")
-        connection.execute("INSERT INTO roles (id, label) VALUES (1, 'Admin')")
-        connection.execute("INSERT INTO roles (id, label) VALUES (2, 'Editor')")
-        connection.execute("INSERT INTO roles (id, label) VALUES (3, 'Auditor')")
-        connection.execute("INSERT INTO user_roles (user_id, role_id) VALUES (1, 1)")
-    }
+    private fun createSchema() =
+        dataSource.connection.use { connection ->
+            connection.execute("CREATE TABLE profiles (id INT PRIMARY KEY, bio VARCHAR(100) NOT NULL)")
+            connection.execute("CREATE TABLE organizations (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE)")
+            connection.execute(
+                "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE, age INT NOT NULL, active BOOLEAN NOT NULL, status VARCHAR(20) NOT NULL, score DOUBLE NOT NULL, nickname VARCHAR(100), profile_id INT UNIQUE, organization_id INT, CONSTRAINT fk_profile FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE SET NULL, CONSTRAINT fk_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE RESTRICT)",
+            )
+            connection.execute("CREATE TABLE roles (id INT PRIMARY KEY, label VARCHAR(100) NOT NULL)")
+            connection.execute(
+                "CREATE TABLE user_roles (user_id INT NOT NULL, role_id INT NOT NULL, PRIMARY KEY (user_id, role_id), CONSTRAINT fk_user_role_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, CONSTRAINT fk_user_role_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT)",
+            )
+            connection.execute("INSERT INTO profiles (id, bio) VALUES (1, 'Ada Bio')")
+            connection.execute("INSERT INTO profiles (id, bio) VALUES (2, 'Linus Bio')")
+            connection.execute("INSERT INTO organizations (id, name) VALUES (1, 'Analytical Engines')")
+            connection.execute("INSERT INTO organizations (id, name) VALUES (2, 'Kernel Labs')")
+            connection.execute(
+                "INSERT INTO users (id, name, age, active, status, score, nickname, profile_id, organization_id) VALUES (1, 'Ada', 36, TRUE, 'ACTIVE', 10.5, 'Countess', 1, 1)",
+            )
+            connection.execute(
+                "INSERT INTO users (id, name, age, active, status, score, nickname, profile_id, organization_id) VALUES (2, 'Linus', 54, FALSE, 'BLOCKED', 2.0, NULL, 2, 2)",
+            )
+            connection.execute("INSERT INTO roles (id, label) VALUES (1, 'Admin')")
+            connection.execute("INSERT INTO roles (id, label) VALUES (2, 'Editor')")
+            connection.execute("INSERT INTO roles (id, label) VALUES (3, 'Auditor')")
+            connection.execute("INSERT INTO user_roles (user_id, role_id) VALUES (1, 1)")
+        }
 
     private fun Connection.execute(sql: String) = createStatement().use { it.execute(sql) }
 
@@ -1872,7 +2008,7 @@ class JdbcQueriesRepositoryFullTest {
         columnName = name,
         verboseName = name,
         type = type,
-        showInPanel = showInPanel
+        showInPanel = showInPanel,
     ).extra()
 
     private fun listSection(
@@ -1902,10 +2038,16 @@ class JdbcQueriesRepositoryFullTest {
         override val index = 1
         override val orderQuery: String? = orderQuery
         override val limitCount: Int? = limitCount
-        override fun provideBorderColor(label: String, valueField: String) =
-            "border-$label-$valueField"
 
-        override fun provideFillColor(label: String, valueField: String) = "fill-$label-$valueField"
+        override fun provideBorderColor(
+            label: String,
+            valueField: String,
+        ) = "border-$label-$valueField"
+
+        override fun provideFillColor(
+            label: String,
+            valueField: String,
+        ) = "fill-$label-$valueField"
     }
 
     private fun textSection(

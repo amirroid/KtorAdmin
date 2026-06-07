@@ -6,7 +6,5 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import ir.amirroid.ktoradmin.processors.mongo.MongoCollectionProcessor
 
 class MongoCollectionAnnotationProcessorProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return MongoCollectionProcessor(environment)
-    }
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor = MongoCollectionProcessor(environment)
 }

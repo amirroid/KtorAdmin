@@ -1,10 +1,10 @@
 package ir.amirroid.ktoradmin.modules.actions
 
-import ir.amirroid.ktoradmin.csrf.CsrfManager
 import io.ktor.http.HttpHeaders
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.panels.AdminJdbcTable
 import ir.amirroid.ktoradmin.panels.AdminMongoCollection
 import ir.amirroid.ktoradmin.panels.AdminPanel
@@ -55,10 +55,11 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
                     }
 
                     // Validate and parse selected item IDs
-                    val idsForm = form["ids"] ?: run {
-                        badRequest("The 'ids' field is required but not found in the form.")
-                        return@runCatching
-                    }
+                    val idsForm =
+                        form["ids"] ?: run {
+                            badRequest("The 'ids' field is required but not found in the form.")
+                            return@runCatching
+                        }
 
                     // Parse JSON array of IDs and validate
                     val ids = Json.decodeFromString<List<String>>(idsForm)
@@ -68,11 +69,12 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
                     }
 
                     // Determine the collection/table name based on panel type
-                    val name = when (panel) {
-                        is AdminMongoCollection -> panel.getCollectionName()
-                        is AdminJdbcTable -> panel.getTableName()
-                        else -> panel.getPluralName()
-                    }
+                    val name =
+                        when (panel) {
+                            is AdminMongoCollection -> panel.getCollectionName()
+                            is AdminJdbcTable -> panel.getTableName()
+                            else -> panel.getPluralName()
+                        }
 
                     // Execute the action and redirect
                     action.performAction(name, ids)

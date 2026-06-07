@@ -10,5 +10,5 @@ import ir.amirroid.ktoradmin.models.actions.Action
 @Retention(AnnotationRetention.SOURCE)
 annotation class AdminActions(
     val actions: Array<Action> = [Action.ADD, Action.DELETE, Action.EDIT],
-    val customActions: Array<String> = []
+    val customActions: Array<String> = [],
 )

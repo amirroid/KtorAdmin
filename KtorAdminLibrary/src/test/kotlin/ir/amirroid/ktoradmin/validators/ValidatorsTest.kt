@@ -49,7 +49,10 @@ class ValidatorsTest {
         assertNull(Validators.validateColumnParameter(table, column, "AB", null, translator))
         assertEquals("Value exceeds maximum length of 4", Validators.validateColumnParameter(table, column, "ABCDE", null, translator))
         assertEquals("Value is shorter than minimum length of 2", Validators.validateColumnParameter(table, column, "A", null, translator))
-        assertEquals("Value does not match the required pattern ([A-Z]+)", Validators.validateColumnParameter(table, column, "ab", null, translator))
+        assertEquals(
+            "Value does not match the required pattern ([A-Z]+)",
+            Validators.validateColumnParameter(table, column, "ab", null, translator),
+        )
     }
 
     @Test
@@ -66,23 +69,60 @@ class ValidatorsTest {
     @Test
     fun `should validate decimal char boolean and enumeration values`() {
         assertNull(Validators.validateColumnParameter(table, columnSet("price", ColumnType.BIG_DECIMAL), "12.50", null, translator))
-        assertEquals("The provided value is not valid.", Validators.validateColumnParameter(table, columnSet("price", ColumnType.BIG_DECIMAL), "x", null, translator))
+        assertEquals(
+            "The provided value is not valid.",
+            Validators.validateColumnParameter(table, columnSet("price", ColumnType.BIG_DECIMAL), "x", null, translator),
+        )
         assertNull(Validators.validateColumnParameter(table, columnSet("initial", ColumnType.CHAR), "A", null, translator))
-        assertEquals("The provided value is not valid.", Validators.validateColumnParameter(table, columnSet("initial", ColumnType.CHAR), "AB", null, translator))
+        assertEquals(
+            "The provided value is not valid.",
+            Validators.validateColumnParameter(table, columnSet("initial", ColumnType.CHAR), "AB", null, translator),
+        )
         assertNull(Validators.validateColumnParameter(table, columnSet("enabled", ColumnType.BOOLEAN), "on", null, translator))
-        assertEquals("The provided value is not valid.", Validators.validateColumnParameter(table, columnSet("enabled", ColumnType.BOOLEAN), "yes", null, translator))
-        assertNull(Validators.validateColumnParameter(table, columnSet("status", ColumnType.ENUMERATION, enumerationValues = listOf("ACTIVE")), "ACTIVE", null, translator))
-        assertEquals("Value should be one of ACTIVE", Validators.validateColumnParameter(table, columnSet("status", ColumnType.ENUMERATION, enumerationValues = listOf("ACTIVE")), "DELETED", null, translator))
+        assertEquals(
+            "The provided value is not valid.",
+            Validators.validateColumnParameter(table, columnSet("enabled", ColumnType.BOOLEAN), "yes", null, translator),
+        )
+        assertNull(
+            Validators.validateColumnParameter(
+                table,
+                columnSet("status", ColumnType.ENUMERATION, enumerationValues = listOf("ACTIVE")),
+                "ACTIVE",
+                null,
+                translator,
+            ),
+        )
+        assertEquals(
+            "Value should be one of ACTIVE",
+            Validators.validateColumnParameter(
+                table,
+                columnSet("status", ColumnType.ENUMERATION, enumerationValues = listOf("ACTIVE")),
+                "DELETED",
+                null,
+                translator,
+            ),
+        )
     }
 
     @Test
     fun `should validate date datetime and duration formats`() {
         assertNull(Validators.validateColumnParameter(table, columnSet("birthday", ColumnType.DATE), "2025-01-31", null, translator))
-        assertEquals("The provided value is not valid.", Validators.validateColumnParameter(table, columnSet("birthday", ColumnType.DATE), "31-01-2025", null, translator))
-        assertNull(Validators.validateColumnParameter(table, columnSet("created", ColumnType.DATETIME), "2025-01-31T10:15", null, translator))
-        assertEquals("The provided value is not valid.", Validators.validateColumnParameter(table, columnSet("created", ColumnType.DATETIME), "2025-01-31 10:15", null, translator))
+        assertEquals(
+            "The provided value is not valid.",
+            Validators.validateColumnParameter(table, columnSet("birthday", ColumnType.DATE), "31-01-2025", null, translator),
+        )
+        assertNull(
+            Validators.validateColumnParameter(table, columnSet("created", ColumnType.DATETIME), "2025-01-31T10:15", null, translator),
+        )
+        assertEquals(
+            "The provided value is not valid.",
+            Validators.validateColumnParameter(table, columnSet("created", ColumnType.DATETIME), "2025-01-31 10:15", null, translator),
+        )
         assertNull(Validators.validateColumnParameter(table, columnSet("duration", ColumnType.DURATION), "1h", null, translator))
-        assertEquals("Value should be a valid duration format.", Validators.validateColumnParameter(table, columnSet("duration", ColumnType.DURATION), "one hour", null, translator))
+        assertEquals(
+            "Value should be a valid duration format.",
+            Validators.validateColumnParameter(table, columnSet("duration", ColumnType.DURATION), "one hour", null, translator),
+        )
     }
 
     @Test
@@ -103,7 +143,10 @@ class ValidatorsTest {
         assertNull(Validators.validateBytesSize(5, limits, translator))
         assertEquals("File size exceeds 5", Validators.validateBytesSize(6, limits, translator))
         assertNull(Validators.validateMimeType("avatar.png", limits, translator))
-        assertEquals("Invalid MIME type for file avatar.txt. Allowed types are image/png", Validators.validateMimeType("avatar.txt", limits, translator))
+        assertEquals(
+            "Invalid MIME type for file avatar.txt. Allowed types are image/png",
+            Validators.validateMimeType("avatar.txt", limits, translator),
+        )
     }
 
     private fun columnSet(

@@ -56,23 +56,22 @@ data class FieldSet(
     val hasConfirmation: Boolean = false,
 )
 
+internal fun FieldSet.getCurrentDate() =
+    when (type) {
+        FieldType.Date -> {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            LocalDate.now(DynamicConfiguration.timeZone).format(formatter)
+        }
 
-internal fun FieldSet.getCurrentDate() = when (type) {
-    FieldType.Date -> {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        LocalDate.now(DynamicConfiguration.timeZone).format(formatter)
+        FieldType.DateTime -> {
+            val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
+            LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
+        }
+
+        FieldType.Instant -> {
+            val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
+            LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
+        }
+
+        else -> null
     }
-
-    FieldType.DateTime -> {
-        val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
-        LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
-    }
-
-
-    FieldType.Instant -> {
-        val formatter = DateTimeFormatter.ofPattern(Constants.LOCAL_DATETIME_FORMAT)
-        LocalDateTime.now(DynamicConfiguration.timeZone).format(formatter)
-    }
-
-    else -> null
-}

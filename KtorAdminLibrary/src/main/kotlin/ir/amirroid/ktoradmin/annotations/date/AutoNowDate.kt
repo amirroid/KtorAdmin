@@ -20,4 +20,6 @@ package ir.amirroid.ktoradmin.annotations.date
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.PROPERTY)
-annotation class AutoNowDate(val updateOnChange: Boolean = false)
+annotation class AutoNowDate(
+    val updateOnChange: Boolean = false,
+)
