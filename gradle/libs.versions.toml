@@ -20,7 +20,7 @@ mongodb = "5.8.0"
 postgres = "42.7.11"
 reflections = "0.10.2"
 serialization = "1.11.0"
-ktlint = "13.1.0"
+ktlint = "14.2.0"
 
 [libraries]
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsS3" }
