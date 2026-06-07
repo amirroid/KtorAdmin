@@ -8,7 +8,7 @@ import ir.amirroid.ktoradmin.listener.AdminEventListener
 import ir.amirroid.ktoradmin.models.events.ColumnEvent
 import ir.amirroid.ktoradmin.models.events.FieldEvent
 import ir.amirroid.ktoradmin.models.events.FileEvent
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import java.io.*
 import javax.imageio.ImageIO
 

@@ -8,7 +8,7 @@ import ir.amirroid.ktoradmin.annotations.limit.Limits
 import ir.amirroid.ktoradmin.annotations.order.DefaultOrder
 import ir.amirroid.ktoradmin.annotations.references.ManyToManyReferences
 import ir.amirroid.ktoradmin.models.reference.EmptyColumn
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.Table
 
 @ExposedTable(
     "users",

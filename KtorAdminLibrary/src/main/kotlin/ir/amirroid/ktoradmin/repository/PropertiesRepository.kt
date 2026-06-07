@@ -588,11 +588,8 @@ object PropertiesRepository {
         find { it.qualifiedName == OverrideFieldType::class.qualifiedName }
             ?.arguments
             ?.getArgument<String>("type")
-            .let { item ->
-                FieldType::class.sealedSubclasses.firstNotNullOfOrNull { subclass ->
-                    val objInstance = subclass.objectInstance
-                    if (objInstance is FieldType && objInstance.name == item.toString()) objInstance else null
-                }
+            .let { typeName ->
+                FieldType.fromName(typeName)
             }
 
     /**

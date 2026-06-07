@@ -1,12 +1,17 @@
 package ir.amirreza.services
 
 import ir.amirreza.Users
-import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 
 @Serializable
 data class User(
@@ -41,7 +46,8 @@ class UserService(database: Database) {
 
     suspend fun getUser(username: String, password: String): User? {
         return dbQuery {
-            Users.selectAll().where { (Users.username eq username) and (Users.password eq password) }
+            Users.selectAll()
+                .where { (Users.username eq username) and (Users.password eq password) }
                 .map { User(it[Users.id], it[Users.username], it[Users.email], it[Users.password]) }
                 .singleOrNull()
         }
@@ -78,5 +84,5 @@ class UserService(database: Database) {
     }
 
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) { block() }
+        suspendTransaction { block() }
 }

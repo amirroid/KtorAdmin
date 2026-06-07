@@ -14,10 +14,10 @@ import ir.amirroid.ktoradmin.models.forms.LoginFiled
 import ir.amirroid.ktoradmin.models.menu.Menu
 import ir.amirroid.ktoradmin.mongo.MongoCredential
 import ir.amirroid.ktoradmin.mongo.MongoServerAddress
-import org.jetbrains.exposed.sql.Database
 import ir.amirroid.ktoradmin.plugins.KtorAdmin
 import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
 import ir.amirroid.ktoradmin.translator.locals.fa.PersianKtorAdminTranslator
+import org.jetbrains.exposed.v1.jdbc.Database
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 

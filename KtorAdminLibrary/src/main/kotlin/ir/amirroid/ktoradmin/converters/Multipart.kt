@@ -58,7 +58,7 @@ internal suspend fun MultiPartData.toTableValues(
         val column = panelListColumns.firstOrNull { it.columnName == name }
         if (name == CSRF_TOKEN_FIELD_NAME && part is PartData.FormItem) {
             val token = part.value
-            part.dispose()
+            part.release()
             if (!checkCsrfToken(token)) {
                 isInvalidRequest = true
                 return@forEachPart
@@ -66,7 +66,7 @@ internal suspend fun MultiPartData.toTableValues(
         }
         if (name == REQUEST_ID_FORM && part is PartData.FormItem) {
             requestId = part.value
-            part.dispose()
+            part.release()
             return@forEachPart
         }
         if (column != null && name != null) {
@@ -145,7 +145,7 @@ internal suspend fun MultiPartData.toTableValues(
                 else -> Unit
             }
         }
-        part.dispose()
+        part.release()
     }
     if (isInvalidRequest) return@coroutineScope Response.InvalidRequest
     val errorsNotNull = errors.filterNotNull()
@@ -204,7 +204,7 @@ internal suspend fun MultiPartData.toTableValues(
         val name = part.name
         if (name == CSRF_TOKEN_FIELD_NAME && part is PartData.FormItem) {
             val token = part.value
-            part.dispose()
+            part.release()
             if (!checkCsrfToken(token)) {
                 isInvalidRequest = true
                 return@forEachPart
@@ -212,7 +212,7 @@ internal suspend fun MultiPartData.toTableValues(
         }
         if (name == REQUEST_ID_FORM && part is PartData.FormItem) {
             requestId = part.value
-            part.dispose()
+            part.release()
         }
         val field = fields.firstOrNull { it.fieldName == name }
         if (field != null && name != null) {
@@ -260,7 +260,7 @@ internal suspend fun MultiPartData.toTableValues(
                 else -> Unit
             }
         }
-        part.dispose()
+        part.release()
     }
     if (isInvalidRequest) return@coroutineScope Response.InvalidRequest
     val errorsNotNull = errors.filterNotNull()

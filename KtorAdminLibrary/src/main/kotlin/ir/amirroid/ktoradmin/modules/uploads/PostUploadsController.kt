@@ -34,7 +34,7 @@ fun Routing.configureUploadFileRouting(authenticationName: String?) {
 
                     else -> Unit
                 }
-                part.dispose()
+                part.release()
             }
 
             if (!CsrfManager.validateToken(csrfToken) || fileBytes == null || fileName == null) {
