@@ -804,7 +804,6 @@ internal object MongoClientRepository {
                                 fieldName,
                                 "$$fieldName",
                             ) // Sum values
-                        else -> null
                     }
                 aggregationFunctionQuery.let {
                     pipeline.add(
