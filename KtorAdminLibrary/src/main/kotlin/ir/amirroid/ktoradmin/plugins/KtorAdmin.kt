@@ -7,7 +7,7 @@ import ir.amirroid.ktoradmin.modules.configureRouting
 import ir.amirroid.ktoradmin.modules.configureSessions
 import ir.amirroid.ktoradmin.modules.configureTemplating
 import ir.amirroid.ktoradmin.modules.error.configureErrorHandler
-import ir.amirroid.ktoradmin.rate_limiting.configureRateLimit
+import ir.amirroid.ktoradmin.ratelimit.configureRateLimit
 import ir.amirroid.ktoradmin.repository.AdminTableRepository
 
 class KtorAdmin {

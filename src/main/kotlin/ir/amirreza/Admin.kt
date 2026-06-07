@@ -60,6 +60,7 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper
         )
+        rateLimitPerMinutes = 1
         registerPreview(VideoPreview())
         registerPreview(ImagePreview())
         registerValueMapper(

@@ -11,7 +11,7 @@ import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.flash.getFlashDataAndClear
 import ir.amirroid.ktoradmin.flash.getRequestId
-import ir.amirroid.ktoradmin.rate_limiting.withRateLimit
+import ir.amirroid.ktoradmin.ratelimit.withRateLimit
 import ir.amirroid.ktoradmin.translator.translator
 import ir.amirroid.ktoradmin.utils.Constants
 
