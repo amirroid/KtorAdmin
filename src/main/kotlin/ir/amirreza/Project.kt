@@ -1,9 +1,9 @@
 package ir.amirreza
 
+import ir.amirreza.uuid_table.AdminUuidTable
 import ir.amirroid.ktoradmin.annotations.exposed.ExposedTable
 import ir.amirroid.ktoradmin.annotations.info.ColumnInfo
 import ir.amirroid.ktoradmin.annotations.info.IgnoreColumns
-import org.jetbrains.exposed.v1.core.dao.id.UuidTable
 import org.jetbrains.exposed.v1.datetime.timestamp
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -15,7 +15,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
     primaryKey = "id"
 )
 @IgnoreColumns(columnNames = ["id"])
-object Projects : UuidTable("projects") {
+object Projects : AdminUuidTable("projects") {
     val name = varchar("name", 100)
     val description = text("description")
 

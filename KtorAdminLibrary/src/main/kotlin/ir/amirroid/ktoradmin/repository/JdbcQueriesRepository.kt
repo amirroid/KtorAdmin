@@ -13,6 +13,7 @@ import ir.amirroid.ktoradmin.formatters.map
 import ir.amirroid.ktoradmin.formatters.populateTemplate
 import ir.amirroid.ktoradmin.formatters.restore
 import ir.amirroid.ktoradmin.getters.putColumn
+import ir.amirroid.ktoradmin.getters.putColumnOrDefault
 import ir.amirroid.ktoradmin.getters.toTypedValue
 import ir.amirroid.ktoradmin.hikra.KtorAdminHikariCP
 import ir.amirroid.ktoradmin.models.ColumnSet
@@ -39,6 +40,8 @@ import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumns
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumnsInUpsert
 import ir.amirroid.ktoradmin.panels.getAllAutoNowDateInsertColumns
 import ir.amirroid.ktoradmin.panels.getAllAutoNowDateUpdateColumns
+import ir.amirroid.ktoradmin.panels.getAllDefaultValueProviderColumns
+import ir.amirroid.ktoradmin.provider.defaultvalue.DefaultValueProviderRegistry
 import ir.amirroid.ktoradmin.utils.formatAsIntegerIfPossible
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -150,8 +153,8 @@ internal object JdbcQueriesRepository {
                 .use { prepareStatement ->
 
                     // Sets the new value at the first parameter position
-                    prepareStatement.putColumn(
-                        columnSet.type,
+                    prepareStatement.putColumnOrDefault(
+                        columnSet,
                         value?.toTypedValue(columnSet.type).map(columnSet),
                         1,
                     )
@@ -942,29 +945,47 @@ internal object JdbcQueriesRepository {
                 tx.prepare(sqlQuery(table.createInsertQuery())).use { preparedStatement ->
                     val columns = table.getAllAllowToShowColumnsInUpsert()
                     val insertAutoDateColumns = table.getAllAutoNowDateInsertColumns()
+                    val dynamicDefaultColumns = table.getAllDefaultValueProviderColumns()
 
                     // Validate parameters count
                     if (parameters.size != columns.size) {
                         throw IllegalArgumentException("The number of parameters does not match the number of columns")
                     }
 
+                    var paramIndex = 1
+
                     // Insert main columns
                     columns.forEachIndexed { index, columnSet ->
-                        preparedStatement.putColumn(
-                            columnSet.type,
+                        preparedStatement.putColumnOrDefault(
+                            columnSet,
                             parameters[index].map(columnSet),
-                            index + 1,
+                            paramIndex,
                         )
+                        paramIndex++
                     }
 
                     // Insert auto-now date columns
-                    insertAutoDateColumns.forEachIndexed { index, columnSet ->
+                    insertAutoDateColumns.forEach { columnSet ->
                         preparedStatement.putColumn(
                             columnSet.type,
                             columnSet.getCurrentDateClass(),
-                            columns.size + index + 1,
+                            paramIndex,
                         )
+                        paramIndex++
                     }
+
+                    dynamicDefaultColumns.forEach { columnSet ->
+                        preparedStatement.putColumn(
+                            columnSet.type,
+                            DefaultValueProviderRegistry
+                                .get(columnSet.defaultValueProviderKey!!)
+                                .provide()
+                                .map(columnSet),
+                            paramIndex,
+                        )
+                        paramIndex++
+                    }
+
                     preparedStatement.executeUpdate()
                 }
             }
@@ -1012,8 +1033,8 @@ internal object JdbcQueriesRepository {
                                     ),
                                 ).use { prepareStatement ->
                                     changedData.forEachIndexed { index, item ->
-                                        prepareStatement.putColumn(
-                                            item.first.type,
+                                        prepareStatement.putColumnOrDefault(
+                                            item.first,
                                             item.second?.second.map(item.first),
                                             index + 1,
                                         )
@@ -1259,7 +1280,7 @@ internal object JdbcQueriesRepository {
                     if (reference != null) {
                         val joinTable = reference.tableName
                         val joinAlias =
-                            aliasMap.getOrPut(joinTable) { "${joinTable}_REF" } // ایجاد alias یکتا
+                            aliasMap.getOrPut(joinTable) { "${joinTable}_REF" }
 
                         val joinCondition =
                             when (reference) {
@@ -1482,7 +1503,10 @@ internal object JdbcQueriesRepository {
         buildString {
             val columns = getAllAllowToShowColumnsInUpsert()
             val insertAutoDateColumns = getAllAutoNowDateInsertColumns()
-            val allColumns = (columns + insertAutoDateColumns).distinct()
+
+            val dynamicDefaultColumns = getAllDefaultValueProviderColumns()
+
+            val allColumns = (columns + insertAutoDateColumns + dynamicDefaultColumns).distinct()
 
             append("INSERT INTO ")
             append(getTableName())

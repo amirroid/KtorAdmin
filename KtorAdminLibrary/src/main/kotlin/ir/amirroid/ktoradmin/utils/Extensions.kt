@@ -31,6 +31,7 @@ internal fun ColumnSet.toSuitableStringForFile() =
     |    uploadTarget = ${uploadTarget?.toFormattedString()},
     |    allowedMimeTypes = ${allowedMimeTypes?.toSuitableStringForFile()},
     |    defaultValue = ${defaultValue?.let { "\"${it}\"" }},
+    |    defaultValueProviderKey = ${defaultValueProviderKey?.let { "\"${it}\"" }},
     |    enumerationValues = ${enumerationValues?.toSuitableStringForFile()},
     |    statusColors = ${statusColors?.toSuitableStringForFile()},
     |    limits = ${limits?.toFormattedString()},
