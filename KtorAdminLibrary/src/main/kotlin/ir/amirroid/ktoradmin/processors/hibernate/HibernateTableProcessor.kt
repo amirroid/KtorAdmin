@@ -105,11 +105,18 @@ class HibernateTableProcessor(
         val columns = mutableListOf<ColumnSet>()
         var primaryKey: ColumnSet? = null
 
+        val ignoredColumns = getIgnoredColumnNames()
+
         getDeclaredProperties().forEach { property ->
             val type = property.type.resolve()
 
             PropertiesRepository.getColumnSetsForHibernate(property, type)?.let { columnSet ->
-                columns += columnSet
+                var column = columnSet
+                if (columnSet.columnName in ignoredColumns) {
+                    column = columnSet.copy(showInPanel = false)
+                }
+
+                columns += column
                 val idAnnotationQualifiedNames =
                     getListOfHibernatePackage(
                         HIBERNATE_ID_ANNOTATION_CLASSNAME,
@@ -122,6 +129,21 @@ class HibernateTableProcessor(
 
         return columns to (primaryKey ?: throw IllegalStateException("(${getTableName()}) No primary key found"))
     }
+
+    private fun KSClassDeclaration.getIgnoredColumnNames(): Set<String> =
+        annotations
+            .firstOrNull { it.shortName.asString() == "IgnoreColumns" }
+            ?.arguments
+            ?.firstOrNull { it.name?.asString() == "columnNames" }
+            ?.value
+            ?.let { value ->
+                when (value) {
+                    is List<*> -> value.mapNotNull { it?.toString() }.toSet()
+                    is Array<*> -> value.mapNotNull { it?.toString() }.toSet()
+                    else -> setOf(value.toString())
+                }
+            }
+            ?: emptySet()
 
     private fun KSClassDeclaration.getTableName(): String =
         annotations
