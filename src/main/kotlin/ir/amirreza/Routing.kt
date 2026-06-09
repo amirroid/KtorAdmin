@@ -17,6 +17,7 @@ import java.io.File
 fun Application.configureRouting(database: Database) {
     val tasksService = TaskService(database)
     val projectsService = ProjectsService(database)
+    UuidTestService(database)
     val userService = UserService(database)
     val tokenService = TokenService(database)
     routing {
