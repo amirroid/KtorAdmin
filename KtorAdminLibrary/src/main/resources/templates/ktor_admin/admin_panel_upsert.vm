@@ -190,6 +190,14 @@
                                        value="$!defaultValue"
                                        #if($column.readOnly)readonly#end/>
                             #end
+
+                            <!-- UUID -->
+                            #if($column.type.name == "UUID")
+                                <input type="text" class="form-input" name="$column.columnName"
+                                       value="$!defaultValue"
+                                       #if($column.readOnly)readonly#end/>
+                            #end
+
                             <!-- BOOLEAN -->
                             #if($column.type.name == "BOOLEAN")
                                 <label class="custom-checkbox">

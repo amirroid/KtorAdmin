@@ -64,9 +64,10 @@ internal fun String.toBoolean(): Boolean? =
         else -> null
     }
 
-internal fun String.toUuidOrNull(): Uuid? = runCatching {
-    Uuid.parse(this)
-}.getOrNull()
+internal fun String.toUuidOrNull(): Uuid? =
+    runCatching {
+        Uuid.parse(this)
+    }.getOrNull()
 
 private fun resolveDefaultValue(column: ColumnSet): Any? {
     val key = column.defaultValueProviderKey ?: return null
