@@ -15,6 +15,7 @@ import ir.amirroid.ktoradmin.models.menu.Menu
 import ir.amirroid.ktoradmin.mongo.MongoCredential
 import ir.amirroid.ktoradmin.mongo.MongoServerAddress
 import ir.amirroid.ktoradmin.plugins.KtorAdmin
+import ir.amirroid.ktoradmin.provider.defaultvalue.uuid.UUIDDefaultValueProvider
 import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
 import ir.amirroid.ktoradmin.translator.locals.fa.PersianKtorAdminTranslator
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -60,6 +61,7 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper
         )
+        registerDefaultValueProvider(UUIDDefaultValueProvider())
         registerPreview(VideoPreview())
         registerPreview(ImagePreview())
         registerValueMapper(

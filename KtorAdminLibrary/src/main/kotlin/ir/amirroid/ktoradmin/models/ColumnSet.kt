@@ -22,6 +22,9 @@ import java.time.OffsetDateTime
  * @property uploadTarget Defines upload-related configurations for this column, if applicable.
  * @property allowedMimeTypes A list of permitted MIME types for uploaded content, if relevant.
  * @property defaultValue The default value assigned to the column, if specified.
+ * @property defaultValueProviderKey
+ * Runtime key used to resolve a dynamic default value from `DefaultProviderRegistry`.
+ * If set, this overrides static `defaultValue` resolution.
  * @property enumerationValues A list of possible values if the column represents an enumeration.
  * @property limits Specifies constraints such as minimum and maximum values.
  * @property reference A reference to another column or data entity, if applicable.
@@ -69,6 +72,7 @@ data class ColumnSet(
     val hasConfirmation: Boolean = false,
     val valueMapper: String? = null,
     val preview: String? = null,
+    val defaultValueProviderKey: String? = null,
 )
 
 internal fun ColumnSet.getCurrentDateClass() =

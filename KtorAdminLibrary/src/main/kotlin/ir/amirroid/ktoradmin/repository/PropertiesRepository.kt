@@ -5,6 +5,7 @@ import com.google.devtools.ksp.symbol.*
 import ir.amirroid.ktoradmin.annotations.computed.Computed
 import ir.amirroid.ktoradmin.annotations.confirmation.Confirmation
 import ir.amirroid.ktoradmin.annotations.date.AutoNowDate
+import ir.amirroid.ktoradmin.annotations.defaultvalue.DefaultValueProvider
 import ir.amirroid.ktoradmin.annotations.enumeration.Enumeration
 import ir.amirroid.ktoradmin.annotations.field.FieldInfo
 import ir.amirroid.ktoradmin.annotations.info.ColumnInfo
@@ -187,6 +188,7 @@ object PropertiesRepository {
             hasRichEditor = hasRichEditor,
             hasConfirmation = hasConfirmationAnnotation(property.annotations),
             valueMapper = getValueMapperAnnotation(property.annotations),
+            defaultValueProviderKey = getDefaultValueProviderAnnotation(property.annotations),
             preview = getPreviewAnnotation(property.annotations),
             hasTextArea = hasTextAreaField,
         )
@@ -601,6 +603,14 @@ object PropertiesRepository {
      */
     private fun getValueMapperAnnotation(annotations: Sequence<KSAnnotation>) =
         annotations.firstOrNull { it.qualifiedName == ValueMapper::class.qualifiedName }?.arguments?.getArgument<String>(
+            "key",
+        )
+
+    /**
+     * Extracts DefaultValue annotation configuration if present.
+     */
+    private fun getDefaultValueProviderAnnotation(annotations: Sequence<KSAnnotation>) =
+        annotations.firstOrNull { it.qualifiedName == DefaultValueProvider::class.qualifiedName }?.arguments?.getArgument<String>(
             "key",
         )
 

@@ -119,16 +119,48 @@ class ExposedTableProcessor(
             }.build()
     }
 
-    private fun KSClassDeclaration.validateImplementations() {
-        val hasTableSuperType =
-            superTypes.any { superType ->
-                superType
-                    .resolve()
-                    .declaration.qualifiedName
-                    ?.asString() in TABLE_TYPES
+    /**
+     * Recursively checks full inheritance tree to find TABLE_TYPES match.
+     */
+    private fun checkDeepInheritance(classDecl: KSClassDeclaration): Boolean {
+        val superTypes = classDecl.superTypes.toList()
+
+        for (superType in superTypes) {
+            val resolved = superType.resolve()
+            val fqName = resolved.declaration.qualifiedName?.asString()
+
+            if (fqName in TABLE_TYPES) return true
+
+            val declaration = resolved.declaration
+            if (declaration is KSClassDeclaration) {
+                if (checkDeepInheritance(declaration)) return true
             }
-        if (!hasTableSuperType) {
-            val message = "Class ${simpleName.asString()} must inherit from Table."
+        }
+
+        return false
+    }
+
+    /**
+     * Validates that the class inherits (directly or indirectly)
+     * from one of the allowed table base types defined in TABLE_TYPES.
+     *
+     * This ensures only valid table definitions are processed by KSP.
+     *
+     * @throws IllegalArgumentException if the class does not extend a valid table type.
+     */
+    private fun KSClassDeclaration.validateImplementations() {
+        val isValidTable =
+            superTypes.any { superType ->
+                val resolved = superType.resolve()
+
+                val fqName = resolved.declaration.qualifiedName?.asString()
+
+                fqName in TABLE_TYPES
+            } ||
+                checkDeepInheritance(this)
+
+        if (!isValidTable) {
+            val message = "Class ${simpleName.asString()} must inherit from a valid Table type."
             throw IllegalArgumentException(message)
         }
     }

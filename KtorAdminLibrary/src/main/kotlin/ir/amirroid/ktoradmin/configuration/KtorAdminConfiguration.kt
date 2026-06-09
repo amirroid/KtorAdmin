@@ -14,6 +14,8 @@ import ir.amirroid.ktoradmin.models.menu.Menu
 import ir.amirroid.ktoradmin.mongo.MongoCredential
 import ir.amirroid.ktoradmin.mongo.MongoServerAddress
 import ir.amirroid.ktoradmin.preview.KtorAdminPreview
+import ir.amirroid.ktoradmin.provider.defaultvalue.ClientDefaultValueProvider
+import ir.amirroid.ktoradmin.provider.defaultvalue.DefaultValueProviderRegistry
 import ir.amirroid.ktoradmin.providers.AWSS3StorageProvider
 import ir.amirroid.ktoradmin.providers.StorageProvider
 import ir.amirroid.ktoradmin.repository.FileRepository
@@ -307,6 +309,14 @@ class KtorAdminConfiguration {
      */
     fun registerPreview(preview: KtorAdminPreview) {
         DynamicConfiguration.registerPreview(preview)
+    }
+
+    /**
+     * Registers a default value provider.
+     * Used for resolving dynamic default values at runtime.
+     */
+    fun registerDefaultValueProvider(provider: ClientDefaultValueProvider) {
+        DefaultValueProviderRegistry.register(provider.key, provider)
     }
 
     /**

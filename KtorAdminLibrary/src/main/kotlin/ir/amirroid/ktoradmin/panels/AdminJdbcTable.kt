@@ -20,3 +20,8 @@ fun AdminJdbcTable.getAllAllowToShowColumnsInUpsertView() = getAllColumns().filt
 fun AdminJdbcTable.getAllAutoNowDateInsertColumns() = getAllColumns().filter { it.autoNowDate != null }
 
 fun AdminJdbcTable.getAllAutoNowDateUpdateColumns() = getAllColumns().filter { it.autoNowDate != null && it.autoNowDate.updateOnChange }
+
+fun AdminJdbcTable.getAllDefaultValueProviderColumns() =
+    getAllColumns().filter {
+        !it.showInPanel && it.defaultValueProviderKey != null
+    }

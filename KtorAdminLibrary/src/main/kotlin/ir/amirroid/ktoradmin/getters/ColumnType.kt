@@ -1,7 +1,9 @@
 package ir.amirroid.ktoradmin.getters
 
+import ir.amirroid.ktoradmin.models.ColumnSet
 import ir.amirroid.ktoradmin.models.events.FileEvent
 import ir.amirroid.ktoradmin.models.types.ColumnType
+import ir.amirroid.ktoradmin.provider.defaultvalue.DefaultValueProviderRegistry
 import ir.amirroid.ktoradmin.utils.Constants
 import java.math.BigDecimal
 import java.sql.Date
@@ -11,6 +13,9 @@ import java.sql.Types
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.util.UUID
+import kotlin.uuid.Uuid
+import kotlin.uuid.toJavaUuid
 
 internal fun String.toTypedValue(columnType: ColumnType): Any? =
     when (columnType) {
@@ -28,6 +33,7 @@ internal fun String.toTypedValue(columnType: ColumnType): Any? =
         ColumnType.DATE -> this.toLocalDate()
         ColumnType.DATETIME -> this.toLocalDateTime()
         ColumnType.TIMESTAMP_WITH_TIMEZONE -> toOffsetDateTime()
+        ColumnType.UUID -> toUuidOrNull()
         else -> this
     }
 
@@ -47,6 +53,7 @@ internal fun String.toTypedValueNullable(columnType: ColumnType): Any? =
         ColumnType.DATE -> toLocalDate()
         ColumnType.DATETIME -> toLocalDateTime()
         ColumnType.TIMESTAMP_WITH_TIMEZONE -> toOffsetDateTime()
+        ColumnType.UUID -> toUuidOrNull()
         else -> this
     }
 
@@ -56,6 +63,27 @@ internal fun String.toBoolean(): Boolean? =
         Constants.FALSE_FORM -> false
         else -> null
     }
+
+internal fun String.toUuidOrNull(): Uuid? = runCatching {
+    Uuid.parse(this)
+}.getOrNull()
+
+private fun resolveDefaultValue(column: ColumnSet): Any? {
+    val key = column.defaultValueProviderKey ?: return null
+
+    val provider = DefaultValueProviderRegistry.get(key)
+    return provider.provide()
+}
+
+internal fun PreparedStatement.putColumnOrDefault(
+    column: ColumnSet,
+    value: Any?,
+    index: Int,
+) {
+    val finalValue = value ?: resolveDefaultValue(column)
+
+    putColumn(column.type, finalValue, index)
+}
 
 internal fun PreparedStatement.putColumn(
     columnType: ColumnType,
@@ -85,6 +113,12 @@ internal fun PreparedStatement.putColumn(
                 this.setNull(
                     index,
                     Types.VARCHAR,
+                )
+
+            ColumnType.UUID ->
+                this.setNull(
+                    index,
+                    Types.OTHER,
                 )
 
             ColumnType.BOOLEAN -> this.setNull(index, Types.BOOLEAN)
@@ -155,6 +189,12 @@ internal fun PreparedStatement.putColumn(
                     index,
                     value,
                 )
+            }
+        }
+
+        is Uuid -> {
+            if (columnType == ColumnType.UUID) {
+                this.setObject(index, value.toJavaUuid())
             }
         }
 
