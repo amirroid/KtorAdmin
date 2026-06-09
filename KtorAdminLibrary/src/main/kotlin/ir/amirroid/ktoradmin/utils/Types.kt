@@ -20,10 +20,11 @@ fun guessPropertyType(type: String) =
         "kotlin.Char" -> ColumnType.CHAR
         "kotlin.ByteArray" -> ColumnType.BINARY
         "kotlin.Boolean" -> ColumnType.BOOLEAN
-        "kotlinx.datetime.LocalDateTime", "kotlinx.datetime.Instant" -> ColumnType.DATETIME
+        "kotlinx.datetime.LocalDateTime", "kotlinx.datetime.Instant", "kotlin.time.Instant" -> ColumnType.DATETIME
         "java.time.OffsetDateTime" -> ColumnType.TIMESTAMP_WITH_TIMEZONE
         "kotlinx.datetime.LocalDate" -> ColumnType.DATE
         "kotlin.time.Duration" -> ColumnType.DURATION
+        "kotlin.uuid.Uuid" -> ColumnType.UUID
         else -> ColumnType.NOT_AVAILABLE
     }
 

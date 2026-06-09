@@ -2,7 +2,6 @@ package ir.amirroid.ktoradmin.repository
 
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.symbol.*
-import com.squareup.kotlinpoet.ksp.toClassName
 import ir.amirroid.ktoradmin.annotations.computed.Computed
 import ir.amirroid.ktoradmin.annotations.confirmation.Confirmation
 import ir.amirroid.ktoradmin.annotations.date.AutoNowDate
@@ -210,14 +209,9 @@ object PropertiesRepository {
             if (isEmpty) {
                 null
             } else {
-                type.arguments
-                    .firstOrNull()
-                    ?.type
-                    ?.resolve()
-                    ?.toClassName()
-                    ?.canonicalName
-                    ?: return null
+                type.resolveExposedColumnType() ?: return null
             }
+
         val baseInfo = extractBaseColumnInfo(property, type)
         val enumValues = property.annotations.getEnumerations()
 
@@ -249,7 +243,7 @@ object PropertiesRepository {
                 (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS &&
                 property.annotations.any {
                     it.qualifiedName in
-                        HibernateTableProcessor.Companion.getListOfHibernatePackage(
+                        HibernateTableProcessor.getListOfHibernatePackage(
                             "Enumerated",
                         )
                 }
@@ -257,7 +251,7 @@ object PropertiesRepository {
         // Process Hibernate-specific column annotation
         val columnAnnotation =
             property.annotations.find {
-                it.qualifiedName in HibernateTableProcessor.Companion.getListOfHibernatePackage("Column")
+                it.qualifiedName in HibernateTableProcessor.getListOfHibernatePackage("Column")
             }
 
         val hibernateReference = detectReferenceAnnotationForHibernateTable(property, type)
@@ -839,5 +833,52 @@ object PropertiesRepository {
                     "Field '$fieldName' has type '$fieldType', which is incompatible.",
             )
         }
+    }
+
+    private val ENTITY_ID_TYPES =
+        setOf(
+            "org.jetbrains.exposed.v1.core.dao.id.EntityID",
+            "org.jetbrains.exposed.dao.id.EntityID",
+        )
+
+    /**
+     * Resolves the actual column type used by Exposed columns.
+     *
+     * For regular columns:
+     * Column<String> -> String
+     *
+     * For ID columns:
+     * Column<EntityID<UUID>> -> UUID
+     *
+     * Supports both Exposed v1 package structure and legacy package names.
+     *
+     * @return The resolved column type canonical name, or null if it cannot be determined.
+     */
+    private fun KSType.resolveExposedColumnType(): String? {
+        val firstArgument =
+            arguments
+                .firstOrNull()
+                ?.type
+                ?.resolve()
+                ?: return null
+
+        val firstArgumentName =
+            (firstArgument.declaration as? KSClassDeclaration)
+                ?.qualifiedName
+                ?.asString()
+                ?: return null
+
+        if (firstArgumentName !in ENTITY_ID_TYPES) {
+            return firstArgumentName
+        }
+
+        return firstArgument
+            .arguments
+            .firstOrNull()
+            ?.type
+            ?.resolve()
+            ?.declaration
+            ?.qualifiedName
+            ?.asString()
     }
 }

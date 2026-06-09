@@ -20,6 +20,7 @@ enum class ColumnType {
     ENUMERATION,
     DATE,
     DURATION,
+    UUID,
     DATETIME,
     TIMESTAMP_WITH_TIMEZONE,
     NOT_AVAILABLE,

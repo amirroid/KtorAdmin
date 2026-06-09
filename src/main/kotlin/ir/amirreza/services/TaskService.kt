@@ -26,7 +26,7 @@ data class Task(
 )
 
 
-class TaskService(private val database: Database) {
+class TaskService(database: Database) {
     init {
         transaction(database) {
             SchemaUtils.createMissingTablesAndColumns(Tasks)

@@ -20,6 +20,7 @@ import ir.amirroid.ktoradmin.models.common.Reference
 import ir.amirroid.ktoradmin.models.date.AutoNowDate
 import ir.amirroid.ktoradmin.models.reference.EmptyColumn
 import ir.amirroid.ktoradmin.models.types.ColumnType
+import ir.amirroid.ktoradmin.processors.qualifiedName
 import ir.amirroid.ktoradmin.repository.AnnotationRepository
 import ir.amirroid.ktoradmin.repository.PropertiesRepository
 import ir.amirroid.ktoradmin.utils.Constants
@@ -60,6 +61,7 @@ class ExposedTableProcessor(
         val fileName = FileUtils.getGeneratedFileName(simpleFileName)
         val columns = classDeclaration.getAllColumnSets()
         val generatedClass = generateClass(classDeclaration, fileName, columns)
+
         val fileSpec =
             FileSpec
                 .builder(packageName, fileName)
@@ -134,7 +136,10 @@ class ExposedTableProcessor(
     private fun KSClassDeclaration.getAllColumnSets(): List<ColumnSet> {
         val emptyColumnName = EmptyColumn::class.qualifiedName
         val columns = mutableListOf<ColumnSet>()
-        declarations.filterIsInstance<KSPropertyDeclaration>().forEach { property ->
+
+        val ignoredColumns = getIgnoredColumnNames()
+
+        getAllProperties().forEach { property ->
             val type = property.type.resolve()
             val typeName =
                 (type.declaration as? KSClassDeclaration)
@@ -143,13 +148,32 @@ class ExposedTableProcessor(
             if (typeName in COLUMN_TYPES || typeName == emptyColumnName) {
                 PropertiesRepository
                     .getColumnSetsForExposed(property, type, isEmpty = typeName == emptyColumnName)
-                    ?.let {
-                        columns += it
+                    ?.let { columnSet ->
+                        var column = columnSet
+                        if (columnSet.columnName in ignoredColumns) {
+                            column = columnSet.copy(showInPanel = false)
+                        }
+                        columns += column
                     }
             }
         }
         return columns
     }
+
+    private fun KSClassDeclaration.getIgnoredColumnNames(): Set<String> =
+        annotations
+            .firstOrNull { it.shortName.asString() == "IgnoreColumns" }
+            ?.arguments
+            ?.firstOrNull { it.name?.asString() == "columnNames" }
+            ?.value
+            ?.let { value ->
+                when (value) {
+                    is List<*> -> value.mapNotNull { it?.toString() }.toSet()
+                    is Array<*> -> value.mapNotNull { it?.toString() }.toSet()
+                    else -> setOf(value.toString())
+                }
+            }
+            ?: emptySet()
 
     private fun KSClassDeclaration.getTableName() =
         getAnnotationArguments()
@@ -196,12 +220,14 @@ class ExposedTableProcessor(
                 ?.value as? String
         )?.takeIf { it.isNotEmpty() } ?: (tableName + "s")
 
-    private fun KSClassDeclaration.getShowInAdminPanel() =
-        (
+    private fun KSClassDeclaration.getShowInAdminPanel(): Boolean {
+        val showInAdminPanel =
             getAnnotationArguments()
                 ?.find { it.name?.asString() == "showInAdminPanel" }
                 ?.value as? Boolean
-        )!!
+
+        return showInAdminPanel ?: true
+    }
 
     private fun KSClassDeclaration.getAnnotationArguments() =
         annotations
@@ -225,6 +251,8 @@ class ExposedTableProcessor(
                 "org.jetbrains.exposed.v1.dao.id.IdTable",
                 "org.jetbrains.exposed.v1.dao.id.IntIdTable",
                 "org.jetbrains.exposed.v1.dao.id.LongIdTable",
+                "org.jetbrains.exposed.v1.core.dao.id.java.UUIDTable",
+                "org.jetbrains.exposed.v1.core.dao.id.UuidTable",
             )
     }
 }
