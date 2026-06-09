@@ -747,19 +747,19 @@ internal object JdbcQueriesRepository {
                 when (currentValue) {
                     "on" ->
                         initialValue?.lowercase() !in
-                                listOf(
-                                    "'1'",
-                                    "1",
-                                    "true",
-                                )
+                            listOf(
+                                "'1'",
+                                "1",
+                                "true",
+                            )
 
                     "off" ->
                         initialValue?.lowercase() !in
-                                listOf(
-                                    "'0'",
-                                    "0",
-                                    "false",
-                                )
+                            listOf(
+                                "'0'",
+                                "0",
+                                "false",
+                            )
 
                     else -> initialValue != currentValue
                 }
@@ -996,8 +996,8 @@ internal object JdbcQueriesRepository {
                             initialValue,
                             item.second?.first,
                         ) &&
-                                !(initialValue != null && item.second?.first == null) &&
-                                item.first.hasConfirmation.not()
+                            !(initialValue != null && item.second?.first == null) &&
+                            item.first.hasConfirmation.not()
                     }
             if (changedData.isNotEmpty() || table.getAllAutoNowDateUpdateColumns().isNotEmpty()) {
                 table
