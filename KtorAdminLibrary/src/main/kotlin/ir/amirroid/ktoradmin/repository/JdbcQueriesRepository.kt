@@ -811,23 +811,24 @@ internal object JdbcQueriesRepository {
         }
 
         val displayFormatValues = displayFormat.extractTextInCurlyBraces()
-        val values = displayFormatValues.associateWith { column ->
-            if (column == table.getPrimaryKey()) {
-                primaryKeyValue
-            } else {
-                val splitItem = column.split(".")
-                val columnSet = table.getAllColumns().firstOrNull { it.columnName == splitItem.last() }
-                val columnName = splitItem.joinToString("_")
-                val rawValue = rs.getObject(columnName)
-                if (columnSet == null) {
-                    rawValue?.toString()
+        val values =
+            displayFormatValues.associateWith { column ->
+                if (column == table.getPrimaryKey()) {
+                    primaryKeyValue
                 } else {
-                    rawValue
-                        .restore(columnSet)
-                        .formatToDisplayInTable(columnSet.type)
+                    val splitItem = column.split(".")
+                    val columnSet = table.getAllColumns().firstOrNull { it.columnName == splitItem.last() }
+                    val columnName = splitItem.joinToString("_")
+                    val rawValue = rs.getObject(columnName)
+                    if (columnSet == null) {
+                        rawValue?.toString()
+                    } else {
+                        rawValue
+                            .restore(columnSet)
+                            .formatToDisplayInTable(columnSet.type)
+                    }
                 }
             }
-        }
         return populateTemplate(displayFormat, values)
     }
 
@@ -841,127 +842,133 @@ internal object JdbcQueriesRepository {
         page: Int,
         pageSize: Int,
         searchFields: List<String> = emptyList(),
-    ): String = buildString {
-        val tableName = table.getTableName()
-        val primaryKey = table.getPrimaryKey()
+    ): String =
+        buildString {
+            val tableName = table.getTableName()
+            val primaryKey = table.getPrimaryKey()
 
-        // For autocomplete, use ONLY the specified searchFields, not table.getSearches()
-        // If searchFields is empty, no search filtering is applied (return all results)
-        val effectiveSearchColumns = searchFields
+            // For autocomplete, use ONLY the specified searchFields, not table.getSearches()
+            // If searchFields is empty, no search filtering is applied (return all results)
+            val effectiveSearchColumns = searchFields
 
-        // Build select columns using the same aliasing as getAllReferences
-        val selectColumns = mutableSetOf<String>()
-        val joins = mutableSetOf<String>()
-        val aliasMap = mutableMapOf<String, String>()
+            // Build select columns using the same aliasing as getAllReferences
+            val selectColumns = mutableSetOf<String>()
+            val joins = mutableSetOf<String>()
+            val aliasMap = mutableMapOf<String, String>()
 
-        selectColumns.add("$tableName.$primaryKey AS $primaryKey")
+            selectColumns.add("$tableName.$primaryKey AS $primaryKey")
 
-        // Include columns needed for display format
-        val displayFormat = table.getDisplayFormat()
-        if (displayFormat != null) {
-            val displayFormatValues = displayFormat.extractTextInCurlyBraces()
-            displayFormatValues.forEach { column ->
-                if (column.contains('.')) {
-                    // Handle nested references like user.username
-                    var currentTable = tableName
-                    var currentColumn = ""
-                    val path = column.split('.')
-                    for (i in path.indices) {
-                        val referenceColumn = path[i]
-                        val nextColumn = path.getOrNull(i + 1)
-                        val columnSet = table.getAllColumns().find { it.columnName == referenceColumn }
-                        val reference = columnSet?.reference
+            // Include columns needed for display format
+            val displayFormat = table.getDisplayFormat()
+            if (displayFormat != null) {
+                val displayFormatValues = displayFormat.extractTextInCurlyBraces()
+                displayFormatValues.forEach { column ->
+                    if (column.contains('.')) {
+                        // Handle nested references like user.username
+                        var currentTable = tableName
+                        var currentColumn = ""
+                        val path = column.split('.')
+                        for (i in path.indices) {
+                            val referenceColumn = path[i]
+                            val nextColumn = path.getOrNull(i + 1)
+                            val columnSet = table.getAllColumns().find { it.columnName == referenceColumn }
+                            val reference = columnSet?.reference
 
-                        if (reference != null) {
-                            val joinTable = reference.tableName
-                            val joinAlias = aliasMap.getOrPut(joinTable) { "${joinTable}_REF" }
-                            val joinCondition = when (reference) {
-                                is ir.amirroid.ktoradmin.models.common.Reference.OneToOne,
-                                is ir.amirroid.ktoradmin.models.common.Reference.ManyToOne -> {
-                                    val joinColumn = reference.foreignKey
-                                    "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
+                            if (reference != null) {
+                                val joinTable = reference.tableName
+                                val joinAlias = aliasMap.getOrPut(joinTable) { "${joinTable}_REF" }
+                                val joinCondition =
+                                    when (reference) {
+                                        is ir.amirroid.ktoradmin.models.common.Reference.OneToOne,
+                                        is ir.amirroid.ktoradmin.models.common.Reference.ManyToOne,
+                                        -> {
+                                            val joinColumn = reference.foreignKey
+                                            "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
+                                        }
+                                        else -> null
+                                    }
+                                if (joinCondition != null && joinCondition !in joins) {
+                                    joins.add(joinCondition)
                                 }
-                                else -> null
+                                currentTable = joinAlias
+                                currentColumn = nextColumn ?: referenceColumn
+                            } else if (i == path.lastIndex) {
+                                currentColumn = referenceColumn
                             }
-                            if (joinCondition != null && joinCondition !in joins) {
-                                joins.add(joinCondition)
-                            }
-                            currentTable = joinAlias
-                            currentColumn = nextColumn ?: referenceColumn
-                        } else if (i == path.lastIndex) {
-                            currentColumn = referenceColumn
                         }
-                    }
-                    if (currentColumn.isNotEmpty()) {
-                        selectColumns.add("$currentTable.$currentColumn AS ${path.joinToString("_")}")
-                    }
-                } else {
-                    if (column != primaryKey) {
-                        selectColumns.add("$tableName.$column AS $column")
+                        if (currentColumn.isNotEmpty()) {
+                            selectColumns.add("$currentTable.$currentColumn AS ${path.joinToString("_")}")
+                        }
+                    } else {
+                        if (column != primaryKey) {
+                            selectColumns.add("$tableName.$column AS $column")
+                        }
                     }
                 }
             }
-        }
 
-        append("SELECT DISTINCT ")
-        append(selectColumns.joinToString(", "))
-        append(" FROM ")
-        append(tableName)
-        joins.forEach { append(" $it") }
+            append("SELECT DISTINCT ")
+            append(selectColumns.joinToString(", "))
+            append(" FROM ")
+            append(tableName)
+            joins.forEach { append(" $it") }
 
-        // Add search conditions ONLY against the specified autoCompleteSearchFields
-        // Only apply WHERE clause if we have both search text AND search fields configured
-        if (search != null && effectiveSearchColumns.isNotEmpty()) {
-            append(" WHERE ")
-            val searchConditions = effectiveSearchColumns.map { searchCol ->
-                // Search can be against simple columns or nested references
-                if (searchCol.contains('.')) {
-                    val pathParts = searchCol.split('.')
-                    var currentTable = tableName
-                    for (i in pathParts.indices) {
-                        val referenceColumn = pathParts[i]
-                        val columnSet = table.getAllColumns().find { it.columnName == referenceColumn }
-                        val reference = columnSet?.reference
-                        if (reference != null) {
-                            val joinTable = reference.tableName
-                            val joinAlias = aliasMap.getOrPut(joinTable) { "${joinTable}_REF" }
-                            val joinCondition = when (reference) {
-                                is ir.amirroid.ktoradmin.models.common.Reference.OneToOne,
-                                is ir.amirroid.ktoradmin.models.common.Reference.ManyToOne -> {
-                                    val joinColumn = reference.foreignKey
-                                    "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
+            // Add search conditions ONLY against the specified autoCompleteSearchFields
+            // Only apply WHERE clause if we have both search text AND search fields configured
+            if (search != null && effectiveSearchColumns.isNotEmpty()) {
+                append(" WHERE ")
+                val searchConditions =
+                    effectiveSearchColumns.map { searchCol ->
+                        // Search can be against simple columns or nested references
+                        if (searchCol.contains('.')) {
+                            val pathParts = searchCol.split('.')
+                            var currentTable = tableName
+                            for (i in pathParts.indices) {
+                                val referenceColumn = pathParts[i]
+                                val columnSet = table.getAllColumns().find { it.columnName == referenceColumn }
+                                val reference = columnSet?.reference
+                                if (reference != null) {
+                                    val joinTable = reference.tableName
+                                    val joinAlias = aliasMap.getOrPut(joinTable) { "${joinTable}_REF" }
+                                    val joinCondition =
+                                        when (reference) {
+                                            is ir.amirroid.ktoradmin.models.common.Reference.OneToOne,
+                                            is ir.amirroid.ktoradmin.models.common.Reference.ManyToOne,
+                                            -> {
+                                                val joinColumn = reference.foreignKey
+                                                "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
+                                            }
+                                            else -> null
+                                        }
+                                    if (joinCondition != null && joinCondition !in joins) {
+                                        joins.add(joinCondition)
+                                    }
+                                    currentTable = joinAlias
                                 }
-                                else -> null
                             }
-                            if (joinCondition != null && joinCondition !in joins) {
-                                joins.add(joinCondition)
-                            }
-                            currentTable = joinAlias
+                            "LOWER($currentTable.${pathParts.last()}) LIKE LOWER(?)"
+                        } else {
+                            "LOWER($tableName.$searchCol) LIKE LOWER(?)"
                         }
                     }
-                    "LOWER(${currentTable}.${pathParts.last()}) LIKE LOWER(?)"
-                } else {
-                    "LOWER($tableName.$searchCol) LIKE LOWER(?)"
-                }
+                append(searchConditions.joinToString(" OR "))
             }
-            append(searchConditions.joinToString(" OR "))
-        }
 
-        // Add ordering - always include primary key for stable pagination
-        val order = table.getDefaultOrder()
-        if (order != null &&
-            order.name in table.getAllColumns().map { col -> col.columnName } &&
-            order.direction.lowercase() in listOf("asc", "desc")
-        ) {
-            append(" ORDER BY $tableName.${order.name} ${order.direction}")
-        } else {
-            // Fallback to primary key for deterministic ordering
-            append(" ORDER BY $tableName.$primaryKey ASC")
-        }
+            // Add ordering - always include primary key for stable pagination
+            val order = table.getDefaultOrder()
+            if (order != null &&
+                order.name in table.getAllColumns().map { col -> col.columnName } &&
+                order.direction.lowercase() in listOf("asc", "desc")
+            ) {
+                append(" ORDER BY $tableName.${order.name} ${order.direction}")
+            } else {
+                // Fallback to primary key for deterministic ordering
+                append(" ORDER BY $tableName.$primaryKey ASC")
+            }
 
-        // Add pagination
-        append(" LIMIT ? OFFSET ?")
-    }
+            // Add pagination
+            append(" LIMIT ? OFFSET ?")
+        }
 
     /**
      * Creates a count query for autocomplete search.
@@ -970,29 +977,31 @@ internal object JdbcQueriesRepository {
         table: AdminJdbcTable,
         search: String?,
         searchFields: List<String> = emptyList(),
-    ): String = buildString {
-        // For autocomplete, use ONLY the specified searchFields, not table.getSearches()
-        val effectiveSearchColumns = searchFields
-        val tableName = table.getTableName()
+    ): String =
+        buildString {
+            // For autocomplete, use ONLY the specified searchFields, not table.getSearches()
+            val effectiveSearchColumns = searchFields
+            val tableName = table.getTableName()
 
-        append("SELECT COUNT(*) FROM ")
-        append(tableName)
+            append("SELECT COUNT(*) FROM ")
+            append(tableName)
 
-        // Only apply WHERE clause if we have both search text AND search fields configured
-        if (search != null && effectiveSearchColumns.isNotEmpty()) {
-            append(" WHERE ")
-            val searchConditions = effectiveSearchColumns.map { searchCol ->
-                if (searchCol.contains('.')) {
-                    // For nested references, we need to handle joins
-                    // Simplified: assume the column is in the main table for now
-                    "LOWER($tableName.$searchCol) LIKE LOWER(?)"
-                } else {
-                    "LOWER($tableName.$searchCol) LIKE LOWER(?)"
-                }
+            // Only apply WHERE clause if we have both search text AND search fields configured
+            if (search != null && effectiveSearchColumns.isNotEmpty()) {
+                append(" WHERE ")
+                val searchConditions =
+                    effectiveSearchColumns.map { searchCol ->
+                        if (searchCol.contains('.')) {
+                            // For nested references, we need to handle joins
+                            // Simplified: assume the column is in the main table for now
+                            "LOWER($tableName.$searchCol) LIKE LOWER(?)"
+                        } else {
+                            "LOWER($tableName.$searchCol) LIKE LOWER(?)"
+                        }
+                    }
+                append(searchConditions.joinToString(" OR "))
             }
-            append(searchConditions.joinToString(" OR "))
         }
-    }
 
     /**
      * Checks if data has been changed compared to initial value.

@@ -79,9 +79,10 @@ internal fun Routing.configureAutoCompleteRouting(
                 }
 
                 val referencedTableName = reference.tableName
-                val referencedTable = panels.find { panel ->
-                    panel is AdminJdbcTable && panel.getTableName() == referencedTableName
-                } as? AdminJdbcTable
+                val referencedTable =
+                    panels.find { panel ->
+                        panel is AdminJdbcTable && panel.getTableName() == referencedTableName
+                    } as? AdminJdbcTable
 
                 if (referencedTable == null) {
                     call.respondText { "Referenced table not found: $referencedTableName" }
@@ -96,13 +97,14 @@ internal fun Routing.configureAutoCompleteRouting(
 
                 val searchFields = columnSet.autoCompleteSearchFields
 
-                val results = JdbcQueriesRepository.searchReferences(
-                    table = referencedTable,
-                    search = search,
-                    page = page,
-                    pageSize = pageSize,
-                    searchFields = searchFields,
-                )
+                val results =
+                    JdbcQueriesRepository.searchReferences(
+                        table = referencedTable,
+                        search = search,
+                        page = page,
+                        pageSize = pageSize,
+                        searchFields = searchFields,
+                    )
 
                 call.respond(results)
             }

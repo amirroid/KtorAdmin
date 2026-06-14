@@ -2,8 +2,8 @@ package ir.amirroid.ktoradmin.repository
 
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.symbol.*
-import ir.amirroid.ktoradmin.annotations.computed.Computed
 import ir.amirroid.ktoradmin.annotations.autocomplete.AutoComplete
+import ir.amirroid.ktoradmin.annotations.computed.Computed
 import ir.amirroid.ktoradmin.annotations.confirmation.Confirmation
 import ir.amirroid.ktoradmin.annotations.date.AutoNowDate
 import ir.amirroid.ktoradmin.annotations.defaultvalue.DefaultValueProvider
