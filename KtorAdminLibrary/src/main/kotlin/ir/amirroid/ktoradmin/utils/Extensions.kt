@@ -46,6 +46,8 @@ internal fun ColumnSet.toSuitableStringForFile() =
     |    hasConfirmation = $hasConfirmation,
     |    valueMapper = ${valueMapper?.let { "\"${it}\"" }},
     |    preview = ${preview?.let { "\"${it}\"" }},
+    |    hasAutoComplete = $hasAutoComplete,
+    |    autoCompleteSearchFields = ${autoCompleteSearchFields.toSuitableStringForFile()},
     |)
 """.trimMargin("|")
 

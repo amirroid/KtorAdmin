@@ -1,5 +1,6 @@
 package ir.amirreza
 
+import ir.amirroid.ktoradmin.annotations.autocomplete.AutoComplete
 import ir.amirroid.ktoradmin.annotations.computed.Computed
 import ir.amirroid.ktoradmin.annotations.date.AutoNowDate
 import ir.amirroid.ktoradmin.annotations.display.PanelDisplayList
@@ -80,11 +81,11 @@ object Tasks : Table("tasks") {
 
     @ColumnInfo("user_id", verboseName = "Users")
     @ManyToOneReferences("users", "id")
+    @AutoComplete(searchFields = ["username"])
     val userId = integer("user_id").references(Users.id)
 
     @ManyToManyReferences("users", "tasks_users", "task_id", "user_id")
     val users = EmptyColumn()
-
 
     @ColumnInfo(
         unique = true

@@ -3,6 +3,7 @@ package ir.amirroid.ktoradmin.repository
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.symbol.*
 import ir.amirroid.ktoradmin.annotations.computed.Computed
+import ir.amirroid.ktoradmin.annotations.autocomplete.AutoComplete
 import ir.amirroid.ktoradmin.annotations.confirmation.Confirmation
 import ir.amirroid.ktoradmin.annotations.date.AutoNowDate
 import ir.amirroid.ktoradmin.annotations.defaultvalue.DefaultValueProvider
@@ -156,6 +157,10 @@ object PropertiesRepository {
         val hasTextAreaField = hasTextAreaFieldAnnotation(property.annotations)
         validateTextArea(hasTextAreaField, columnType)
 
+        val hasAutoComplete = hasAutoCompleteAnnotation(property.annotations)
+        val autoCompleteSearchFields = getAutoCompleteSearchFields(property.annotations)
+        validateAutoComplete(hasAutoComplete, reference)
+
         // Construct and return the final ColumnSet configuration
         return ColumnSet(
             columnName = baseInfo.columnName,
@@ -191,6 +196,8 @@ object PropertiesRepository {
             defaultValueProviderKey = getDefaultValueProviderAnnotation(property.annotations),
             preview = getPreviewAnnotation(property.annotations),
             hasTextArea = hasTextAreaField,
+            hasAutoComplete = hasAutoComplete,
+            autoCompleteSearchFields = autoCompleteSearchFields,
         )
     }
 
@@ -561,6 +568,26 @@ object PropertiesRepository {
         annotations.any { it.qualifiedName == Enumeration::class.qualifiedName }
 
     /**
+     * Checks if a property has the AutoComplete annotation.
+     */
+    private fun hasAutoCompleteAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
+        annotations.any { it.qualifiedName == AutoComplete::class.qualifiedName }
+
+    /**
+     * Extracts search fields from AutoComplete annotation.
+     */
+    private fun getAutoCompleteSearchFields(annotations: Sequence<KSAnnotation>): List<String> =
+        annotations
+            .firstOrNull { it.qualifiedName == AutoComplete::class.qualifiedName }
+            ?.arguments
+            ?.firstOrNull { it.name?.asString() == "searchFields" }
+            ?.value
+            ?.let { it as? List<*> }
+            ?.filterIsInstance<String>()
+            ?.takeIf { it.isNotEmpty() }
+            ?: emptyList()
+
+    /**
      * Checks if a property has the RichEditor annotation.
      */
     private fun hasRichEditorAnnotation(annotations: Sequence<KSAnnotation>): Boolean = annotations.any { it.qualifiedName == RichEditor::class.qualifiedName }
@@ -819,6 +846,25 @@ object PropertiesRepository {
     ) {
         if (hasTextArea && columnType != ColumnType.STRING) {
             throw IllegalArgumentException("Text area can only be used with columns of type STRING.")
+        }
+    }
+
+    /**
+     * Validates AutoComplete configuration.
+     */
+    private fun validateAutoComplete(
+        hasAutoComplete: Boolean,
+        reference: Reference?,
+    ) {
+        if (hasAutoComplete && reference == null) {
+            throw IllegalArgumentException(
+                "@AutoComplete can only be used on columns with a reference (ManyToOneReferences or OneToOneReferences).",
+            )
+        }
+        if (hasAutoComplete && reference is Reference.ManyToMany) {
+            throw IllegalArgumentException(
+                "@AutoComplete cannot be used with ManyToMany references. Use a standard select for ManyToMany fields.",
+            )
         }
     }
 
