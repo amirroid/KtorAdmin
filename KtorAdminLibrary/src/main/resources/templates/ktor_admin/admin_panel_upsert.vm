@@ -13,6 +13,7 @@
     #end
     <link href="/static/css/admin_panel_upsert.css" rel="stylesheet">
     <link href="/static/css/common_style.css" rel="stylesheet">
+    <link href="/static/css/autocomplete.css" rel="stylesheet">
     #if($tinyMCEConfig)
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.7.1/tinymce.min.js"></script>
     #end
@@ -97,7 +98,15 @@
                         #end
                         #if($column.reference)
                             #set($referenceValues = $references.get($column))
-                            #if($column.reference.type == "select")
+                            #if($column.hasAutoComplete)
+                                <input type="hidden" name="$column.columnName" value="$!defaultValue" id="hidden-$column.columnName">
+                                <input type="text" class="form-input" value="$!defaultValue"
+                                       data-autocomplete data-autocomplete-table="$tableName"
+                                       data-autocomplete-column="$column.columnName"
+                                       data-autocomplete-admin-path="$adminPath"
+                                       #if($column.readOnly)readonly#end
+                                       placeholder="$translations['select_item']">
+                            #elseif($column.reference.type == "select")
                                 <div class="select-input-background">
                                     <select name="$column.columnName" class="select-input"
                                             #if($column.readOnly)disabled#end>
@@ -384,6 +393,7 @@
         #end
 </script>
 <script src="/static/js/common.js"></script>
+<script src="/static/js/autocomplete.js"></script>
 <script src="/static/js/upsert_admin.js"></script>
 </body>
 </html>

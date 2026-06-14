@@ -125,6 +125,9 @@ internal object DynamicConfiguration {
 
     var menuProvider: ((String?) -> List<Menu>)? = null
 
+    /** Page size for autocomplete search results */
+    var autocompletePageSize: Int = 20
+
     /**
      * Registers a new value mapper.
      * @param valueMapper The value mapper to register.

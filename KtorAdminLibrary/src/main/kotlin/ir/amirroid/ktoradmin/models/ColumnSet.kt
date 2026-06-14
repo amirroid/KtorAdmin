@@ -47,7 +47,10 @@ import java.time.OffsetDateTime
  * @property valueMapper Defines a transformation or mapping function to process values before displaying or storing them.
  *                        This can be used to convert data formats, apply specific parsing rules, or format values dynamically.
  * @property preview A key used in `KtorAdminPreview` to reference a preview of this column's content, if applicable.
- *                        This is useful for fields that require visual representation, such as images or rich content.
+ * @property hasAutoComplete Whether this column should be rendered as a searchable autocomplete dropdown.
+ *                           Only valid for columns with a Many-to-One or One-to-One Reference. Defaults to `false`.
+ * @property autoCompleteSearchFields List of field names from the referenced entity to search against.
+ *                                   If empty, uses the referenced table's default searches. Defaults to empty.
  */
 data class ColumnSet(
     val columnName: String,
@@ -73,6 +76,8 @@ data class ColumnSet(
     val valueMapper: String? = null,
     val preview: String? = null,
     val defaultValueProviderKey: String? = null,
+    val hasAutoComplete: Boolean = false,
+    val autoCompleteSearchFields: List<String> = emptyList(),
 )
 
 internal fun ColumnSet.getCurrentDateClass() =

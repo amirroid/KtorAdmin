@@ -738,6 +738,272 @@ internal object JdbcQueriesRepository {
         }
 
     /**
+     * Searches references with pagination support for autocomplete.
+     * @param table Target database table
+     * @param search Search string to filter results
+     * @param page Page number for pagination (0-based)
+     * @param pageSize Number of items per page
+     * @param searchFields Optional list of fields to search against (from @AutoComplete annotation)
+     * @return AutoCompleteResponse containing matched items and total count
+     */
+    fun searchReferences(
+        table: AdminJdbcTable,
+        search: String?,
+        page: Int,
+        pageSize: Int,
+        searchFields: List<String> = emptyList(),
+    ): ir.amirroid.ktoradmin.modules.autocomplete.AutoCompleteResponse {
+        val results = mutableListOf<ir.amirroid.ktoradmin.modules.autocomplete.AutoCompleteItem>()
+        var totalCount = 0L
+
+        table.usingDataSource { session ->
+            val countQuery = createSearchReferencesCountQuery(table, search, searchFields)
+            session.prepare(sqlQuery(countQuery)).use { preparedStatement ->
+                search?.let { preparedStatement.setString(1, "%$it%") }
+                preparedStatement.executeQuery().use { rs ->
+                    if (rs.next()) {
+                        totalCount = rs.getLong(1)
+                    }
+                }
+            }
+
+            val dataQuery = createSearchReferencesQuery(table, search, page, pageSize, searchFields)
+            session.prepare(sqlQuery(dataQuery)).use { preparedStatement ->
+                var paramIndex = 1
+                search?.let { preparedStatement.setString(paramIndex++, "%$it%") }
+                preparedStatement.setInt(paramIndex++, pageSize)
+                preparedStatement.setInt(paramIndex, page * pageSize)
+
+                preparedStatement.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val key = rs.getObject(table.getPrimaryKey())?.toString() ?: ""
+                        val displayFormat = table.getDisplayFormat()
+                        val label = buildDisplayLabel(rs, table, key, displayFormat)
+                        results.add(
+                            ir.amirroid.ktoradmin.modules.autocomplete.AutoCompleteItem(
+                                key = key,
+                                label = label,
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+        return ir.amirroid.ktoradmin.modules.autocomplete.AutoCompleteResponse(
+            items = results,
+            totalCount = totalCount.toInt(),
+        )
+    }
+
+    /**
+     * Builds display label using the same logic as getAllReferences.
+     * Uses populateTemplate to respect {column} syntax in display format.
+     */
+    private fun buildDisplayLabel(
+        rs: java.sql.ResultSet,
+        table: AdminJdbcTable,
+        primaryKeyValue: String,
+        displayFormat: String?,
+    ): String {
+        if (displayFormat == null) {
+            return "${table.getSingularName().replaceFirstChar { it.uppercaseChar() }} Object ($primaryKeyValue)"
+        }
+
+        val displayFormatValues = displayFormat.extractTextInCurlyBraces()
+        val values =
+            displayFormatValues.associateWith { column ->
+                if (column == table.getPrimaryKey()) {
+                    primaryKeyValue
+                } else {
+                    val splitItem = column.split(".")
+                    val columnSet = table.getAllColumns().firstOrNull { it.columnName == splitItem.last() }
+                    val columnName = splitItem.joinToString("_")
+                    val rawValue = rs.getObject(columnName)
+                    if (columnSet == null) {
+                        rawValue?.toString()
+                    } else {
+                        rawValue
+                            .restore(columnSet)
+                            .formatToDisplayInTable(columnSet.type)
+                    }
+                }
+            }
+        return populateTemplate(displayFormat, values)
+    }
+
+    /**
+     * Creates a search query for autocomplete with pagination.
+     * Uses the same column aliasing as getAllReferences to support proper display format.
+     */
+    private fun createSearchReferencesQuery(
+        table: AdminJdbcTable,
+        search: String?,
+        page: Int,
+        pageSize: Int,
+        searchFields: List<String> = emptyList(),
+    ): String =
+        buildString {
+            val tableName = table.getTableName()
+            val primaryKey = table.getPrimaryKey()
+
+            // For autocomplete, use ONLY the specified searchFields, not table.getSearches()
+            // If searchFields is empty, no search filtering is applied (return all results)
+            val effectiveSearchColumns = searchFields
+
+            // Build select columns using the same aliasing as getAllReferences
+            val selectColumns = mutableSetOf<String>()
+            val joins = mutableSetOf<String>()
+            val aliasMap = mutableMapOf<String, String>()
+
+            selectColumns.add("$tableName.$primaryKey AS $primaryKey")
+
+            // Include columns needed for display format
+            val displayFormat = table.getDisplayFormat()
+            if (displayFormat != null) {
+                val displayFormatValues = displayFormat.extractTextInCurlyBraces()
+                displayFormatValues.forEach { column ->
+                    if (column.contains('.')) {
+                        // Handle nested references like user.username
+                        var currentTable = tableName
+                        var currentColumn = ""
+                        val path = column.split('.')
+                        for (i in path.indices) {
+                            val referenceColumn = path[i]
+                            val nextColumn = path.getOrNull(i + 1)
+                            val columnSet = table.getAllColumns().find { it.columnName == referenceColumn }
+                            val reference = columnSet?.reference
+
+                            if (reference != null) {
+                                val joinTable = reference.tableName
+                                val joinAlias = aliasMap.getOrPut(joinTable) { "${joinTable}_REF" }
+                                val joinCondition =
+                                    when (reference) {
+                                        is ir.amirroid.ktoradmin.models.common.Reference.OneToOne,
+                                        is ir.amirroid.ktoradmin.models.common.Reference.ManyToOne,
+                                        -> {
+                                            val joinColumn = reference.foreignKey
+                                            "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
+                                        }
+                                        else -> null
+                                    }
+                                if (joinCondition != null && joinCondition !in joins) {
+                                    joins.add(joinCondition)
+                                }
+                                currentTable = joinAlias
+                                currentColumn = nextColumn ?: referenceColumn
+                            } else if (i == path.lastIndex) {
+                                currentColumn = referenceColumn
+                            }
+                        }
+                        if (currentColumn.isNotEmpty()) {
+                            selectColumns.add("$currentTable.$currentColumn AS ${path.joinToString("_")}")
+                        }
+                    } else {
+                        if (column != primaryKey) {
+                            selectColumns.add("$tableName.$column AS $column")
+                        }
+                    }
+                }
+            }
+
+            append("SELECT DISTINCT ")
+            append(selectColumns.joinToString(", "))
+            append(" FROM ")
+            append(tableName)
+            joins.forEach { append(" $it") }
+
+            // Add search conditions ONLY against the specified autoCompleteSearchFields
+            // Only apply WHERE clause if we have both search text AND search fields configured
+            if (search != null && effectiveSearchColumns.isNotEmpty()) {
+                append(" WHERE ")
+                val searchConditions =
+                    effectiveSearchColumns.map { searchCol ->
+                        // Search can be against simple columns or nested references
+                        if (searchCol.contains('.')) {
+                            val pathParts = searchCol.split('.')
+                            var currentTable = tableName
+                            for (i in pathParts.indices) {
+                                val referenceColumn = pathParts[i]
+                                val columnSet = table.getAllColumns().find { it.columnName == referenceColumn }
+                                val reference = columnSet?.reference
+                                if (reference != null) {
+                                    val joinTable = reference.tableName
+                                    val joinAlias = aliasMap.getOrPut(joinTable) { "${joinTable}_REF" }
+                                    val joinCondition =
+                                        when (reference) {
+                                            is ir.amirroid.ktoradmin.models.common.Reference.OneToOne,
+                                            is ir.amirroid.ktoradmin.models.common.Reference.ManyToOne,
+                                            -> {
+                                                val joinColumn = reference.foreignKey
+                                                "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
+                                            }
+                                            else -> null
+                                        }
+                                    if (joinCondition != null && joinCondition !in joins) {
+                                        joins.add(joinCondition)
+                                    }
+                                    currentTable = joinAlias
+                                }
+                            }
+                            "LOWER($currentTable.${pathParts.last()}) LIKE LOWER(?)"
+                        } else {
+                            "LOWER($tableName.$searchCol) LIKE LOWER(?)"
+                        }
+                    }
+                append(searchConditions.joinToString(" OR "))
+            }
+
+            // Add ordering - always include primary key for stable pagination
+            val order = table.getDefaultOrder()
+            if (order != null &&
+                order.name in table.getAllColumns().map { col -> col.columnName } &&
+                order.direction.lowercase() in listOf("asc", "desc")
+            ) {
+                append(" ORDER BY $tableName.${order.name} ${order.direction}")
+            } else {
+                // Fallback to primary key for deterministic ordering
+                append(" ORDER BY $tableName.$primaryKey ASC")
+            }
+
+            // Add pagination
+            append(" LIMIT ? OFFSET ?")
+        }
+
+    /**
+     * Creates a count query for autocomplete search.
+     */
+    private fun createSearchReferencesCountQuery(
+        table: AdminJdbcTable,
+        search: String?,
+        searchFields: List<String> = emptyList(),
+    ): String =
+        buildString {
+            // For autocomplete, use ONLY the specified searchFields, not table.getSearches()
+            val effectiveSearchColumns = searchFields
+            val tableName = table.getTableName()
+
+            append("SELECT COUNT(*) FROM ")
+            append(tableName)
+
+            // Only apply WHERE clause if we have both search text AND search fields configured
+            if (search != null && effectiveSearchColumns.isNotEmpty()) {
+                append(" WHERE ")
+                val searchConditions =
+                    effectiveSearchColumns.map { searchCol ->
+                        if (searchCol.contains('.')) {
+                            // For nested references, we need to handle joins
+                            // Simplified: assume the column is in the main table for now
+                            "LOWER($tableName.$searchCol) LIKE LOWER(?)"
+                        } else {
+                            "LOWER($tableName.$searchCol) LIKE LOWER(?)"
+                        }
+                    }
+                append(searchConditions.joinToString(" OR "))
+            }
+        }
+
+    /**
      * Checks if data has been changed compared to initial value.
      */
     private fun checkIsChangedData(

@@ -64,6 +64,7 @@ fun Application.configureAdmin(database: Database) {
         registerDefaultValueProvider(UUIDDefaultValueProvider())
         registerPreview(VideoPreview())
         registerPreview(ImagePreview())
+        autoCompletePageSize = 10
         registerValueMapper(
             CustomValueMapper2
         )

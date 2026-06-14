@@ -3,6 +3,7 @@ package ir.amirroid.ktoradmin.modules
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
+import ir.amirroid.ktoradmin.modules.autocomplete.configureAutoCompleteRouting
 import ir.amirroid.ktoradmin.modules.download.configureDownloadFilesRouting
 import ir.amirroid.ktoradmin.modules.file.handleGenerateFileUrl
 import ir.amirroid.ktoradmin.modules.uploads.configureUploadFileRouting
@@ -22,5 +23,6 @@ fun Application.configureRouting(
         handleGenerateFileUrl(panels, authenticateName)
         configureGetRouting(panels, authenticateName)
         configureSavesRouting(panels, authenticateName)
+        configureAutoCompleteRouting(panels, authenticateName)
     }
 }

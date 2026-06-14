@@ -142,6 +142,15 @@ class KtorAdminConfiguration {
         }
 
     /**
+     * Page size for autocomplete search results.
+     */
+    var autoCompletePageSize: Int
+        get() = DynamicConfiguration.autocompletePageSize
+        set(value) {
+            DynamicConfiguration.autocompletePageSize = value
+        }
+
+    /**
      * TinyMCE editor configuration.
      */
     var tinyMCEConfig: TinyMCEConfig
