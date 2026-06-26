@@ -9,14 +9,16 @@ import io.ktor.server.application.ApplicationCall
  * Implementations decide how each view is rendered (Velocity, Thymeleaf, Ktor HTML DSL, etc.).
  */
 interface AdminTemplate {
-
     /**
      * Renders the main dashboard page.
      *
      * @param call The current application call.
      * @param model The data model for the dashboard view.
      */
-    suspend fun renderDashboard(call: ApplicationCall, model: TemplateModel)
+    suspend fun renderDashboard(
+        call: ApplicationCall,
+        model: TemplateModel,
+    )
 
     /**
      * Renders the panel list (table) page.
@@ -24,7 +26,10 @@ interface AdminTemplate {
      * @param call The current application call.
      * @param model The data model for the list view.
      */
-    suspend fun renderPanelList(call: ApplicationCall, model: TemplateModel)
+    suspend fun renderPanelList(
+        call: ApplicationCall,
+        model: TemplateModel,
+    )
 
     /**
      * Renders the JDBC upsert (add/edit) page.
@@ -32,7 +37,10 @@ interface AdminTemplate {
      * @param call The current application call.
      * @param model The data model for the upsert view.
      */
-    suspend fun renderJdbcUpsert(call: ApplicationCall, model: TemplateModel)
+    suspend fun renderJdbcUpsert(
+        call: ApplicationCall,
+        model: TemplateModel,
+    )
 
     /**
      * Renders the MongoDB upsert (add/edit) page.
@@ -40,7 +48,10 @@ interface AdminTemplate {
      * @param call The current application call.
      * @param model The data model for the upsert view.
      */
-    suspend fun renderMongoUpsert(call: ApplicationCall, model: TemplateModel)
+    suspend fun renderMongoUpsert(
+        call: ApplicationCall,
+        model: TemplateModel,
+    )
 
     /**
      * Renders the login page.
@@ -48,7 +59,10 @@ interface AdminTemplate {
      * @param call The current application call.
      * @param model The data model for the login view.
      */
-    suspend fun renderLogin(call: ApplicationCall, model: TemplateModel)
+    suspend fun renderLogin(
+        call: ApplicationCall,
+        model: TemplateModel,
+    )
 
     /**
      * Renders the JDBC confirmation page.
@@ -56,7 +70,10 @@ interface AdminTemplate {
      * @param call The current application call.
      * @param model The data model for the confirmation view.
      */
-    suspend fun renderJdbcConfirmation(call: ApplicationCall, model: TemplateModel)
+    suspend fun renderJdbcConfirmation(
+        call: ApplicationCall,
+        model: TemplateModel,
+    )
 
     /**
      * Renders the MongoDB confirmation page.
@@ -64,5 +81,8 @@ interface AdminTemplate {
      * @param call The current application call.
      * @param model The data model for the confirmation view.
      */
-    suspend fun renderMongoConfirmation(call: ApplicationCall, model: TemplateModel)
+    suspend fun renderMongoConfirmation(
+        call: ApplicationCall,
+        model: TemplateModel,
+    )
 }

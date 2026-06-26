@@ -20,9 +20,9 @@ import ir.amirroid.ktoradmin.providers.AWSS3StorageProvider
 import ir.amirroid.ktoradmin.providers.StorageProvider
 import ir.amirroid.ktoradmin.repository.FileRepository
 import ir.amirroid.ktoradmin.repository.MongoClientRepository
-import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
 import ir.amirroid.ktoradmin.template.AdminTemplate
 import ir.amirroid.ktoradmin.template.DefaultAdminTemplate
+import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
 import ir.amirroid.ktoradmin.translator.KtorAdminTranslator
 import java.time.Duration
 import java.time.ZoneId

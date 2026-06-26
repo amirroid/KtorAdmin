@@ -66,7 +66,8 @@ fun Application.configureAdmin(database: Database) {
 
         template = DefaultAdminTemplate(
             settings = DefaultAdminTemplateSettings(
-                colors = defaultColors
+                colors = lightModeColors,
+                darkModeColors = darkModeColors
             )
         )
 
@@ -137,19 +138,28 @@ private val adminLoginFields = listOf(
     )
 )
 
-val defaultColors = DefaultAdminTemplateSettings.Colors(
-    primaryColor = "#059669",            // Emerald 600
-    secondaryColor = "#047857",          // Emerald 700
+val lightModeColors = DefaultAdminTemplateSettings.Colors(
+    primaryColor = "#059669",
+    secondaryColor = "#047857",
     backgroundGradientStart = "#ECFDF5",
     backgroundGradientEnd = "#D1FAE5",
-    highlightColor = "#10B981",          // Emerald 500
+    highlightColor = "#10B981",
     errorColor = "#DC2626",
-    darkMode = DefaultAdminTemplateSettings.DarkModeColors(
-        primaryColor = "#F8FAFC",
-        secondaryColor = "#6EE7B7",
-        backgroundGradientStart = "#022C22",
-        backgroundGradientEnd = "#064E3B",
-        highlightColor = "#34D399",
-        errorColor = "#EF4444",
-    ),
+
+    evenRowColor = "rgba(236, 253, 245, 0.35)",
+    oddRowColor = "transparent",
+    hoverRowColor = "rgba(5, 150, 105, 0.15)",
+)
+
+val darkModeColors = DefaultAdminTemplateSettings.Colors(
+    primaryColor = "#E5E7EB",
+    secondaryColor = "#34D399",
+    backgroundGradientStart = "#052E26",
+    backgroundGradientEnd = "#064E3B",
+    highlightColor = "#10B981",
+    errorColor = "#EF4444",
+
+    evenRowColor = "rgba(52, 211, 153, 0.12)",
+    oddRowColor = "transparent",
+    hoverRowColor = "rgba(16, 185, 129, 0.18)",
 )

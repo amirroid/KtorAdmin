@@ -88,35 +88,36 @@ private suspend fun ApplicationCall.handleJdbcConfirmationEditView(
                     verboseName = "Confirm new ${column.verboseName}",
                 ),
             )
-        val model = TemplateModel(
-            mutableMapOf(
-                "columns" to columns,
-                "tableName" to table.getTableName(),
-                "primaryKey" to primaryKey,
-                "canDownload" to false,
-                "values" to values,
-                "singularTableName" to
-                    table
-                        .getSingularName()
-                        .replaceFirstChar { it.uppercaseChar() },
-                "pluralNameBase" to table.getPluralName(),
-                "errors" to errors.toMap(),
-                "csrfToken" to CsrfManager.generateToken(),
-                "panelGroups" to panelGroups,
-                "currentPanel" to table.getPluralName(),
-                "isUpdate" to false,
-                "requestId" to requestId,
-                "hasAction" to table.hasEditAction,
-                "title" to
-                    translator.translate(
-                        KtorAdminTranslator.Keys.RESET_ITEM,
-                        mapOf("name" to column.verboseName),
-                    ),
-                "callMethod" to "application/x-www-form-urlencoded",
-            ).apply {
-                username?.let { put("username", it) }
-            }
-        )
+        val model =
+            TemplateModel(
+                mutableMapOf(
+                    "columns" to columns,
+                    "tableName" to table.getTableName(),
+                    "primaryKey" to primaryKey,
+                    "canDownload" to false,
+                    "values" to values,
+                    "singularTableName" to
+                        table
+                            .getSingularName()
+                            .replaceFirstChar { it.uppercaseChar() },
+                    "pluralNameBase" to table.getPluralName(),
+                    "errors" to errors.toMap(),
+                    "csrfToken" to CsrfManager.generateToken(),
+                    "panelGroups" to panelGroups,
+                    "currentPanel" to table.getPluralName(),
+                    "isUpdate" to false,
+                    "requestId" to requestId,
+                    "hasAction" to table.hasEditAction,
+                    "title" to
+                        translator.translate(
+                            KtorAdminTranslator.Keys.RESET_ITEM,
+                            mapOf("name" to column.verboseName),
+                        ),
+                    "callMethod" to "application/x-www-form-urlencoded",
+                ).apply {
+                    username?.let { put("username", it) }
+                },
+            )
         DynamicConfiguration.template.renderJdbcConfirmation(this, model)
     }.onFailure {
         serverError("Error: ${it.message}", it)
@@ -144,31 +145,32 @@ private suspend fun ApplicationCall.handleMongoConfirmationEditView(
                     verboseName = "Confirm new ${field.verboseName}",
                 ),
             )
-        val model = TemplateModel(
-            mutableMapOf(
-                "fields" to fields,
-                "collectionName" to panel.getCollectionName(),
-                "primaryKey" to primaryKey,
-                "canDownload" to false,
-                "values" to values,
-                "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
-                "errors" to errors.toMap(),
-                "csrfToken" to CsrfManager.generateToken(),
-                "panelGroups" to panelGroups,
-                "currentPanel" to panel.getPluralName(),
-                "isUpdate" to false,
-                "requestId" to requestId,
-                "hasAction" to panel.hasEditAction,
-                "title" to
-                    translator.translate(
-                        KtorAdminTranslator.Keys.RESET_ITEM,
-                        mapOf("name" to field.verboseName),
-                    ),
-                "callMethod" to "application/x-www-form-urlencoded",
-            ).apply {
-                username?.let { put("username", it) }
-            }
-        )
+        val model =
+            TemplateModel(
+                mutableMapOf(
+                    "fields" to fields,
+                    "collectionName" to panel.getCollectionName(),
+                    "primaryKey" to primaryKey,
+                    "canDownload" to false,
+                    "values" to values,
+                    "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
+                    "errors" to errors.toMap(),
+                    "csrfToken" to CsrfManager.generateToken(),
+                    "panelGroups" to panelGroups,
+                    "currentPanel" to panel.getPluralName(),
+                    "isUpdate" to false,
+                    "requestId" to requestId,
+                    "hasAction" to panel.hasEditAction,
+                    "title" to
+                        translator.translate(
+                            KtorAdminTranslator.Keys.RESET_ITEM,
+                            mapOf("name" to field.verboseName),
+                        ),
+                    "callMethod" to "application/x-www-form-urlencoded",
+                ).apply {
+                    username?.let { put("username", it) }
+                },
+            )
         DynamicConfiguration.template.renderMongoConfirmation(this, model)
     }.onFailure {
         serverError("Error: ${it.message}", it)

@@ -1,5 +1,7 @@
 package ir.amirroid.ktoradmin.template
 
+import kotlin.String
+
 /**
  * Configuration for the default admin template.
  *
@@ -10,6 +12,7 @@ package ir.amirroid.ktoradmin.template
  */
 data class DefaultAdminTemplateSettings(
     val colors: Colors = Colors(),
+    val darkModeColors: Colors = DefaultDarkModeColors,
     val typography: Typography = Typography(),
     val shapes: Shapes = Shapes(),
     val spacing: Spacing = Spacing(),
@@ -29,19 +32,6 @@ data class DefaultAdminTemplateSettings(
         val evenRowColor: String = "rgba(243, 231, 203, 0.3)",
         val oddRowColor: String = "transparent",
         val hoverRowColor: String = "rgba(154, 108, 0, 0.2)",
-        val darkMode: DarkModeColors = DarkModeColors(),
-    )
-
-    data class DarkModeColors(
-        val primaryColor: String = "#E1E1E1",
-        val secondaryColor: String = "#FFB84D",
-        val backgroundGradientStart: String = "#1A1D21",
-        val backgroundGradientEnd: String = "#2A2D32",
-        val highlightColor: String = "#FFD700",
-        val errorColor: String = "#FF453A",
-        val evenRowColor: String = "rgba(255, 184, 77, 0.15)",
-        val oddRowColor: String = "transparent",
-        val hoverRowColor: String = "rgba(255, 184, 77, 0.2)",
     )
 
     data class Typography(
@@ -91,4 +81,19 @@ data class DefaultAdminTemplateSettings(
         val title: String = "KtorAdmin",
         val titlePrefix: String = "Ktor",
     )
+
+    companion object {
+        val DefaultDarkModeColors =
+            Colors(
+                primaryColor = "#E1E1E1",
+                secondaryColor = "#FFB84D",
+                backgroundGradientStart = "#1A1D21",
+                backgroundGradientEnd = "#2A2D32",
+                highlightColor = "#FFD700",
+                errorColor = "#FF453A",
+                evenRowColor = "rgba(255, 184, 77, 0.15)",
+                oddRowColor = "transparent",
+                hoverRowColor = "rgba(255, 184, 77, 0.2)",
+            )
+    }
 }

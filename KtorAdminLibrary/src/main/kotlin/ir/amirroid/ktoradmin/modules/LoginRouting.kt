@@ -24,24 +24,25 @@ fun Routing.configureLoginRouting(authenticatedName: String) {
             }
             val origin = call.parameters["origin"] ?: "/${DynamicConfiguration.adminPath}"
             val translator = call.translator
-            val model = TemplateModel(
-                mutableMapOf(
-                    "fields" to DynamicConfiguration.loginFields,
-                    "origin" to origin,
-                    "csrfToken" to CsrfManager.generateToken(),
-                    "requestId" to requestId,
-                    "translations" to translator.translates,
-                    "layout_direction" to translator.layoutDirection,
-                    "lang" to translator.languageCode,
-                ).apply {
-                    DynamicConfiguration.loginPageMessage?.let {
-                        put("message", it)
-                    }
-                    if (valuesWithErrors.second != null) {
-                        put("hasError", true)
-                    }
-                }
-            )
+            val model =
+                TemplateModel(
+                    mutableMapOf(
+                        "fields" to DynamicConfiguration.loginFields,
+                        "origin" to origin,
+                        "csrfToken" to CsrfManager.generateToken(),
+                        "requestId" to requestId,
+                        "translations" to translator.translates,
+                        "layout_direction" to translator.layoutDirection,
+                        "lang" to translator.languageCode,
+                    ).apply {
+                        DynamicConfiguration.loginPageMessage?.let {
+                            put("message", it)
+                        }
+                        if (valuesWithErrors.second != null) {
+                            put("hasError", true)
+                        }
+                    },
+                )
             DynamicConfiguration.template.renderLogin(call, model)
         }
     }

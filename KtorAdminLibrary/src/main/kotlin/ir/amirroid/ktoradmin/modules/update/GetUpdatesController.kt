@@ -97,41 +97,42 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                     this,
                 )
             val singularTableName = table.getSingularName().replaceFirstChar { it.uppercaseChar() }
-            val model = TemplateModel(
-                mapOf(
-                    "columns" to panelColumnsList,
-                    "tableName" to table.getTableName(),
-                    "primaryKey" to primaryKey,
-                    "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
-                    "values" to values,
-                    "singularTableName" to singularTableName,
-                    "references" to referencesItems,
-                    "selectedReferences" to selectedReferences,
-                    "pluralNameBase" to table.getPluralName(),
-                    "errors" to errors.toMap(),
-                    "csrfToken" to CsrfManager.generateToken(),
-                    "panelGroups" to panelGroups,
-                    "currentPanel" to table.getPluralName(),
-                    "isUpdate" to true,
-                    "requestId" to requestId,
-                    "hasAction" to table.hasEditAction,
-                    "previews" to
-                        extractColumnsPreviews(
-                            table.getTableName(),
-                            columnsWithValues =
-                                values.mapKeys { item ->
-                                    columns.first { column -> column.columnName == item.key }
-                                },
-                        ),
-                    "title" to
-                        translator.translate(
-                            KtorAdminTranslator.Keys.UPDATE_ITEM,
-                            mapOf("name" to singularTableName),
-                        ),
-                ).addCommonUpsertModels(table, username)
-                    .toMutableMap()
-                    .addCommonModels(table, panelGroups, applicationCall = this)
-            )
+            val model =
+                TemplateModel(
+                    mapOf(
+                        "columns" to panelColumnsList,
+                        "tableName" to table.getTableName(),
+                        "primaryKey" to primaryKey,
+                        "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
+                        "values" to values,
+                        "singularTableName" to singularTableName,
+                        "references" to referencesItems,
+                        "selectedReferences" to selectedReferences,
+                        "pluralNameBase" to table.getPluralName(),
+                        "errors" to errors.toMap(),
+                        "csrfToken" to CsrfManager.generateToken(),
+                        "panelGroups" to panelGroups,
+                        "currentPanel" to table.getPluralName(),
+                        "isUpdate" to true,
+                        "requestId" to requestId,
+                        "hasAction" to table.hasEditAction,
+                        "previews" to
+                            extractColumnsPreviews(
+                                table.getTableName(),
+                                columnsWithValues =
+                                    values.mapKeys { item ->
+                                        columns.first { column -> column.columnName == item.key }
+                                    },
+                            ),
+                        "title" to
+                            translator.translate(
+                                KtorAdminTranslator.Keys.UPDATE_ITEM,
+                                mapOf("name" to singularTableName),
+                            ),
+                    ).addCommonUpsertModels(table, username)
+                        .toMutableMap()
+                        .addCommonModels(table, panelGroups, applicationCall = this),
+                )
             DynamicConfiguration.template.renderJdbcUpsert(this, model)
         }.onFailure {
             serverError("Error: ${it.message}", it)
@@ -175,36 +176,37 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
             val errorValues = valuesWithErrors.first
             val values = errorValues?.takeIf { it.isNotEmpty() } ?: processFieldValues(fields, data, this)
             val singularName = panel.getSingularName().replaceFirstChar { it.uppercaseChar() }
-            val model = TemplateModel(
-                mutableMapOf(
-                    "fields" to fields,
-                    "values" to values,
-                    "errors" to errors.toMap(),
-                    "collectionName" to panel.getCollectionName(),
-                    "singularName" to singularName,
-                    "pluralName" to panel.getPluralName(),
-                    "primaryKey" to primaryKey,
-                    "csrfToken" to CsrfManager.generateToken(),
-                    "panelGroups" to panelGroups,
-                    "currentPanel" to panel.getPluralName(),
-                    "isUpdate" to true,
-                    "requestId" to requestId,
-                    "hasAction" to panel.hasEditAction,
-                    "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
-                    "previews" to
-                        extractFieldsPreviews(
-                            panel.getCollectionName(),
-                            fieldsWithValues = values.mapKeys { item -> fields.first { field -> field.fieldName == item.key } },
-                        ),
-                    "title" to
-                        translator.translate(
-                            KtorAdminTranslator.Keys.UPDATE_ITEM,
-                            mapOf("name" to singularName),
-                        ),
-                ).addCommonUpsertModels(panel, username)
-                    .toMutableMap()
-                    .addCommonModels(panel, panelGroups, applicationCall = this)
-            )
+            val model =
+                TemplateModel(
+                    mutableMapOf(
+                        "fields" to fields,
+                        "values" to values,
+                        "errors" to errors.toMap(),
+                        "collectionName" to panel.getCollectionName(),
+                        "singularName" to singularName,
+                        "pluralName" to panel.getPluralName(),
+                        "primaryKey" to primaryKey,
+                        "csrfToken" to CsrfManager.generateToken(),
+                        "panelGroups" to panelGroups,
+                        "currentPanel" to panel.getPluralName(),
+                        "isUpdate" to true,
+                        "requestId" to requestId,
+                        "hasAction" to panel.hasEditAction,
+                        "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
+                        "previews" to
+                            extractFieldsPreviews(
+                                panel.getCollectionName(),
+                                fieldsWithValues = values.mapKeys { item -> fields.first { field -> field.fieldName == item.key } },
+                            ),
+                        "title" to
+                            translator.translate(
+                                KtorAdminTranslator.Keys.UPDATE_ITEM,
+                                mapOf("name" to singularName),
+                            ),
+                    ).addCommonUpsertModels(panel, username)
+                        .toMutableMap()
+                        .addCommonModels(panel, panelGroups, applicationCall = this),
+                )
             DynamicConfiguration.template.renderMongoUpsert(this, model)
         }.onFailure {
             serverError("Error: ${it.message}", it)

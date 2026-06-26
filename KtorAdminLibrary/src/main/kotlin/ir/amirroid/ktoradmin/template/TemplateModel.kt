@@ -7,7 +7,7 @@ package ir.amirroid.ktoradmin.template
  * This keeps the interface decoupled from any specific view's shape.
  */
 data class TemplateModel(
-    val data: Map<String, Any?> = emptyMap()
+    val data: Map<String, Any?> = emptyMap(),
 ) {
     operator fun get(key: String): Any? = data[key]
 

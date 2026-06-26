@@ -248,7 +248,7 @@ private suspend fun ApplicationCall.respondWithTemplate(
                 username = user?.name,
                 count = count,
                 applicationCall = this,
-            )
+            ),
         )
 
     DynamicConfiguration.template.renderPanelList(this, model)

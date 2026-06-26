@@ -57,29 +57,30 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
         val columns = table.getAllAllowToShowColumnsInUpsertView()
         val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
         val singularTableName = table.getSingularName().replaceFirstChar { it.uppercaseChar() }
-        val model = TemplateModel(
-            mapOf(
-                "columns" to columns,
-                "tableName" to table.getTableName(),
-                "singularTableName" to singularTableName,
-                "references" to referencesItems,
-                "errors" to (valuesWithErrors.second?.toMap() ?: emptyMap()),
-                "values" to (valuesWithErrors.first ?: emptyMap()),
-                "csrfToken" to CsrfManager.generateToken(),
-                "panelGroups" to panelGroups,
-                "currentPanel" to table.getPluralName(),
-                "isUpdate" to false,
-                "requestId" to requestId,
-                "hasAction" to table.hasAddAction,
-                "title" to
-                    translator.translate(
-                        KtorAdminTranslator.Keys.ADD_NEW_ITEM,
-                        mapOf("name" to singularTableName),
-                    ),
-            ).addCommonUpsertModels(table, username)
-                .toMutableMap()
-                .addCommonModels(table, panelGroups, applicationCall = this)
-        )
+        val model =
+            TemplateModel(
+                mapOf(
+                    "columns" to columns,
+                    "tableName" to table.getTableName(),
+                    "singularTableName" to singularTableName,
+                    "references" to referencesItems,
+                    "errors" to (valuesWithErrors.second?.toMap() ?: emptyMap()),
+                    "values" to (valuesWithErrors.first ?: emptyMap()),
+                    "csrfToken" to CsrfManager.generateToken(),
+                    "panelGroups" to panelGroups,
+                    "currentPanel" to table.getPluralName(),
+                    "isUpdate" to false,
+                    "requestId" to requestId,
+                    "hasAction" to table.hasAddAction,
+                    "title" to
+                        translator.translate(
+                            KtorAdminTranslator.Keys.ADD_NEW_ITEM,
+                            mapOf("name" to singularTableName),
+                        ),
+                ).addCommonUpsertModels(table, username)
+                    .toMutableMap()
+                    .addCommonModels(table, panelGroups, applicationCall = this),
+            )
         DynamicConfiguration.template.renderJdbcUpsert(this, model)
     }.onFailure {
         badRequest("Error: ${it.message}", it)
@@ -99,27 +100,28 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
         val errorValues = valuesWithErrors.first
         val values = errorValues?.takeIf { it.isNotEmpty() } ?: emptyMap()
         val singularTableName = panel.getSingularName().replaceFirstChar { it.uppercaseChar() }
-        val model = TemplateModel(
-            mutableMapOf(
-                "fields" to fields,
-                "collectionName" to panel.getCollectionName(),
-                "singularName" to singularTableName,
-                "values" to values,
-                "errors" to errors.toMap(),
-                "csrfToken" to CsrfManager.generateToken(),
-                "requestId" to requestId,
-                "hasAction" to panel.hasAddAction,
-                "panelGroups" to panelGroups,
-                "currentPanel" to panel.getPluralName(),
-                "title" to
-                    translator.translate(
-                        KtorAdminTranslator.Keys.ADD_NEW_ITEM,
-                        mapOf("name" to singularTableName),
-                    ),
-            ).addCommonUpsertModels(panel, username)
-                .toMutableMap()
-                .addCommonModels(panel, panelGroups, applicationCall = this)
-        )
+        val model =
+            TemplateModel(
+                mutableMapOf(
+                    "fields" to fields,
+                    "collectionName" to panel.getCollectionName(),
+                    "singularName" to singularTableName,
+                    "values" to values,
+                    "errors" to errors.toMap(),
+                    "csrfToken" to CsrfManager.generateToken(),
+                    "requestId" to requestId,
+                    "hasAction" to panel.hasAddAction,
+                    "panelGroups" to panelGroups,
+                    "currentPanel" to panel.getPluralName(),
+                    "title" to
+                        translator.translate(
+                            KtorAdminTranslator.Keys.ADD_NEW_ITEM,
+                            mapOf("name" to singularTableName),
+                        ),
+                ).addCommonUpsertModels(panel, username)
+                    .toMutableMap()
+                    .addCommonModels(panel, panelGroups, applicationCall = this),
+            )
         DynamicConfiguration.template.renderMongoUpsert(this, model)
     }.onFailure {
         serverError("Error: ${it.message}", it)
