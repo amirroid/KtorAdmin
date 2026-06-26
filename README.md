@@ -4,7 +4,7 @@
 
 ![KtorAdmin Banner](/art/banner.jpg)
 
-![Java 17](https://img.shields.io/badge/Java-17-blue?style=flat-square)
+![Java 21](https://img.shields.io/badge/Java-21-blue?style=flat-square)
 ![Maven Central](https://img.shields.io/maven-central/v/io.github.amirroid/KtorAdmin?style=flat-square)
 ![Ktor](https://img.shields.io/badge/Ktor-Supported-brightgreen?style=flat-square)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supported-brightgreen?style=flat-square)
@@ -31,9 +31,6 @@ Build production-ready admin panels in minutes, not days.
 
 ## 🎬 Live Demo
 
-🔗 **Demo Application**
-https://ktoradmindemo-production.up.railway.app/admin
-
 🔗 **Demo Source Code**
 https://github.com/Amirroid/KtorAdminDemo
 
@@ -54,6 +51,8 @@ https://github.com/Amirroid/KtorAdminDemo
 * Data export capabilities
 * Localization and multilingual support
 * Production-ready performance and scalability
+* Fully customizable admin panel templates
+* Extensible template system
 
 ---
 
