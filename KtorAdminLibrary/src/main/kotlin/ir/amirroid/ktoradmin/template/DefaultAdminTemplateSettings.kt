@@ -26,6 +26,9 @@ data class DefaultAdminTemplateSettings(
         val backgroundGradientEnd: String = "#E3E5E6",
         val highlightColor: String = "#ffb300",
         val errorColor: String = "red",
+        val evenRowColor: String = "rgba(243, 231, 203, 0.3)",
+        val oddRowColor: String = "transparent",
+        val hoverRowColor: String = "rgba(154, 108, 0, 0.2)",
         val darkMode: DarkModeColors = DarkModeColors(),
     )
 
@@ -36,6 +39,9 @@ data class DefaultAdminTemplateSettings(
         val backgroundGradientEnd: String = "#2A2D32",
         val highlightColor: String = "#FFD700",
         val errorColor: String = "#FF453A",
+        val evenRowColor: String = "rgba(255, 184, 77, 0.15)",
+        val oddRowColor: String = "transparent",
+        val hoverRowColor: String = "rgba(255, 184, 77, 0.2)",
     )
 
     data class Typography(

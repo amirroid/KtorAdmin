@@ -56,6 +56,9 @@ class DefaultAdminTemplate(
                 --background-color-f4: #F4F4F4;
                 --background-gradient-start-30: rgba(243, 231, 203, 0.3);
                 --secondary-color-20: rgba(154, 108, 0, 0.2);
+                --table-even-row-color: ${c.evenRowColor};
+                --table-odd-row-color: ${c.oddRowColor};
+                --table-hover-row-color: ${c.hoverRowColor};
                 --sidebar-border-radius: ${s.sidebarBorderRadius};
                 --menu-item-border-radius: ${s.menuItemBorderRadius};
                 --dropdown-border-radius: ${s.dropdownBorderRadius};
@@ -85,6 +88,9 @@ class DefaultAdminTemplate(
                 --background-color-f4: #2C2C2C;
                 --background-gradient-start-30: rgba(255, 184, 77, 0.15);
                 --secondary-color-20: rgba(255, 184, 77, 0.2);
+                --table-even-row-color: ${dc.evenRowColor};
+                --table-odd-row-color: ${dc.oddRowColor};
+                --table-hover-row-color: ${dc.hoverRowColor};
             }
             body {
                 font-family: ${t.fontFamily};
