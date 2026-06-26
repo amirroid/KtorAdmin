@@ -32,13 +32,40 @@ class DefaultAdminTemplate(
 ) : AdminTemplate {
     private val cssVariables by lazy { generateCssVariables() }
 
+    private fun generateFontFace(): String {
+        val font = settings.typography.font
+        val sb = StringBuilder()
+        font.regular?.let { path ->
+            sb.appendLine("@font-face {")
+            sb.appendLine("    font-family: '${font.name}';")
+            sb.appendLine("    src: url('$path') format('truetype');")
+            sb.appendLine("    font-weight: normal;")
+            sb.appendLine("    font-style: normal;")
+            sb.appendLine("}")
+        }
+        font.bold?.let { path ->
+            if (sb.isNotEmpty()) sb.appendLine()
+            sb.appendLine("@font-face {")
+            sb.appendLine("    font-family: '${font.name}';")
+            sb.appendLine("    src: url('$path') format('truetype');")
+            sb.appendLine("    font-weight: bold;")
+            sb.appendLine("    font-style: normal;")
+            sb.appendLine("}")
+        }
+        return sb.toString()
+    }
+
     private fun generateCssVariables(): String {
         val c = settings.colors
         val t = settings.typography
+        val font = t.font
         val s = settings.shapes
         val sp = settings.spacing
         val dc = settings.darkModeColors
+        val sidebar = settings.sidebar
+        val fontFaceCss = generateFontFace()
         return """
+                $fontFaceCss
                 :root {
                     --primary-color: ${c.primaryColor};
                     --secondary-color: ${c.secondaryColor};
@@ -63,14 +90,16 @@ class DefaultAdminTemplate(
                     --sidebar-border-radius: ${s.sidebarBorderRadius};
                     --menu-item-border-radius: ${s.menuItemBorderRadius};
                     --dropdown-border-radius: ${s.dropdownBorderRadius};
-                    --sidebar-width: ${sp.sidebarWidth};
+                    --sidebar-width: ${sidebar.width};
                     --sidebar-margin: ${sp.sidebarMargin};
                     --body-padding: ${sp.bodyPadding};
-                    --font-family: ${t.fontFamily};
+                    --font-family: ${font.cssFamily};
                     --font-scale: ${t.fontScale};
                     --sidebar-backdrop-blur: ${settings.sidebar.backdropBlur};
+                    --sidebar-background-opacity: ${settings.sidebar.backgroundOpacity};
                     --transition-duration: ${settings.animations.transitionDuration};
                     --transition-timing: ${settings.animations.transitionTiming};
+                    --header-height: ${settings.header.height};
                 }
                 :root.theme-dark {
                     --primary-color: ${dc.primaryColor};
@@ -94,11 +123,11 @@ class DefaultAdminTemplate(
                     --table-hover-row-color: ${dc.hoverRowColor};
                 }
                 body {
-                    font-family: ${t.fontFamily};
+                    font-family: ${font.cssFamily};
                     padding: ${sp.bodyPadding};
                 }
                 .sidebar {
-                    width: calc(${sp.sidebarWidth} - ${sp.bodyPadding} * 2);
+                    width: calc(${sidebar.width} - ${sp.bodyPadding} * 2);
                     height: calc(100% - ${sp.bodyPadding} * 2);
                     margin: ${sp.sidebarMargin};
                     border-radius: ${s.sidebarBorderRadius};
@@ -110,14 +139,14 @@ class DefaultAdminTemplate(
                 .dropdown-content {
                     border-radius: ${s.dropdownBorderRadius};
                 }
-                                                ${if (t.fontScale != 1.0) {
+                ${if (t.fontScale != 1.0) {
             """
             body { font-size: ${t.fontScale}rem; }
             """
         } else {
             ""
         }}
-                                                            ${if (!settings.animations.enabled) {
+                ${if (!settings.animations.enabled) {
             """
             * { transition: none !important; animation: none !important; }
             """
@@ -127,14 +156,31 @@ class DefaultAdminTemplate(
             """.trimIndent()
     }
 
-    private fun TemplateModel.withCustomCss(): TemplateModel {
+    private fun TemplateModel.withTemplateSettings(): TemplateModel {
         val newData = data.toMutableMap()
         newData["customCss"] = cssVariables
+        val font = settings.typography.font
+        newData["fontFamily"] = font.cssFamily
+        font.stylesheet?.let { newData["fontStylesheet"] = it }
+        val header = settings.header
+        when (val content = header.content) {
+            is DefaultAdminTemplateSettings.HeaderContent.Text -> {
+                newData["headerContentType"] = "text"
+                newData["headerTextPrefix"] = content.prefix
+                newData["headerTextContent"] = content.text
+            }
+            is DefaultAdminTemplateSettings.HeaderContent.Image -> {
+                newData["headerContentType"] = "image"
+                newData["headerImageUrl"] = content.url
+                newData["headerImageAlt"] = content.altText
+                newData["headerImageHeight"] = content.height
+            }
+        }
         return TemplateModel(newData)
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun TemplateModel.toVelocityModel(): Map<String, Any> = withCustomCss().data as Map<String, Any>
+    private fun TemplateModel.toVelocityModel(): Map<String, Any> = withTemplateSettings().data as Map<String, Any>
 
     override suspend fun renderDashboard(
         call: ApplicationCall,

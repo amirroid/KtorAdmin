@@ -33,7 +33,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--primary-color);
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: normal;
     font-size: inherit;
@@ -113,7 +113,7 @@
     border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
     padding: 0 12px;
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: normal;
     font-size: 14px;
@@ -160,7 +160,7 @@
     cursor: pointer;
     transition: background-color 0.1s ease;
     color: var(--primary-color, #1a1a1a);
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: normal;
     border-left: 3px solid transparent;

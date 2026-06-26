@@ -50,10 +50,12 @@ internal object PdfHelper {
         panel: AdminPanel,
         primaryKey: String,
         call: ApplicationCall,
+        regularFontPath: String = "/static/font/IstokWeb-Regular.ttf",
+        boldFontPath: String = "/static/font/IstokWeb-Bold.ttf",
     ): ByteArray? =
         when (panel) {
-            is AdminJdbcTable -> panel.generateJdbcPdf(primaryKey, call)
-            is AdminMongoCollection -> panel.generateMongoPdf(primaryKey, call)
+            is AdminJdbcTable -> panel.generateJdbcPdf(primaryKey, call, regularFontPath, boldFontPath)
+            is AdminMongoCollection -> panel.generateMongoPdf(primaryKey, call, regularFontPath, boldFontPath)
             else -> null
         }
 
@@ -67,6 +69,8 @@ internal object PdfHelper {
     private suspend fun AdminJdbcTable.generateJdbcPdf(
         primaryKey: String,
         call: ApplicationCall,
+        regularFontPath: String,
+        boldFontPath: String,
     ): ByteArray? {
         val rowData =
             JdbcQueriesRepository.getData(this, primaryKey)?.let { items ->
@@ -84,7 +88,7 @@ internal object PdfHelper {
                     )
                 }
             }
-        return rowData?.let(::generateStyledPdfTable)
+        return rowData?.let { generateStyledPdfTable(it, regularFontPath, boldFontPath) }
     }
 
     /**
@@ -97,6 +101,8 @@ internal object PdfHelper {
     private suspend fun AdminMongoCollection.generateMongoPdf(
         primaryKey: String,
         call: ApplicationCall,
+        regularFontPath: String,
+        boldFontPath: String,
     ): ByteArray? {
         val rowData =
             MongoClientRepository.getData(this, primaryKey)?.let { items ->
@@ -114,7 +120,7 @@ internal object PdfHelper {
                     )
                 }
             }
-        return rowData?.let(::generateStyledPdfTable)
+        return rowData?.let { generateStyledPdfTable(it, regularFontPath, boldFontPath) }
     }
 
     /**
@@ -123,14 +129,18 @@ internal object PdfHelper {
      * @param rows A list of row data, where each row consists of two columns (Name and Value).
      * @return A ByteArray representing the generated PDF file.
      */
-    fun generateStyledPdfTable(rows: List<KeyValueWithType>): ByteArray {
+    fun generateStyledPdfTable(
+        rows: List<KeyValueWithType>,
+        regularFontPath: String = "/static/font/IstokWeb-Regular.ttf",
+        boldFontPath: String = "/static/font/IstokWeb-Bold.ttf",
+    ): ByteArray {
         val outputStream = ByteArrayOutputStream()
         val pdfWriter = PdfWriter(outputStream)
         val pdfDocument = PdfDocument(pdfWriter)
         val document = Document(pdfDocument)
 
-        val fontRegular = loadFont("/static/font/IstokWeb-Regular.ttf")
-        val fontBold = loadFont("/static/font/IstokWeb-Bold.ttf")
+        val fontRegular = loadFont(regularFontPath)
+        val fontBold = loadFont(boldFontPath)
 
         document.setMargins(40f, 20f, 20f, 20f)
         document.add(createTitle(fontBold, fontRegular))

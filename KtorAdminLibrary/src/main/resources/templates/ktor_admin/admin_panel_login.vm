@@ -7,6 +7,9 @@
     <title>Login</title>
     <link rel="stylesheet" href="/static/css/admin_panel_login_style.css">
     <link href="/static/css/common_style.css" rel="stylesheet">
+    #if($fontStylesheet)
+    <link href="$fontStylesheet" rel="stylesheet">
+    #end
     #if($customCss)
     <style>$customCss</style>
     #end
@@ -14,7 +17,13 @@
 </head>
 
 <body>
-<h1 class="name"><span class="istok-web-black">Ktor</span>Admin</h1>
+<h1 class="name">
+    #if($headerContentType == "image")
+        <img src="$headerImageUrl" alt="$headerImageAlt" style="height: $headerImageHeight;">
+    #elseif($headerContentType == "text")
+        <span class="istok-web-black">$headerTextPrefix</span>$headerTextContent
+    #end
+</h1>
 <div id="login-container">
     <h1 id="title">$translations["login"]</h1>
     <p id="page_message">$!message</p>

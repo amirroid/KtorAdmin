@@ -13,32 +13,32 @@ h2 {
 }
 
 .istok-web-regular {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: normal;
 }
 
 
 .istok-web-bold {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 700;
     font-style: normal;
 }
 
 .istok-web-black {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 900;
     font-style: normal;
 }
 
 .istok-web-regular-italic {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: italic;
 }
 
 .istok-web-bold-italic {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 700;
     font-style: italic;
 }
@@ -50,7 +50,7 @@ h2 {
     align-items: center;
     display: flex;
     justify-content: flex-start;
-    height: 54px;
+    height: var(--header-height, 54px);
 }
 
 #header .left-content {
@@ -59,6 +59,12 @@ h2 {
     align-items: center;
     margin-left: 16px;
     gap: 12px;
+}
+
+#header .title img {
+    height: var(--header-height, 54px);
+    object-fit: contain;
+    vertical-align: middle;
 }
 
 @media (max-width: 768px) {
@@ -70,7 +76,7 @@ h2 {
         width: 100%;
         outline: none;
         transition: .2s linear;
-        font-family: "Istok Web", serif;
+        font-family: var(--font-family);
         font-weight: 400;
         font-style: normal;
         border: none;
@@ -201,7 +207,7 @@ label {
     border-radius: 16px;
     outline: none;
     transition: .2s linear;
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: normal;
     border: none;
@@ -217,7 +223,7 @@ label {
     outline: none;
     transition: 0.2s linear;
     display: block;
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: normal;
     resize: vertical;
@@ -261,7 +267,7 @@ label {
     height: 48px;
     outline: none;
     transition: .2s linear;
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: normal;
     border: none;

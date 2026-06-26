@@ -9,31 +9,31 @@ h2 {
 }
 
 .istok-web-regular {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: normal;
 }
 
 .istok-web-bold {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 700;
     font-style: normal;
 }
 
 .istok-web-black {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 900;
     font-style: normal;
 }
 
 .istok-web-regular-italic {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 400;
     font-style: italic;
 }
 
 .istok-web-bold-italic {
-    font-family: "Istok Web", serif;
+    font-family: var(--font-family);
     font-weight: 700;
     font-style: italic;
 }
@@ -45,7 +45,7 @@ h2 {
     align-items: center;
     display: flex;
     justify-content: flex-start;
-    height: 54px;
+    height: var(--header-height, 54px);
 }
 
 #header .left-content {
@@ -54,6 +54,12 @@ h2 {
     align-items: center;
     gap: 12px;
     margin-left: 16px;
+}
+
+#header .title img {
+    height: var(--header-height, 54px);
+    object-fit: contain;
+    vertical-align: middle;
 }
 
 .title {
