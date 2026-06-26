@@ -67,7 +67,13 @@ fun Application.configureAdmin(database: Database) {
         template = DefaultAdminTemplate(
             settings = DefaultAdminTemplateSettings(
                 colors = lightModeColors,
-                darkModeColors = darkModeColors
+                darkModeColors = darkModeColors,
+                header = DefaultAdminTemplateSettings.HeaderStyle(
+                    content = DefaultAdminTemplateSettings.HeaderContent.Text(
+                        prefix = "K",
+                        text = "Admin"
+                    )
+                )
             )
         )
 

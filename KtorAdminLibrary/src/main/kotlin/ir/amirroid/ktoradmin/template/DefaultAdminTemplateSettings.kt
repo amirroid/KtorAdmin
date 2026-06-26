@@ -19,8 +19,6 @@ data class DefaultAdminTemplateSettings(
     val sidebar: SidebarStyle = SidebarStyle(),
     val header: HeaderStyle = HeaderStyle(),
     val animations: AnimationStyle = AnimationStyle(),
-    val branding: Branding = Branding(),
-    val windowPadding: String = "16px",
 ) {
     data class Colors(
         val primaryColor: String = "#292D32",
@@ -36,8 +34,6 @@ data class DefaultAdminTemplateSettings(
 
     data class Typography(
         val fontFamily: String = "'Istok Web', sans-serif",
-        val fontUrl: String = "/static/font/IstokWeb-Regular.ttf",
-        val boldFontUrl: String = "/static/font/IstokWeb-Bold.ttf",
         val fontScale: Double = 1.0,
     )
 
@@ -56,30 +52,30 @@ data class DefaultAdminTemplateSettings(
     data class SidebarStyle(
         val backdropBlur: String = "8px",
         val backgroundOpacity: Double = 0.7,
-        val mode: SidebarMode = SidebarMode.FLOATING,
     )
-
-    enum class SidebarMode {
-        FLOATING,
-        FIXED,
-        COMPACT,
-    }
 
     data class HeaderStyle(
-        val showLogo: Boolean = true,
-        val logoText: String = "KtorAdmin",
-        val logoPrefix: String = "Ktor",
+        val content: HeaderContent = HeaderContent.Text(),
+        val height: String = "54px",
     )
+
+    sealed interface HeaderContent {
+        data class Text(
+            val prefix: String = "Ktor",
+            val text: String = "Admin",
+        ) : HeaderContent
+
+        data class Image(
+            val url: String,
+            val altText: String = "",
+            val height: String = "32px",
+        ) : HeaderContent
+    }
 
     data class AnimationStyle(
         val enabled: Boolean = true,
         val transitionDuration: String = "0.3s",
         val transitionTiming: String = "cubic-bezier(0.4, 0, 0.2, 1)",
-    )
-
-    data class Branding(
-        val title: String = "KtorAdmin",
-        val titlePrefix: String = "Ktor",
     )
 
     companion object {

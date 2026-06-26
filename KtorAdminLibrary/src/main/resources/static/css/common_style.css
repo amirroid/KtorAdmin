@@ -356,6 +356,12 @@ body {
     margin-left: 16px;
 }
 
+#menu-title-container .title img {
+    height: 24px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
 .menu-title {
     font-size: 20px;
 }

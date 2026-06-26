@@ -53,7 +53,7 @@ h2 {
     align-items: center;
     display: flex;
     justify-content: flex-start;
-    height: 54px;
+    height: var(--header-height, 54px);
 }
 
 #header .left-content {
@@ -62,6 +62,12 @@ h2 {
     align-items: center;
     margin-left: 16px;
     gap: 12px;
+}
+
+#header .title img {
+    height: var(--header-height, 54px);
+    object-fit: contain;
+    vertical-align: middle;
 }
 
 .title {

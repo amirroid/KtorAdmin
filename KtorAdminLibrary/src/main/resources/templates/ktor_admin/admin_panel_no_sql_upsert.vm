@@ -35,7 +35,13 @@
                 <path d="M3 12H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"/>
                 <path d="M3 17H21" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <h2 class="title"><span class="istok-web-black">Ktor</span>Admin</h2>
+            <h2 class="title">
+                #if($headerContentType == "image")
+                    <img src="$headerImageUrl" alt="$headerImageAlt" style="height: $headerImageHeight;">
+                #elseif($headerContentType == "text")
+                    <span class="istok-web-black">$headerTextPrefix</span>$headerTextContent
+                #end
+            </h2>
         </div>
         <div id="search-container"></div>
         <div id="username-container">
@@ -527,7 +533,13 @@
             <path d="M7.96997 9.43994L10.53 11.9999L7.96997 14.5599" stroke="#292D32" stroke-width="1.5"
                   stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <h2 class="title"><span class="istok-web-black">Ktor</span>Admin</h2>
+        <h2 class="title">
+            #if($headerContentType == "image")
+                <img src="$headerImageUrl" alt="$headerImageAlt" style="height: $headerImageHeight;">
+            #elseif($headerContentType == "text")
+                <span class="istok-web-black">$headerTextPrefix</span>$headerTextContent
+            #end
+        </h2>
     </div>
     <h4 class="group-text"></h4>
     <button class="menu-item" onclick="openDashboard()">

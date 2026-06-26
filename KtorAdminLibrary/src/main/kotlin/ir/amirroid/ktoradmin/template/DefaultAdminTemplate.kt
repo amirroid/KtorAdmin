@@ -69,8 +69,10 @@ class DefaultAdminTemplate(
                     --font-family: ${t.fontFamily};
                     --font-scale: ${t.fontScale};
                     --sidebar-backdrop-blur: ${settings.sidebar.backdropBlur};
+                    --sidebar-background-opacity: ${settings.sidebar.backgroundOpacity};
                     --transition-duration: ${settings.animations.transitionDuration};
                     --transition-timing: ${settings.animations.transitionTiming};
+                    --header-height: ${settings.header.height};
                 }
                 :root.theme-dark {
                     --primary-color: ${dc.primaryColor};
@@ -110,14 +112,14 @@ class DefaultAdminTemplate(
                 .dropdown-content {
                     border-radius: ${s.dropdownBorderRadius};
                 }
-                                                ${if (t.fontScale != 1.0) {
+                ${if (t.fontScale != 1.0) {
             """
             body { font-size: ${t.fontScale}rem; }
             """
         } else {
             ""
         }}
-                                                            ${if (!settings.animations.enabled) {
+                ${if (!settings.animations.enabled) {
             """
             * { transition: none !important; animation: none !important; }
             """
@@ -127,14 +129,28 @@ class DefaultAdminTemplate(
             """.trimIndent()
     }
 
-    private fun TemplateModel.withCustomCss(): TemplateModel {
+    private fun TemplateModel.withTemplateSettings(): TemplateModel {
         val newData = data.toMutableMap()
         newData["customCss"] = cssVariables
+        val header = settings.header
+        when (val content = header.content) {
+            is DefaultAdminTemplateSettings.HeaderContent.Text -> {
+                newData["headerContentType"] = "text"
+                newData["headerTextPrefix"] = content.prefix
+                newData["headerTextContent"] = content.text
+            }
+            is DefaultAdminTemplateSettings.HeaderContent.Image -> {
+                newData["headerContentType"] = "image"
+                newData["headerImageUrl"] = content.url
+                newData["headerImageAlt"] = content.altText
+                newData["headerImageHeight"] = content.height
+            }
+        }
         return TemplateModel(newData)
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun TemplateModel.toVelocityModel(): Map<String, Any> = withCustomCss().data as Map<String, Any>
+    private fun TemplateModel.toVelocityModel(): Map<String, Any> = withTemplateSettings().data as Map<String, Any>
 
     override suspend fun renderDashboard(
         call: ApplicationCall,
