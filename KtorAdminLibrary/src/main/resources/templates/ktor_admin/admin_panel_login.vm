@@ -7,6 +7,9 @@
     <title>Login</title>
     <link rel="stylesheet" href="/static/css/admin_panel_login_style.css">
     <link href="/static/css/common_style.css" rel="stylesheet">
+    #if($customCss)
+    <style>$customCss</style>
+    #end
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 </head>
 

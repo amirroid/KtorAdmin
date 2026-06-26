@@ -14,6 +14,9 @@
     <link href="/static/css/admin_panel_upsert.css" rel="stylesheet">
     <link href="/static/css/common_style.css" rel="stylesheet">
     <link href="/static/css/autocomplete.css" rel="stylesheet">
+    #if($customCss)
+    <style>$customCss</style>
+    #end
     #if($tinyMCEConfig)
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.7.1/tinymce.min.js"></script>
     #end

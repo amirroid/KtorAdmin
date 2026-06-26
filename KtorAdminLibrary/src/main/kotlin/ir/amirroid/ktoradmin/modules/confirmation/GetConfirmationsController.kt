@@ -4,8 +4,8 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
-import io.ktor.server.velocity.*
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.flash.getFlashDataAndClear
 import ir.amirroid.ktoradmin.flash.getRequestId
@@ -17,9 +17,9 @@ import ir.amirroid.ktoradmin.panels.AdminMongoCollection
 import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.panels.hasEditAction
 import ir.amirroid.ktoradmin.response.toMap
+import ir.amirroid.ktoradmin.template.TemplateModel
 import ir.amirroid.ktoradmin.translator.KtorAdminTranslator
 import ir.amirroid.ktoradmin.translator.translator
-import ir.amirroid.ktoradmin.utils.Constants
 import ir.amirroid.ktoradmin.utils.badRequest
 import ir.amirroid.ktoradmin.utils.serverError
 import ir.amirroid.ktoradmin.validators.checkHasRole
@@ -88,39 +88,36 @@ private suspend fun ApplicationCall.handleJdbcConfirmationEditView(
                     verboseName = "Confirm new ${column.verboseName}",
                 ),
             )
-        respond(
-            VelocityContent(
-                "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm",
-                model =
-                    mutableMapOf(
-                        "columns" to columns,
-                        "tableName" to table.getTableName(),
-                        "primaryKey" to primaryKey,
-                        "canDownload" to false,
-                        "values" to values,
-                        "singularTableName" to
-                            table
-                                .getSingularName()
-                                .replaceFirstChar { it.uppercaseChar() },
-                        "pluralNameBase" to table.getPluralName(),
-                        "errors" to errors.toMap(),
-                        "csrfToken" to CsrfManager.generateToken(),
-                        "panelGroups" to panelGroups,
-                        "currentPanel" to table.getPluralName(),
-                        "isUpdate" to false,
-                        "requestId" to requestId,
-                        "hasAction" to table.hasEditAction,
-                        "title" to
-                            translator.translate(
-                                KtorAdminTranslator.Keys.RESET_ITEM,
-                                mapOf("name" to column.verboseName),
-                            ),
-                        "callMethod" to "application/x-www-form-urlencoded",
-                    ).apply {
-                        username?.let { put("username", it) }
-                    },
-            ),
+        val model = TemplateModel(
+            mutableMapOf(
+                "columns" to columns,
+                "tableName" to table.getTableName(),
+                "primaryKey" to primaryKey,
+                "canDownload" to false,
+                "values" to values,
+                "singularTableName" to
+                    table
+                        .getSingularName()
+                        .replaceFirstChar { it.uppercaseChar() },
+                "pluralNameBase" to table.getPluralName(),
+                "errors" to errors.toMap(),
+                "csrfToken" to CsrfManager.generateToken(),
+                "panelGroups" to panelGroups,
+                "currentPanel" to table.getPluralName(),
+                "isUpdate" to false,
+                "requestId" to requestId,
+                "hasAction" to table.hasEditAction,
+                "title" to
+                    translator.translate(
+                        KtorAdminTranslator.Keys.RESET_ITEM,
+                        mapOf("name" to column.verboseName),
+                    ),
+                "callMethod" to "application/x-www-form-urlencoded",
+            ).apply {
+                username?.let { put("username", it) }
+            }
         )
+        DynamicConfiguration.template.renderJdbcConfirmation(this, model)
     }.onFailure {
         serverError("Error: ${it.message}", it)
     }
@@ -147,35 +144,32 @@ private suspend fun ApplicationCall.handleMongoConfirmationEditView(
                     verboseName = "Confirm new ${field.verboseName}",
                 ),
             )
-        respond(
-            VelocityContent(
-                "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm",
-                model =
-                    mutableMapOf(
-                        "fields" to fields,
-                        "collectionName" to panel.getCollectionName(),
-                        "primaryKey" to primaryKey,
-                        "canDownload" to false,
-                        "values" to values,
-                        "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
-                        "errors" to errors.toMap(),
-                        "csrfToken" to CsrfManager.generateToken(),
-                        "panelGroups" to panelGroups,
-                        "currentPanel" to panel.getPluralName(),
-                        "isUpdate" to false,
-                        "requestId" to requestId,
-                        "hasAction" to panel.hasEditAction,
-                        "title" to
-                            translator.translate(
-                                KtorAdminTranslator.Keys.RESET_ITEM,
-                                mapOf("name" to field.verboseName),
-                            ),
-                        "callMethod" to "application/x-www-form-urlencoded",
-                    ).apply {
-                        username?.let { put("username", it) }
-                    },
-            ),
+        val model = TemplateModel(
+            mutableMapOf(
+                "fields" to fields,
+                "collectionName" to panel.getCollectionName(),
+                "primaryKey" to primaryKey,
+                "canDownload" to false,
+                "values" to values,
+                "singularName" to panel.getSingularName().replaceFirstChar { it.uppercaseChar() },
+                "errors" to errors.toMap(),
+                "csrfToken" to CsrfManager.generateToken(),
+                "panelGroups" to panelGroups,
+                "currentPanel" to panel.getPluralName(),
+                "isUpdate" to false,
+                "requestId" to requestId,
+                "hasAction" to panel.hasEditAction,
+                "title" to
+                    translator.translate(
+                        KtorAdminTranslator.Keys.RESET_ITEM,
+                        mapOf("name" to field.verboseName),
+                    ),
+                "callMethod" to "application/x-www-form-urlencoded",
+            ).apply {
+                username?.let { put("username", it) }
+            }
         )
+        DynamicConfiguration.template.renderMongoConfirmation(this, model)
     }.onFailure {
         serverError("Error: ${it.message}", it)
     }

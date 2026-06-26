@@ -9,6 +9,8 @@ import ir.amirroid.ktoradmin.models.forms.LoginFiled
 import ir.amirroid.ktoradmin.models.menu.Menu
 import ir.amirroid.ktoradmin.preview.KtorAdminPreview
 import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
+import ir.amirroid.ktoradmin.template.AdminTemplate
+import ir.amirroid.ktoradmin.template.DefaultAdminTemplate
 import ir.amirroid.ktoradmin.translator.KtorAdminTranslator
 import ir.amirroid.ktoradmin.translator.locals.en.EnglishKtorAdminTranslator
 import java.time.ZoneId
@@ -122,6 +124,9 @@ internal object DynamicConfiguration {
     private val _previews = ConcurrentLinkedQueue<KtorAdminPreview>()
     val previews: List<KtorAdminPreview>
         get() = _previews.toList()
+
+    /** Active template for rendering admin views */
+    var template: AdminTemplate = DefaultAdminTemplate()
 
     var menuProvider: ((String?) -> List<Menu>)? = null
 

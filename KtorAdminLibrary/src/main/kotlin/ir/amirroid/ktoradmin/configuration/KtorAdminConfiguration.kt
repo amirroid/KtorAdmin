@@ -21,6 +21,8 @@ import ir.amirroid.ktoradmin.providers.StorageProvider
 import ir.amirroid.ktoradmin.repository.FileRepository
 import ir.amirroid.ktoradmin.repository.MongoClientRepository
 import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
+import ir.amirroid.ktoradmin.template.AdminTemplate
+import ir.amirroid.ktoradmin.template.DefaultAdminTemplate
 import ir.amirroid.ktoradmin.translator.KtorAdminTranslator
 import java.time.Duration
 import java.time.ZoneId
@@ -193,6 +195,16 @@ class KtorAdminConfiguration {
         get() = DynamicConfiguration.dashboard
         set(value) {
             DynamicConfiguration.dashboard = value
+        }
+
+    /**
+     * Active template for rendering admin views.
+     * Defaults to [DefaultAdminTemplate].
+     */
+    var template: AdminTemplate
+        get() = DynamicConfiguration.template
+        set(value) {
+            DynamicConfiguration.template = value
         }
 
     var defaultLanguage: String
