@@ -1,4 +1,3 @@
-/* General body and form styles */
 body {
     background-color: #121212;
     color: #e0e0e0;
@@ -22,7 +21,6 @@ form {
     box-sizing: border-box;
 }
 
-/* Input with buttons container */
 .input-with-buttons {
     display: flex;
     align-items: center;
@@ -34,7 +32,6 @@ form {
     flex-grow: 1;
 }
 
-/* List buttons styles */
 .list-buttons {
     display: flex;
     gap: 8px;
@@ -66,7 +63,6 @@ form {
     font-size: 16px;
 }
 
-/* Labels */
 label {
     font-size: 14px;
     margin-bottom: 4px;
@@ -74,7 +70,6 @@ label {
     color: #b0b0b0;
 }
 
-/* Inputs and buttons */
 input, select, button, input[type="file"] {
     width: 100%;
     padding: 12px;
@@ -98,26 +93,22 @@ input, select, button, input[type="file"] {
     margin-bottom: 10px;
 }
 
-/* Existing styles remain unchanged */
 
 .list-buttons button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;  /* Slightly larger */
-    height: 40px; /* Slightly larger */
+    width: 40px;
+    height: 40px;
     padding: 0;
     border-radius: 50%;
-    background-color: #2c2c2c; /* Darker default background */
+    background-color: #2c2c2c;
     color: #e0e0e0;
     border: 1px solid #6200ea;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-/* Existing styles remain unchanged */
-
-/* Previous styles with modifications */
 .list-buttons {
     display: flex;
     align-items: center;
@@ -134,7 +125,7 @@ input, select, button, input[type="file"] {
     width: 32px;
     height: 32px;
     padding: 0;
-    border-radius: 50%; /* Circular buttons */
+    border-radius: 50%;
     background-color: #2c2c2c;
     color: #e0e0e0;
     border: 1px solid #6200ea;
@@ -160,7 +151,6 @@ input, select, button, input[type="file"] {
     box-shadow: 0 0 10px rgba(98, 0, 234, 0.5);
 }
 
-/* Submit button styling */
 button[type="submit"] {
     background-color: #6200ea;
     color: white;

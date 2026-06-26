@@ -7,7 +7,9 @@
     <title>$translations['dashboard']</title>
     <link href="/static/css/admin_panel_dashboard.css" rel="stylesheet">
     <link href="/static/css/common_style.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    #if($fontStylesheet)
+    <link href="$fontStylesheet" rel="stylesheet">
+    #end
     #if($customCss)
     <style>$customCss</style>
     #end
@@ -260,7 +262,7 @@
 <script>
     const adminPath = "$adminPath"
     document.addEventListener("DOMContentLoaded", function () {
-        Chart.defaults.font.family = 'Istok Web';
+        Chart.defaults.font.family = '$fontFamily';
         Chart.defaults.font.weight = 'normal';
         const htmlLegendPlugin = {
             id: 'customLegend',
@@ -305,7 +307,7 @@
 
                     // Add label text
                     const text = document.createElement('span');
-                    text.style.fontFamily = 'Istok Web, sans-serif';
+                    text.style.fontFamily = '$fontFamily';
                     text.style.fontSize = '14px';
                     text.style.color = '#333';
                     text.textContent = dataset.label;

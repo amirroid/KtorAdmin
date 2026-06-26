@@ -32,13 +32,39 @@ class DefaultAdminTemplate(
 ) : AdminTemplate {
     private val cssVariables by lazy { generateCssVariables() }
 
+    private fun generateFontFace(): String {
+        val font = settings.typography.font
+        val sb = StringBuilder()
+        font.regular?.let { path ->
+            sb.appendLine("@font-face {")
+            sb.appendLine("    font-family: '${font.name}';")
+            sb.appendLine("    src: url('$path') format('truetype');")
+            sb.appendLine("    font-weight: normal;")
+            sb.appendLine("    font-style: normal;")
+            sb.appendLine("}")
+        }
+        font.bold?.let { path ->
+            if (sb.isNotEmpty()) sb.appendLine()
+            sb.appendLine("@font-face {")
+            sb.appendLine("    font-family: '${font.name}';")
+            sb.appendLine("    src: url('$path') format('truetype');")
+            sb.appendLine("    font-weight: bold;")
+            sb.appendLine("    font-style: normal;")
+            sb.appendLine("}")
+        }
+        return sb.toString()
+    }
+
     private fun generateCssVariables(): String {
         val c = settings.colors
         val t = settings.typography
+        val font = t.font
         val s = settings.shapes
         val sp = settings.spacing
         val dc = settings.darkModeColors
+        val fontFaceCss = generateFontFace()
         return """
+                $fontFaceCss
                 :root {
                     --primary-color: ${c.primaryColor};
                     --secondary-color: ${c.secondaryColor};
@@ -66,7 +92,7 @@ class DefaultAdminTemplate(
                     --sidebar-width: ${sp.sidebarWidth};
                     --sidebar-margin: ${sp.sidebarMargin};
                     --body-padding: ${sp.bodyPadding};
-                    --font-family: ${t.fontFamily};
+                    --font-family: ${font.cssFamily};
                     --font-scale: ${t.fontScale};
                     --sidebar-backdrop-blur: ${settings.sidebar.backdropBlur};
                     --sidebar-background-opacity: ${settings.sidebar.backgroundOpacity};
@@ -96,7 +122,7 @@ class DefaultAdminTemplate(
                     --table-hover-row-color: ${dc.hoverRowColor};
                 }
                 body {
-                    font-family: ${t.fontFamily};
+                    font-family: ${font.cssFamily};
                     padding: ${sp.bodyPadding};
                 }
                 .sidebar {
@@ -132,6 +158,9 @@ class DefaultAdminTemplate(
     private fun TemplateModel.withTemplateSettings(): TemplateModel {
         val newData = data.toMutableMap()
         newData["customCss"] = cssVariables
+        val font = settings.typography.font
+        newData["fontFamily"] = font.cssFamily
+        font.stylesheet?.let { newData["fontStylesheet"] = it }
         val header = settings.header
         when (val content = header.content) {
             is DefaultAdminTemplateSettings.HeaderContent.Text -> {

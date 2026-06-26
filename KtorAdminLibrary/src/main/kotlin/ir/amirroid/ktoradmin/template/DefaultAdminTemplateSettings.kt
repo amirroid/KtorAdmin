@@ -1,7 +1,5 @@
 package ir.amirroid.ktoradmin.template
 
-import kotlin.String
-
 /**
  * Configuration for the default admin template.
  *
@@ -33,7 +31,7 @@ data class DefaultAdminTemplateSettings(
     )
 
     data class Typography(
-        val fontFamily: String = "'Istok Web', sans-serif",
+        val font: FontFamily = FontFamily(),
         val fontScale: Double = 1.0,
     )
 

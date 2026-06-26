@@ -12,6 +12,7 @@ import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.pdf.PdfHelper
 import ir.amirroid.ktoradmin.repository.JdbcQueriesRepository
 import ir.amirroid.ktoradmin.repository.MongoClientRepository
+import ir.amirroid.ktoradmin.template.DefaultAdminTemplate
 import ir.amirroid.ktoradmin.utils.Constants
 import ir.amirroid.ktoradmin.utils.badRequest
 import ir.amirroid.ktoradmin.utils.invalidateRequest
@@ -75,8 +76,16 @@ fun Routing.configureDownloadFilesRouting(
                     panels.find { it.getPluralName() == pluralName }?.takeIf { it.isShowInAdminPanel() }
                         ?: return@get call.notFound("No table found with plural name: $pluralName")
 
+                val font =
+                    (DynamicConfiguration.template as? DefaultAdminTemplate)
+                        ?.settings
+                        ?.typography
+                        ?.font
+                val regularFontPath = font?.regular ?: "/static/font/IstokWeb-Regular.ttf"
+                val boldFontPath = font?.bold ?: "/static/font/IstokWeb-Bold.ttf"
+
                 val pdfData =
-                    PdfHelper.generatePdf(panel, primaryKey, call)
+                    PdfHelper.generatePdf(panel, primaryKey, call, regularFontPath, boldFontPath)
                         ?: return@get call.badRequest("Error generating PDF")
 
                 call.response.header(

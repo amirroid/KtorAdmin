@@ -18,6 +18,7 @@ import ir.amirroid.ktoradmin.plugins.KtorAdmin
 import ir.amirroid.ktoradmin.provider.defaultvalue.uuid.UUIDDefaultValueProvider
 import ir.amirroid.ktoradmin.template.DefaultAdminTemplate
 import ir.amirroid.ktoradmin.template.DefaultAdminTemplateSettings
+import ir.amirroid.ktoradmin.template.FontFamily
 import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
 import ir.amirroid.ktoradmin.translator.locals.fa.PersianKtorAdminTranslator
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -68,11 +69,14 @@ fun Application.configureAdmin(database: Database) {
             settings = DefaultAdminTemplateSettings(
                 colors = lightModeColors,
                 darkModeColors = darkModeColors,
+//                typography = DefaultAdminTemplateSettings.Typography(
+//                    font = FontFamily.fromGoogleFonts("Roboto", weights = listOf(300, 400, 700)),
+//                ),
                 header = DefaultAdminTemplateSettings.HeaderStyle(
                     content = DefaultAdminTemplateSettings.HeaderContent.Text(
                         prefix = "K",
                         text = "Admin"
-                    )
+                    ),
                 )
             )
         )
