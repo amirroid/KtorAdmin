@@ -3,7 +3,6 @@ package ir.amirroid.ktoradmin.modules.update
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
-import io.ktor.server.velocity.*
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.csrf.CsrfManager
@@ -27,9 +26,9 @@ import ir.amirroid.ktoradmin.repository.FileRepository
 import ir.amirroid.ktoradmin.repository.JdbcQueriesRepository
 import ir.amirroid.ktoradmin.repository.MongoClientRepository
 import ir.amirroid.ktoradmin.response.toMap
+import ir.amirroid.ktoradmin.template.TemplateModel
 import ir.amirroid.ktoradmin.translator.KtorAdminTranslator
 import ir.amirroid.ktoradmin.translator.translator
-import ir.amirroid.ktoradmin.utils.Constants
 import ir.amirroid.ktoradmin.utils.addCommonModels
 import ir.amirroid.ktoradmin.utils.addCommonUpsertModels
 import ir.amirroid.ktoradmin.utils.notFound
@@ -98,45 +97,43 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                     this,
                 )
             val singularTableName = table.getSingularName().replaceFirstChar { it.uppercaseChar() }
-            respond(
-                VelocityContent(
-                    "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm",
-                    model =
-                        mapOf(
-                            "columns" to panelColumnsList,
-                            "tableName" to table.getTableName(),
-                            "primaryKey" to primaryKey,
-                            "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
-                            "values" to values,
-                            "singularTableName" to singularTableName,
-                            "references" to referencesItems,
-                            "selectedReferences" to selectedReferences,
-                            "pluralNameBase" to table.getPluralName(),
-                            "errors" to errors.toMap(),
-                            "csrfToken" to CsrfManager.generateToken(),
-                            "panelGroups" to panelGroups,
-                            "currentPanel" to table.getPluralName(),
-                            "isUpdate" to true,
-                            "requestId" to requestId,
-                            "hasAction" to table.hasEditAction,
-                            "previews" to
-                                extractColumnsPreviews(
-                                    table.getTableName(),
-                                    columnsWithValues =
-                                        values.mapKeys { item ->
-                                            columns.first { column -> column.columnName == item.key }
-                                        },
-                                ),
-                            "title" to
-                                translator.translate(
-                                    KtorAdminTranslator.Keys.UPDATE_ITEM,
-                                    mapOf("name" to singularTableName),
-                                ),
-                        ).addCommonUpsertModels(table, username)
-                            .toMutableMap()
-                            .addCommonModels(table, panelGroups, applicationCall = this),
-                ),
-            )
+            val model =
+                TemplateModel(
+                    mapOf(
+                        "columns" to panelColumnsList,
+                        "tableName" to table.getTableName(),
+                        "primaryKey" to primaryKey,
+                        "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
+                        "values" to values,
+                        "singularTableName" to singularTableName,
+                        "references" to referencesItems,
+                        "selectedReferences" to selectedReferences,
+                        "pluralNameBase" to table.getPluralName(),
+                        "errors" to errors.toMap(),
+                        "csrfToken" to CsrfManager.generateToken(),
+                        "panelGroups" to panelGroups,
+                        "currentPanel" to table.getPluralName(),
+                        "isUpdate" to true,
+                        "requestId" to requestId,
+                        "hasAction" to table.hasEditAction,
+                        "previews" to
+                            extractColumnsPreviews(
+                                table.getTableName(),
+                                columnsWithValues =
+                                    values.mapKeys { item ->
+                                        columns.first { column -> column.columnName == item.key }
+                                    },
+                            ),
+                        "title" to
+                            translator.translate(
+                                KtorAdminTranslator.Keys.UPDATE_ITEM,
+                                mapOf("name" to singularTableName),
+                            ),
+                    ).addCommonUpsertModels(table, username)
+                        .toMutableMap()
+                        .addCommonModels(table, panelGroups, applicationCall = this),
+                )
+            DynamicConfiguration.template.renderJdbcUpsert(this, model)
         }.onFailure {
             serverError("Error: ${it.message}", it)
         }
@@ -179,40 +176,38 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
             val errorValues = valuesWithErrors.first
             val values = errorValues?.takeIf { it.isNotEmpty() } ?: processFieldValues(fields, data, this)
             val singularName = panel.getSingularName().replaceFirstChar { it.uppercaseChar() }
-            respond(
-                VelocityContent(
-                    "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm",
-                    model =
-                        mutableMapOf(
-                            "fields" to fields,
-                            "values" to values,
-                            "errors" to errors.toMap(),
-                            "collectionName" to panel.getCollectionName(),
-                            "singularName" to singularName,
-                            "pluralName" to panel.getPluralName(),
-                            "primaryKey" to primaryKey,
-                            "csrfToken" to CsrfManager.generateToken(),
-                            "panelGroups" to panelGroups,
-                            "currentPanel" to panel.getPluralName(),
-                            "isUpdate" to true,
-                            "requestId" to requestId,
-                            "hasAction" to panel.hasEditAction,
-                            "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
-                            "previews" to
-                                extractFieldsPreviews(
-                                    panel.getCollectionName(),
-                                    fieldsWithValues = values.mapKeys { item -> fields.first { field -> field.fieldName == item.key } },
-                                ),
-                            "title" to
-                                translator.translate(
-                                    KtorAdminTranslator.Keys.UPDATE_ITEM,
-                                    mapOf("name" to singularName),
-                                ),
-                        ).addCommonUpsertModels(panel, username)
-                            .toMutableMap()
-                            .addCommonModels(panel, panelGroups, applicationCall = this),
-                ),
-            )
+            val model =
+                TemplateModel(
+                    mutableMapOf(
+                        "fields" to fields,
+                        "values" to values,
+                        "errors" to errors.toMap(),
+                        "collectionName" to panel.getCollectionName(),
+                        "singularName" to singularName,
+                        "pluralName" to panel.getPluralName(),
+                        "primaryKey" to primaryKey,
+                        "csrfToken" to CsrfManager.generateToken(),
+                        "panelGroups" to panelGroups,
+                        "currentPanel" to panel.getPluralName(),
+                        "isUpdate" to true,
+                        "requestId" to requestId,
+                        "hasAction" to panel.hasEditAction,
+                        "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
+                        "previews" to
+                            extractFieldsPreviews(
+                                panel.getCollectionName(),
+                                fieldsWithValues = values.mapKeys { item -> fields.first { field -> field.fieldName == item.key } },
+                            ),
+                        "title" to
+                            translator.translate(
+                                KtorAdminTranslator.Keys.UPDATE_ITEM,
+                                mapOf("name" to singularName),
+                            ),
+                    ).addCommonUpsertModels(panel, username)
+                        .toMutableMap()
+                        .addCommonModels(panel, panelGroups, applicationCall = this),
+                )
+            DynamicConfiguration.template.renderMongoUpsert(this, model)
         }.onFailure {
             serverError("Error: ${it.message}", it)
         }

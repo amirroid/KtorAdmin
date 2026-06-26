@@ -2,9 +2,8 @@ package ir.amirroid.ktoradmin.modules.add
 
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
-import io.ktor.server.velocity.*
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.flash.getFlashDataAndClear
 import ir.amirroid.ktoradmin.flash.getRequestId
@@ -17,9 +16,9 @@ import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumnsInUpsertView
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowFieldsInUpsert
 import ir.amirroid.ktoradmin.panels.hasAddAction
 import ir.amirroid.ktoradmin.response.toMap
+import ir.amirroid.ktoradmin.template.TemplateModel
 import ir.amirroid.ktoradmin.translator.KtorAdminTranslator
 import ir.amirroid.ktoradmin.translator.translator
-import ir.amirroid.ktoradmin.utils.Constants
 import ir.amirroid.ktoradmin.utils.addCommonModels
 import ir.amirroid.ktoradmin.utils.addCommonUpsertModels
 import ir.amirroid.ktoradmin.utils.badRequest
@@ -58,33 +57,31 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
         val columns = table.getAllAllowToShowColumnsInUpsertView()
         val referencesItems = getReferencesItems(panels.filterIsInstance<AdminJdbcTable>(), columns)
         val singularTableName = table.getSingularName().replaceFirstChar { it.uppercaseChar() }
-        respond(
-            VelocityContent(
-                "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_upsert.vm",
-                model =
-                    mapOf(
-                        "columns" to columns,
-                        "tableName" to table.getTableName(),
-                        "singularTableName" to singularTableName,
-                        "references" to referencesItems,
-                        "errors" to (valuesWithErrors.second?.toMap() ?: emptyMap()),
-                        "values" to (valuesWithErrors.first ?: emptyMap()),
-                        "csrfToken" to CsrfManager.generateToken(),
-                        "panelGroups" to panelGroups,
-                        "currentPanel" to table.getPluralName(),
-                        "isUpdate" to false,
-                        "requestId" to requestId,
-                        "hasAction" to table.hasAddAction,
-                        "title" to
-                            translator.translate(
-                                KtorAdminTranslator.Keys.ADD_NEW_ITEM,
-                                mapOf("name" to singularTableName),
-                            ),
-                    ).addCommonUpsertModels(table, username)
-                        .toMutableMap()
-                        .addCommonModels(table, panelGroups, applicationCall = this),
-            ),
-        )
+        val model =
+            TemplateModel(
+                mapOf(
+                    "columns" to columns,
+                    "tableName" to table.getTableName(),
+                    "singularTableName" to singularTableName,
+                    "references" to referencesItems,
+                    "errors" to (valuesWithErrors.second?.toMap() ?: emptyMap()),
+                    "values" to (valuesWithErrors.first ?: emptyMap()),
+                    "csrfToken" to CsrfManager.generateToken(),
+                    "panelGroups" to panelGroups,
+                    "currentPanel" to table.getPluralName(),
+                    "isUpdate" to false,
+                    "requestId" to requestId,
+                    "hasAction" to table.hasAddAction,
+                    "title" to
+                        translator.translate(
+                            KtorAdminTranslator.Keys.ADD_NEW_ITEM,
+                            mapOf("name" to singularTableName),
+                        ),
+                ).addCommonUpsertModels(table, username)
+                    .toMutableMap()
+                    .addCommonModels(table, panelGroups, applicationCall = this),
+            )
+        DynamicConfiguration.template.renderJdbcUpsert(this, model)
     }.onFailure {
         badRequest("Error: ${it.message}", it)
     }
@@ -103,31 +100,29 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
         val errorValues = valuesWithErrors.first
         val values = errorValues?.takeIf { it.isNotEmpty() } ?: emptyMap()
         val singularTableName = panel.getSingularName().replaceFirstChar { it.uppercaseChar() }
-        respond(
-            VelocityContent(
-                "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_no_sql_upsert.vm",
-                model =
-                    mutableMapOf(
-                        "fields" to fields,
-                        "collectionName" to panel.getCollectionName(),
-                        "singularName" to singularTableName,
-                        "values" to values,
-                        "errors" to errors.toMap(),
-                        "csrfToken" to CsrfManager.generateToken(),
-                        "requestId" to requestId,
-                        "hasAction" to panel.hasAddAction,
-                        "panelGroups" to panelGroups,
-                        "currentPanel" to panel.getPluralName(),
-                        "title" to
-                            translator.translate(
-                                KtorAdminTranslator.Keys.ADD_NEW_ITEM,
-                                mapOf("name" to singularTableName),
-                            ),
-                    ).addCommonUpsertModels(panel, username)
-                        .toMutableMap()
-                        .addCommonModels(panel, panelGroups, applicationCall = this),
-            ),
-        )
+        val model =
+            TemplateModel(
+                mutableMapOf(
+                    "fields" to fields,
+                    "collectionName" to panel.getCollectionName(),
+                    "singularName" to singularTableName,
+                    "values" to values,
+                    "errors" to errors.toMap(),
+                    "csrfToken" to CsrfManager.generateToken(),
+                    "requestId" to requestId,
+                    "hasAction" to panel.hasAddAction,
+                    "panelGroups" to panelGroups,
+                    "currentPanel" to panel.getPluralName(),
+                    "title" to
+                        translator.translate(
+                            KtorAdminTranslator.Keys.ADD_NEW_ITEM,
+                            mapOf("name" to singularTableName),
+                        ),
+                ).addCommonUpsertModels(panel, username)
+                    .toMutableMap()
+                    .addCommonModels(panel, panelGroups, applicationCall = this),
+            )
+        DynamicConfiguration.template.renderMongoUpsert(this, model)
     }.onFailure {
         serverError("Error: ${it.message}", it)
     }

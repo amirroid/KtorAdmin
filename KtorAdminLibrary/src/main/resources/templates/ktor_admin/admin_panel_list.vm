@@ -7,6 +7,9 @@
     <title>Admin Panel</title>
     <link href="/static/css/admin_panel_list_styles.css" rel="stylesheet">
     <link href="/static/css/common_style.css" rel="stylesheet">
+    #if($customCss)
+    <style>$customCss</style>
+    #end
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 </head>
 

@@ -5,15 +5,14 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import io.ktor.server.velocity.*
 import ir.amirroid.ktoradmin.authentication.USER_SESSIONS
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.flash.getFlashDataAndClear
 import ir.amirroid.ktoradmin.flash.getRequestId
 import ir.amirroid.ktoradmin.ratelimit.withRateLimit
+import ir.amirroid.ktoradmin.template.TemplateModel
 import ir.amirroid.ktoradmin.translator.translator
-import ir.amirroid.ktoradmin.utils.Constants
 
 fun Routing.configureLoginRouting(authenticatedName: String) {
     withRateLimit {
@@ -25,28 +24,26 @@ fun Routing.configureLoginRouting(authenticatedName: String) {
             }
             val origin = call.parameters["origin"] ?: "/${DynamicConfiguration.adminPath}"
             val translator = call.translator
-            call.respond(
-                VelocityContent(
-                    "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_login.vm",
-                    model =
-                        mutableMapOf(
-                            "fields" to DynamicConfiguration.loginFields,
-                            "origin" to origin,
-                            "csrfToken" to CsrfManager.generateToken(),
-                            "requestId" to requestId,
-                            "translations" to translator.translates,
-                            "layout_direction" to translator.layoutDirection,
-                            "lang" to translator.languageCode,
-                        ).apply {
-                            DynamicConfiguration.loginPageMessage?.let {
-                                put("message", it)
-                            }
-                            if (valuesWithErrors.second != null) {
-                                put("hasError", true)
-                            }
-                        },
-                ),
-            )
+            val model =
+                TemplateModel(
+                    mutableMapOf(
+                        "fields" to DynamicConfiguration.loginFields,
+                        "origin" to origin,
+                        "csrfToken" to CsrfManager.generateToken(),
+                        "requestId" to requestId,
+                        "translations" to translator.translates,
+                        "layout_direction" to translator.layoutDirection,
+                        "lang" to translator.languageCode,
+                    ).apply {
+                        DynamicConfiguration.loginPageMessage?.let {
+                            put("message", it)
+                        }
+                        if (valuesWithErrors.second != null) {
+                            put("hasError", true)
+                        }
+                    },
+                )
+            DynamicConfiguration.template.renderLogin(call, model)
         }
     }
     authenticate(authenticatedName, strategy = AuthenticationStrategy.Required) {

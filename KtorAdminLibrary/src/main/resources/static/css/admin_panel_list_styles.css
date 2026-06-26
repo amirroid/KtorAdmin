@@ -386,11 +386,15 @@ tr {
 }
 
 tbody tr:nth-child(even) td {
-    background-color: var(--background-gradient-start-30);
+    background-color: var(--table-even-row-color);
 }
 
-tbody tr:hover {
-    background-color: var(--secondary-color-20);
+tbody tr:nth-child(odd) td {
+    background-color: var(--table-odd-row-color);
+}
+
+tbody tr:hover td {
+    background-color: var(--table-hover-row-color);
 }
 
 td::before,

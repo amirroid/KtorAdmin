@@ -2,9 +2,7 @@ package ir.amirroid.ktoradmin.modules
 
 import io.ktor.server.application.*
 import io.ktor.server.auth.principal
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.velocity.*
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.dashboard.chart.ChartDashboardSection
@@ -25,6 +23,7 @@ import ir.amirroid.ktoradmin.panels.AdminMongoCollection
 import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.repository.JdbcQueriesRepository
 import ir.amirroid.ktoradmin.repository.MongoClientRepository
+import ir.amirroid.ktoradmin.template.TemplateModel
 import ir.amirroid.ktoradmin.utils.Constants
 import ir.amirroid.ktoradmin.utils.addCommonModels
 import ir.amirroid.ktoradmin.utils.forbidden
@@ -76,31 +75,29 @@ private suspend fun ApplicationCall.renderAdminPanel(
         if (user?.dashboardAccess == false) {
             return forbidden("You do not have permission to access the admin dashboard.")
         }
-        respond(
-            VelocityContent(
-                "${Constants.TEMPLATES_PREFIX_PATH}/admin_dashboard.vm",
-                model =
-                    mutableMapOf(
-                        "panelGroups" to panelGroups,
-                        "sectionsData" to
-                            sectionsData.associateBy {
-                                when (it) {
-                                    is TextData -> it.section.index
-                                    is ChartData -> it.section.index
-                                    is ListData -> it.section.index
-                                    else -> 0
-                                }
-                            },
-                        "sectionsInfo" to sectionsInfo,
-                        "gridTemplate" to gridTemplate,
-                        "mediaTemplates" to mediaTemplates,
-                    ).apply {
-                        username?.let {
-                            put("username", it)
-                        }
-                    }.addCommonModels(null, panelGroups, applicationCall = this),
-            ),
-        )
+        val model =
+            TemplateModel(
+                mutableMapOf(
+                    "panelGroups" to panelGroups,
+                    "sectionsData" to
+                        sectionsData.associateBy {
+                            when (it) {
+                                is TextData -> it.section.index
+                                is ChartData -> it.section.index
+                                is ListData -> it.section.index
+                                else -> 0
+                            }
+                        },
+                    "sectionsInfo" to sectionsInfo,
+                    "gridTemplate" to gridTemplate,
+                    "mediaTemplates" to mediaTemplates,
+                ).apply {
+                    username?.let {
+                        put("username", it)
+                    }
+                }.addCommonModels(null, panelGroups, applicationCall = this),
+            )
+        DynamicConfiguration.template.renderDashboard(this, model)
     }.onFailure {
         serverError(it.message.orEmpty(), it)
     }

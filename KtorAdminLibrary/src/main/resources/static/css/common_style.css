@@ -30,6 +30,9 @@
     --background-color-f4: #F4F4F4;
     --background-gradient-start-30: rgba(243, 231, 203, 0.3);
     --secondary-color-20: rgba(154, 108, 0, 0.2);
+    --table-even-row-color: rgba(243, 231, 203, 0.3);
+    --table-odd-row-color: transparent;
+    --table-hover-row-color: rgba(154, 108, 0, 0.2);
 }
 
 :root.theme-dark {
@@ -50,6 +53,9 @@
     --background-color-f4: #2C2C2C;
     --background-gradient-start-30: rgba(255, 184, 77, 0.15);
     --secondary-color-20: rgba(255, 184, 77, 0.2);
+    --table-even-row-color: rgba(255, 184, 77, 0.15);
+    --table-odd-row-color: transparent;
+    --table-hover-row-color: rgba(255, 184, 77, 0.2);
 }
 
 .sidebar {

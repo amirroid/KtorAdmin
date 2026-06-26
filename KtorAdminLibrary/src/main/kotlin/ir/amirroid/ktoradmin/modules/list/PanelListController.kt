@@ -3,8 +3,6 @@ package ir.amirroid.ktoradmin.modules.list
 import com.mongodb.client.model.Filters
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
-import io.ktor.server.velocity.*
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.csrf.CsrfManager
@@ -20,9 +18,9 @@ import ir.amirroid.ktoradmin.panels.getAllAllowToShowFields
 import ir.amirroid.ktoradmin.panels.getAllCustomActions
 import ir.amirroid.ktoradmin.repository.JdbcQueriesRepository
 import ir.amirroid.ktoradmin.repository.MongoClientRepository
+import ir.amirroid.ktoradmin.template.TemplateModel
 import ir.amirroid.ktoradmin.translator.KtorAdminTranslator
 import ir.amirroid.ktoradmin.translator.translator
-import ir.amirroid.ktoradmin.utils.Constants
 import ir.amirroid.ktoradmin.utils.addCommonModels
 import ir.amirroid.ktoradmin.utils.badRequest
 import ir.amirroid.ktoradmin.utils.notFound
@@ -236,27 +234,24 @@ private suspend fun ApplicationCall.respondWithTemplate(
 ) {
     val user = principal<KtorAdminPrincipal>()
     val model =
-        buildTemplateModel(
-            panel = panel,
-            data = data,
-            pluralName = pluralName,
-            maxPages = maxPages,
-            currentPage = currentPage,
-            filtersData = filtersData,
-            order = order,
-            panelGroups = panelGroups,
-            hasSearch = hasSearch,
-            username = user?.name,
-            count = count,
-            applicationCall = this,
+        TemplateModel(
+            buildTemplateModel(
+                panel = panel,
+                data = data,
+                pluralName = pluralName,
+                maxPages = maxPages,
+                currentPage = currentPage,
+                filtersData = filtersData,
+                order = order,
+                panelGroups = panelGroups,
+                hasSearch = hasSearch,
+                username = user?.name,
+                count = count,
+                applicationCall = this,
+            ),
         )
 
-    respond(
-        VelocityContent(
-            "${Constants.TEMPLATES_PREFIX_PATH}/admin_panel_list.vm",
-            model = model,
-        ),
-    )
+    DynamicConfiguration.template.renderPanelList(this, model)
 }
 
 private suspend fun buildTemplateModel(

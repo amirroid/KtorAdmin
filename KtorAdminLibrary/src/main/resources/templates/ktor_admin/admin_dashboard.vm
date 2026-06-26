@@ -8,6 +8,9 @@
     <link href="/static/css/admin_panel_dashboard.css" rel="stylesheet">
     <link href="/static/css/common_style.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    #if($customCss)
+    <style>$customCss</style>
+    #end
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
     <style>
         #bottom-box {

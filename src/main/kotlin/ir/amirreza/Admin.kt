@@ -16,6 +16,8 @@ import ir.amirroid.ktoradmin.mongo.MongoCredential
 import ir.amirroid.ktoradmin.mongo.MongoServerAddress
 import ir.amirroid.ktoradmin.plugins.KtorAdmin
 import ir.amirroid.ktoradmin.provider.defaultvalue.uuid.UUIDDefaultValueProvider
+import ir.amirroid.ktoradmin.template.DefaultAdminTemplate
+import ir.amirroid.ktoradmin.template.DefaultAdminTemplateSettings
 import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
 import ir.amirroid.ktoradmin.translator.locals.fa.PersianKtorAdminTranslator
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -61,6 +63,14 @@ fun Application.configureAdmin(database: Database) {
         registerValueMapper(
             CustomValueMapper
         )
+
+        template = DefaultAdminTemplate(
+            settings = DefaultAdminTemplateSettings(
+                colors = lightModeColors,
+                darkModeColors = darkModeColors
+            )
+        )
+
         registerDefaultValueProvider(UUIDDefaultValueProvider())
         registerPreview(VideoPreview())
         registerPreview(ImagePreview())
@@ -126,4 +136,30 @@ private val adminLoginFields = listOf(
         autoComplete = "current-password",
         type = "password"
     )
+)
+
+val lightModeColors = DefaultAdminTemplateSettings.Colors(
+    primaryColor = "#059669",
+    secondaryColor = "#047857",
+    backgroundGradientStart = "#ECFDF5",
+    backgroundGradientEnd = "#D1FAE5",
+    highlightColor = "#10B981",
+    errorColor = "#DC2626",
+
+    evenRowColor = "rgba(236, 253, 245, 0.35)",
+    oddRowColor = "transparent",
+    hoverRowColor = "rgba(5, 150, 105, 0.15)",
+)
+
+val darkModeColors = DefaultAdminTemplateSettings.Colors(
+    primaryColor = "#E5E7EB",
+    secondaryColor = "#34D399",
+    backgroundGradientStart = "#052E26",
+    backgroundGradientEnd = "#064E3B",
+    highlightColor = "#10B981",
+    errorColor = "#EF4444",
+
+    evenRowColor = "rgba(52, 211, 153, 0.12)",
+    oddRowColor = "transparent",
+    hoverRowColor = "rgba(16, 185, 129, 0.18)",
 )
