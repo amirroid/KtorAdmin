@@ -44,12 +44,12 @@ data class DefaultAdminTemplateSettings(
     data class Spacing(
         val bodyPadding: String = "16px",
         val sidebarMargin: String = "16px",
-        val sidebarWidth: String = "300px",
     )
 
     data class SidebarStyle(
         val backdropBlur: String = "8px",
         val backgroundOpacity: Double = 0.7,
+        val width: String = "300px",
     )
 
     data class HeaderStyle(

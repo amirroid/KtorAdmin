@@ -262,7 +262,7 @@
 <script>
     const adminPath = "$adminPath"
     document.addEventListener("DOMContentLoaded", function () {
-        Chart.defaults.font.family = '$fontFamily';
+        Chart.defaults.font.family = "$fontFamily";
         Chart.defaults.font.weight = 'normal';
         const htmlLegendPlugin = {
             id: 'customLegend',
@@ -307,7 +307,7 @@
 
                     // Add label text
                     const text = document.createElement('span');
-                    text.style.fontFamily = '$fontFamily';
+                    text.style.fontFamily = "$fontFamily";
                     text.style.fontSize = '14px';
                     text.style.color = '#333';
                     text.textContent = dataset.label;

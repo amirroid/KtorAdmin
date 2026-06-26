@@ -77,7 +77,7 @@ fun Application.configureAdmin(database: Database) {
                         prefix = "K",
                         text = "Admin"
                     ),
-                )
+                ),
             )
         )
 

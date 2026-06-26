@@ -62,6 +62,7 @@ class DefaultAdminTemplate(
         val s = settings.shapes
         val sp = settings.spacing
         val dc = settings.darkModeColors
+        val sidebar = settings.sidebar
         val fontFaceCss = generateFontFace()
         return """
                 $fontFaceCss
@@ -89,7 +90,7 @@ class DefaultAdminTemplate(
                     --sidebar-border-radius: ${s.sidebarBorderRadius};
                     --menu-item-border-radius: ${s.menuItemBorderRadius};
                     --dropdown-border-radius: ${s.dropdownBorderRadius};
-                    --sidebar-width: ${sp.sidebarWidth};
+                    --sidebar-width: ${sidebar.width};
                     --sidebar-margin: ${sp.sidebarMargin};
                     --body-padding: ${sp.bodyPadding};
                     --font-family: ${font.cssFamily};
@@ -126,7 +127,7 @@ class DefaultAdminTemplate(
                     padding: ${sp.bodyPadding};
                 }
                 .sidebar {
-                    width: calc(${sp.sidebarWidth} - ${sp.bodyPadding} * 2);
+                    width: calc(${sidebar.width} - ${sp.bodyPadding} * 2);
                     height: calc(100% - ${sp.bodyPadding} * 2);
                     margin: ${sp.sidebarMargin};
                     border-radius: ${s.sidebarBorderRadius};
