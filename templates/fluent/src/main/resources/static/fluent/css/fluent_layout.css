@@ -114,7 +114,7 @@
 .fluent-submenu-container:hover .fluent-submenu { opacity: 1; visibility: visible; transform: translateX(0); }
 .fluent-selected-lang { color: var(--fluent-brand) !important; font-weight: 600; }
 
-.fluent-content { flex: 1; padding: var(--fluent-content-padding); min-width: 0; overflow-x: hidden; }
+.fluent-content { flex: 1; padding: var(--fluent-content-padding); min-width: 0; overflow-x: hidden; max-width: 100%; }
 .fluent-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .fluent-page-title { font-size: 24px; font-weight: 600; line-height: 32px; }
 .fluent-page-count {
@@ -131,6 +131,9 @@
     .fluent-main { margin-left: 0 !important; }
     .fluent-topbar-center { display: none; }
     .fluent-topbar-username { display: none; }
+    .fluent-topbar-right { margin-left: auto; }
+    .fluent-topbar-user { position: relative; }
+    .fluent-user-dropdown { right: 0; left: auto; }
 }
 
 /* RTL support */

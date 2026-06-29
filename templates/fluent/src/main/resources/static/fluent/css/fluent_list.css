@@ -1,6 +1,7 @@
 .fluent-table-wrapper {
     background-color: var(--fluent-surface); border: 1px solid var(--fluent-border);
-    border-radius: var(--fluent-radius-md); box-shadow: var(--fluent-shadow-2); overflow: hidden;
+    border-radius: var(--fluent-radius-md); box-shadow: var(--fluent-shadow-2);
+    overflow: hidden; max-width: 100%; width: 100%;
 }
 .fluent-table-scroll { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 220px); }
 .fluent-table-full { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -61,7 +62,7 @@
 .fluent-actions-bar .fluent-page-header { min-width: 0; flex: 1 1 auto; }
 .fluent-toolbar-primary { display: flex; align-items: center; gap: 8px; }
 .fluent-toolbar-actions { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; }
-.fluent-toolbar-actions .fluent-select.actions-input { flex: 1 1 0; min-width: 120px; max-width: 100%; }
+.fluent-toolbar-actions .fluent-select.actions-input { flex: 1 1 0; min-width: 100px; max-width: 200px; }
 .fluent-toolbar-actions .fluent-button { flex: 0 0 auto; }
 
 @media (max-width: 768px) {
@@ -70,7 +71,7 @@
     .fluent-toolbar-primary { flex: 1 1 100%; order: 1; }
     .fluent-toolbar-primary .fluent-button { flex: 1 1 0; }
     .fluent-toolbar-actions { flex: 1 1 100%; order: 2; }
-    .fluent-toolbar-actions .fluent-select.actions-input { min-width: 0 !important; flex: 1 1 0; max-width: 100%; }
+    .fluent-toolbar-actions .fluent-select.actions-input { min-width: 0 !important; flex: 1 1 0; max-width: 50%; }
     .fluent-table-scroll { max-height: none; }
     .fluent-content { padding: 12px; }
     .fluent-page-title { font-size: 18px; line-height: 24px; }
