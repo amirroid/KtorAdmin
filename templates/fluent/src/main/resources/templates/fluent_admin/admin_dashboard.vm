@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="$lang" dir="$layout_direction">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$translations['dashboard']</title>
+    <link href="/static/fluent/css/fluent_common.css" rel="stylesheet">
+    <link href="/static/fluent/css/fluent_layout.css" rel="stylesheet">
+    <link href="/static/fluent/css/fluent_dashboard.css" rel="stylesheet">
+    #if($fontStylesheet)
+    <link href="$fontStylesheet" rel="stylesheet">
+    #end
+    #if($customCss)
+    <style>$customCss</style>
+    #end
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <style>
+        #dashboard-grid { grid-template-columns: #foreach($item in $gridTemplate) ${item}fr #end; }
+        #foreach($template in $mediaTemplates)
+        @media (max-width: $template.maxWidth) {
+            #dashboard-grid { grid-template-columns: #foreach($item in $template.template) ${item}fr #end; }
+        }
+        #end
+    </style>
+</head>
+<body>
+<div class="fluent-app">
+    <nav class="fluent-sidebar" id="fluent-sidebar">
+        <div class="fluent-sidebar-header">
+            <span class="fluent-sidebar-logo">
+                #if($headerContentType == "image")
+                    <img src="$headerImageUrl" alt="$headerImageAlt" style="height: $headerImageHeight;">
+                #elseif($headerContentType == "text")
+                    <span style="font-weight:700;">$headerTextPrefix</span>$headerTextContent
+                #end
+            </span>
+        </div>
+        <div class="fluent-sidebar-nav">
+            <a href="/$adminPath" class="fluent-nav-item active">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6L8 2L14 6V13C14 13.55 13.55 14 13 14H3C2.45 14 2 13.55 2 13V6Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M6 14V9H10V14" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
+                <span class="fluent-nav-label">$translations['dashboard']</span>
+            </a>
+            #foreach($group in $panelGroups)
+                <div class="fluent-nav-group-label">$group.group</div>
+                #foreach($panel in $group.panels)
+                    #set($capitalizedPanel = $panel.pluralName.substring(0,1).toUpperCase() + $panel.pluralName.substring(1))
+                    <a href="/$adminPath/resources/$panel.pluralName" class="fluent-nav-item">
+                        #if($panel.iconFile)
+                            <div class="fluent-nav-item-icon-mask" style="-webkit-mask: url('$panel.iconFile') no-repeat center / contain; mask: url('$panel.iconFile') no-repeat center / contain;"></div>
+                        #else
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.25"/></svg>
+                        #end
+                        <span class="fluent-nav-label">$capitalizedPanel</span>
+                        #if($panel.tableName) #set($panelName = $panel.tableName) #else #set($panelName = $panel.collectionName) #end
+                        #if($counts[$panelName]) <span class="fluent-nav-count">$counts[$panelName]</span> #end
+                    </a>
+                #end
+            #end
+        </div>
+    </nav>
+
+    <div class="fluent-main" id="fluent-main">
+        <header class="fluent-topbar">
+            <div class="fluent-topbar-left">
+                <button class="fluent-topbar-toggle" onclick="toggleSidebar()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="fluent-topbar-center"></div>
+            <div class="fluent-topbar-right">
+                <div class="fluent-topbar-user">
+                    <span class="fluent-topbar-username">$!username</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <div class="fluent-user-dropdown">
+                        #foreach($menu in $menus) <button class="fluent-dropdown-item"><a href="$menu.link">$menu.title</a></button> #end
+                        <div class="fluent-dropdown-divider"></div>
+                        #if($translators)
+                            <div class="fluent-submenu-container">
+                                <button class="fluent-dropdown-item" style="justify-content:space-between;">$translations['languages'] <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                                <div class="fluent-submenu">
+                                    #foreach($translator in $translators) <button class="fluent-dropdown-item #if($current_lang == $translator.languageCode) fluent-selected-lang #end" onclick="changeLanguage('$translator.languageCode')">$translator.languageName</button> #end
+                                </div>
+                            </div>
+                        #end
+                        <button class="fluent-dropdown-item" onclick="changeTheme()">$translations['change_theme']</button>
+                        #if($hasAuthenticate) <div class="fluent-dropdown-divider"></div> <button class="fluent-dropdown-item danger" onclick="logout()">$translations['logout']</button> #end
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="fluent-content">
+            <div class="fluent-page-header">
+                <h1 class="fluent-page-title">$translations['dashboard']</h1>
+            </div>
+            <div id="dashboard-grid" class="fluent-dashboard-grid">
+                #foreach($sectionInfo in $sectionsInfo)
+                    #set($section = $sectionsData[$sectionInfo.itemIndex])
+                    #if($section.section.sectionType == "chart")
+                        <div class="fluent-card fluent-chart-section" style="grid-column: span ${sectionInfo.span}; min-height: ${sectionInfo.height};">
+                            <h3 class="fluent-chart-title">$section.section.sectionName</h3>
+                            <div class="fluent-chart-container">
+                                <div class="fluent-legend-container" id="legend-container-$section.section.index"></div>
+                                <canvas class="fluent-chart-canvas#if($section.section.valuesFields.size != 1) has-multiple-value#end" id="chart-canvas-$section.section.index" aria-label="Dashboard Chart" role="img">Your browser does not support the canvas element.</canvas>
+                            </div>
+                        </div>
+                    #elseif($section.section.sectionType == "text")
+                        <div class="fluent-card fluent-text-section" style="grid-column: span ${sectionInfo.span}; min-height: ${sectionInfo.height};">
+                            <h1 class="fluent-text-section-value">$section.value</h1>
+                            <p class="fluent-text-section-hint">$section.section.hintText</p>
+                        </div>
+                    #elseif($section.section.sectionType == "list")
+                        <div class="fluent-card fluent-list-section" style="grid-column: span ${sectionInfo.span}; min-height: ${sectionInfo.height};">
+                            <div class="fluent-list-section-header">
+                                <h3 class="fluent-chart-title">$section.section.sectionName</h3>
+                                <a href="/$adminPath/resources/$section.pluralName" class="fluent-button fluent-button-subtle" style="height:28px;padding:0 8px;font-size:12px;">View All <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+                            </div>
+                            <div class="fluent-table-container">
+                                <table class="fluent-table">
+                                    <thead><tr>#foreach($field in $section.fields) <th>$field.name</th> #end</tr></thead>
+                                    <tbody>
+                                        #foreach($row in $section.values)
+                                        <tr class="row" data-primary-key="$row.primaryKey" data-plural-name="$section.pluralName">
+                                            #foreach($value in $row.data)
+                                                #set($field = $section.fields.get($foreach.index))
+                                                #if($field.type == "BOOLEAN")
+                                                    <td><input type="checkbox" #if($value == "true" || $value == "1") checked #end disabled></td>
+                                                #elseif($field.type == "FILE" and $value and $value != "N/A")
+                                                    <td><a href="javascript:void(0)" class="fluent-link" onclick="generateUrl('$value', '$section.pluralName', '$field.fieldName')">$translations['link']</a></td>
+                                                #else
+                                                    <td>$value</td>
+                                                #end
+                                            #end
+                                        </tr>
+                                        #end
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    #elseif($section.section.sectionType == "render")
+                        <div class="fluent-card fluent-render-section" style="grid-column: span ${sectionInfo.span}; min-height: ${sectionInfo.height};">
+                            <h3 class="fluent-chart-title">$section.section.sectionName</h3>
+                            <div class="fluent-render-container">$section.html</div>
+                        </div>
+                    #end
+                #end
+            </div>
+        </div>
+    </div>
+</div>
+<div id="loading"><div class="spinner"></div></div>
+<script>const adminPath = "$adminPath";</script>
+<script src="/static/fluent/js/fluent_common.js"></script>
+<script src="/static/fluent/js/fluent_dashboard.js"></script>
+<script>
+function toggleSidebar() { document.getElementById('fluent-sidebar').classList.toggle('collapsed'); document.getElementById('fluent-main').classList.toggle('sidebar-collapsed'); }
+document.addEventListener("DOMContentLoaded", function () {
+    Chart.defaults.font.family = "$fontFamily"; Chart.defaults.font.weight = 'normal';
+    const htmlLegendPlugin = {
+        id: 'customLegend',
+        afterUpdate(chart, args, options) {
+            const legendContainer = document.getElementById(options.containerID);
+            legendContainer.innerHTML = '';
+            const list = document.createElement('ul');
+            list.style.cssText = 'list-style:none;display:flex;gap:12px;padding:0;margin:8px 0';
+            chart.data.datasets.forEach((dataset, index) => {
+                const item = document.createElement('li');
+                item.style.cssText = 'display:flex;align-items:center;cursor:pointer;gap:6px';
+                const dot = document.createElement('span');
+                dot.style.cssText = 'width:8px;height:8px;border-radius:50%;border:2px solid ' + (dataset.borderColor[0] || dataset.borderColor);
+                dot.style.backgroundColor = chart.getDatasetMeta(index).hidden ? 'transparent' : (dataset.borderColor[0] || dataset.borderColor);
+                dot.style.transition = 'background-color 0.15s ease';
+                const text = document.createElement('span');
+                text.style.cssText = 'font-size:12px;color:#616161';
+                text.textContent = dataset.label;
+                const toggle = () => { const meta = chart.getDatasetMeta(index); meta.hidden = !meta.hidden; dot.style.backgroundColor = meta.hidden ? 'transparent' : (dataset.borderColor[0] || dataset.borderColor); chart.update(); };
+                dot.onclick = toggle; text.onclick = toggle;
+                item.appendChild(dot); item.appendChild(text); list.appendChild(item);
+            });
+            legendContainer.appendChild(list);
+        }
+    };
+    #foreach($chart in $sectionsData)
+        #if($chart.section.sectionType == "chart")
+            let chart$chart.section.index = document.getElementById('chart-canvas-$chart.section.index');
+            let ctx$chart.section.index = (chart$chart.section.index).getContext('2d')
+            let labels$chart.section.index = [#foreach($label in $chart.labels) "$label",#end]
+            let data$chart.section.index = {
+                labels: labels$chart.section.index,
+                datasets: [#foreach($values in $chart.values) { label: '$values.displayName', data: [#foreach($value in $values.values) $value,#end], borderColor: [#foreach($color in $values.borderColors) "$color",#end], backgroundColor: [#foreach($color in $values.fillColors)"$color",#end], fill: true, tension: $chart.section.tension, borderWidth: $chart.section.borderWidth, borderRadius: $chart.section.borderRadius, }, #end]
+            }
+            let options$chart.section.index = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { beginAtZero: true } }, plugins: { legend: {display: false}, customLegend: { containerID: 'legend-container-$chart.section.index' }, tooltip: { callbacks: { label: function (tooltipItem) { return '$chart.section.tooltipFormat'.replaceAll('{field}', tooltipItem.dataset.label).replaceAll('{value}', tooltipItem.raw); } } } } }
+            new Chart(ctx$chart.section.index, { type: "$chart.section.chartStyle.chartType", data: data$chart.section.index, options: options$chart.section.index, plugins: [#if($chart.section.valuesFields.size != 1) htmlLegendPlugin,#end] })
+        #end
+    #end
+})
+</script>
+</body>
+</html>

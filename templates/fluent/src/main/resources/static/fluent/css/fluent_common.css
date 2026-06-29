@@ -1,0 +1,164 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--fluent-font-family);
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--fluent-text-primary);
+    background-color: var(--fluent-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--fluent-brand); text-decoration: none; }
+a:hover { color: var(--fluent-brand-hover); text-decoration: underline; }
+h1, h2, h3, h4, h5, h6 { color: var(--fluent-text-primary); font-weight: 600; }
+
+.fluent-card {
+    background-color: var(--fluent-surface);
+    border: 1px solid var(--fluent-border);
+    border-radius: var(--fluent-radius-md);
+    padding: var(--fluent-content-padding);
+}
+
+.fluent-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: var(--fluent-radius-sm);
+    font-family: var(--fluent-font-family);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color var(--fluent-transition), border-color var(--fluent-transition), color var(--fluent-transition);
+    white-space: nowrap;
+    user-select: none;
+}
+.fluent-button-primary {
+    background-color: var(--fluent-brand);
+    color: #FFF;
+}
+.fluent-button-primary:hover { background-color: var(--fluent-brand-hover); }
+.fluent-button-primary:active { background-color: var(--fluent-brand-pressed); }
+.fluent-button-subtle {
+    background-color: var(--fluent-surface);
+    color: var(--fluent-text-primary);
+    border-color: var(--fluent-border);
+}
+.fluent-button-subtle:hover { background-color: var(--fluent-surface-hover); }
+.fluent-button-danger { background-color: var(--fluent-error); color: #FFF; }
+.fluent-button-danger:hover { background-color: #C42B1C; }
+.fluent-button:disabled { background-color: var(--fluent-surface-hover); color: var(--fluent-text-disabled); border-color: var(--fluent-border); cursor: not-allowed; }
+
+.fluent-input {
+    width: 100%; height: 32px; padding: 0 10px;
+    border: 1px solid var(--fluent-border); border-radius: var(--fluent-radius-sm);
+    background-color: var(--fluent-surface); color: var(--fluent-text-primary);
+    font-family: var(--fluent-font-family); font-size: 14px; line-height: 20px; outline: none;
+    transition: border-color var(--fluent-transition);
+}
+.fluent-input:hover { border-color: var(--fluent-border-strong); }
+.fluent-input:focus { border-color: var(--fluent-brand); }
+.fluent-input::placeholder { color: var(--fluent-text-disabled); }
+.fluent-input:disabled { background-color: var(--fluent-surface-hover); color: var(--fluent-text-disabled); cursor: not-allowed; }
+
+.fluent-select {
+    width: 100%; height: 32px; padding: 0 30px 0 10px;
+    border: 1px solid var(--fluent-border); border-radius: var(--fluent-radius-sm);
+    background-color: var(--fluent-surface); color: var(--fluent-text-primary);
+    font-family: var(--fluent-font-family); font-size: 14px; line-height: 20px; outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23616161' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 10px) center;
+    cursor: pointer;
+    transition: border-color var(--fluent-transition);
+}
+.fluent-select:hover { border-color: var(--fluent-border-strong); }
+.fluent-select:focus { border-color: var(--fluent-brand); }
+
+.fluent-textarea {
+    width: 100%; min-height: 100px; padding: 8px 10px;
+    border: 1px solid var(--fluent-border); border-radius: var(--fluent-radius-sm);
+    background-color: var(--fluent-surface); color: var(--fluent-text-primary);
+    font-family: var(--fluent-font-family); font-size: 14px; line-height: 20px; outline: none;
+    resize: vertical; transition: border-color var(--fluent-transition);
+}
+.fluent-textarea:hover { border-color: var(--fluent-border-strong); }
+.fluent-textarea:focus { border-color: var(--fluent-brand); }
+
+.fluent-checkbox {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+}
+.fluent-checkbox input[type="checkbox"] {
+    appearance: none; width: 16px; height: 16px; border: 1px solid var(--fluent-border-strong);
+    border-radius: 3px; background-color: var(--fluent-surface); cursor: pointer; position: relative;
+    flex-shrink: 0; transition: background-color var(--fluent-transition);
+}
+.fluent-checkbox input[type="checkbox"]:checked {
+    background-color: var(--fluent-brand); border-color: var(--fluent-brand);
+}
+.fluent-checkbox input[type="checkbox"]:checked::after {
+    content: ''; position: absolute; left: 4px; top: 1px; width: 5px; height: 9px;
+    border: solid #FFF; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.fluent-checkbox input[type="checkbox"]:disabled { background-color: var(--fluent-surface-hover); cursor: not-allowed; }
+.fluent-checkbox-label { font-size: 14px; line-height: 20px; color: var(--fluent-text-primary); }
+
+.fluent-spinner {
+    width: 32px; height: 32px; border: 3px solid var(--fluent-border);
+    border-top-color: var(--fluent-brand); border-radius: 50%;
+    animation: fluent-spin 0.7s linear infinite;
+}
+@keyframes fluent-spin { to { transform: rotate(360deg); } }
+
+.fluent-message-bar {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-radius: var(--fluent-radius-sm); font-size: 14px; line-height: 20px;
+}
+.fluent-message-bar-error { background-color: #FDE7E9; color: var(--fluent-error); border: 1px solid var(--fluent-error); }
+.fluent-message-bar-success { background-color: #DFF6DD; color: var(--fluent-success); border: 1px solid var(--fluent-success); }
+.fluent-message-bar-info { background-color: #D0E7FF; color: var(--fluent-info); border: 1px solid var(--fluent-info); }
+
+.fluent-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center;
+    z-index: 1000; opacity: 0; visibility: hidden;
+    transition: opacity var(--fluent-transition), visibility var(--fluent-transition);
+}
+.fluent-overlay.active { opacity: 1; visibility: visible; }
+.fluent-dialog {
+    background-color: var(--fluent-surface); border-radius: var(--fluent-radius-md);
+    box-shadow: var(--fluent-shadow-28); padding: 24px; min-width: 300px; max-width: 500px; width: 90vw;
+    transform: translateY(-10px); transition: transform var(--fluent-transition);
+}
+.fluent-overlay.active .fluent-dialog { transform: translateY(0); }
+.fluent-dialog-title { font-size: 20px; font-weight: 600; line-height: 28px; margin-bottom: 8px; }
+.fluent-dialog-body { font-size: 14px; line-height: 20px; color: var(--fluent-text-secondary); margin-bottom: 24px; }
+.fluent-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+#loading {
+    visibility: hidden; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.3); display: flex; align-items: center; justify-content: center; z-index: 10000;
+}
+#loading .spinner {
+    width: 40px; height: 40px; border: 3px solid var(--fluent-border);
+    border-top-color: var(--fluent-brand); border-radius: 50%;
+    animation: fluent-spin 0.7s linear infinite;
+}
+
+.no-animation { transition: none !important; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: var(--fluent-border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--fluent-subtle); }

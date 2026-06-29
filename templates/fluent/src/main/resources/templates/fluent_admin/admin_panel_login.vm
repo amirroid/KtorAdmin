@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="$lang" dir="$layout_direction">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="/static/fluent/css/fluent_common.css" rel="stylesheet">
+    <link href="/static/fluent/css/fluent_login.css" rel="stylesheet">
+    #if($fontStylesheet)
+    <link href="$fontStylesheet" rel="stylesheet">
+    #end
+    #if($customCss)
+    <style>$customCss</style>
+    #end
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+</head>
+<body>
+    <div class="fluent-login-container">
+        <div class="fluent-login-card">
+            <div class="fluent-login-header">
+                #if($headerContentType == "image")
+                    <img src="$headerImageUrl" alt="$headerImageAlt" style="height: $headerImageHeight; margin-bottom: 16px;">
+                #elseif($headerContentType == "text")
+                    <h1 class="fluent-login-logo"><span class="fluent-login-logo-bold">$headerTextPrefix</span>$headerTextContent</h1>
+                #end
+            </div>
+            <h2 class="fluent-login-title">$translations["login"]</h2>
+            #if($message)
+                <div class="fluent-message-bar fluent-message-bar-info" style="margin-bottom: 16px;">$!message</div>
+            #end
+            <form method="post" class="fluent-login-form">
+                #foreach($field in $fields)
+                    <div class="fluent-form-group">
+                        <label class="fluent-form-label">$field.name</label>
+                        <input type="$field.type" #if($field.autoComplete) autocomplete="$field.autoComplete"#end
+                               class="fluent-input" required name="$field.key">
+                    </div>
+                #end
+                #if($hasError)
+                    <div class="fluent-message-bar fluent-message-bar-error">The information provided is incorrect. Please check and try again.</div>
+                #end
+                <input type="hidden" name="_csrf" value="$csrfToken">
+                <input type="hidden" value="$requestId" name="requestId">
+                <button type="submit" class="fluent-button fluent-button-primary fluent-login-submit">$translations["submit"]</button>
+            </form>
+        </div>
+    </div>
+    <script>const adminPath = "$adminPath";</script>
+    <script src="/static/fluent/js/fluent_common.js"></script>
+</body>
+</html>

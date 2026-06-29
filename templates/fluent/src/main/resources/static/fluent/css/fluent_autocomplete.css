@@ -1,0 +1,192 @@
+/* Fluent AutoComplete Overrides */
+
+.autocomplete-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* Trigger — matches .fluent-input dimensions */
+.autocomplete-trigger {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--fluent-border);
+    border-radius: var(--fluent-radius-sm);
+    background-color: var(--fluent-surface);
+    cursor: pointer;
+    transition: border-color var(--fluent-transition);
+}
+.autocomplete-trigger:hover { border-color: var(--fluent-border-strong); }
+.autocomplete-trigger:focus { outline: none; border-color: var(--fluent-brand); }
+
+/* Selected text */
+.autocomplete-selected {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--fluent-text-primary);
+    font-family: var(--fluent-font-family);
+    font-size: 14px;
+    line-height: 20px;
+}
+.autocomplete-selected:not(.has-value) {
+    color: var(--fluent-text-disabled);
+}
+
+/* Clear button */
+.autocomplete-clear {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: 4px;
+    border-radius: 50%;
+    background-color: var(--fluent-text-secondary);
+    color: var(--fluent-surface);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+    flex-shrink: 0;
+}
+.autocomplete-clear:hover { background-color: var(--fluent-error); }
+
+/* Arrow */
+.autocomplete-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    color: var(--fluent-text-secondary);
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+}
+.autocomplete-arrow.open { transform: rotate(180deg); }
+
+/* Dropdown popup */
+.autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: var(--fluent-surface);
+    border-radius: var(--fluent-radius-md);
+    box-shadow: var(--fluent-shadow-16);
+    border: 1px solid var(--fluent-border);
+    z-index: 1000;
+    overflow: hidden;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Search container */
+.autocomplete-search-container {
+    padding: 8px;
+    border-bottom: 1px solid var(--fluent-border);
+    background-color: var(--fluent-surface);
+}
+
+/* Search input — matches .fluent-input style */
+.autocomplete-search-input {
+    width: 100%;
+    height: 32px;
+    background-color: var(--fluent-surface);
+    border: 1px solid var(--fluent-border);
+    border-radius: var(--fluent-radius-sm);
+    padding: 0 10px;
+    font-family: var(--fluent-font-family);
+    font-size: 14px;
+    color: var(--fluent-text-primary);
+    outline: none;
+    transition: border-color var(--fluent-transition);
+}
+.autocomplete-search-input:hover { border-color: var(--fluent-border-strong); }
+.autocomplete-search-input:focus { border-color: var(--fluent-brand); }
+.autocomplete-search-input::placeholder { color: var(--fluent-text-disabled); }
+
+/* Results list */
+.autocomplete-list {
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 4px 0;
+    background-color: var(--fluent-surface);
+}
+
+/* Individual item */
+.autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.08s ease;
+    color: var(--fluent-text-primary);
+    font-family: var(--fluent-font-family);
+    font-size: 14px;
+    line-height: 20px;
+    border-radius: var(--fluent-radius-sm);
+    margin: 0 4px;
+}
+.autocomplete-item:hover,
+.autocomplete-item.highlighted {
+    background-color: var(--fluent-surface-hover);
+}
+.autocomplete-item.selected {
+    background-color: var(--fluent-brand);
+    color: #FFF;
+}
+
+/* Empty state */
+.autocomplete-empty {
+    padding: 16px 12px;
+    color: var(--fluent-text-secondary);
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Error state */
+.autocomplete-error {
+    padding: 16px 12px;
+    color: var(--fluent-error);
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Loading */
+.autocomplete-loading {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    color: var(--fluent-text-secondary);
+    font-size: 14px;
+    background-color: var(--fluent-surface);
+}
+.autocomplete-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--fluent-border);
+    border-top-color: var(--fluent-brand);
+    border-radius: 50%;
+    animation: fluent-autocomplete-spin 0.7s linear infinite;
+}
+@keyframes fluent-autocomplete-spin { to { transform: rotate(360deg); } }
+
+/* Dark mode */
+:root.theme-dark .autocomplete-trigger { background-color: var(--fluent-surface); border-color: var(--fluent-border); }
+:root.theme-dark .autocomplete-trigger:hover { border-color: var(--fluent-border-strong); }
+:root.theme-dark .autocomplete-dropdown { background-color: var(--fluent-surface); border-color: var(--fluent-border); }
+:root.theme-dark .autocomplete-search-container { background-color: var(--fluent-surface); border-bottom-color: var(--fluent-border); }
+:root.theme-dark .autocomplete-search-input { background-color: var(--fluent-surface); border-color: var(--fluent-border); color: var(--fluent-text-primary); }
+:root.theme-dark .autocomplete-search-input:focus { border-color: var(--fluent-brand); }
+:root.theme-dark .autocomplete-list { background-color: var(--fluent-surface); }
+:root.theme-dark .autocomplete-item { color: var(--fluent-text-primary); }
+:root.theme-dark .autocomplete-item:hover,
+:root.theme-dark .autocomplete-item.highlighted { background-color: var(--fluent-surface-hover); }
+:root.theme-dark .autocomplete-item.selected { background-color: var(--fluent-brand); color: #FFF; }
+:root.theme-dark .autocomplete-clear { background-color: var(--fluent-text-secondary); color: var(--fluent-surface); }
+:root.theme-dark .autocomplete-loading { background-color: var(--fluent-surface); color: var(--fluent-text-secondary); }
