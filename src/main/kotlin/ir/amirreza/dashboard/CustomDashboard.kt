@@ -550,9 +550,8 @@ class SampleRenderSection : RenderDashboardSection() {
 
     override suspend fun render(): String {
         return """
-            <div style="padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                <h2 style="margin: 0 0 8px;">Hello from RenderDashboardSection</h2>
-                <p style="margin: 0; color: #666;">This section renders custom HTML from the server.</p>
+            <div style="padding: 8px;">
+                <p>This section renders custom HTML from the server.</p>
             </div>
         """.trimIndent()
     }
