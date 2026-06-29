@@ -33,6 +33,27 @@ function changeTheme() {
     });
 }
 
+function toggleSidebar() {
+    const sidebar = document.getElementById('fluent-sidebar');
+    const main = document.getElementById('fluent-main');
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        sidebar.classList.toggle('mobile-open');
+        let overlay = document.getElementById('fluent-sidebar-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'fluent-sidebar-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99;display:none;';
+            overlay.addEventListener('click', toggleSidebar);
+            document.body.appendChild(overlay);
+        }
+        overlay.style.display = sidebar.classList.contains('mobile-open') ? 'block' : 'none';
+    } else {
+        sidebar.classList.toggle('collapsed');
+        if (main) main.classList.toggle('sidebar-collapsed');
+    }
+}
+
 function logout() {
     const loading = document.getElementById("loading");
     loading.style.visibility = "visible";

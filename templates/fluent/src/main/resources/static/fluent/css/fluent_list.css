@@ -58,6 +58,20 @@
 .fluent-page-dots { color: var(--fluent-text-secondary); padding: 0 4px; font-size: 14px; }
 
 .fluent-actions-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.fluent-actions-bar .fluent-page-header { min-width: 0; flex: 1 1 auto; }
+.fluent-toolbar-primary { display: flex; align-items: center; gap: 8px; }
+.fluent-toolbar-actions { display: flex; align-items: center; gap: 8px; }
+
+@media (max-width: 768px) {
+    .fluent-actions-bar { gap: 8px; }
+    .fluent-actions-bar .fluent-page-header { flex: 1 1 100%; margin-bottom: 4px; }
+    .fluent-toolbar-primary { flex: 1 1 100%; order: 1; }
+    .fluent-toolbar-actions { flex: 1 1 100%; order: 2; }
+    .fluent-toolbar-actions .fluent-select.actions-input { min-width: 0 !important; flex: 1 1 0; }
+    .fluent-table-scroll { max-height: none; }
+    .fluent-content { padding: 12px; }
+    .fluent-page-title { font-size: 18px; line-height: 24px; }
+}
 
 .fluent-filters-panel {
     display: none; padding: 16px; background-color: var(--fluent-surface);

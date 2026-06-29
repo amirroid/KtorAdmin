@@ -153,7 +153,6 @@
 <script src="/static/fluent/js/fluent_common.js"></script>
 <script src="/static/fluent/js/fluent_dashboard.js"></script>
 <script>
-function toggleSidebar() { document.getElementById('fluent-sidebar').classList.toggle('collapsed'); document.getElementById('fluent-main').classList.toggle('sidebar-collapsed'); }
 document.addEventListener("DOMContentLoaded", function () {
     Chart.defaults.font.family = "$fontFamily"; Chart.defaults.font.weight = 'normal';
     const htmlLegendPlugin = {

@@ -118,6 +118,5 @@
 <script>const selectedFileText = "$translations['selected_file']"; const adminPath = "$adminPath"; #if($tinyMCEConfig) const tinyConfig = JSON.parse(`$tinyMCEConfig`); #end const computedColumns = []; #foreach($field in $fields) #if($field.computedField) computedColumns.push({ columnName: "$field.fieldName", computedColumn: "$field.computedField" }); #end #end</script>
 <script src="/static/fluent/js/fluent_common.js"></script>
 <script src="/static/fluent/js/fluent_upsert.js"></script>
-<script>function toggleSidebar() { document.getElementById('fluent-sidebar').classList.toggle('collapsed'); document.getElementById('fluent-main').classList.toggle('sidebar-collapsed'); }</script>
 </body>
 </html>

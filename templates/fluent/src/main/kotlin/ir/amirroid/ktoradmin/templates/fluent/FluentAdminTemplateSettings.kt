@@ -75,9 +75,9 @@ data class FluentAdminTemplateSettings(
     companion object {
         val DefaultDarkModeColors =
             Colors(
-                brandColor = "#60CDFF",
-                brandHoverColor = "#C7E0F4",
-                brandPressedColor = "#C7E0F4",
+                brandColor = "#5BA3D9",
+                brandHoverColor = "#78BCE8",
+                brandPressedColor = "#4A90C0",
                 surfaceColor = "#1E1E1E",
                 surfaceHoverColor = "#2D2D2D",
                 backgroundLayerColor = "#141414",
@@ -87,7 +87,7 @@ data class FluentAdminTemplateSettings(
                 errorColor = "#F17077",
                 successColor = "#6CCB5F",
                 warningColor = "#FCE100",
-                infoColor = "#60CDFF",
+                infoColor = "#5BA3D9",
             )
     }
 }

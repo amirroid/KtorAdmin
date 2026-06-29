@@ -123,9 +123,14 @@
 }
 
 @media (max-width: 768px) {
-    .fluent-sidebar { transform: translateX(-100%); }
+    .fluent-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0s, min-width 0s;
+    }
     .fluent-sidebar.mobile-open { transform: translateX(0); }
     .fluent-main { margin-left: 0 !important; }
+    .fluent-topbar-center { display: none; }
+    .fluent-topbar-username { display: none; }
 }
 
 /* RTL support */

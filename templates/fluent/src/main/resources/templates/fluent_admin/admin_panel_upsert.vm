@@ -91,6 +91,5 @@
 <script src="/static/fluent/js/fluent_common.js"></script>
 <script src="/static/js/autocomplete.js"></script>
 <script src="/static/fluent/js/fluent_upsert.js"></script>
-<script>function toggleSidebar() { document.getElementById('fluent-sidebar').classList.toggle('collapsed'); document.getElementById('fluent-main').classList.toggle('sidebar-collapsed'); }</script>
 </body>
 </html>
