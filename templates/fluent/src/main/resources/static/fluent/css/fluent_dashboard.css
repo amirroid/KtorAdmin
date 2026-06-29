@@ -1,6 +1,6 @@
-.fluent-dashboard-grid { display: grid; gap: 16px; grid-auto-rows: minmax(200px, auto); }
+.fluent-dashboard-grid { display: grid; gap: 16px; grid-auto-rows: minmax(200px, auto); overflow: hidden; }
 .fluent-chart-section, .fluent-text-section, .fluent-list-section, .fluent-render-section {
-    display: flex; flex-direction: column; overflow: hidden;
+    display: flex; flex-direction: column; overflow: hidden; min-width: 0;
 }
 .fluent-chart-title { font-size: 14px; font-weight: 600; line-height: 20px; margin-bottom: 12px; }
 .fluent-chart-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
@@ -30,3 +30,11 @@
 .fluent-link { color: var(--fluent-brand); cursor: pointer; }
 .fluent-link:hover { text-decoration: underline; }
 .fluent-render-container { flex: 1; overflow: auto; min-height: 0; }
+
+@media (max-width: 768px) {
+    .fluent-dashboard-grid { grid-template-columns: 1fr !important; }
+    .fluent-dashboard-grid > * { grid-column: span 1 !important; }
+    .fluent-content { padding: 12px; }
+    .fluent-text-section-value { font-size: 24px; }
+    .fluent-chart-title { font-size: 13px; }
+}
