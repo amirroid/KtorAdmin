@@ -94,13 +94,17 @@
                 <div class="fluent-page-header" style="flex:1;margin-bottom:0;">
                     <div style="display:flex;align-items:center;gap:12px;"><h1 class="fluent-page-title">$pluralName</h1><span class="fluent-page-count">$count_text</span></div>
                 </div>
-                <div class="fluent-toolbar-primary">
-                    #if($filtersData.size != 0) <button class="fluent-button fluent-button-subtle" onclick="toggleFilter()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> $translations['filter']</button> #end
-                    <button class="fluent-button fluent-button-primary" onclick="window.location.href = cleanUrl().toString() + '/add'"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Add</button>
-                </div>
                 <div class="fluent-toolbar-actions">
                     <select class="fluent-select actions-input" style="min-width:160px;"><option value="">$translations['select_action']</option>#foreach($action in $actions)<option value="${action.key}">${action.displayText}</option>#end</select>
                     <button class="fluent-button fluent-button-primary" onclick="openActionDialog()">$translations['perform']</button>
+                </div>
+                <span class="fluent-toolbar-divider"></span>
+                <div class="fluent-toolbar-primary">
+                    #if($filtersData.size != 0)
+                    <button class="fluent-button fluent-button-subtle" onclick="toggleFilter()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> $translations['filter']</button>
+                    <span class="fluent-toolbar-divider"></span>
+                    #end
+                    <button class="fluent-button fluent-button-primary" onclick="window.location.href = cleanUrl().toString() + '/add'"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Add</button>
                 </div>
             </div>
 

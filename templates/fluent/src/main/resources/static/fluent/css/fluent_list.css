@@ -1,10 +1,10 @@
 .fluent-table-wrapper {
     background-color: var(--fluent-surface); border: 1px solid var(--fluent-border);
     border-radius: var(--fluent-radius-md); box-shadow: var(--fluent-shadow-2);
-    overflow: hidden; max-width: 100%; width: 100%;
+    overflow: hidden; width: 100%; min-width: 0;
 }
-.fluent-table-scroll { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 220px); }
-.fluent-table-full { width: 100%; border-collapse: collapse; font-size: 14px; }
+.fluent-table-scroll { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 220px); max-width: 100%; }
+.fluent-table-full { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: auto; }
 .fluent-table-full thead { position: sticky; top: 0; z-index: 1; }
 .fluent-table-full th {
     background-color: var(--fluent-surface-hover); padding: 10px 16px; text-align: left;
@@ -58,20 +58,23 @@
 .fluent-page-btn.active { background-color: var(--fluent-brand); color: #FFF; font-weight: 600; }
 .fluent-page-dots { color: var(--fluent-text-secondary); padding: 0 4px; font-size: 14px; }
 
-.fluent-actions-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.fluent-actions-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; min-width: 0; max-width: 100%; }
 .fluent-actions-bar .fluent-page-header { min-width: 0; flex: 1 1 auto; }
-.fluent-toolbar-primary { display: flex; align-items: center; gap: 8px; }
-.fluent-toolbar-actions { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; }
-.fluent-toolbar-actions .fluent-select.actions-input { flex: 1 1 0; min-width: 100px; max-width: 200px; }
+.fluent-toolbar-primary { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fluent-toolbar-primary .fluent-button { min-width: 0; }
+.fluent-toolbar-divider { width: 1px; height: 20px; background-color: var(--fluent-border); flex-shrink: 0; }
+.fluent-toolbar-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-width: 0; }
+.fluent-toolbar-actions .fluent-select.actions-input { width: 180px; flex: 0 1 auto; min-width: 0; }
 .fluent-toolbar-actions .fluent-button { flex: 0 0 auto; }
 
 @media (max-width: 768px) {
     .fluent-actions-bar { gap: 8px; }
     .fluent-actions-bar .fluent-page-header { flex: 1 1 100%; margin-bottom: 4px; }
     .fluent-toolbar-primary { flex: 1 1 100%; order: 1; }
-    .fluent-toolbar-primary .fluent-button { flex: 1 1 0; }
+    .fluent-toolbar-primary .fluent-button { flex: 1 1 0; min-width: 0; }
+    .fluent-toolbar-divider { display: none; }
     .fluent-toolbar-actions { flex: 1 1 100%; order: 2; }
-    .fluent-toolbar-actions .fluent-select.actions-input { min-width: 0 !important; flex: 1 1 0; max-width: 50%; }
+    .fluent-toolbar-actions .fluent-select.actions-input { flex: 1 1 0; width: auto; min-width: 0; }
     .fluent-table-scroll { max-height: none; }
     .fluent-content { padding: 12px; }
     .fluent-page-title { font-size: 18px; line-height: 24px; }
@@ -83,7 +86,7 @@
     margin-bottom: 16px; max-height: 60vh; overflow-y: auto;
 }
 .fluent-filters-panel.show { display: block; }
-.fluent-filters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+.fluent-filters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 16px; }
 .fluent-filter-group { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .fluent-filter-label { font-size: 12px; font-weight: 600; color: var(--fluent-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fluent-filter-date-group { display: flex; gap: 4px; }

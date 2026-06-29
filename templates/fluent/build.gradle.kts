@@ -24,8 +24,8 @@ mavenPublishing {
     pom {
         name = "KtorAdmin Fluent Template"
         description = "A Microsoft Fluent UI themed admin template for KtorAdmin."
-        inceptionYear = "2025"
-        url = "https://github.com/Amirroid/KtorAdmin"
+        inceptionYear = "202۶"
+        url = "https://github.com/amirroid/KtorAdmin"
         licenses {
             license {
                 name = "The MIT License"
@@ -37,13 +37,13 @@ mavenPublishing {
             developer {
                 id = "Amirroid"
                 name = "Amirreza Gholami"
-                url = "https://github.com/Amirroid"
+                url = "https://github.com/amirroid"
             }
         }
         scm {
             url = "https://github.com/Amirroid/KtorAdmin"
-            connection = "scm:git:git://github.com/Amirroid/KtorAdmin.git"
-            developerConnection = "scm:git:ssh://git@github.com/Amirroid/KtorAdmin.git"
+            connection = "scm:git:git://github.com/amirroid/KtorAdmin.git"
+            developerConnection = "scm:git:ssh://git@github.com/amirroid/KtorAdmin.git"
         }
     }
 }
