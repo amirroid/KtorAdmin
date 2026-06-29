@@ -5,6 +5,7 @@ import io.ktor.server.auth.principal
 import io.ktor.server.routing.*
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import ir.amirroid.ktoradmin.dashboard.base.RenderDashboardSection
 import ir.amirroid.ktoradmin.dashboard.chart.ChartDashboardSection
 import ir.amirroid.ktoradmin.dashboard.grid.SectionInfo
 import ir.amirroid.ktoradmin.dashboard.list.ListDashboardSection
@@ -12,6 +13,7 @@ import ir.amirroid.ktoradmin.dashboard.simple.TextDashboardSection
 import ir.amirroid.ktoradmin.models.PanelGroup
 import ir.amirroid.ktoradmin.models.chart.ChartData
 import ir.amirroid.ktoradmin.models.chart.ListData
+import ir.amirroid.ktoradmin.models.chart.RenderData
 import ir.amirroid.ktoradmin.models.chart.TextData
 import ir.amirroid.ktoradmin.models.toTableGroups
 import ir.amirroid.ktoradmin.modules.add.handleAddNewItem
@@ -85,6 +87,7 @@ private suspend fun ApplicationCall.renderAdminPanel(
                                 is TextData -> it.section.index
                                 is ChartData -> it.section.index
                                 is ListData -> it.section.index
+                                is RenderData -> it.section.index
                                 else -> 0
                             }
                         },
@@ -142,6 +145,11 @@ internal suspend fun getSectionsData(panels: List<AdminPanel>): List<Any> =
                                     collection != null -> MongoClientRepository.getListSectionData(collection, section)
                                     else -> null
                                 }
+                            }
+
+                            is RenderDashboardSection -> {
+                                val html = section.render()
+                                RenderData(section = section, html = html)
                             }
 
                             else -> null

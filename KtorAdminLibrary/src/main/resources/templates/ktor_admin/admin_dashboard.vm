@@ -184,6 +184,14 @@
                             </table>
                         </div>
                     </div>
+                #elseif($section.section.sectionType == "render")
+                    <div class="render-section"
+                         style="grid-column: span ${sectionInfo.span}; height: ${sectionInfo.height};">
+                        <h2 class="chart-title">$section.section.sectionName</h2>
+                        <div class="render-section-container">
+                            $section.html
+                        </div>
+                    </div>
                 #end
             #end
         </div>

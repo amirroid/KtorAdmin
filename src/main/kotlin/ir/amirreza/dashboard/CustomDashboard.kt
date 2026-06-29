@@ -1,5 +1,6 @@
 package ir.amirreza.dashboard
 
+import ir.amirroid.ktoradmin.dashboard.base.RenderDashboardSection
 import ir.amirroid.ktoradmin.dashboard.chart.ChartDashboardSection
 import ir.amirroid.ktoradmin.models.chart.ChartDashboardAggregationFunction
 import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
@@ -34,6 +35,7 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(Task3ChartSection())
             addSection(2, Task6ChartSection())
             addSection(4, UserFileListChartSection())
+            addSection(section = SampleRenderSection(), height = "250px")
         }
     }
 }
@@ -540,4 +542,17 @@ class Task6ChartSection() : ChartDashboardSection() {
 
     override val borderWidth: Float
         get() = 2f
+}
+
+class SampleRenderSection : RenderDashboardSection() {
+    override val index: Int = 999
+    override val sectionName: String = "Sample Render Section"
+
+    override suspend fun render(): String {
+        return """
+            <div style="padding: 8px;">
+                <p>This section renders custom HTML from the server.</p>
+            </div>
+        """.trimIndent()
+    }
 }
