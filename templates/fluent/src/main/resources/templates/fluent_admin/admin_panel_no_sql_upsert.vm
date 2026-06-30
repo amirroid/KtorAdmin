@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="$lang" dir="$layout_direction">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    #if($title) <title>$title</title> #else #if($isUpdate) <title>Update $singularName</title> #else <title>Add a new $singularName</title> #end #end
+    <link href="/static/fluent/css/fluent_common.css" rel="stylesheet">
+    <link href="/static/fluent/css/fluent_layout.css" rel="stylesheet">
+    <link href="/static/fluent/css/fluent_upsert.css" rel="stylesheet">
+    <link href="/static/fluent/css/fluent_autocomplete.css" rel="stylesheet">
+    #if($fontStylesheet) <link href="$fontStylesheet" rel="stylesheet"> #end
+    #if($customCss) <style>$customCss</style> #end
+    #if($tinyMCEConfig) <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.7.1/tinymce.min.js"></script> #end
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+</head>
+<body>
+<div class="fluent-app">
+    <nav class="fluent-sidebar" id="fluent-sidebar">
+        <div class="fluent-sidebar-header"><span class="fluent-sidebar-logo">#if($headerContentType == "image") <img src="$headerImageUrl" alt="$headerImageAlt" style="height: $headerImageHeight;"> #elseif($headerContentType == "text") <span style="font-weight:700;">$headerTextPrefix</span>$headerTextContent #end</span></div>
+        <div class="fluent-sidebar-nav">
+            <a href="/$adminPath" class="fluent-nav-item"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6L8 2L14 6V13C14 13.55 13.55 14 13 14H3C2.45 14 2 13.55 2 13V6Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M6 14V9H10V14" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg><span class="fluent-nav-label">$translations['dashboard']</span></a>
+            #foreach($group in $panelGroups) <div class="fluent-nav-group-label">$group.group</div> #foreach($panel in $group.panels) #set($capitalizedPanel = $panel.pluralName.substring(0,1).toUpperCase() + $panel.pluralName.substring(1)) <a href="/$adminPath/resources/$panel.pluralName" class="fluent-nav-item #if($panel.pluralName == $currentPanel) active #end">#if($panel.iconFile) <div class="fluent-nav-item-icon-mask" style="-webkit-mask: url('$panel.iconFile') no-repeat center / contain; mask: url('$panel.iconFile') no-repeat center / contain;"></div> #else <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.25"/></svg> #end<span class="fluent-nav-label">$capitalizedPanel</span>#if($panel.tableName) #set($panelName = $panel.tableName) #else #set($panelName = $panel.collectionName) #end#if($counts[$panelName]) <span class="fluent-nav-count">$counts[$panelName]</span> #end</a> #end #end
+        </div>
+    </nav>
+    <div class="fluent-main" id="fluent-main">
+        <header class="fluent-topbar">
+            <div class="fluent-topbar-left"><button class="fluent-topbar-toggle" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></div>
+            <div class="fluent-topbar-center"></div>
+            <div class="fluent-topbar-right"><div class="fluent-topbar-user"><span class="fluent-topbar-username">$!username</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="fluent-user-dropdown">#foreach($menu in $menus) <button class="fluent-dropdown-item"><a href="$menu.link">$menu.title</a></button> #end<div class="fluent-dropdown-divider"></div>#if($translators) <div class="fluent-submenu-container"><button class="fluent-dropdown-item" style="justify-content:space-between;">$translations['languages'] <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="fluent-submenu">#foreach($translator in $translators) <button class="fluent-dropdown-item #if($current_lang == $translator.languageCode) fluent-selected-lang #end" onclick="changeLanguage('$translator.languageCode')">$translator.languageName</button> #end</div></div> #end<button class="fluent-dropdown-item" onclick="changeTheme()">$translations['change_theme']</button>#if($canDownload) <button class="fluent-dropdown-item" onclick="downloadFile('$pluralName', '$csrfToken', '$primaryKey')">$translations['download_as_pdf']</button> #end#if($hasAuthenticate) <div class="fluent-dropdown-divider"></div><button class="fluent-dropdown-item danger" onclick="logout()">$translations['logout']</button> #end</div></div></div>
+        </header>
+        <div class="fluent-content">
+            <div class="fluent-page-header">
+                #if($title) <h1 class="fluent-page-title">$title</h1> #else #if($isUpdate) <h1 class="fluent-page-title">Update $singularName</h1> #else <h1 class="fluent-page-title">Add a new $singularName</h1> #end #end
+                <a href="javascript:history.back()" class="fluent-button fluent-button-subtle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2.5L3.5 6L7.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Back</a>
+            </div>
+            <div class="fluent-card" style="max-width:800px;">
+                #macro(renderField $field $parentName)
+                    #if($parentName && $parentName != "") #set($fullFieldName = $parentName + "." + $field.fieldName) #else #set($fullFieldName = $field.fieldName) #end
+                    #if($!values.get($fullFieldName)) #set($defaultValue = $values.get($fullFieldName)) #elseif($field.defaultValue) #set($defaultValue = $field.defaultValue) #else #set($defaultValue = "") #end
+                    #if($field.type.name == "LIST" || $field.type.name == "MAP")
+                        <fieldset class="fluent-fieldset ${field.type.name.toLowerCase()}-section" data-field="$fullFieldName" data-type="$field.type.name" #if($field.type.name == "MAP" && $field.type.fields.size() == 1 && !$field.type.fields.get(0).fieldName) data-value-type="$field.type.fields.get(0).type.name" #end>
+                            <h3 class="fluent-fieldset-title">$field.fieldName</h3>
+                            #if($field.type.name == "MAP" && $field.type.fields.size() == 1 && !$field.type.fields.get(0).fieldName)
+                                <div class="fluent-nested-fields">
+                                    <div class="fluent-list-entry" data-template="true" style="display:none;"><div class="fluent-key-value-pair"><div class="fluent-form-field"><label class="fluent-form-label">Key</label><input type="text" class="fluent-input" name="${fullFieldName}[_INDEX_].key" value="$!defaultValue"/></div><div class="fluent-form-field"><label class="fluent-form-label">Value</label>#set($valueType = $field.type.fields.get(0).type)#if($valueType.name == "STRING") <input type="text" class="fluent-input" name="${fullFieldName}[_INDEX_].value" value="$!defaultValue"/> #elseif($valueType.name == "NUMBER") <input type="number" class="fluent-input" name="${fullFieldName}[_INDEX_].value" value="$!defaultValue"/> #elseif($valueType.name == "BOOLEAN") <input type="checkbox" class="fluent-checkbox-input" name="${fullFieldName}[_INDEX_].value" #if($!defaultValue == "true")checked#end/> #else <input type="text" class="fluent-input" name="${fullFieldName}[_INDEX_].value" value="$!defaultValue"/> #end</div><button type="button" class="fluent-remove-entry" onclick="removeEntry(this)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></div></div>
+                                    <button type="button" class="fluent-button fluent-button-subtle" onclick="addKeyValueEntry('${fullFieldName}')" style="margin-top:8px;">Add New Entry</button>
+                                </div>
+                            #elseif($field.type.name == "LIST")
+                                <div class="fluent-nested-fields">
+                                    <div class="fluent-list-entry" data-template="true" style="display:none;"><div class="fluent-nested-fields">#foreach($nestedField in $field.type.fields) #if($field.type.fields.size() == 1 && !$nestedField.fieldName) #set($nestedFieldName = "${fullFieldName}[_INDEX_]") #else #set($nestedFieldName = "${fullFieldName}[_INDEX_]") #end #renderField($nestedField $nestedFieldName) #end</div><button type="button" class="fluent-remove-entry" onclick="removeEntry(this)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></div>
+                                    <button type="button" class="fluent-button fluent-button-subtle" onclick="addListEntry(this)" data-field-name="$fullFieldName" style="margin-top:8px;">Add New Entry</button>
+                                </div>
+                            #else
+                                <div class="fluent-nested-fields">#foreach($nestedField in $field.type.fields) #renderField($nestedField $fullFieldName) #end</div>
+                            #end
+                        </fieldset>
+                    #else
+                        <div class="fluent-form-field">
+                            #if($field.type.name != "BOOLEAN") <label class="fluent-form-label">$field.verboseName</label> #end
+                            #if($field.hasConfirmation and $isUpdate) #if($defaultValue) <p class="fluent-confirmation-value">Current value: $!defaultValue</p> #end #set($reset_text = $translations.get('reset_item').replace("{name}", $field.verboseName)) <button type="button" class="fluent-button fluent-button-subtle fluent-confirmation-btn" onclick="goToConfigurationEditUrl('$field.fieldName')">$reset_text</button>
+                            #elseif($field.type.name == "STRING") #if($field.hasRichEditor) <textarea name="$fullFieldName" class="fluent-textarea rich-editor-area" #if($field.readOnly)readonly#end>$!defaultValue</textarea> #elseif($field.hasTextArea) <textarea name="$field.fieldName" class="fluent-textarea" #if($field.readOnly)readonly#end>$!defaultValue</textarea> #else <input type="text" class="fluent-input" name="$fullFieldName" value="$!defaultValue" #if($field.readOnly)readonly#end/> #end
+                            #elseif($field.type.name == "FILE") <label for="$fullFieldName" class="fluent-file-input-label #if($field.readOnly) fluent-readonly #end">$translations['select_file']</label><input type="file" class="fluent-file-input-field" name="$fullFieldName" id="$fullFieldName" #if($field.readOnly)disabled#end/><p class="fluent-file-label" id="selected-file-$fullFieldName"></p>#if($!values.get($fullFieldName)) <a href="javascript:void(0)" class="fluent-file-link" onclick="openFileLink('$!values.get($fullFieldName)')">$translations['current_file']</a> #end
+                            #elseif($field.type.name == "BOOLEAN") <label class="fluent-checkbox">#if($field.nullable == false) <input type="hidden" name="$fullFieldName" value="off"> #end<input type="checkbox" name="$fullFieldName" #if($!defaultValue == "true" || $!defaultValue == "1" || $!defaultValue == "on") checked #end #if($field.readOnly) disabled #end><span class="fluent-checkbox-label">$field.verboseName</span></label>
+                            #elseif($field.type.name == "ENUMERATION") <select name="$fullFieldName" class="fluent-select" #if($field.readOnly)disabled#end><option value="">$translations['select_item']</option>#foreach($value in $field.enumerationValues)<option value="$value" #if($value == $!defaultValue)selected#end>$value</option>#end</select>
+                            #else <input type="$field.type.fieldType" class="fluent-input" name="$fullFieldName" value="$!defaultValue" #if($field.readOnly)readonly#end/>
+                            #end
+                            #if($!errors.get($fullFieldName)) <div class="fluent-form-error">#foreach($error in $errors.get($fullFieldName).messages) $error<br/>#end</div> #end
+                        </div>
+                        #set($previewItem = $previews[$field]) #if($previewItem) $previewItem #end
+                    #end
+                #end
+                <form method="post" #if($callMethod) enctype="$callMethod" #else enctype="multipart/form-data" #end id="form-box" class="fluent-upsert-form">
+                    #foreach($field in $fields) #renderField($field "") #end
+                    <input type="hidden" value="$csrfToken" name="_csrf">
+                    <input type="hidden" value="$requestId" name="requestId">
+                    <div style="display:flex;gap:8px;margin-top:8px;">
+                        <button id="submit-button" type="submit" class="fluent-button fluent-button-primary #if($hasAction == false) disabled #end" style="height:36px;padding:0 20px;">$translations['submit']</button>
+                        <a href="javascript:history.back()" class="fluent-button fluent-button-subtle" style="height:36px;">Cancel</a>
+                    </div>
+                </form>
+                <script>
+                    function getNextIndex(container) { return container.querySelectorAll('.fluent-list-entry:not([data-template="true"])').length; }
+                    function updateFieldNames(container) { container.querySelectorAll('.fluent-list-entry:not([data-template="true"])').forEach((entry, index) => updateElementNames(entry, index)); }
+                    function updateElementNames(element, index) {
+                        element.querySelectorAll('input, select, textarea').forEach(input => { input.setAttribute('name', input.getAttribute('name').replace(/\[_INDEX_\]|\[\d+\](?=\.|$|\[)/, `[${index}]`)); });
+                        element.querySelectorAll('fieldset[data-field]').forEach(section => { section.setAttribute('data-field', section.getAttribute('data-field').replace(/\[_INDEX_\]|\[\d+\](?=\.|$|\[)/, `[${index}]`)); const addBtn = section.querySelector('.fluent-button-subtle'); if (addBtn) addBtn.setAttribute('data-field-name', section.getAttribute('data-field')); });
+                    }
+                    function createRemoveButton() { const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fluent-remove-entry'; btn.onclick = function() { removeEntry(this); }; btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'; return btn; }
+                    function addListEntry(button) {
+                        const section = button.closest('fieldset'); const container = section.querySelector('.fluent-nested-fields');
+                        const template = container.querySelector('.fluent-list-entry[data-template="true"]'); const newEntry = template.cloneNode(true);
+                        const index = getNextIndex(container); newEntry.removeAttribute('data-template'); newEntry.style.display = ''; clearEntryValues(newEntry);
+                        newEntry.querySelectorAll('input, select, textarea, fieldset[data-field]').forEach(el => { if (el.hasAttribute('name')) el.setAttribute('name', el.getAttribute('name').replace(/\[_INDEX_\]/g, `[${index}]`)); if (el.hasAttribute('data-field')) el.setAttribute('data-field', el.getAttribute('data-field').replace(/\[_INDEX_\]/g, `[${index}]`)); });
+                        newEntry.querySelectorAll('fieldset[data-field]').forEach(f => { const addBtn = f.querySelector('.fluent-button-subtle'); if (addBtn && addBtn.hasAttribute('data-field-name')) addBtn.setAttribute('data-field-name', addBtn.getAttribute('data-field-name').replace(/\[_INDEX_\]/g, `[${index}]`)); });
+                        let removeBtn = newEntry.querySelector('.fluent-remove-entry'); if (!removeBtn) { removeBtn = createRemoveButton(); newEntry.appendChild(removeBtn); } else { removeBtn.style.display = ''; removeBtn.onclick = function() { removeEntry(this); }; }
+                        container.insertBefore(newEntry, button);
+                    }
+                    function addKeyValueEntry(fieldName) {
+                        const section = document.querySelector(`fieldset[data-field="${fieldName}"]`); if (!section) return;
+                        const container = section.querySelector('.fluent-nested-fields'); const template = container.querySelector('.fluent-list-entry[data-template="true"]'); if (!template) return;
+                        const newEntry = template.cloneNode(true); const index = getNextIndex(container); newEntry.removeAttribute('data-template'); newEntry.style.display = ''; clearEntryValues(newEntry);
+                        newEntry.querySelectorAll('input, select, textarea').forEach(input => { const name = input.getAttribute('name'); if (name) input.setAttribute('name', name.replace(/\[_INDEX_\]/g, `[${index}]`)); });
+                        let removeBtn = newEntry.querySelector('.fluent-remove-entry'); if (!removeBtn) { removeBtn = createRemoveButton(); newEntry.appendChild(removeBtn); } else { removeBtn.style.display = ''; removeBtn.onclick = function() { removeEntry(this); }; }
+                        container.insertBefore(newEntry, container.querySelector('.fluent-button-subtle'));
+                    }
+                    function removeEntry(button) { const entry = button.closest('.fluent-list-entry'); const container = entry.parentElement; entry.remove(); updateFieldNames(container); }
+                    function clearEntryValues(entry) { entry.querySelectorAll('input, select, textarea').forEach(input => { if (input.type === 'checkbox') input.checked = false; else input.value = ''; }); }
+                    document.addEventListener('DOMContentLoaded', function () {
+                        document.querySelectorAll('[data-template="true"]').forEach(el => el.style.display = 'none');
+                        document.querySelectorAll('.fluent-button-subtle[data-field-name]').forEach(button => { const fieldName = button.closest('fieldset')?.getAttribute('data-field'); if (fieldName) button.onclick = function() { addKeyValueEntry(fieldName); }; });
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="loading"><div class="spinner"></div></div>
+<script>const selectedFileText = "$translations['selected_file']"; const adminPath = "$adminPath"; #if($tinyMCEConfig) const tinyConfig = JSON.parse(`$tinyMCEConfig`); #end const computedColumns = []; #foreach($field in $fields) #if($field.computedField) computedColumns.push({ columnName: "$field.fieldName", computedColumn: "$field.computedField" }); #end #end</script>
+<script src="/static/fluent/js/fluent_common.js"></script>
+<script src="/static/fluent/js/fluent_upsert.js"></script>
+</body>
+</html>

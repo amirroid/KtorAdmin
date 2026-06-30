@@ -49,6 +49,8 @@ dependencies {
     implementation(project(":KtorAdminLibrary"))
     ksp(project(":KtorAdminLibrary"))
 
+    implementation(project(":templates:fluent"))
+
     implementation(libs.jcodec)
     implementation(libs.jcodec.javase)
 

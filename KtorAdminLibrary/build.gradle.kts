@@ -5,8 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.maven.publish)
     alias(libs.plugins.ktlint)
-
-    id("git-version")
 }
 
 group = "io.github.amirroid"

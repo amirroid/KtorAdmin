@@ -1,0 +1,45 @@
+.fluent-upsert-form { display: flex; flex-direction: column; gap: 16px; }
+.fluent-form-field { display: flex; flex-direction: column; gap: 4px; }
+.fluent-form-label { font-size: 14px; font-weight: 600; line-height: 20px; }
+.fluent-form-label-disabled { opacity: 0.6; }
+.fluent-confirmation-value { font-size: 12px; color: var(--fluent-text-secondary); padding: 4px 0; }
+.fluent-confirmation-btn { margin-top: 4px; }
+.fluent-file-input-label {
+    display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px;
+    background-color: var(--fluent-surface); border: 1px dashed var(--fluent-border-strong);
+    border-radius: var(--fluent-radius-sm); font-size: 14px; color: var(--fluent-text-primary);
+    cursor: pointer; transition: border-color 0.1s ease;
+}
+.fluent-file-input-label:hover { border-color: var(--fluent-brand); background-color: var(--fluent-surface-hover); }
+.fluent-file-input-field { display: none; }
+.fluent-file-label { margin-top: 4px; font-size: 12px; color: var(--fluent-text-secondary); }
+.fluent-file-label:empty { display: none; }
+.fluent-file-link {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
+    color: var(--fluent-brand); text-decoration: none; cursor: pointer; margin-top: 4px;
+}
+.fluent-file-link:hover { text-decoration: underline; }
+.fluent-delete-file { color: var(--fluent-error); cursor: pointer; margin-left: 4px; }
+
+.fluent-fieldset {
+    border: 1px solid var(--fluent-border); border-radius: var(--fluent-radius-md); padding: 16px;
+}
+.fluent-fieldset-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.fluent-nested-fields { display: flex; flex-direction: column; gap: 12px; }
+.fluent-list-entry {
+    display: flex; flex-direction: column; gap: 8px; padding: 12px;
+    border: 1px solid var(--fluent-border); border-radius: var(--fluent-radius-sm); position: relative;
+}
+.fluent-remove-entry {
+    position: absolute; top: 8px; right: 8px; width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center; border: none;
+    background: none; cursor: pointer; border-radius: var(--fluent-radius-sm);
+    color: var(--fluent-text-secondary); transition: background-color 0.1s ease;
+}
+.fluent-remove-entry:hover { background-color: #FDE7E9; color: var(--fluent-error); }
+.fluent-key-value-pair { display: flex; gap: 8px; align-items: flex-end; }
+.fluent-key-value-pair .fluent-form-field { flex: 1; }
+.fluent-readonly { opacity: 0.6; pointer-events: none; }
+.fluent-select-multiple { min-height: 80px; max-height: 200px; }
+.fluent-select-multiple option { padding: 6px 10px; cursor: pointer; }
+.fluent-select-multiple option:checked { background-color: var(--fluent-brand); color: #FFF; }

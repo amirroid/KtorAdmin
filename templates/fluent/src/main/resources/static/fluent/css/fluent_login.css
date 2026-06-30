@@ -1,0 +1,17 @@
+.fluent-login-container {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 32px; background-color: var(--fluent-background);
+}
+.fluent-login-card {
+    width: 100%; max-width: 440px; padding: 32px;
+    background-color: var(--fluent-surface); border-radius: var(--fluent-radius-md);
+    box-shadow: var(--fluent-shadow-16);
+}
+.fluent-login-header { text-align: center; margin-bottom: 24px; }
+.fluent-login-logo { font-size: 28px; font-weight: 400; color: var(--fluent-text-primary); }
+.fluent-login-logo-bold { font-weight: 700; }
+.fluent-login-title { font-size: 24px; font-weight: 600; line-height: 32px; margin-bottom: 20px; }
+.fluent-login-form { display: flex; flex-direction: column; gap: 16px; }
+.fluent-form-group { display: flex; flex-direction: column; gap: 4px; }
+.fluent-form-label { font-size: 14px; font-weight: 600; line-height: 20px; }
+.fluent-login-submit { margin-top: 8px; height: 36px; font-weight: 600; }
