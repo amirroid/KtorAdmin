@@ -7,8 +7,6 @@ plugins {
 }
 
 group = "ir.amirreza"
-version = "0.0.7"
-
 
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
