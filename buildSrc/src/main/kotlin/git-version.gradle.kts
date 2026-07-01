@@ -5,18 +5,20 @@ fun resolveVersionFromGit(): String {
             "git", "describe", "--tags", "--always", "--dirty"
         )
             .directory(rootProject.projectDir)
-            .redirectErrorStream(true)
             .start()
 
         val output = process.inputStream.bufferedReader().readText().trim()
+        val error = process.errorStream.bufferedReader().readText().trim()
         val exitCode = process.waitFor()
 
         if (exitCode != 0 || output.isEmpty()) {
+            logger.warn("git describe failed (exit=$exitCode): $error")
             "0.0.0"
         } else {
             output.removePrefix("v")
         }
     } catch (ex: Exception) {
+        logger.warn("git describe threw: ${ex.message}")
         "0.0.0"
     }
 }
