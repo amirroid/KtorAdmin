@@ -17,3 +17,12 @@ tasks.register("printVersions") {
         }
     }
 }
+
+tasks.register("publishableModules") {
+    description = "Lists subproject paths that have the Maven publish plugin applied"
+    doLast {
+        subprojects
+            .filter { it.plugins.hasPlugin("com.vanniktech.maven.publish") }
+            .forEach { println(it.path) }
+    }
+}
