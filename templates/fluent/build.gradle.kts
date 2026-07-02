@@ -24,7 +24,7 @@ mavenPublishing {
     pom {
         name = "KtorAdmin Fluent Template"
         description = "A Microsoft Fluent UI themed admin template for KtorAdmin."
-        inceptionYear = "202۶"
+        inceptionYear = "2025"
         url = "https://github.com/amirroid/KtorAdmin"
         licenses {
             license {
