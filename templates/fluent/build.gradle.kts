@@ -7,7 +7,7 @@ group = "ir.amirroid.ktoradmin.templates"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.javaV.map { it.toInt() }.get()))
     }
 }
 

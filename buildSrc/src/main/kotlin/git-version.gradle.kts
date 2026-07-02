@@ -1,4 +1,3 @@
-
 fun resolveVersionFromGit(): String {
     return try {
         val process = ProcessBuilder(
@@ -15,7 +14,16 @@ fun resolveVersionFromGit(): String {
             logger.warn("git describe failed (exit=$exitCode): $error")
             "0.0.0"
         } else {
-            output.removePrefix("v")
+            val cleaned = output.removePrefix("v")
+            val versionRegex = Regex("^\\d+\\.\\d+\\.\\d+")
+            val match = versionRegex.find(cleaned)
+
+            if (match == null) {
+                logger.warn("Could not extract semantic version from git describe output: $cleaned")
+                "0.0.0"
+            } else {
+                match.value
+            }
         }
     } catch (ex: Exception) {
         logger.warn("git describe threw: ${ex.message}")

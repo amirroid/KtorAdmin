@@ -21,6 +21,7 @@ postgres = "42.7.12"
 reflections = "0.10.2"
 serialization = "1.11.0"
 ktlint = "14.2.0"
+javaV = "21"
 
 [libraries]
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsS3" }
