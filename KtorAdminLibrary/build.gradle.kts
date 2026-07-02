@@ -13,7 +13,13 @@ val projectName = "KtorAdmin"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(libs.versions.javaV.map { it.toInt() }.get()))
+        languageVersion.set(
+            JavaLanguageVersion.of(
+                libs.versions.javaV
+                    .map { it.toInt() }
+                    .get(),
+            ),
+        )
     }
 }
 
