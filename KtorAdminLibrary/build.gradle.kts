@@ -54,7 +54,7 @@ mavenPublishing {
             }
         }
         scm {
-            url = "https://github.com/Amirroid/KtorAdmin"
+            url = "https://github.com/amirroid/KtorAdmin"
             connection = "scm:git:git://github.com/Amirroid/KtorAdmin.git"
             developerConnection = "scm:git:ssh://git@github.com/Amirroid/KtorAdmin.git"
         }

@@ -1,5 +1,4 @@
 name: Release
-
 on:
   release:
     types: [released, prereleased, edited]
@@ -8,13 +7,19 @@ jobs:
   publish:
     name: Publish to Maven Central
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
+
+      - name: Verify git tag matches release
+        run: |
+          RESOLVED=$(git describe --tags --always --dirty)
+          echo "Resolved version: $RESOLVED"
+          echo "Triggering ref: ${{ github.ref }}"
+          echo "Event action: ${{ github.event.action }}"
 
       - name: Setup JDK 21
         uses: actions/setup-java@v5
@@ -31,14 +36,43 @@ jobs:
       - name: Build
         run: ./gradlew clean build --no-configuration-cache
 
-      - name: Print versions
+      - name: Print resolved module versions
         run: ./gradlew printVersions --no-configuration-cache
 
       - name: Publish
-        run: ./gradlew publishToMavenCentral --no-configuration-cache
+        run: ./gradlew publishToMavenCentral --no-configuration-cache --stacktrace
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
+
+      - name: Check deployment status on Central Portal
+        if: always()
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+        run: |
+          curl -s -X GET "https://central.sonatype.com/api/v1/publisher/deployments" \
+            -u "$MAVEN_CENTRAL_USERNAME:$MAVEN_CENTRAL_PASSWORD" \
+            -H "accept: application/json" \
+            -o deployments.json
+
+          python3 -c "
+          import json
+          with open('deployments.json') as f:
+              data = json.load(f)
+          for d in data.get('deployments', []):
+              print(f\"{d.get('deploymentId')}  {d.get('deploymentState')}  {d.get('purls', [''])[0]}\")
+          " || cat deployments.json
+
+      - name: Upload deployment report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-report
+          path: |
+            deployments.json
+            **/build/publications/**/pom-default.xml
+          if-no-files-found: ignore

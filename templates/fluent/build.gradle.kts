@@ -24,7 +24,7 @@ mavenPublishing {
     pom {
         name = "KtorAdmin Fluent Template"
         description = "A Microsoft Fluent UI themed admin template for KtorAdmin."
-        inceptionYear = "2025"
+        inceptionYear = "2026"
         url = "https://github.com/amirroid/KtorAdmin"
         licenses {
             license {
@@ -41,7 +41,7 @@ mavenPublishing {
             }
         }
         scm {
-            url = "https://github.com/Amirroid/KtorAdmin"
+            url = "https://github.com/amirroid/KtorAdmin"
             connection = "scm:git:git://github.com/amirroid/KtorAdmin.git"
             developerConnection = "scm:git:ssh://git@github.com/amirroid/KtorAdmin.git"
         }
