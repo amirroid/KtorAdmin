@@ -127,7 +127,7 @@ http://localhost:8080/admin
 
 Full documentation, guides, and advanced configuration options are available here:
 
-https://amirreza-gholami.gitbook.io/ktor-admin
+https://amirroid.gitbook.io/ktor-admin
 
 ---
 
