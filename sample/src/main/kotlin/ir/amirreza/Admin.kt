@@ -3,6 +3,7 @@ package ir.amirreza
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import ir.amirreza.action.MyCustomAction
+import ir.amirreza.audit.registerSampleAuditLog
 import ir.amirreza.dashboard.CustomDashboard
 import ir.amirreza.listeners.AdminListener
 import ir.amirreza.previews.ImagePreview
@@ -18,7 +19,6 @@ import ir.amirroid.ktoradmin.mongo.MongoServerAddress
 import ir.amirroid.ktoradmin.plugins.KtorAdmin
 import ir.amirroid.ktoradmin.provider.defaultvalue.uuid.UUIDDefaultValueProvider
 import ir.amirroid.ktoradmin.template.DefaultAdminTemplateSettings
-import ir.amirroid.ktoradmin.templates.fluent.FluentAdminTemplate
 import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
 import ir.amirroid.ktoradmin.translator.locals.fa.PersianKtorAdminTranslator
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -57,6 +57,7 @@ fun Application.configureAdmin(database: Database) {
         csrfTokenExpirationTime = 1000 * 60
         registerCustomAdminActionForAll(MyCustomAction())
         registerEventListener(AdminListener(database))
+        registerSampleAuditLog()
         canDownloadDataAsCsv = true
         canDownloadDataAsPdf = true
         tinyMCEConfig =
@@ -65,7 +66,7 @@ fun Application.configureAdmin(database: Database) {
             CustomValueMapper
         )
 
-        template = FluentAdminTemplate()
+//        template = FluentAdminTemplate()
 //        template = DefaultAdminTemplate(
 //            settings = DefaultAdminTemplateSettings(
 //                colors = lightModeColors,
