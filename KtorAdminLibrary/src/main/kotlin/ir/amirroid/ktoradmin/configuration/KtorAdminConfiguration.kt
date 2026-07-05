@@ -3,6 +3,13 @@ package ir.amirroid.ktoradmin.configuration
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import ir.amirroid.ktoradmin.action.CustomAdminAction
+import ir.amirroid.ktoradmin.audit.AuditDestination
+import ir.amirroid.ktoradmin.audit.AuditErrorHandler
+import ir.amirroid.ktoradmin.audit.AuditEventListener
+import ir.amirroid.ktoradmin.audit.AuditExecutionHandler
+import ir.amirroid.ktoradmin.audit.AuditFormatter
+import ir.amirroid.ktoradmin.audit.AuditLogger
+import ir.amirroid.ktoradmin.audit.FormattingAuditExecutionHandler
 import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
 import ir.amirroid.ktoradmin.hikra.KtorAdminHikariCP
@@ -326,6 +333,22 @@ class KtorAdminConfiguration {
     }
 
     /**
+     * Registers a built-in audit logger as an admin event listener.
+     */
+    fun registerAuditLogger(logger: AuditLogger) {
+        registerEventListener(AuditEventListener(logger))
+    }
+
+    /**
+     * Configures and registers a built-in audit logger.
+     */
+    fun audit(configure: AuditLoggerBuilder.() -> Unit): AuditLogger {
+        val logger = AuditLoggerBuilder().apply(configure).build()
+        registerAuditLogger(logger)
+        return logger
+    }
+
+    /**
      * Registers a new preview.
      */
     fun registerPreview(preview: KtorAdminPreview) {
@@ -358,4 +381,37 @@ class KtorAdminConfiguration {
         KtorAdminHikariCP.closeAllConnections()
         MongoClientRepository.closeAllConnections()
     }
+}
+
+class AuditLoggerBuilder {
+    var failOnHandlerError: Boolean = false
+    var errorHandler: AuditErrorHandler? = null
+
+    private val handlers = mutableListOf<AuditExecutionHandler>()
+
+    fun registerHandler(handler: AuditExecutionHandler) {
+        handlers.add(handler)
+    }
+
+    fun <T> registerDestination(
+        key: String,
+        formatter: AuditFormatter<T>,
+        destination: AuditDestination<T>,
+    ) {
+        registerHandler(
+            FormattingAuditExecutionHandler(
+                key = key,
+                formatter = formatter,
+                destination = destination,
+            ),
+        )
+    }
+
+    fun build(): AuditLogger =
+        AuditLogger(
+            failOnHandlerError = failOnHandlerError,
+            errorHandler = errorHandler,
+        ).also { logger ->
+            handlers.forEach(logger::registerHandler)
+        }
 }

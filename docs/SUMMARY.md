@@ -31,6 +31,7 @@
 * [Enumeration](features/enumeration.md)
 * [Rich Editor](features/rich-editor.md)
 * [AutoNowDate](features/autonowdate.md)
+* [Self-Adaptive Audit Log](features/audit-log.md)
 * [Additional Features](features/additional-features.md)
 
 ## Security

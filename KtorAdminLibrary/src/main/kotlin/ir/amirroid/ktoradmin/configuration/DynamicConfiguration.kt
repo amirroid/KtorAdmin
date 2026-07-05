@@ -3,6 +3,7 @@ package ir.amirroid.ktoradmin.configuration
 import ir.amirroid.ktoradmin.action.CustomAdminAction
 import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
 import ir.amirroid.ktoradmin.listener.AdminEventListener
+import ir.amirroid.ktoradmin.listener.CompositeAdminEventListener
 import ir.amirroid.ktoradmin.mapper.KtorAdminValueMapper
 import ir.amirroid.ktoradmin.models.FileDeleteStrategy
 import ir.amirroid.ktoradmin.models.forms.LoginFiled
@@ -52,8 +53,24 @@ internal object DynamicConfiguration {
     var currentEventListener: AdminEventListener?
         get() = _currentEventListener.get()
         set(value) {
-            if (!_currentEventListener.compareAndSet(null, value)) {
-                throw IllegalStateException("An event listener is already registered. Please unregister it before registering a new one.")
+            value ?: run {
+                _currentEventListener.set(null)
+                return
+            }
+
+            while (true) {
+                val current = _currentEventListener.get()
+                when (current) {
+                    null -> if (_currentEventListener.compareAndSet(null, value)) return
+                    is CompositeAdminEventListener -> {
+                        current.add(value)
+                        return
+                    }
+                    else -> {
+                        val composite = CompositeAdminEventListener(listOf(current, value))
+                        if (_currentEventListener.compareAndSet(current, composite)) return
+                    }
+                }
             }
         }
 
