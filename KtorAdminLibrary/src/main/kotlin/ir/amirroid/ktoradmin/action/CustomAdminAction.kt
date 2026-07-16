@@ -14,6 +14,13 @@ interface CustomAdminAction {
     val displayText: String
 
     /**
+     * Configurable options for how this action appears in the admin panel's edit/upsert pages.
+     * Override this to control visibility, icon, and styling per action.
+     */
+    val options: ActionOptions
+        get() = ActionOptions()
+
+    /**
      * Executes the action on the specified table or collection.
      *
      * @param name The name of the table or collection in the database.

@@ -28,6 +28,11 @@ abstract class KtorAdminTranslator {
         const val LOGOUT = "logout"
         const val LANGUAGES = "languages"
         const val FILTER = "filter"
+        const val ACTIONS = "actions"
+        const val CONFIRM_ACTION_TITLE = "confirm_action_title"
+        const val CONFIRM_ACTION_MESSAGE = "confirm_action_message"
+        const val CONFIRM = "confirm"
+        const val CANCEL = "cancel"
 
         const val SELECT_RANGE_OF = "select_range_of"
         const val SELECT_AN_ITEM_FOR = "select_item_for"

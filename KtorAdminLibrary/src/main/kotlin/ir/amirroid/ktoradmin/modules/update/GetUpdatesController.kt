@@ -21,6 +21,7 @@ import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumnsInUpsert
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumnsInUpsertView
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowFieldsInUpsert
+import ir.amirroid.ktoradmin.panels.getAllCustomActions
 import ir.amirroid.ktoradmin.panels.hasEditAction
 import ir.amirroid.ktoradmin.repository.FileRepository
 import ir.amirroid.ktoradmin.repository.JdbcQueriesRepository
@@ -116,6 +117,7 @@ internal suspend fun ApplicationCall.handleJdbcEditView(
                         "isUpdate" to true,
                         "requestId" to requestId,
                         "hasAction" to table.hasEditAction,
+                        "actions" to table.getAllCustomActions(deleteActionDisplayText = translator.translate(KtorAdminTranslator.Keys.DELETE_SELECTED_ITEMS)),
                         "previews" to
                             extractColumnsPreviews(
                                 table.getTableName(),
@@ -192,6 +194,7 @@ internal suspend fun ApplicationCall.handleNoSqlEditView(
                         "isUpdate" to true,
                         "requestId" to requestId,
                         "hasAction" to panel.hasEditAction,
+                        "actions" to panel.getAllCustomActions(deleteActionDisplayText = translator.translate(KtorAdminTranslator.Keys.DELETE_SELECTED_ITEMS)),
                         "canDownload" to DynamicConfiguration.canDownloadDataAsPdf,
                         "previews" to
                             extractFieldsPreviews(

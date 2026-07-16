@@ -43,3 +43,58 @@
 .fluent-select-multiple { min-height: 80px; max-height: 200px; }
 .fluent-select-multiple option { padding: 6px 10px; cursor: pointer; }
 .fluent-select-multiple option:checked { background-color: var(--fluent-brand); color: #FFF; }
+
+.fluent-edit-actions {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--fluent-border);
+    animation: fluentFadeIn 0.2s ease;
+}
+
+@keyframes fluentFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fluent-edit-actions-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--fluent-text-primary);
+}
+
+.fluent-edit-actions-header svg {
+    flex-shrink: 0;
+    color: var(--fluent-text-secondary);
+}
+
+.fluent-edit-actions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.fluent-edit-actions-grid .fluent-button {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 14px;
+}
+
+.fluent-edit-actions-grid .fluent-button svg {
+    flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    .fluent-edit-actions-grid {
+        flex-direction: column;
+    }
+
+    .fluent-edit-actions-grid .fluent-button {
+        width: 100%;
+        justify-content: center;
+    }
+}

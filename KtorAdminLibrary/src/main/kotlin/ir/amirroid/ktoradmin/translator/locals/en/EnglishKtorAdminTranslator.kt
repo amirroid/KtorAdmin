@@ -32,6 +32,11 @@ internal object EnglishKtorAdminTranslator : KtorAdminTranslator() {
             Keys.LOGOUT to "Logout", // done
             Keys.LANGUAGES to "Languages", // done
             Keys.FILTER to "Filter",
+            Keys.ACTIONS to "Actions",
+            Keys.CONFIRM_ACTION_TITLE to "Confirm Action",
+            Keys.CONFIRM_ACTION_MESSAGE to "Are you sure you want to perform '{action}'? This action cannot be undone.",
+            Keys.CONFIRM to "Confirm",
+            Keys.CANCEL to "Cancel",
             Keys.SELECT_RANGE_OF to "Select range of {value}", // done
             Keys.SELECT_AN_ITEM_FOR to "Select an item for {value}", // done
             Keys.SELECT_AN_ITEM to "Select an item", // done

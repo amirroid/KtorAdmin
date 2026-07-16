@@ -14,6 +14,7 @@ import ir.amirroid.ktoradmin.panels.AdminMongoCollection
 import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumnsInUpsertView
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowFieldsInUpsert
+import ir.amirroid.ktoradmin.panels.getAllCustomActions
 import ir.amirroid.ktoradmin.panels.hasAddAction
 import ir.amirroid.ktoradmin.response.toMap
 import ir.amirroid.ktoradmin.template.TemplateModel
@@ -72,6 +73,7 @@ internal suspend fun ApplicationCall.handleJdbcAddView(
                     "isUpdate" to false,
                     "requestId" to requestId,
                     "hasAction" to table.hasAddAction,
+                    "actions" to table.getAllCustomActions(deleteActionDisplayText = translator.translate("delete_selected_items")),
                     "title" to
                         translator.translate(
                             KtorAdminTranslator.Keys.ADD_NEW_ITEM,
@@ -111,6 +113,7 @@ internal suspend fun ApplicationCall.handleNoSqlAddView(
                     "csrfToken" to CsrfManager.generateToken(),
                     "requestId" to requestId,
                     "hasAction" to panel.hasAddAction,
+                    "actions" to panel.getAllCustomActions(deleteActionDisplayText = translator.translate("delete_selected_items")),
                     "panelGroups" to panelGroups,
                     "currentPanel" to panel.getPluralName(),
                     "title" to

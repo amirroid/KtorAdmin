@@ -29,6 +29,11 @@
 </head>
 
 <body>
+<form id="action-form" method="POST" style="display: none;">
+    <input type="hidden" name="action_key" id="action-key">
+    <input type="hidden" name="ids" id="ids">
+    <input type="hidden" value="$csrfToken" name="_csrf">
+</form>
 <div id="container">
     <div id="header">
         <div class="left-content">
@@ -322,6 +327,25 @@
                 <button id="submit-button" type="submit"  #if($hasAction == false) class="disabled" #end>$translations[
                     'submit']</button>
             </form>
+            #if($isUpdate && $actions && $actions.size() > 0)
+                <div class="edit-actions-section">
+                    <div class="edit-actions-header">
+                        <h3 class="edit-actions-title">$translations['actions']</h3>
+                    </div>
+                    <div class="edit-actions-grid">
+                        #foreach($action in $actions)
+                            #if($action.options.showInEditPage)
+                                <button class="edit-action-button"
+                                        onclick="openEditActionDialog('$action.key', '$action.displayText')"
+                                        #if($action.options.style) style="$action.options.style" #end>
+                                    #if($action.options.icon) $action.options.icon #end
+                                    $action.displayText
+                                </button>
+                            #end
+                        #end
+                    </div>
+                </div>
+            #end
 
             <script>
                 function getNextIndex(container) {
@@ -588,12 +612,28 @@
         #end
     #end
 </div>
+<div class="dialog-overlay" id="edit-action-dialog"
+     data-title="$translations['confirm_action_title']"
+     data-message="$translations['confirm_action_message']">
+    <div class="dialog-box">
+        <h2 id="edit-action-dialog-title"></h2>
+        <p id="edit-action-dialog-message"></p>
+        <div class="dialog-actions-container">
+            <button class="confirm-dialog" onclick="performEditAction()">$translations['confirm']</button>
+            <button onclick="closeEditActionDialog()" class="close-dialog">$translations['cancel']</button>
+        </div>
+    </div>
+</div>
 <div id="loading">
     <div class="spinner"></div>
 </div>
 <script>
     const selectedFileText = "$translations['selected_file']"
     const adminPath = "$adminPath"
+        #if($isUpdate)
+    const editPrimaryKey = "$primaryKey"
+    const editPluralName = "$pluralName"
+        #end
         #if($tinyMCEConfig)
         const tinyConfig = JSON.parse(`$tinyMCEConfig`);
         #end
