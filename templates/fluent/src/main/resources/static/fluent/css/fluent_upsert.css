@@ -20,6 +20,7 @@
 }
 .fluent-file-link:hover { text-decoration: underline; }
 .fluent-delete-file { color: var(--fluent-error); cursor: pointer; margin-left: 4px; }
+.fluent-delete-file-row { margin-top: 4px; }
 
 .fluent-fieldset {
     border: 1px solid var(--fluent-border); border-radius: var(--fluent-radius-md); padding: 16px;

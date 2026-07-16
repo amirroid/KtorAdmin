@@ -25,6 +25,7 @@ internal object EnglishKtorAdminTranslator : KtorAdminTranslator() {
             Keys.SELECTED_FILE to "Selected file: {name}", // done
             Keys.SELECT_A_FILE to "Select a file", // done
             Keys.CURRENT_FILE to "Current file", // done
+            Keys.DELETE_FILE to "Delete current file", // done
             Keys.EMPTY to "Empty", // done
             Keys.SEARCH to "Search...", // done
             Keys.LOGIN to "Login", // done

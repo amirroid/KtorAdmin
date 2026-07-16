@@ -185,10 +185,10 @@ internal fun PreparedStatement.putColumn(
         }
 
         is String -> {
-            if (columnType == ColumnType.STRING || columnType == ColumnType.CHAR || columnType == ColumnType.ENUMERATION) {
+            if (columnType == ColumnType.STRING || columnType == ColumnType.CHAR || columnType == ColumnType.ENUMERATION || columnType == ColumnType.FILE) {
                 this.setString(
                     index,
-                    value,
+                    value.ifEmpty { null },
                 )
             }
         }
