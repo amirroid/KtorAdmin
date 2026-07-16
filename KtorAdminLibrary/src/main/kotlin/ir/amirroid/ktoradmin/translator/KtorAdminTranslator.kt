@@ -22,6 +22,7 @@ abstract class KtorAdminTranslator {
         const val SELECTED_FILE = "selected_file"
         const val SELECT_A_FILE = "select_file"
         const val CURRENT_FILE = "current_file"
+        const val DELETE_FILE = "delete_file"
         const val EMPTY = "empty"
         const val SEARCH = "search"
         const val LOGIN = "login"

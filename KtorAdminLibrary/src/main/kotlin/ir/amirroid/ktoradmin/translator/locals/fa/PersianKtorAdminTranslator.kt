@@ -26,6 +26,7 @@ object PersianKtorAdminTranslator : KtorAdminTranslator() {
             Keys.SELECTED_FILE to "فایل انتخاب‌شده: {name}",
             Keys.SELECT_A_FILE to "انتخاب فایل",
             Keys.CURRENT_FILE to "فایل فعلی",
+            Keys.DELETE_FILE to "حذف فایل فعلی",
             Keys.EMPTY to "خالی",
             Keys.SEARCH to "جستجو...",
             Keys.LOGIN to "ورود",

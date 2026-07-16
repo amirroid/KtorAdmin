@@ -47,6 +47,7 @@ internal suspend fun MultiPartData.toTableValues(
         val panelListColumns = table.getAllAllowToShowColumnsInUpsertView()
 
         val fileBytes = mutableMapOf<ColumnSet, Pair<String?, ByteArray>>()
+        val deleteFileColumns = mutableSetOf<ColumnSet>()
         var requestId: String? = null
         val errors = mutableListOf<ErrorResponse?>()
         var isInvalidRequest = false
@@ -66,6 +67,15 @@ internal suspend fun MultiPartData.toTableValues(
                 part.release()
                 return@forEachPart
             }
+            if (name != null && name.startsWith("delete_file_") && part is PartData.FormItem) {
+                val deleteColumnName = name.removePrefix("delete_file_")
+                val deleteColumn = panelListColumns.firstOrNull { it.columnName == deleteColumnName }
+                if (deleteColumn != null && part.value == "on") {
+                    deleteFileColumns.add(deleteColumn)
+                }
+                part.release()
+                return@forEachPart
+            }
             if (column != null && name != null) {
                 when (part) {
                     is PartData.FileItem -> {
@@ -74,7 +84,9 @@ internal suspend fun MultiPartData.toTableValues(
                         val partSize = bytes.size.toLong()
                         when (column.type) {
                             ColumnType.FILE -> {
-                                fileBytes[column] = fileName to bytes
+                                if (fileName != null) {
+                                    fileBytes[column] = fileName to bytes
+                                }
                                 val itemErrors =
                                     listOfNotNull(
                                         Validators.validateMimeType(fileName, column.limits, translator),
@@ -165,6 +177,16 @@ internal suspend fun MultiPartData.toTableValues(
             )
         }
 
+        for (deleteColumn in deleteFileColumns) {
+            if (fileBytes.containsKey(deleteColumn)) continue
+            val columnIndex = columns.indexOf(deleteColumn)
+            val oldValue = initialData?.getOrNull(columnIndex)
+            if (!oldValue.isNullOrEmpty() && deleteColumn.uploadTarget != null) {
+                FileRepository.deleteFile(deleteColumn.uploadTarget!!, oldValue)
+            }
+            items[deleteColumn.columnName] = "" to ""
+        }
+
         val deferredResults =
             fileBytes.map { (column, pair) ->
                 async {
@@ -210,6 +232,7 @@ internal suspend fun MultiPartData.toTableValues(
         val fields = table.getAllAllowToShowFieldsInUpsert()
 
         val fileBytes = mutableMapOf<FieldSet, Pair<String?, ByteArray>>()
+        val deleteFileFields = mutableSetOf<FieldSet>()
 
         val errors = mutableListOf<ErrorResponse?>()
         var isInvalidRequest = false
@@ -229,6 +252,15 @@ internal suspend fun MultiPartData.toTableValues(
                 requestId = part.value
                 part.release()
             }
+            if (name != null && name.startsWith("delete_file_") && part is PartData.FormItem) {
+                val deleteFieldName = name.removePrefix("delete_file_")
+                val deleteField = fields.firstOrNull { it.fieldName.toString() == deleteFieldName }
+                if (deleteField != null && part.value == "on") {
+                    deleteFileFields.add(deleteField)
+                }
+                part.release()
+                return@forEachPart
+            }
             val field = fields.firstOrNull { it.fieldName == name }
             if (field != null && name != null) {
                 when (part) {
@@ -238,7 +270,9 @@ internal suspend fun MultiPartData.toTableValues(
                         val partSize = bytes.size.toLong()
                         when (field.type) {
                             FieldType.File -> {
-                                fileBytes[field] = fileName to bytes
+                                if (fileName != null) {
+                                    fileBytes[field] = fileName to bytes
+                                }
                                 val itemErrors =
                                     listOfNotNull(
                                         Validators.validateMimeType(fileName, field.limits, translator),
@@ -292,6 +326,15 @@ internal suspend fun MultiPartData.toTableValues(
                         .associateWith { items[it.fieldName.toString()]?.first }
                         .mapKeys { it.key.fieldName.toString() },
             )
+        }
+        for (deleteField in deleteFileFields) {
+            if (fileBytes.containsKey(deleteField)) continue
+            val fieldIndex = fields.indexOf(deleteField)
+            val oldValue = initialData?.getOrNull(fieldIndex)
+            if (!oldValue.isNullOrEmpty() && deleteField.uploadTarget != null) {
+                FileRepository.deleteFile(deleteField.uploadTarget!!, oldValue)
+            }
+            items[deleteField.fieldName.toString()] = "" to ""
         }
         val deferredResults =
             fileBytes.map { (field, pair) ->

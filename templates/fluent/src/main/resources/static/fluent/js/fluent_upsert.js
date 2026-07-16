@@ -15,7 +15,7 @@ function handleComputedColumns() {
 }
 
 function handleFileInputs() {
-    for (let field of document.getElementsByClassName("file-input-field")) {
+    for (let field of document.getElementsByClassName("fluent-file-input-field")) {
         field.onchange = function () {
             let labelElement = document.getElementById(`selected-file-${field.id}`);
             if (this.files.length > 0) {
