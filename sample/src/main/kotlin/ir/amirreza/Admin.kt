@@ -67,7 +67,7 @@ fun Application.configureAdmin(database: Database) {
             CustomValueMapper
         )
 
-//        template = FluentAdminTemplate()
+        template = FluentAdminTemplate()
 //        template = DefaultAdminTemplate(
 //            settings = DefaultAdminTemplateSettings(
 //                colors = lightModeColors,

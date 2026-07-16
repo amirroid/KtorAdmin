@@ -9,8 +9,8 @@ open class ExtraPreview {
         <div class="expandable" onclick="toggleExpand(this)">
             <div class="expandable-header">
                 <span class="expandable-title">$title</span>
-                <svg class="expandable-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19.9201 8.94995L13.4001 15.47C12.6301 16.24 11.3701 16.24 10.6001 15.47L4.08008 8.94995" stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg class="expandable-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.25 7.5L10 12.25L14.75 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             <div class="expandable-content">
