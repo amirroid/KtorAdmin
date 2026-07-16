@@ -19,9 +19,9 @@ import ir.amirroid.ktoradmin.panels.AdminJdbcTable
 import ir.amirroid.ktoradmin.panels.AdminMongoCollection
 import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumnsInUpsert
-import ir.amirroid.ktoradmin.panels.getAllCustomActions
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumnsInUpsertView
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowFieldsInUpsert
+import ir.amirroid.ktoradmin.panels.getAllCustomActions
 import ir.amirroid.ktoradmin.panels.hasEditAction
 import ir.amirroid.ktoradmin.repository.FileRepository
 import ir.amirroid.ktoradmin.repository.JdbcQueriesRepository
