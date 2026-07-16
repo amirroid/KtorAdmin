@@ -19,6 +19,7 @@ import ir.amirroid.ktoradmin.mongo.MongoServerAddress
 import ir.amirroid.ktoradmin.plugins.KtorAdmin
 import ir.amirroid.ktoradmin.provider.defaultvalue.uuid.UUIDDefaultValueProvider
 import ir.amirroid.ktoradmin.template.DefaultAdminTemplateSettings
+import ir.amirroid.ktoradmin.templates.fluent.FluentAdminTemplate
 import ir.amirroid.ktoradmin.tiny.TinyMCEConfig
 import ir.amirroid.ktoradmin.translator.locals.fa.PersianKtorAdminTranslator
 import org.jetbrains.exposed.v1.jdbc.Database

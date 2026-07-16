@@ -14,6 +14,7 @@
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 </head>
 <body>
+<form id="action-form" method="POST" style="display:none;"><input type="hidden" name="action_key" id="action-key"><input type="hidden" name="ids" id="ids"><input type="hidden" value="$csrfToken" name="_csrf"></form>
 <div class="fluent-app">
     <nav class="fluent-sidebar" id="fluent-sidebar">
         <div class="fluent-sidebar-header"><span class="fluent-sidebar-logo">#if($headerContentType == "image") <img src="$headerImageUrl" alt="$headerImageAlt" style="height: $headerImageHeight;"> #elseif($headerContentType == "text") <span style="font-weight:700;">$headerTextPrefix</span>$headerTextContent #end</span></div>
@@ -78,6 +79,25 @@
                         <a href="javascript:history.back()" class="fluent-button fluent-button-subtle" style="height:36px;">Cancel</a>
                     </div>
                 </form>
+                #if($isUpdate && $actions && $actions.size() > 0)
+                    <div class="fluent-edit-actions">
+                        <div class="fluent-edit-actions-header">
+                            $translations['actions']
+                        </div>
+                        <div class="fluent-edit-actions-grid">
+                            #foreach($action in $actions)
+                                #if($action.options.showInEditPage)
+                                    <button class="fluent-button fluent-button-subtle"
+                                            onclick="openEditActionDialog('$action.key', '$action.displayText')"
+                                            #if($action.options.style) style="$action.options.style" #end>
+                                        #if($action.options.icon) $action.options.icon #end
+                                        $action.displayText
+                                    </button>
+                                #end
+                            #end
+                        </div>
+                    </div>
+                #end
                 <script>
                     function getNextIndex(container) { return container.querySelectorAll('.fluent-list-entry:not([data-template="true"])').length; }
                     function updateFieldNames(container) { container.querySelectorAll('.fluent-list-entry:not([data-template="true"])').forEach((entry, index) => updateElementNames(entry, index)); }
@@ -114,8 +134,20 @@
         </div>
     </div>
 </div>
+<div class="fluent-overlay" id="edit-action-dialog"
+     data-title="$translations['confirm_action_title']"
+     data-message="$translations['confirm_action_message']">
+    <div class="fluent-dialog">
+        <h2 class="fluent-dialog-title" id="edit-action-dialog-title"></h2>
+        <p class="fluent-dialog-body" id="edit-action-dialog-message"></p>
+        <div class="fluent-dialog-actions">
+            <button class="fluent-button fluent-button-subtle" onclick="closeEditActionDialog()">$translations['cancel']</button>
+            <button class="fluent-button fluent-button-danger" onclick="performEditAction()">$translations['confirm']</button>
+        </div>
+    </div>
+</div>
 <div id="loading"><div class="spinner"></div></div>
-<script>const selectedFileText = "$translations['selected_file']"; const adminPath = "$adminPath"; #if($tinyMCEConfig) const tinyConfig = JSON.parse(`$tinyMCEConfig`); #end const computedColumns = []; #foreach($field in $fields) #if($field.computedField) computedColumns.push({ columnName: "$field.fieldName", computedColumn: "$field.computedField" }); #end #end</script>
+<script>const selectedFileText = "$translations['selected_file']"; const adminPath = "$adminPath"; #if($isUpdate) const editPrimaryKey = "$primaryKey"; const editPluralName = "$pluralName"; #end #if($tinyMCEConfig) const tinyConfig = JSON.parse(`$tinyMCEConfig`); #end const computedColumns = []; #foreach($field in $fields) #if($field.computedField) computedColumns.push({ columnName: "$field.fieldName", computedColumn: "$field.computedField" }); #end #end</script>
 <script src="/static/fluent/js/fluent_common.js"></script>
 <script src="/static/fluent/js/fluent_upsert.js"></script>
 </body>

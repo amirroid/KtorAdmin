@@ -112,6 +112,34 @@ function toggleExpand(element) {
 
 function goToConfigurationEditUrl(field) { window.location.href = cleanUrl().toString() + "/" + field; }
 
+let editActionKey = "";
+
+function openEditActionDialog(actionKey, actionName) {
+    editActionKey = actionKey;
+    const dialog = document.getElementById('edit-action-dialog');
+    const titleTemplate = dialog.getAttribute('data-title');
+    const messageTemplate = dialog.getAttribute('data-message');
+    document.getElementById('edit-action-dialog-title').textContent = titleTemplate;
+    document.getElementById('edit-action-dialog-message').textContent = messageTemplate.replace('{action}', actionName);
+    dialog.classList.add('active');
+}
+
+function closeEditActionDialog() {
+    document.getElementById('edit-action-dialog').classList.remove('active');
+    editActionKey = "";
+}
+
+function performEditAction() {
+    if (!editActionKey || !editPrimaryKey || !editPluralName) return;
+
+    document.getElementById("action-key").value = editActionKey;
+    document.getElementById("ids").value = JSON.stringify([editPrimaryKey]);
+
+    const form = document.getElementById("action-form");
+    form.action = `/${adminPath}/actions/${editPluralName}/${editActionKey}`;
+    form.submit();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     handleComputedColumns();
     handleFileInputs();
