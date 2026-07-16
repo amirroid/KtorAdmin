@@ -147,13 +147,9 @@ document.addEventListener('DOMContentLoaded', function () {
     handleSearches();
     document.querySelectorAll(".row").forEach(row => {
         row.addEventListener("click", function (event) {
-            const checkbox = row.querySelector(".select-field-checkbox");
-            const fileLink = row.querySelector(".fluent-link");
-            const refLink = row.querySelector(".ref-link");
-            const isTargetValid = [checkbox, fileLink, refLink].some(el =>
-                el && el.contains(event.target)
-            );
-            if (!isTargetValid) redirectToEdit(row.dataset.primaryKey);
+            if (!event.target.closest('.fluent-link, .select-field-checkbox')) {
+                redirectToEdit(row.dataset.primaryKey);
+            }
         });
     });
 });

@@ -67,15 +67,7 @@ function handleClicks() {
 
     rows.forEach(row => {
         row.addEventListener("click", function (event) {
-            const checkbox = row.querySelector(".row-checkbox");
-            const checkmark = row.querySelector(".checkmark");
-            const fileLink = row.querySelector(".file-link");
-            const icon = row.querySelector(".checkmark-icon");
-            const paths = icon ? icon.querySelectorAll("path") : [];
-            const isTargetValid = [checkbox, checkmark, fileLink, icon, ...paths].some(element =>
-                element && element.contains(event.target)
-            );
-            if (!isTargetValid) {
+            if (!event.target.closest('.file-link, .checkbox-input, .checkmark')) {
                 redirectToEdit(row.dataset.primaryKey);
             }
         });
