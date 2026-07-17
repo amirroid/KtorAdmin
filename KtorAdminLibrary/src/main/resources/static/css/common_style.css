@@ -59,6 +59,24 @@
     z-index: 10;
     padding-top: 16px;
     border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar #menu-title-container {
+    flex-shrink: 0;
+}
+
+.sidebar .group-text,
+.sidebar .menu-item {
+    flex-shrink: 0;
+}
+
+.sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 

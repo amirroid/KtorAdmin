@@ -32,6 +32,7 @@
 * [Rich Editor](features/rich-editor.md)
 * [AutoNowDate](features/autonowdate.md)
 * [Self-Adaptive Audit Log](features/audit-log.md)
+* [Custom Pages](features/custom-pages.md)
 * [Additional Features](features/additional-features.md)
 
 ## Security

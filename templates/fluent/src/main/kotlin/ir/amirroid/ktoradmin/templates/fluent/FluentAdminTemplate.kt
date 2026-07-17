@@ -198,4 +198,16 @@ class FluentAdminTemplate(
             ),
         )
     }
+
+    override suspend fun renderCustomPage(
+        call: ApplicationCall,
+        model: TemplateModel,
+    ) {
+        call.respond(
+            VelocityContent(
+                "$templatesPath/admin_custom_page.vm",
+                model = model.toVelocityModel(),
+            ),
+        )
+    }
 }

@@ -431,6 +431,7 @@
             #end
         </h2>
     </div>
+    <div class="sidebar-scroll">
     <h4 class="group-text"></h4>
     <button class="menu-item" onclick="openDashboard()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
@@ -475,6 +476,22 @@
             </button>
         #end
     #end
+    #if($customPageGroups)
+        #foreach($pageGroup in $customPageGroups)
+            <h4 class="group-text">$pageGroup.group</h4>
+            #foreach($page in $pageGroup.pages)
+                <button class="menu-item #if($page.path == $currentPagePath) selected #end"
+                        onclick="openCustomPage('$page.path')">
+                    #if($page.icon)
+                        <div class="menu-icon"
+                             style="-webkit-mask: url('$page.icon') no-repeat center / contain; mask: url('$page.icon') no-repeat center / contain;"></div>
+                    #end
+                    <span class="sidebar-item-name">$page.title</span>
+                </button>
+        #end
+    #end
+    #end
+    </div>
 </div>
 <div id="loading">
     <div class="spinner"></div>

@@ -3,6 +3,7 @@ package ir.amirroid.ktoradmin.utils
 import io.ktor.server.application.ApplicationCall
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.models.PanelGroup
+import ir.amirroid.ktoradmin.pages.CustomPageEntry
 import ir.amirroid.ktoradmin.panels.AdminJdbcTable
 import ir.amirroid.ktoradmin.panels.AdminMongoCollection
 import ir.amirroid.ktoradmin.panels.AdminPanel
@@ -100,5 +101,29 @@ internal suspend fun MutableMap<String, Any>.addCommonModels(
                 put("translators", translators)
                 put("current_lang", translator.languageCode)
             }
+
+            val customPages = DynamicConfiguration.customPageEntries.filter { it.visible }
+            if (customPages.isNotEmpty()) {
+                put("customPages", customPages)
+                put(
+                    "customPageGroups",
+                    customPages
+                        .groupBy { it.groupName }
+                        .map { (groupName, pages) ->
+                            CustomPageGroup(
+                                group = groupName?.replaceFirstChar { it.uppercaseChar() } ?: "Pages",
+                                pages = pages.sortedBy { it.order },
+                            )
+                        },
+                )
+            }
         }
     }
+
+/**
+ * A group of custom pages for sidebar navigation.
+ */
+internal class CustomPageGroup(
+    val group: String,
+    val pages: List<CustomPageEntry>,
+)
