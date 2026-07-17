@@ -19,6 +19,7 @@ internal data class CustomPageEntry(
     val visible: Boolean,
     val permissions: List<String>?,
     val renderer: suspend (ApplicationCall) -> String,
+    val bypassShell: Boolean = false,
 ) {
     companion object {
         /** Creates an entry from a DSL-registered [CustomPage]. */
@@ -46,7 +47,8 @@ internal data class CustomPageEntry(
                 order = page.order,
                 visible = page.visible,
                 permissions = page.permissions,
-                renderer = { call -> page.render(call) },
+                renderer = { call -> page.content(call) },
+                bypassShell = page.bypassShell,
             )
     }
 }

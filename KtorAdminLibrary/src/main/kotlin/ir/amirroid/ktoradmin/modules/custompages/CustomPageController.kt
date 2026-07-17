@@ -2,6 +2,8 @@ package ir.amirroid.ktoradmin.modules.custompages
 
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.principal
+import io.ktor.http.ContentType
+import io.ktor.server.response.respondText
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.models.PanelGroup
@@ -42,24 +44,28 @@ internal suspend fun ApplicationCall.handleCustomPage(
 
         val pageContent = page.renderer(this)
 
-        val adminPath = DynamicConfiguration.adminPath
-        val resourceUrl = "/$adminPath/${Constants.RESOURCES_PATH}/${page.path}"
+        if (page.bypassShell) {
+            respondText(pageContent, ContentType.Text.Html)
+        } else {
+            val adminPath = DynamicConfiguration.adminPath
+            val resourceUrl = "/$adminPath/${Constants.RESOURCES_PATH}/${page.path}"
 
-        val model =
-            TemplateModel(
-                mutableMapOf(
-                    "panelGroups" to panelGroups,
-                    "pageContent" to pageContent,
-                    "pageTitle" to page.title,
-                    "pageDescription" to (page.description ?: ""),
-                    "currentPagePath" to page.path,
-                    "resourceUrl" to resourceUrl,
-                ).apply {
-                    username?.let { put("username", it) }
-                }.addCommonModels(null, panelGroups, applicationCall = this),
-            )
+            val model =
+                TemplateModel(
+                    mutableMapOf(
+                        "panelGroups" to panelGroups,
+                        "pageContent" to pageContent,
+                        "pageTitle" to page.title,
+                        "pageDescription" to (page.description ?: ""),
+                        "currentPagePath" to page.path,
+                        "resourceUrl" to resourceUrl,
+                    ).apply {
+                        username?.let { put("username", it) }
+                    }.addCommonModels(null, panelGroups, applicationCall = this),
+                )
 
-        DynamicConfiguration.template.renderCustomPage(this, model)
+            DynamicConfiguration.template.renderCustomPage(this, model)
+        }
     }.onFailure {
         serverError(it.message.orEmpty(), it)
     }

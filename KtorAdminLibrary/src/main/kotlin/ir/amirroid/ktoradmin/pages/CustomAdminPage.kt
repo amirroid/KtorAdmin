@@ -63,19 +63,18 @@ abstract class CustomAdminPage {
     /** Optional list of required roles/permissions. */
     open val permissions: List<String>? = null
 
+    /** When `true`, [content] is sent as-is without the admin shell. */
+    open val bypassShell: Boolean = false
+
     /**
      * Returns the HTML content for this page.
      *
-     * The content is automatically wrapped in the standard admin shell
-     * (sidebar, header, toolbar). Only provide the page-specific content here.
+     * When [bypassShell] is `false`, the content is automatically wrapped in
+     * the standard admin shell (sidebar, header, toolbar) — only provide the
+     * page-specific markup here.
+     *
+     * When [bypassShell] is `true`, the returned string is sent as-is,
+     * so it should be a complete standalone HTML page.
      */
     abstract suspend fun content(call: ApplicationCall): String
-
-    /**
-     * Renders the page inside the admin shell.
-     *
-     * Override this to take full control over the entire page rendering,
-     * bypassing the default admin shell. Most users should NOT override this.
-     */
-    open suspend fun render(call: ApplicationCall): String = content(call)
 }
