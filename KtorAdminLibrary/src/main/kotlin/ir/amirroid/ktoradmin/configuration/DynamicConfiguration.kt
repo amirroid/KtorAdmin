@@ -8,6 +8,9 @@ import ir.amirroid.ktoradmin.mapper.KtorAdminValueMapper
 import ir.amirroid.ktoradmin.models.FileDeleteStrategy
 import ir.amirroid.ktoradmin.models.forms.LoginFiled
 import ir.amirroid.ktoradmin.models.menu.Menu
+import ir.amirroid.ktoradmin.pages.CustomAdminPage
+import ir.amirroid.ktoradmin.pages.CustomPage
+import ir.amirroid.ktoradmin.pages.CustomPageEntry
 import ir.amirroid.ktoradmin.preview.KtorAdminPreview
 import ir.amirroid.ktoradmin.template.AdminTemplate
 import ir.amirroid.ktoradmin.template.DefaultAdminTemplate
@@ -16,6 +19,7 @@ import ir.amirroid.ktoradmin.translator.KtorAdminTranslator
 import ir.amirroid.ktoradmin.translator.locals.en.EnglishKtorAdminTranslator
 import java.time.ZoneId
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -147,6 +151,11 @@ internal object DynamicConfiguration {
 
     var menuProvider: ((String?) -> List<Menu>)? = null
 
+    /** Custom pages registered in the admin interface (Thread-safe) */
+    private val _customPageEntries = ConcurrentSkipListMap<String, CustomPageEntry>()
+    val customPageEntries: List<CustomPageEntry>
+        get() = _customPageEntries.values.toList()
+
     /** Page size for autocomplete search results */
     var autocompletePageSize: Int = 20
 
@@ -214,6 +223,38 @@ internal object DynamicConfiguration {
         }
         _translators.add(translator)
     }
+
+    /**
+     * Registers a DSL-defined custom page in the admin interface.
+     * @param page The custom page to register.
+     * @throws IllegalStateException if a page with the same path is already registered.
+     */
+    fun registerCustomPage(page: CustomPage) {
+        registerCustomPageEntry(CustomPageEntry.from(page))
+    }
+
+    /**
+     * Registers a class-based custom page in the admin interface.
+     * @param page The custom admin page instance to register.
+     * @throws IllegalStateException if a page with the same path is already registered.
+     */
+    fun registerCustomPage(page: CustomAdminPage) {
+        registerCustomPageEntry(CustomPageEntry.from(page))
+    }
+
+    private fun registerCustomPageEntry(entry: CustomPageEntry) {
+        if (_customPageEntries.containsKey(entry.path)) {
+            throw IllegalStateException("A custom page with path '${entry.path}' is already registered.")
+        }
+        _customPageEntries[entry.path] = entry
+    }
+
+    /**
+     * Retrieves a custom page entry by its path.
+     * @param path The URL path segment of the custom page.
+     * @return The custom page entry, or null if not found.
+     */
+    fun getCustomPage(path: String): CustomPageEntry? = _customPageEntries[path]
 
     fun getTranslator(languageCode: String?): KtorAdminTranslator =
         if (languageCode == null) {

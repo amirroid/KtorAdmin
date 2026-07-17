@@ -56,6 +56,21 @@
                     </a>
                 #end
             #end
+            #if($customPageGroups)
+                #foreach($pageGroup in $customPageGroups)
+                    <div class="fluent-nav-group-label">$pageGroup.group</div>
+                    #foreach($page in $pageGroup.pages)
+                        <a href="/$adminPath/resources/$page.path" class="fluent-nav-item #if($page.path == $currentPagePath) active #end">
+                            #if($page.icon)
+                                <div class="fluent-nav-item-icon-mask" style="-webkit-mask: url('$page.icon') no-repeat center / contain; mask: url('$page.icon') no-repeat center / contain;"></div>
+                            #else
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.25"/></svg>
+                            #end
+                            <span class="fluent-nav-label">$page.title</span>
+                        </a>
+                    #end
+                #end
+            #end
         </div>
     </nav>
 

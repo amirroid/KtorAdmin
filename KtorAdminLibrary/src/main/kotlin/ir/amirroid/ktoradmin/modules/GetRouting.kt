@@ -18,6 +18,7 @@ import ir.amirroid.ktoradmin.models.chart.TextData
 import ir.amirroid.ktoradmin.models.toTableGroups
 import ir.amirroid.ktoradmin.modules.add.handleAddNewItem
 import ir.amirroid.ktoradmin.modules.confirmation.handleGetConfirmation
+import ir.amirroid.ktoradmin.modules.custompages.handleCustomPage
 import ir.amirroid.ktoradmin.modules.list.handlePanelList
 import ir.amirroid.ktoradmin.modules.update.handleEditItem
 import ir.amirroid.ktoradmin.panels.AdminJdbcTable
@@ -45,18 +46,48 @@ internal fun Routing.configureGetRouting(
             get {
                 call.renderAdminPanel(panelGroups, panels)
             }
-            route("/${Constants.RESOURCES_PATH}/{pluralName}") {
-                get {
-                    call.handlePanelList(panels, panelGroups)
+            route("/${Constants.RESOURCES_PATH}") {
+                // Database resource routes (specific, matched first)
+                route("/{pluralName}") {
+                    get {
+                        val pagePath = call.parameters["pluralName"]!!
+                        val customPage = DynamicConfiguration.getCustomPage(pagePath)
+                        if (customPage != null) {
+                            call.handleCustomPage(panelGroups, pagePath)
+                        } else {
+                            call.handlePanelList(panels, panelGroups)
+                        }
+                    }
+                    get("/add") {
+                        call.handleAddNewItem(panels, panelGroups)
+                    }
+                    get("/{primaryKey}") {
+                        val pluralName = call.parameters["pluralName"]!!
+                        val primaryKey = call.parameters["primaryKey"]!!
+                        val fullPath = "$pluralName/$primaryKey"
+                        val customPage = DynamicConfiguration.getCustomPage(fullPath)
+                        if (customPage != null) {
+                            call.handleCustomPage(panelGroups, fullPath)
+                        } else {
+                            call.handleEditItem(panels, panelGroups)
+                        }
+                    }
+                    get("/{primaryKey}/{field}") {
+                        val pluralName = call.parameters["pluralName"]!!
+                        val primaryKey = call.parameters["primaryKey"]!!
+                        val field = call.parameters["field"]!!
+                        val fullPath = "$pluralName/$primaryKey/$field"
+                        val customPage = DynamicConfiguration.getCustomPage(fullPath)
+                        if (customPage != null) {
+                            call.handleCustomPage(panelGroups, fullPath)
+                        } else {
+                            call.handleGetConfirmation(panels, panelGroups)
+                        }
+                    }
                 }
-                get("/add") {
-                    call.handleAddNewItem(panels, panelGroups)
-                }
-                get("/{primaryKey}") {
-                    call.handleEditItem(panels, panelGroups)
-                }
-                get("/{primaryKey}/{field}") {
-                    call.handleGetConfirmation(panels, panelGroups)
+                // Custom page routes (catch-all for 4+ segment nested paths)
+                get("/{pagePath...}") {
+                    call.handleCustomPage(panelGroups)
                 }
             }
         }

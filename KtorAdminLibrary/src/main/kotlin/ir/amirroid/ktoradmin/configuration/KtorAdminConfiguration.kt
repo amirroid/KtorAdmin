@@ -20,6 +20,8 @@ import ir.amirroid.ktoradmin.models.forms.LoginFiled
 import ir.amirroid.ktoradmin.models.menu.Menu
 import ir.amirroid.ktoradmin.mongo.MongoCredential
 import ir.amirroid.ktoradmin.mongo.MongoServerAddress
+import ir.amirroid.ktoradmin.pages.CustomAdminPage
+import ir.amirroid.ktoradmin.pages.CustomPageBuilder
 import ir.amirroid.ktoradmin.preview.KtorAdminPreview
 import ir.amirroid.ktoradmin.provider.defaultvalue.ClientDefaultValueProvider
 import ir.amirroid.ktoradmin.provider.defaultvalue.DefaultValueProviderRegistry
@@ -372,6 +374,68 @@ class KtorAdminConfiguration {
 
     fun provideMenu(provide: (tableName: String?) -> List<Menu>) {
         DynamicConfiguration.menuProvider = provide
+    }
+
+    /**
+     * Registers a custom admin page via DSL builder.
+     *
+     * Custom pages are standalone pages in the admin interface that are not tied to
+     * any CRUD resource or database entity. They appear in the sidebar navigation
+     * and can render fully custom UI.
+     *
+     * Supports nested paths like "settings/theme":
+     * ```kotlin
+     * install(KtorAdmin) {
+     *     customPage("settings/theme") {
+     *         title = "Theme Settings"
+     *         icon = "/static/images/theme.svg"
+     *         groupName = "Configuration"
+     *         render {
+     *             "<h1>Theme Settings</h1><p>Customize your theme.</p>"
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * @param path URL path segment under resources (supports nested paths).
+     * @param configure DSL builder block for page configuration.
+     */
+    fun customPage(
+        path: String,
+        configure: CustomPageBuilder.() -> Unit,
+    ) {
+        val page = CustomPageBuilder(path).apply(configure).build()
+        DynamicConfiguration.registerCustomPage(page)
+    }
+
+    /**
+     * Registers a class-based custom admin page.
+     *
+     * The page instance is automatically rendered inside the admin shell (sidebar,
+     * header, navigation). The developer only provides the content via [CustomAdminPage.content].
+     *
+     * Usage:
+     * ```kotlin
+     * class SettingsPage : CustomAdminPage() {
+     *     override val path = "settings"
+     *     override val title = "Settings"
+     *     override val icon = "/static/images/settings.svg"
+     *     override val groupName = "Management"
+     *
+     *     override suspend fun content(call: ApplicationCall): String {
+     *         return "<h2>App Settings</h2>"
+     *     }
+     * }
+     *
+     * install(KtorAdmin) {
+     *     customPage(SettingsPage())
+     * }
+     * ```
+     *
+     * @param page An instance of a [CustomAdminPage] subclass.
+     */
+    fun customPage(page: CustomAdminPage) {
+        DynamicConfiguration.registerCustomPage(page)
     }
 
     /**

@@ -1,6 +1,8 @@
 package ir.amirroid.ktoradmin.template
 
+import io.ktor.http.ContentType
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.response.respondText
 
 /**
  * Interface that defines the rendering contract for an admin panel template.
@@ -85,4 +87,18 @@ interface AdminTemplate {
         call: ApplicationCall,
         model: TemplateModel,
     )
+
+    /**
+     * Renders a custom standalone page.
+     *
+     * @param call The current application call.
+     * @param model The data model for the custom page view.
+     */
+    suspend fun renderCustomPage(
+        call: ApplicationCall,
+        model: TemplateModel,
+    ) {
+        val html = model["pageContent"] as? String ?: ""
+        call.respondText(html, ContentType.Text.Html)
+    }
 }

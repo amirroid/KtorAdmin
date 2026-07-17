@@ -166,6 +166,10 @@ function openPanel(pluralName) {
     window.location.href = `/${adminPath}/resources/${pluralName}`
 }
 
+function openCustomPage(pagePath) {
+    window.location.href = `/${adminPath}/resources/${pagePath}`
+}
+
 function openDashboard() {
     window.location.href = `/${adminPath}`
 }

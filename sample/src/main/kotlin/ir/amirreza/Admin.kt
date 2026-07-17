@@ -6,6 +6,10 @@ import ir.amirreza.action.MyCustomAction
 import ir.amirreza.audit.registerSampleAuditLog
 import ir.amirreza.dashboard.CustomDashboard
 import ir.amirreza.listeners.AdminListener
+import ir.amirreza.pages.AboutPage
+import ir.amirreza.pages.HelpPage
+import ir.amirreza.pages.SettingsPage
+import ir.amirreza.pages.SystemStatusPage
 import ir.amirreza.previews.ImagePreview
 import ir.amirreza.previews.VideoPreview
 import ir.amirroid.ktoradmin.mapper.KtorAdminValueMapper
@@ -67,7 +71,7 @@ fun Application.configureAdmin(database: Database) {
             CustomValueMapper
         )
 
-        template = FluentAdminTemplate()
+//        template = FluentAdminTemplate()
 //        template = DefaultAdminTemplate(
 //            settings = DefaultAdminTemplateSettings(
 //                colors = lightModeColors,
@@ -101,6 +105,11 @@ fun Application.configureAdmin(database: Database) {
                 )
             ) else emptyList()
         }
+
+        customPage(SettingsPage())
+        customPage(SystemStatusPage())
+        customPage(HelpPage())
+        customPage(AboutPage())
     }
 }
 

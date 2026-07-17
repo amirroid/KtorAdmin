@@ -265,4 +265,16 @@ class DefaultAdminTemplate(
             ),
         )
     }
+
+    override suspend fun renderCustomPage(
+        call: ApplicationCall,
+        model: TemplateModel,
+    ) {
+        call.respond(
+            VelocityContent(
+                "${Constants.TEMPLATES_PREFIX_PATH}/admin_custom_page.vm",
+                model = model.toVelocityModel(),
+            ),
+        )
+    }
 }
