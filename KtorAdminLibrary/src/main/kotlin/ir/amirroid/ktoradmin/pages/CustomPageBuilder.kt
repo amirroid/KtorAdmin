@@ -28,7 +28,9 @@ import io.ktor.server.application.ApplicationCall
  * }
  * ```
  */
-class CustomPageBuilder(private val path: String) {
+class CustomPageBuilder(
+    private val path: String,
+) {
     /** Display title shown in the sidebar and page header. */
     var title: String = path.split("/").last().replaceFirstChar { it.uppercaseChar() }
 
@@ -61,8 +63,9 @@ class CustomPageBuilder(private val path: String) {
     }
 
     internal fun build(): CustomPage {
-        val renderer = renderFunction
-            ?: error("Custom page '$path' must have a render function defined via render { ... }")
+        val renderer =
+            renderFunction
+                ?: error("Custom page '$path' must have a render function defined via render { ... }")
         return CustomPage(
             path = path,
             title = title,

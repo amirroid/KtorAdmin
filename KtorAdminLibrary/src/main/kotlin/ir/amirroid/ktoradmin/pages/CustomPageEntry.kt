@@ -22,29 +22,31 @@ internal data class CustomPageEntry(
 ) {
     companion object {
         /** Creates an entry from a DSL-registered [CustomPage]. */
-        fun from(page: CustomPage) = CustomPageEntry(
-            path = page.path,
-            title = page.title,
-            description = page.description,
-            icon = page.icon,
-            groupName = page.groupName,
-            order = page.order,
-            visible = page.visible,
-            permissions = page.permissions,
-            renderer = page.renderContent,
-        )
+        fun from(page: CustomPage) =
+            CustomPageEntry(
+                path = page.path,
+                title = page.title,
+                description = page.description,
+                icon = page.icon,
+                groupName = page.groupName,
+                order = page.order,
+                visible = page.visible,
+                permissions = page.permissions,
+                renderer = page.renderContent,
+            )
 
         /** Creates an entry from a class-based [CustomAdminPage]. */
-        fun from(page: CustomAdminPage) = CustomPageEntry(
-            path = page.path,
-            title = page.title,
-            description = page.description,
-            icon = page.icon,
-            groupName = page.groupName,
-            order = page.order,
-            visible = page.visible,
-            permissions = page.permissions,
-            renderer = { call -> page.render(call) },
-        )
+        fun from(page: CustomAdminPage) =
+            CustomPageEntry(
+                path = page.path,
+                title = page.title,
+                description = page.description,
+                icon = page.icon,
+                groupName = page.groupName,
+                order = page.order,
+                visible = page.visible,
+                permissions = page.permissions,
+                renderer = { call -> page.render(call) },
+            )
     }
 }

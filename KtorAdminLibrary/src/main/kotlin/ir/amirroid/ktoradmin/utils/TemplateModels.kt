@@ -3,12 +3,12 @@ package ir.amirroid.ktoradmin.utils
 import io.ktor.server.application.ApplicationCall
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.models.PanelGroup
+import ir.amirroid.ktoradmin.pages.CustomPageEntry
 import ir.amirroid.ktoradmin.panels.AdminJdbcTable
 import ir.amirroid.ktoradmin.panels.AdminMongoCollection
 import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowColumnsInUpsert
 import ir.amirroid.ktoradmin.panels.getAllAllowToShowFieldsInUpsert
-import ir.amirroid.ktoradmin.pages.CustomPageEntry
 import ir.amirroid.ktoradmin.repository.JdbcQueriesRepository
 import ir.amirroid.ktoradmin.repository.MongoClientRepository
 import ir.amirroid.ktoradmin.translator.translator
@@ -107,7 +107,8 @@ internal suspend fun MutableMap<String, Any>.addCommonModels(
                 put("customPages", customPages)
                 put(
                     "customPageGroups",
-                    customPages.groupBy { it.groupName }
+                    customPages
+                        .groupBy { it.groupName }
                         .map { (groupName, pages) ->
                             CustomPageGroup(
                                 group = groupName?.replaceFirstChar { it.uppercaseChar() } ?: "Pages",

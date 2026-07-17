@@ -17,12 +17,14 @@ internal suspend fun ApplicationCall.handleCustomPage(
     resolvedPath: String? = null,
 ) {
     runCatching {
-        val pagePath = resolvedPath
-            ?: parameters.getAll("pagePath")?.joinToString("/")
-            ?: return notFound("Custom page not found.")
+        val pagePath =
+            resolvedPath
+                ?: parameters.getAll("pagePath")?.joinToString("/")
+                ?: return notFound("Custom page not found.")
 
-        val page = DynamicConfiguration.getCustomPage(pagePath)
-            ?: return notFound("Custom page '$pagePath' not found.")
+        val page =
+            DynamicConfiguration.getCustomPage(pagePath)
+                ?: return notFound("Custom page '$pagePath' not found.")
 
         if (!page.visible) {
             return notFound("Custom page '$pagePath' is not available.")
@@ -43,18 +45,19 @@ internal suspend fun ApplicationCall.handleCustomPage(
         val adminPath = DynamicConfiguration.adminPath
         val resourceUrl = "/$adminPath/${Constants.RESOURCES_PATH}/${page.path}"
 
-        val model = TemplateModel(
-            mutableMapOf(
-                "panelGroups" to panelGroups,
-                "pageContent" to pageContent,
-                "pageTitle" to page.title,
-                "pageDescription" to (page.description ?: ""),
-                "currentPagePath" to page.path,
-                "resourceUrl" to resourceUrl,
-            ).apply {
-                username?.let { put("username", it) }
-            }.addCommonModels(null, panelGroups, applicationCall = this),
-        )
+        val model =
+            TemplateModel(
+                mutableMapOf(
+                    "panelGroups" to panelGroups,
+                    "pageContent" to pageContent,
+                    "pageTitle" to page.title,
+                    "pageDescription" to (page.description ?: ""),
+                    "currentPagePath" to page.path,
+                    "resourceUrl" to resourceUrl,
+                ).apply {
+                    username?.let { put("username", it) }
+                }.addCommonModels(null, panelGroups, applicationCall = this),
+            )
 
         DynamicConfiguration.template.renderCustomPage(this, model)
     }.onFailure {
