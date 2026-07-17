@@ -46,13 +46,7 @@ class SettingsPage : CustomAdminPage() {
 | `order` | `Int` | No | Ordering position within the group (lower values appear first). Default: `0`. |
 | `visible` | `Boolean` | No | Whether the page is visible in the sidebar. Default: `true`. |
 | `permissions` | `List<String>` | No | List of required roles/permissions for access. |
-
-### Methods
-
-| Method | Description |
-|---|---|
-| `content(call: ApplicationCall): String` | Returns the HTML content for this page. Content is automatically wrapped in the admin shell. |
-| `render(call: ApplicationCall): String` | Override to take full control of the entire page rendering, bypassing the admin shell. |
+| `bypassShell` | `Boolean` | No | When `true`, `content` is sent as-is without the admin shell. Default: `false`. |
 
 ### Registration
 
@@ -89,15 +83,15 @@ install(KtorAdmin) {
 
 ### Builder Properties
 
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `title` | `String` | Capitalized last path segment | Display title in sidebar and header. |
-| `description` | `String?` | `null` | Optional description. |
-| `icon` | `String?` | `null` | SVG icon path for sidebar. |
-| `groupName` | `String?` | `null` | Sidebar group name. |
-| `order` | `Int` | `0` | Sort order within the group. |
-| `visible` | `Boolean` | `true` | Whether shown in sidebar. |
-| `permissions` | `List<String>?` | `null` | Required roles for access. |
+| Property      | Type            | Default                       | Description                          |
+|---------------|-----------------|-------------------------------|--------------------------------------|
+| `title`       | `String`        | Capitalized last path segment | Display title in sidebar and header. |
+| `description` | `String?`       | `null`                        | Optional description.                |
+| `icon`        | `String?`       | `null`                        | SVG icon path for sidebar.           |
+| `groupName`   | `String?`       | `null`                        | Sidebar group name.                  |
+| `order`       | `Int`           | `0`                           | Sort order within the group.         |
+| `visible`     | `Boolean`       | `true`                        | Whether shown in sidebar.            |
+| `permissions` | `List<String>?` | `null`                        | Required roles for access.           |
 
 ## Nested URLs
 
@@ -166,15 +160,16 @@ Users without the required roles will receive a 403 Forbidden response.
 
 ## Full Control Override
 
-Override the `render` method to bypass the admin shell entirely:
+Set `bypassShell` to `true` to bypass the admin shell entirely. The `content` method should return a complete HTML page:
 
 ```kotlin
 class FullPageCustom : CustomAdminPage() {
     override val path = "custom/full"
     override val title = "Full Page"
     override val visible = false // Hidden from sidebar
+    override val bypassShell = true
 
-    override suspend fun render(call: ApplicationCall): String {
+    override suspend fun content(call: ApplicationCall): String {
         return """
             <!DOCTYPE html>
             <html>
