@@ -1,8 +1,8 @@
 package ir.amirroid.ktoradmin.modules.custompages
 
+import io.ktor.http.ContentType
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.principal
-import io.ktor.http.ContentType
 import io.ktor.server.response.respondText
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
