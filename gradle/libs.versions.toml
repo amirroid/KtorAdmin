@@ -22,6 +22,7 @@ reflections = "0.10.2"
 serialization = "1.11.0"
 ktlint = "14.2.0"
 javaV = "21"
+binary-compatibility-validator = "0.18.1"
 
 [libraries]
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsS3" }
@@ -69,3 +70,6 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+
+
+binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }

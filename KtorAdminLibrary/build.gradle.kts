@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.maven.publish)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.binary.compatibility.validator)
 }
 
 group = "io.github.amirroid"
