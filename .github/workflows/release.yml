@@ -2,7 +2,7 @@ name: Release
 
 on:
   release:
-    types: [released, prereleased, edited]
+    types: [released, prereleased]
 
 permissions:
   contents: write
@@ -34,40 +34,64 @@ jobs:
       - name: Build
         run: ./gradlew clean build --no-configuration-cache
 
+      - name: Check API compatibility
+        run: ./gradlew apiCheck
+
       - name: Generate API snapshot
         run: ./gradlew apiDump
 
-      - name: Save API snapshot
+      - name: Save versioned API snapshot
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
+          VERSION=${{ github.event.release.tag_name }}
+          VERSION=${VERSION#v}
+
+          DEFAULT_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+
+          if [ -z "$DEFAULT_BRANCH" ]; then
+            echo "Cannot detect default branch"
+            exit 1
+          fi
+
+          git fetch origin "$DEFAULT_BRANCH"
+          git checkout "$DEFAULT_BRANCH"
 
           mkdir -p "api/history/${VERSION}"
 
-          find . -path "*/api/*.api" -type f | while read -r file; do
-            module=$(basename "$(dirname "$(dirname "$file")")")
+          FOUND=false
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            FOUND=true
+
+            module=$(basename "$file" .api)
+
             cp "$file" "api/history/${VERSION}/${module}.api"
-          done
+
+            echo "Saved $file as api/history/${VERSION}/${module}.api"
+          done < <(find . -path "*/build/api/*.api" -type f)
+
+          if [ "$FOUND" = false ]; then
+            echo "::error::No API files were generated. Ensure publishable modules apply the binary-compatibility-validator plugin."
+            exit 1
+          fi
 
       - name: Commit API snapshot
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
+          VERSION=${{ github.event.release.tag_name }}
+          VERSION=${VERSION#v}
 
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-          git fetch origin main
-          git checkout main
-
           git add api/history
 
           if git diff --cached --quiet; then
-            echo "No API snapshot changes"
+            echo "No API snapshot changes to commit"
             exit 0
           fi
 
           git commit -m "chore: add API snapshot ${VERSION}"
-          git push origin main
-          
+          git push origin HEAD
 
       - name: Publish each module to Maven Central
         env:
@@ -82,30 +106,3 @@ jobs:
             ./gradlew "${module}:publishToMavenCentral" --no-configuration-cache --stacktrace
             echo "::endgroup::"
           done
-
-      - name: Check deployment status on Central Portal
-        if: always()
-        env:
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-        run: |
-          curl -s -X GET "https://central.sonatype.com/api/v1/publisher/deployments" \
-            -u "$MAVEN_CENTRAL_USERNAME:$MAVEN_CENTRAL_PASSWORD" \
-            -H "accept: application/json" \
-            -o deployments.json
-
-          python3 -c "
-          import json
-          with open('deployments.json') as f:
-              data = json.load(f)
-          for d in data.get('deployments', []):
-              print(f\"{d.get('deploymentId')}  {d.get('deploymentState')}  {d.get('purls', [''])[0]}\")
-          " || cat deployments.json
-
-      - name: Upload deployment report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: publish-report
-          path: deployments.json
-          if-no-files-found: ignore

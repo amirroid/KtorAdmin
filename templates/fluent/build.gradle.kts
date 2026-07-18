@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.maven.publish)
+    alias(libs.plugins.binary.compatibility.validator)
 }
 
 group = "ir.amirroid.ktoradmin.templates"
