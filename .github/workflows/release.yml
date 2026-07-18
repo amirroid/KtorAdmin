@@ -31,6 +31,31 @@ jobs:
       - name: Build
         run: ./gradlew clean build --no-configuration-cache
 
+      - name: Generate API snapshot
+        run: ./gradlew apiDump
+
+      - name: Save API snapshot
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+
+          mkdir -p api/history
+
+          for file in api/*.api; do
+            cp "$file" "api/history/${VERSION}.api"
+          done
+
+      - name: Commit API snapshot
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add api/history
+
+          git diff --cached --quiet || \
+          git commit -m "Add API snapshot ${GITHUB_REF_NAME}"
+
+          git push
+
       - name: Publish each module to Maven Central
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
