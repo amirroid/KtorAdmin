@@ -4,6 +4,9 @@ on:
   release:
     types: [released, prereleased, edited]
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     name: Publish to Maven Central
@@ -47,8 +50,13 @@ jobs:
 
       - name: Commit API snapshot
         run: |
+          VERSION=${GITHUB_REF_NAME#v}
+
           git config user.name github-actions
           git config user.email github-actions@github.com
+
+          git fetch origin main
+          git checkout main
 
           git add api/history
 
@@ -57,8 +65,9 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: add API snapshot ${GITHUB_REF_NAME}"
-          git push
+          git commit -m "chore: add API snapshot ${VERSION}"
+          git push origin main
+          
 
       - name: Publish each module to Maven Central
         env:
