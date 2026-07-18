@@ -23,6 +23,7 @@ import ir.amirroid.ktoradmin.dashboard.list.ListDashboardSection
 import ir.amirroid.ktoradmin.dashboard.simple.TextDashboardSection
 import ir.amirroid.ktoradmin.formatters.formatToDisplayInCollection
 import ir.amirroid.ktoradmin.getters.toTypedValue
+import ir.amirroid.ktoradmin.logger.KtorAdminLogger
 import ir.amirroid.ktoradmin.models.DataWithPrimaryKey
 import ir.amirroid.ktoradmin.models.chart.ChartDashboardAggregationFunction
 import ir.amirroid.ktoradmin.models.chart.ChartData
@@ -426,8 +427,6 @@ internal object MongoClientRepository {
                 panel
                     .getAllAllowToShowFieldsInUpsert()
                     .map { field -> values[field.fieldName]?.toString() }
-            }.also {
-                println("Data: $it")
             }
     }
 
@@ -964,7 +963,7 @@ internal object MongoClientRepository {
                 try {
                     client.close()
                 } catch (e: Exception) {
-                    println("ERROR IN CLOSING MONGODB: ${e.message}")
+                    KtorAdminLogger.error(e) { "Failed to close MongoDB client during shutdown" }
                 }
             }
 
