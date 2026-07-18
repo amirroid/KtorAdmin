@@ -96,9 +96,7 @@ internal object JdbcQueriesRepository {
                                 currentPage = currentPage,
                                 filters = filters,
                                 order = order,
-                            ).also {
-                                println(it)
-                            },
+                            ),
                     ),
                 ).use { prepareStatement ->
                     prepareStatement.prepareGetAllData(
