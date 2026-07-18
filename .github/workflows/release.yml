@@ -38,10 +38,11 @@ jobs:
         run: |
           VERSION=${GITHUB_REF_NAME#v}
 
-          mkdir -p api/history
+          mkdir -p "api/history/${VERSION}"
 
-          for file in api/*.api; do
-            cp "$file" "api/history/${VERSION}.api"
+          find . -path "*/api/*.api" -type f | while read -r file; do
+            module=$(basename "$(dirname "$(dirname "$file")")")
+            cp "$file" "api/history/${VERSION}/${module}.api"
           done
 
       - name: Commit API snapshot
@@ -51,9 +52,12 @@ jobs:
 
           git add api/history
 
-          git diff --cached --quiet || \
-          git commit -m "Add API snapshot ${GITHUB_REF_NAME}"
+          if git diff --cached --quiet; then
+            echo "No API snapshot changes"
+            exit 0
+          fi
 
+          git commit -m "chore: add API snapshot ${GITHUB_REF_NAME}"
           git push
 
       - name: Publish each module to Maven Central
