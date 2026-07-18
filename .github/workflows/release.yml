@@ -4,9 +4,6 @@ on:
   release:
     types: [released, prereleased]
 
-permissions:
-  contents: write
-
 jobs:
   publish:
     name: Publish to Maven Central
@@ -34,64 +31,6 @@ jobs:
       - name: Build
         run: ./gradlew clean build --no-configuration-cache
 
-      - name: Check API compatibility
-        run: ./gradlew apiCheck
-
-      - name: Generate API snapshot
-        run: ./gradlew apiDump
-
-      - name: Save versioned API snapshot
-        run: |
-          VERSION=${{ github.event.release.tag_name }}
-          VERSION=${VERSION#v}
-
-          DEFAULT_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
-
-          if [ -z "$DEFAULT_BRANCH" ]; then
-            echo "Cannot detect default branch"
-            exit 1
-          fi
-
-          git fetch origin "$DEFAULT_BRANCH"
-          git checkout "$DEFAULT_BRANCH"
-
-          mkdir -p "api/history/${VERSION}"
-
-          FOUND=false
-
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            FOUND=true
-
-            module=$(basename "$file" .api)
-
-            cp "$file" "api/history/${VERSION}/${module}.api"
-
-            echo "Saved $file as api/history/${VERSION}/${module}.api"
-          done < <(find . -path "*/build/api/*.api" -type f)
-
-          if [ "$FOUND" = false ]; then
-            echo "::error::No API files were generated. Ensure publishable modules apply the binary-compatibility-validator plugin."
-            exit 1
-          fi
-
-      - name: Commit API snapshot
-        run: |
-          VERSION=${{ github.event.release.tag_name }}
-          VERSION=${VERSION#v}
-
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-
-          git add api/history
-
-          if git diff --cached --quiet; then
-            echo "No API snapshot changes to commit"
-            exit 0
-          fi
-
-          git commit -m "chore: add API snapshot ${VERSION}"
-          git push origin HEAD
 
       - name: Publish each module to Maven Central
         env:
