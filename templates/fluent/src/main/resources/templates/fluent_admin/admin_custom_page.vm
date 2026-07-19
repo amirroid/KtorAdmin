@@ -23,10 +23,26 @@
             </span>
         </div>
         <div class="fluent-sidebar-nav">
-            <a href="/$adminPath" class="fluent-nav-item">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6L8 2L14 6V13C14 13.55 13.55 14 13 14H3C2.45 14 2 13.55 2 13V6Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M6 14V9H10V14" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
-                <span class="fluent-nav-label">$translations['dashboard']</span>
-            </a>
+            #if($dashboardGroups)
+                #foreach($dashboardGroup in $dashboardGroups)
+                    #if($dashboardGroup.entries.size > 1 || $dashboardGroup.entries[0].groupName)
+                        <div class="fluent-nav-group-label">$dashboardGroup.group</div>
+                    #end
+                    #foreach($entry in $dashboardGroup.entries)
+                        <a href="/$adminPath/resources/$entry.path" class="fluent-nav-item #if($entry.path == $currentPagePath) active #end">
+                            #if($entry.icon)
+                                <div class="fluent-nav-item-icon-mask" style="-webkit-mask: url('$entry.icon') no-repeat center / contain; mask: url('$entry.icon') no-repeat center / contain;"></div>
+                            #end
+                            <span class="fluent-nav-label">$entry.title</span>
+                        </a>
+                    #end
+                #end
+            #else
+                <a href="/$adminPath" class="fluent-nav-item">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6L8 2L14 6V13C14 13.55 13.55 14 13 14H3C2.45 14 2 13.55 2 13V6Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M6 14V9H10V14" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
+                    <span class="fluent-nav-label">$translations['dashboard']</span>
+                </a>
+            #end
             #foreach($group in $panelGroups)
                 <div class="fluent-nav-group-label">$group.group</div>
                 #foreach($panel in $group.panels)

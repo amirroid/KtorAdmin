@@ -11,16 +11,61 @@ import ir.amirroid.ktoradmin.dashboard.grid.Grid
  *
  * ## Usage:
  * To use a custom admin dashboard, create a subclass of `KtorAdminDashboard`
- * and provide its implementation during Ktor setup:
+ * and register it during Ktor setup:
  *
  * ```kotlin
+ * class MyDashboard : KtorAdminDashboard() {
+ *     override val title = "Overview"
+ *     override val icon = "/static/images/dashboard.svg"
+ *     override val groupName = "Analytics"
+ *
+ *     override fun KtorAdminDashboard.configure() {
+ *         configureLayout {
+ *             addSection(section = MyChartSection())
+ *         }
+ *     }
+ * }
+ *
  * install(KtorAdmin) {
- *     adminDashboard = CustomDashboard()
+ *     dashboard {
+ *         register(MyDashboard())
+ *     }
  * }
  * ```
  */
 abstract class KtorAdminDashboard {
     internal val grid = Grid()
+
+    /** Display title shown in the sidebar and page header. */
+    open val title: String = "Dashboard"
+
+    /** Optional SVG icon path for sidebar display. */
+    open val icon: String? = null
+
+    /** Sidebar group name. Dashboards are grouped together in the sidebar navigation. */
+    open val groupName: String? = null
+
+    /** Ordering position within the group (lower values appear first). */
+    open val order: Int = 0
+
+    /** Whether this dashboard is visible in the sidebar. */
+    open val visible: Boolean = true
+
+    /**
+     * Whether this dashboard is the default landing page at the admin root path.
+     *
+     * Exactly one dashboard should be marked as primary.
+     * If no dashboard has `isPrimary = true`, the admin root shows no dashboard.
+     * If multiple dashboards are marked primary, the first registered one wins.
+     */
+    open val isPrimary: Boolean = false
+
+    /**
+     * URL path segment for this dashboard's page.
+     * If null, derives from the class simple name (lowercased).
+     * Must be unique across all registered dashboards.
+     */
+    open val path: String? = null
 
     init {
         configure()

@@ -2,6 +2,7 @@ package ir.amirroid.ktoradmin.utils
 
 import io.ktor.server.application.ApplicationCall
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import ir.amirroid.ktoradmin.dashboard.DashboardEntry
 import ir.amirroid.ktoradmin.models.PanelGroup
 import ir.amirroid.ktoradmin.pages.CustomPageEntry
 import ir.amirroid.ktoradmin.panels.AdminJdbcTable
@@ -117,6 +118,21 @@ internal suspend fun MutableMap<String, Any>.addCommonModels(
                         },
                 )
             }
+
+            val dashboards = DynamicConfiguration.getAllDashboards().filter { it.visible }
+            if (dashboards.isNotEmpty()) {
+                put(
+                    "dashboardGroups",
+                    dashboards
+                        .groupBy { it.groupName }
+                        .map { (groupName, entries) ->
+                            DashboardGroup(
+                                group = groupName?.replaceFirstChar { it.uppercaseChar() } ?: "Dashboards",
+                                entries = entries.sortedBy { it.order },
+                            )
+                        },
+                )
+            }
         }
     }
 
@@ -126,4 +142,12 @@ internal suspend fun MutableMap<String, Any>.addCommonModels(
 internal class CustomPageGroup(
     val group: String,
     val pages: List<CustomPageEntry>,
+)
+
+/**
+ * A group of dashboards for sidebar navigation.
+ */
+internal class DashboardGroup(
+    val group: String,
+    val entries: List<DashboardEntry>,
 )

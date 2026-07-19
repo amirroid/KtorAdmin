@@ -5,6 +5,9 @@ import io.ktor.server.application.install
 import ir.amirreza.action.MyCustomAction
 import ir.amirreza.audit.registerSampleAuditLog
 import ir.amirreza.dashboard.CustomDashboard
+import ir.amirreza.dashboard.QuickLinksSection
+import ir.amirreza.dashboard.ServerStatusSection
+import ir.amirreza.dashboard.SystemOverviewDashboard
 import ir.amirreza.listeners.AdminListener
 import ir.amirreza.pages.AboutPage
 import ir.amirreza.pages.HelpPage
@@ -55,7 +58,33 @@ fun Application.configureAdmin(database: Database) {
         mediaPath = MEDIA_PATH
         registerTranslator(PersianKtorAdminTranslator)
         mediaRoot = MEDIA_ROOT
-        adminDashboard = CustomDashboard()
+        dashboard {
+            register(CustomDashboard())
+            register(SystemOverviewDashboard())
+
+            page("analytics") {
+                title = "Analytics"
+                icon = "/static/images/info.svg"
+                groupName = "Operations"
+                order = 1
+
+                configureLayout {
+                    addSection(section = ServerStatusSection(), height = "200px")
+                    addSection(section = QuickLinksSection(), height = "200px")
+                    media(maxWidth = "600px", template = listOf(1))
+                }
+            }
+
+            page("metrics") {
+                title = "Metrics"
+                groupName = "Monitoring"
+                order = 0
+
+                configureLayout {
+                    addSection(section = QuickLinksSection(), height = "250px")
+                }
+            }
+        }
         defaultAwsS3Bucket = "school-data"
         s3SignatureDuration = 1.minutes.toJavaDuration()
         loginFields = adminLoginFields

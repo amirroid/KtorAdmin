@@ -40,13 +40,13 @@
 * [Authentication](security/authentication.md)
 * [Security Considerations](security/security-considerations.md)
 
-## Dashboard
+## Dashboards
 
+* [Managing Dashboards](dashboard/managing-section-layouts.md)
 * [Chart Section](dashboard/chart-section.md)
 * [Text Section](dashboard/text-section.md)
 * [List Section](dashboard/list-section.md)
 * [Render Section](dashboard/render-section.md)
-* [Managing Section Layouts](dashboard/managing-section-layouts.md)
 
 ## Customization
 

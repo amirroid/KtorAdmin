@@ -182,12 +182,24 @@ debugMode = true // Set to true to enable debug mode for detailed logging
 
 KtorAdmin allows **custom dashboards, admin actions, and event listeners**.
 
-#### **Registering a Custom Admin Dashboard**
+#### **Registering Dashboards**
 
-Registers a **custom admin dashboard**.
+Register one or more dashboards using the `dashboard { }` DSL. Each dashboard can be class-based or defined inline. Set `isPrimary = true` on one dashboard to make it the default landing page.
 
 ```kotlin
-adminDashboard = MyCustomDashboard()
+install(KtorAdmin) {
+    dashboard {
+        register(MyDashboard())  // class-based
+
+        page("overview") {       // inline DSL
+            title = "Overview"
+            isPrimary = true
+            configureLayout {
+                addSection(section = MySection(), height = "200px")
+            }
+        }
+    }
+}
 ```
 
 [🔗 **More Details**](dashboard/managing-section-layouts.md)
