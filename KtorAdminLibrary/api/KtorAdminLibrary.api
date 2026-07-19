@@ -446,6 +446,8 @@ public final class ir/amirroid/ktoradmin/configuration/KtorAdminConfiguration {
 	public final fun audit (Lkotlin/jvm/functions/Function1;)Lir/amirroid/ktoradmin/audit/AuditLogger;
 	public final fun customPage (Lir/amirroid/ktoradmin/pages/CustomAdminPage;)V
 	public final fun customPage (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public final fun dashboard (Lir/amirroid/ktoradmin/dashboard/KtorAdminDashboard;)V
+	public final fun dashboard (Lkotlin/jvm/functions/Function1;)V
 	public final fun getAdminDashboard ()Lir/amirroid/ktoradmin/dashboard/KtorAdminDashboard;
 	public final fun getAdminPath ()Ljava/lang/String;
 	public final fun getAuthenticateName ()Ljava/lang/String;
@@ -524,10 +526,40 @@ public final class ir/amirroid/ktoradmin/csrf/CsrfUtilsKt {
 	public static final field CSRF_TOKEN_HEADER_NAME Ljava/lang/String;
 }
 
+public final class ir/amirroid/ktoradmin/dashboard/DashboardBuilder : ir/amirroid/ktoradmin/dashboard/KtorAdminDashboard {
+	public fun configure (Lir/amirroid/ktoradmin/dashboard/KtorAdminDashboard;)V
+	public fun getGroupName ()Ljava/lang/String;
+	public fun getIcon ()Ljava/lang/String;
+	public fun getOrder ()I
+	public fun getPath ()Ljava/lang/String;
+	public fun getTitle ()Ljava/lang/String;
+	public fun getVisible ()Z
+	public fun isPrimary ()Z
+	public fun setGroupName (Ljava/lang/String;)V
+	public fun setIcon (Ljava/lang/String;)V
+	public fun setOrder (I)V
+	public fun setPrimary (Z)V
+	public fun setTitle (Ljava/lang/String;)V
+	public fun setVisible (Z)V
+}
+
+public final class ir/amirroid/ktoradmin/dashboard/DashboardRegistry {
+	public final fun page (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lir/amirroid/ktoradmin/dashboard/DashboardBuilder;
+	public static synthetic fun page$default (Lir/amirroid/ktoradmin/dashboard/DashboardRegistry;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lir/amirroid/ktoradmin/dashboard/DashboardBuilder;
+	public final fun register (Lir/amirroid/ktoradmin/dashboard/KtorAdminDashboard;)V
+}
+
 public abstract class ir/amirroid/ktoradmin/dashboard/KtorAdminDashboard {
 	public fun <init> ()V
 	public abstract fun configure (Lir/amirroid/ktoradmin/dashboard/KtorAdminDashboard;)V
 	public final fun configureLayout (Lkotlin/jvm/functions/Function1;)V
+	public fun getGroupName ()Ljava/lang/String;
+	public fun getIcon ()Ljava/lang/String;
+	public fun getOrder ()I
+	public fun getPath ()Ljava/lang/String;
+	public fun getTitle ()Ljava/lang/String;
+	public fun getVisible ()Z
+	public fun isPrimary ()Z
 }
 
 public abstract interface class ir/amirroid/ktoradmin/dashboard/base/DashboardSection {
