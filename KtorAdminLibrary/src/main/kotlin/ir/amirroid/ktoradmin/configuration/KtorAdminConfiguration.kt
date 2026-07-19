@@ -11,6 +11,7 @@ import ir.amirroid.ktoradmin.audit.AuditFormatter
 import ir.amirroid.ktoradmin.audit.AuditLogger
 import ir.amirroid.ktoradmin.audit.FormattingAuditExecutionHandler
 import ir.amirroid.ktoradmin.csrf.CsrfManager
+import ir.amirroid.ktoradmin.dashboard.DashboardRegistry
 import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
 import ir.amirroid.ktoradmin.hikra.KtorAdminHikariCP
 import ir.amirroid.ktoradmin.listener.AdminEventListener
@@ -199,12 +200,67 @@ class KtorAdminConfiguration {
 
     /**
      * Custom admin dashboard configuration.
+     * @deprecated Use [dashboard] instead to register dashboards.
      */
+    @Deprecated(
+        message = "Use dashboard() to register dashboards instead.",
+        replaceWith = ReplaceWith("dashboard(value)"),
+    )
     var adminDashboard: KtorAdminDashboard?
-        get() = DynamicConfiguration.dashboard
+        get() = DynamicConfiguration.getPrimaryDashboard()?.dashboard
         set(value) {
-            DynamicConfiguration.dashboard = value
+            value?.let { DynamicConfiguration.registerDashboard(it) }
         }
+
+    /**
+     * Registers a dashboard in the admin interface.
+     *
+     * Each registered dashboard automatically creates its own page
+     * and appears in the sidebar navigation, organized by [KtorAdminDashboard.groupName].
+     *
+     * ```kotlin
+     * install(KtorAdmin) {
+     *     dashboard(MyDashboard())
+     *     dashboard(AnalyticsDashboard())
+     * }
+     * ```
+     *
+     * @param dashboard The dashboard instance to register.
+     */
+    fun dashboard(dashboard: KtorAdminDashboard) {
+        DynamicConfiguration.registerDashboard(dashboard)
+    }
+
+    /**
+     * DSL block for registering multiple dashboards.
+     *
+     * Supports both class-based registration via [DashboardRegistry.register]
+     * and inline DSL creation via [DashboardRegistry.page].
+     *
+     * ```kotlin
+     * install(KtorAdmin) {
+     *     dashboard {
+     *         // Register a class-based dashboard
+     *         register(MyDashboard())
+     *
+     *         // Create an inline dashboard
+     *         page("analytics") {
+     *             title = "Analytics"
+     *             groupName = "Insights"
+     *             configureLayout {
+     *                 addSection(section = RevenueChart(), height = "400px")
+     *             }
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * @param configure DSL builder block with [DashboardRegistry] as receiver.
+     */
+    fun dashboard(configure: DashboardRegistry.() -> Unit) {
+        val registry = DashboardRegistry().apply(configure)
+        registry.dashboards.forEach { DynamicConfiguration.registerDashboard(it) }
+    }
 
     /**
      * Active template for rendering admin views.

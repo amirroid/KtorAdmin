@@ -171,7 +171,15 @@ function openCustomPage(pagePath) {
 }
 
 function openDashboard() {
-    window.location.href = `/${adminPath}`
+    openDashboardByPath('')
+}
+
+function openDashboardByPath(path) {
+    if (path) {
+        window.location.href = `/${adminPath}/resources/${path}`
+    } else {
+        window.location.href = `/${adminPath}`
+    }
 }
 
 

@@ -12,6 +12,10 @@ import ir.amirroid.ktoradmin.models.chart.ChartField
 import ir.amirroid.ktoradmin.models.chart.TextDashboardAggregationFunction
 
 class CustomDashboard : KtorAdminDashboard() {
+    override val title = "Overview"
+    override val path = "overview"
+    override val isPrimary: Boolean = true
+
     override fun KtorAdminDashboard.configure() {
         configureLayout {
             addSection(section = TaskTextSection(), height = "200px")

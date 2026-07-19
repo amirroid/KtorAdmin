@@ -570,28 +570,46 @@
     </div>
     <div class="sidebar-scroll">
     <h4 class="group-text"></h4>
-    <button class="menu-item" onclick="openDashboard()">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
-             class="menu-icon">
-            <path
-                    d="M12.75 7.5H14.25C15.75 7.5 16.5 6.75 16.5 5.25V3.75C16.5 2.25 15.75 1.5 14.25 1.5H12.75C11.25 1.5 10.5 2.25 10.5 3.75V5.25C10.5 6.75 11.25 7.5 12.75 7.5Z"
-                    stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-                    stroke-linejoin="round"/>
-            <path
-                    d="M3.75 16.5H5.25C6.75 16.5 7.5 15.75 7.5 14.25V12.75C7.5 11.25 6.75 10.5 5.25 10.5H3.75C2.25 10.5 1.5 11.25 1.5 12.75V14.25C1.5 15.75 2.25 16.5 3.75 16.5Z"
-                    stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-                    stroke-linejoin="round"/>
-            <path
-                    d="M4.5 7.5C6.15685 7.5 7.5 6.15685 7.5 4.5C7.5 2.84315 6.15685 1.5 4.5 1.5C2.84315 1.5 1.5 2.84315 1.5 4.5C1.5 6.15685 2.84315 7.5 4.5 7.5Z"
-                    stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-                    stroke-linejoin="round"/>
-            <path
-                    d="M13.5 16.5C15.1569 16.5 16.5 15.1569 16.5 13.5C16.5 11.8431 15.1569 10.5 13.5 10.5C11.8431 10.5 10.5 11.8431 10.5 13.5C10.5 15.1569 11.8431 16.5 13.5 16.5Z"
-                    stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-                    stroke-linejoin="round"/>
-        </svg>
-        $translations['dashboard']
-    </button>
+    #if($dashboardGroups)
+        #foreach($dashboardGroup in $dashboardGroups)
+            #if($dashboardGroup.entries.size > 1 || $dashboardGroup.entries[0].groupName)
+                <h4 class="group-text">$dashboardGroup.group</h4>
+            #end
+            #foreach($entry in $dashboardGroup.entries)
+                <button class="menu-item #if($entry.path == $currentPagePath) selected #end"
+                        onclick="openDashboardByPath('$entry.path')">
+                    #if($entry.icon)
+                        <div class="menu-icon"
+                             style="-webkit-mask: url('$entry.icon') no-repeat center / contain; mask: url('$entry.icon') no-repeat center / contain;"></div>
+                    #end
+                    <span class="sidebar-item-name">$entry.title</span>
+                </button>
+            #end
+        #end
+    #else
+        <button class="menu-item" onclick="openDashboardByPath('')">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
+                 class="menu-icon">
+                <path
+                        d="M12.75 7.5H14.25C15.75 7.5 16.5 6.75 16.5 5.25V3.75C16.5 2.25 15.75 1.5 14.25 1.5H12.75C11.25 1.5 10.5 2.25 10.5 3.75V5.25C10.5 6.75 11.25 7.5 12.75 7.5Z"
+                        stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                        stroke-linejoin="round"/>
+                <path
+                        d="M3.75 16.5H5.25C6.75 16.5 7.5 15.75 7.5 14.25V12.75C7.5 11.25 6.75 10.5 5.25 10.5H3.75C2.25 10.5 1.5 11.25 1.5 12.75V14.25C1.5 15.75 2.25 16.5 3.75 16.5Z"
+                        stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                        stroke-linejoin="round"/>
+                <path
+                        d="M4.5 7.5C6.15685 7.5 7.5 6.15685 7.5 4.5C7.5 2.84315 6.15685 1.5 4.5 1.5C2.84315 1.5 1.5 2.84315 1.5 4.5C1.5 6.15685 2.84315 7.5 4.5 7.5Z"
+                        stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                        stroke-linejoin="round"/>
+                <path
+                        d="M13.5 16.5C15.1569 16.5 16.5 15.1569 16.5 13.5C16.5 11.8431 15.1569 10.5 13.5 10.5C11.8431 10.5 10.5 11.8431 10.5 13.5C10.5 15.1569 11.8431 16.5 13.5 16.5Z"
+                        stroke="#292D32" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                        stroke-linejoin="round"/>
+            </svg>
+            $translations['dashboard']
+        </button>
+    #end
     #foreach($group in $panelGroups)
         <h4 class="group-text">$group.group</h4>
         #foreach($panel in $group.panels)

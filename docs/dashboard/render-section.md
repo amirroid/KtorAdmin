@@ -82,7 +82,7 @@ class RecentOrdersSection : RenderDashboardSection() {
 
 ### **Adding to the Dashboard**
 
-Once you have defined your render section, add it to your dashboard layout using `addSection`:
+Once you have defined your render section, register a dashboard and add it to the layout using `addSection`:
 
 ```kotlin
 class CustomDashboard : KtorAdminDashboard() {
@@ -92,6 +92,12 @@ class CustomDashboard : KtorAdminDashboard() {
             addSection(section = RecentOrdersSection(), span = 2, height = "400px")
             media(maxWidth = "600px", template = listOf(1))
         }
+    }
+}
+
+install(KtorAdmin) {
+    dashboard {
+        register(CustomDashboard())
     }
 }
 ```

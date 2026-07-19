@@ -1,6 +1,7 @@
 package ir.amirroid.ktoradmin.configuration
 
 import ir.amirroid.ktoradmin.action.CustomAdminAction
+import ir.amirroid.ktoradmin.dashboard.DashboardEntry
 import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
 import ir.amirroid.ktoradmin.listener.AdminEventListener
 import ir.amirroid.ktoradmin.listener.CompositeAdminEventListener
@@ -70,6 +71,7 @@ internal object DynamicConfiguration {
                         current.add(value)
                         return
                     }
+
                     else -> {
                         val composite = CompositeAdminEventListener(listOf(current, value))
                         if (_currentEventListener.compareAndSet(current, composite)) return
@@ -86,8 +88,24 @@ internal object DynamicConfiguration {
     /** Lifetime duration for forms in milliseconds */
     var formsLifetime = 1_000 * 60L
 
-    /** Dashboard configuration instance */
-    var dashboard: KtorAdminDashboard? = null
+    /** Registered dashboards (Thread-safe) */
+    private val _dashboards = ConcurrentSkipListMap<String, DashboardEntry>()
+    val dashboards: List<DashboardEntry>
+        get() = _dashboards.values.toList()
+
+    /**
+     * Backward-compatible accessor for the primary dashboard.
+     * @deprecated Use [registerDashboard] and [getPrimaryDashboard] instead.
+     */
+    @Deprecated(
+        message = "Use registerDashboard() and getPrimaryDashboard() instead.",
+        replaceWith = ReplaceWith("getPrimaryDashboard()"),
+    )
+    var dashboard: KtorAdminDashboard?
+        get() = getPrimaryDashboard()?.dashboard
+        set(value) {
+            value?.let { registerDashboard(it) }
+        }
 
     /** Maximum age for authentication sessions */
     var authenticationSessionMaxAge: Duration = 10.days
@@ -255,6 +273,44 @@ internal object DynamicConfiguration {
      * @return The custom page entry, or null if not found.
      */
     fun getCustomPage(path: String): CustomPageEntry? = _customPageEntries[path]
+
+    /**
+     * Registers a dashboard in the admin interface.
+     *
+     * @param dashboard The dashboard instance to register.
+     * @throws IllegalStateException if a dashboard with the same path is already registered.
+     * @throws IllegalStateException if more than one dashboard is marked as primary.
+     */
+    fun registerDashboard(dashboard: KtorAdminDashboard) {
+        val entry = DashboardEntry.from(dashboard)
+
+        if (_dashboards.containsKey(entry.path)) {
+            throw IllegalStateException("A dashboard with path '${entry.path}' is already registered.")
+        }
+
+        if (entry.isPrimary && _dashboards.values.any { it.isPrimary }) {
+            throw IllegalStateException("Only one dashboard can be marked as primary.")
+        }
+
+        _dashboards[entry.path] = entry
+    }
+
+    /**
+     * Retrieves a dashboard entry by its path.
+     * @param path The URL path segment of the dashboard.
+     * @return The dashboard entry, or null if not found.
+     */
+    fun getDashboard(path: String): DashboardEntry? = _dashboards[path]
+
+    /**
+     * Returns the primary dashboard, or null if none registered.
+     */
+    fun getPrimaryDashboard(): DashboardEntry? = _dashboards.values.firstOrNull { it.isPrimary }
+
+    /**
+     * Returns all registered dashboards.
+     */
+    fun getAllDashboards(): List<DashboardEntry> = _dashboards.values.toList()
 
     fun getTranslator(languageCode: String?): KtorAdminTranslator =
         if (languageCode == null) {

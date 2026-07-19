@@ -5,6 +5,7 @@ import io.ktor.server.auth.principal
 import io.ktor.server.routing.*
 import ir.amirroid.ktoradmin.authentication.KtorAdminPrincipal
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
+import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
 import ir.amirroid.ktoradmin.dashboard.base.RenderDashboardSection
 import ir.amirroid.ktoradmin.dashboard.chart.ChartDashboardSection
 import ir.amirroid.ktoradmin.dashboard.grid.SectionInfo
@@ -44,18 +45,27 @@ internal fun Routing.configureGetRouting(
     withAuthenticate(authenticateName) {
         route("/${DynamicConfiguration.adminPath}") {
             get {
-                call.renderAdminPanel(panelGroups, panels)
+                val primaryDashboard = DynamicConfiguration.getPrimaryDashboard()
+                if (primaryDashboard != null) {
+                    call.renderAdminPanel(primaryDashboard.dashboard, primaryDashboard.path, panelGroups, panels)
+                } else {
+                    call.handlePanelList(panels, panelGroups)
+                }
             }
             route("/${Constants.RESOURCES_PATH}") {
-                // Database resource routes (specific, matched first)
                 route("/{pluralName}") {
                     get {
-                        val pagePath = call.parameters["pluralName"]!!
-                        val customPage = DynamicConfiguration.getCustomPage(pagePath)
-                        if (customPage != null) {
-                            call.handleCustomPage(panelGroups, pagePath)
+                        val pluralName = call.parameters["pluralName"]!!
+                        val dashboardEntry = DynamicConfiguration.getDashboard(pluralName)
+                        if (dashboardEntry != null) {
+                            call.renderAdminPanel(dashboardEntry.dashboard, dashboardEntry.path, panelGroups, panels)
                         } else {
-                            call.handlePanelList(panels, panelGroups)
+                            val customPage = DynamicConfiguration.getCustomPage(pluralName)
+                            if (customPage != null) {
+                                call.handleCustomPage(panelGroups, pluralName)
+                            } else {
+                                call.handlePanelList(panels, panelGroups)
+                            }
                         }
                     }
                     get("/add") {
@@ -85,7 +95,6 @@ internal fun Routing.configureGetRouting(
                         }
                     }
                 }
-                // Custom page routes (catch-all for 4+ segment nested paths)
                 get("/{pagePath...}") {
                     call.handleCustomPage(panelGroups)
                 }
@@ -95,14 +104,16 @@ internal fun Routing.configureGetRouting(
 }
 
 private suspend fun ApplicationCall.renderAdminPanel(
+    dashboard: KtorAdminDashboard,
+    dashboardPath: String,
     panelGroups: List<PanelGroup>,
     panels: List<AdminPanel>,
 ) {
     runCatching {
-        val sectionsData = getSectionsData(panels)
-        val sectionsInfo = getSectionsInfo()
-        val gridTemplate = DynamicConfiguration.dashboard?.grid?.gridTemplate ?: emptyList()
-        val mediaTemplates = DynamicConfiguration.dashboard?.grid?.mediaTemplates ?: emptyList()
+        val sectionsData = getSectionsData(dashboard, panels)
+        val sectionsInfo = getSectionsInfo(dashboard)
+        val gridTemplate = dashboard.grid.gridTemplate
+        val mediaTemplates = dashboard.grid.mediaTemplates
         val user = principal<KtorAdminPrincipal>()
         val username = user?.name
         if (user?.dashboardAccess == false) {
@@ -125,6 +136,7 @@ private suspend fun ApplicationCall.renderAdminPanel(
                     "sectionsInfo" to sectionsInfo,
                     "gridTemplate" to gridTemplate,
                     "mediaTemplates" to mediaTemplates,
+                    "currentPagePath" to dashboardPath,
                 ).apply {
                     username?.let {
                         put("username", it)
@@ -137,60 +149,59 @@ private suspend fun ApplicationCall.renderAdminPanel(
     }
 }
 
-internal suspend fun getSectionsData(panels: List<AdminPanel>): List<Any> =
+internal suspend fun getSectionsData(
+    dashboard: KtorAdminDashboard,
+    panels: List<AdminPanel>,
+): List<Any> =
     coroutineScope {
         val tablePanels = panels.filterIsInstance<AdminJdbcTable>()
         val collectionPanels = panels.filterIsInstance<AdminMongoCollection>()
 
-        // Using async to launch each section's data loading concurrently
-        DynamicConfiguration.dashboard?.grid?.let { grid ->
-            val sectionJobs =
-                grid.sections.map { section ->
-                    async {
-                        when (section) {
-                            is ChartDashboardSection -> {
-                                val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
-                                val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
-                                when {
-                                    table != null -> JdbcQueriesRepository.getChartData(table, section)
-                                    collection != null -> MongoClientRepository.getChartData(collection, section)
-                                    else -> null
-                                }
+        val sectionJobs =
+            dashboard.grid.sections.map { section ->
+                async {
+                    when (section) {
+                        is ChartDashboardSection -> {
+                            val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                            val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                            when {
+                                table != null -> JdbcQueriesRepository.getChartData(table, section)
+                                collection != null -> MongoClientRepository.getChartData(collection, section)
+                                else -> null
                             }
-
-                            is TextDashboardSection -> {
-                                val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
-                                val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
-                                when {
-                                    table != null -> JdbcQueriesRepository.getTextData(table, section)
-                                    collection != null -> MongoClientRepository.getTextData(collection, section)
-                                    else -> null
-                                }
-                            }
-
-                            is ListDashboardSection -> {
-                                val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
-                                val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
-                                when {
-                                    table != null -> JdbcQueriesRepository.getListSectionData(table, section)
-                                    collection != null -> MongoClientRepository.getListSectionData(collection, section)
-                                    else -> null
-                                }
-                            }
-
-                            is RenderDashboardSection -> {
-                                val html = section.render()
-                                RenderData(section = section, html = html)
-                            }
-
-                            else -> null
                         }
+
+                        is TextDashboardSection -> {
+                            val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                            val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                            when {
+                                table != null -> JdbcQueriesRepository.getTextData(table, section)
+                                collection != null -> MongoClientRepository.getTextData(collection, section)
+                                else -> null
+                            }
+                        }
+
+                        is ListDashboardSection -> {
+                            val table = tablePanels.firstOrNull { it.getTableName() == section.tableName }
+                            val collection = collectionPanels.firstOrNull { it.getCollectionName() == section.tableName }
+                            when {
+                                table != null -> JdbcQueriesRepository.getListSectionData(table, section)
+                                collection != null -> MongoClientRepository.getListSectionData(collection, section)
+                                else -> null
+                            }
+                        }
+
+                        is RenderDashboardSection -> {
+                            val html = section.render()
+                            RenderData(section = section, html = html)
+                        }
+
+                        else -> null
                     }
                 }
+            }
 
-            // Waiting for all jobs to complete and returning the results
-            return@coroutineScope sectionJobs.awaitAll().filterNotNull()
-        } ?: emptyList()
+        sectionJobs.awaitAll().filterNotNull()
     }
 
-internal fun getSectionsInfo(): List<SectionInfo> = DynamicConfiguration.dashboard?.grid?.toSectionInfo() ?: emptyList()
+internal fun getSectionsInfo(dashboard: KtorAdminDashboard): List<SectionInfo> = dashboard.grid.toSectionInfo()
