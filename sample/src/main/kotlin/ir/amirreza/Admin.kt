@@ -1,5 +1,7 @@
 package ir.amirreza
 
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import ir.amirreza.action.MyCustomAction
@@ -45,6 +47,21 @@ fun Application.configureAdmin(database: Database) {
             password = "your_password",
             driver = JDBCDrivers.POSTGRES
         )
+//        val dataSource =
+//            HikariDataSource(
+//                HikariConfig().apply {
+//                    jdbcUrl = "jdbc:postgresql://localhost:5432/postgres"
+//                    username = "amirreza"
+//                    password = "your_password"
+//                    driverClassName = JDBCDrivers.POSTGRES
+//                    isAutoCommit = false
+//                },
+//            )
+//
+//        jdbc(
+//            key = null,
+//            dataSource = dataSource
+//        )
         mongo(
             key = null,
             databaseName = "0@localhost",

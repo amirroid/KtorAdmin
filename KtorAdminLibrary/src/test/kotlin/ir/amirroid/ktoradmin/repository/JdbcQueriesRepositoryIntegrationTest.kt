@@ -31,7 +31,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class JdbcQueriesRepositoryIntegrationTest {
+abstract class JdbcQueriesRepositoryIntegrationTest {
+
+    protected open val autoCommit: Boolean = true
+
     private lateinit var dataSource: HikariDataSource
     private lateinit var usersTable: TestJdbcTable
     private lateinit var rolesTable: TestJdbcTable
@@ -74,6 +77,7 @@ class JdbcQueriesRepositoryIntegrationTest {
                     username = "sa"
                     password = ""
                     maximumPoolSize = 4
+                    isAutoCommit = autoCommit
                 },
             )
         KtorAdminHikariCP.defaultCustom(dataSource)
@@ -1053,7 +1057,10 @@ class JdbcQueriesRepositoryIntegrationTest {
     @Test
     fun `getAllReferences returns empty list when table is empty`() {
         deleteAllUsers()
-        dataSource.connection.use { it.execute("DELETE FROM roles") }
+        dataSource.connection.use { conn ->
+            conn.execute("DELETE FROM roles")
+            if (!conn.autoCommit) conn.commit()
+        }
         val items = JdbcQueriesRepository.getAllReferences(rolesTable)
         assertEquals(emptyList(), items)
     }
@@ -1820,6 +1827,7 @@ class JdbcQueriesRepositoryIntegrationTest {
                 conn.execute(
                     "INSERT INTO users (id, name, age, active, status, score, nickname, profile_id, organization_id) VALUES ($i, 'User$i', ${20 + i}, true, 'ACTIVE', $i.0, NULL, NULL, 1)",
                 )
+                if (!conn.autoCommit) conn.commit()
             }
         }
         val config = KtorAdminConfiguration()
@@ -1901,6 +1909,7 @@ class JdbcQueriesRepositoryIntegrationTest {
         dataSource.connection.use { conn ->
             conn.execute("DELETE FROM user_roles")
             conn.execute("DELETE FROM users")
+            if (!conn.autoCommit) conn.commit()
         }
     }
 
@@ -1995,6 +2004,10 @@ class JdbcQueriesRepositoryIntegrationTest {
             connection.execute("INSERT INTO roles (id, label) VALUES (2, 'Editor')")
             connection.execute("INSERT INTO roles (id, label) VALUES (3, 'Auditor')")
             connection.execute("INSERT INTO user_roles (user_id, role_id) VALUES (1, 1)")
+
+            if (!autoCommit) {
+                connection.autoCommit = true
+            }
         }
 
     private fun Connection.execute(sql: String) = createStatement().use { it.execute(sql) }
