@@ -1,6 +1,6 @@
 package ir.amirroid.ktoradmin.configuration
 
-import ir.amirroid.ktoradmin.action.CustomAdminAction
+import ir.amirroid.ktoradmin.action.KtorAdminAction
 import ir.amirroid.ktoradmin.dashboard.DashboardEntry
 import ir.amirroid.ktoradmin.dashboard.KtorAdminDashboard
 import ir.amirroid.ktoradmin.listener.AdminEventListener
@@ -44,13 +44,13 @@ internal object DynamicConfiguration {
         }
 
     /** Custom actions specific to certain admin panel sections (Thread-safe) */
-    private val _customActions = ConcurrentLinkedQueue<CustomAdminAction>()
-    val customActions: List<CustomAdminAction>
+    private val _customActions = ConcurrentLinkedQueue<KtorAdminAction>()
+    val customActions: List<KtorAdminAction>
         get() = _customActions.toList()
 
     /** Custom actions that apply to all admin panel sections (Thread-safe) */
-    private val _forAllCustomActions = ConcurrentLinkedQueue<CustomAdminAction>()
-    val forAllCustomActions: List<CustomAdminAction>
+    private val _forAllCustomActions = ConcurrentLinkedQueue<KtorAdminAction>()
+    val forAllCustomActions: List<KtorAdminAction>
         get() = _forAllCustomActions.toList()
 
     /** Current event listener for admin panel events (Thread-safe) */
@@ -216,7 +216,7 @@ internal object DynamicConfiguration {
      * @param customAction The custom action to register.
      * @throws IllegalArgumentException if an action with the same key is already registered.
      */
-    fun registerCustomAdminAction(customAction: CustomAdminAction) {
+    fun registerCustomAdminAction(customAction: KtorAdminAction) {
         if (_customActions.any { it.key == customAction.key }) {
             throw IllegalArgumentException("A custom action with key '${customAction.key}' is already registered.")
         }
@@ -228,7 +228,7 @@ internal object DynamicConfiguration {
      * @param customAction The custom action to register.
      * @throws IllegalArgumentException if an action with the same key is already registered.
      */
-    fun registerCustomAdminActionForAll(customAction: CustomAdminAction) {
+    fun registerCustomAdminActionForAll(customAction: KtorAdminAction) {
         if (_forAllCustomActions.any { it.key == customAction.key }) {
             throw IllegalArgumentException("A custom action with key '${customAction.key}' is already registered.")
         }

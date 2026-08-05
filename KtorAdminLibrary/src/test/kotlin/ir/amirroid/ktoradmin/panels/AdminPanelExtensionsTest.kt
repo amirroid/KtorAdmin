@@ -35,7 +35,7 @@ class AdminPanelExtensionsTest {
     @Test
     fun `should include registered custom actions and delete action`() {
         val action =
-            object : ir.amirroid.ktoradmin.action.CustomAdminAction {
+            object : ir.amirroid.ktoradmin.action.KtorAdminAction {
                 override var key: String = "EXPORT"
                 override val displayText: String = "Export"
 

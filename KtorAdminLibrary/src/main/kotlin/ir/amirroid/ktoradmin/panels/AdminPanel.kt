@@ -1,7 +1,7 @@
 package ir.amirroid.ktoradmin.panels
 
-import ir.amirroid.ktoradmin.action.CustomAdminAction
 import ir.amirroid.ktoradmin.action.DeleteAction
+import ir.amirroid.ktoradmin.action.KtorAdminAction
 import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.models.actions.Action
 import ir.amirroid.ktoradmin.models.order.Order
@@ -38,7 +38,7 @@ interface AdminPanel {
 
 fun List<AdminPanel>.findWithPluralName(name: String?) = find { it.getPluralName() == name }
 
-fun AdminPanel.getAllCustomActions(deleteActionDisplayText: String = "Delete selected items"): List<CustomAdminAction> {
+fun AdminPanel.getAllCustomActions(deleteActionDisplayText: String = "Delete selected items"): List<KtorAdminAction> {
     if (getCustomActions().any { it !in DynamicConfiguration.customActions.map { action -> action.key } }) {
         throw IllegalStateException("(${getPluralName()}) One or more custom actions are not registered in DynamicConfiguration.")
     }
