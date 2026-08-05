@@ -60,4 +60,6 @@ dependencies {
     implementation(libs.hibernate.core)
     implementation(libs.javax.persistence.api)
     implementation(libs.hibernate.validator)
+
+    implementation(libs.hikari)
 }

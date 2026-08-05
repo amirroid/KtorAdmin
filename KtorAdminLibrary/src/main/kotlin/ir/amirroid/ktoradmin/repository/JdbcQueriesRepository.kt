@@ -53,18 +53,49 @@ import kotlin.collections.plus
  */
 internal object JdbcQueriesRepository {
     /**
-     * Executes database operations using the specified data source.
-     * @param lambda Operation to execute within the database session
-     * @return Result of the operation
+     * Executes a database operation using a dedicated session.
+     *
+     * If the underlying connection has auto-commit disabled, the transaction is
+     * committed on success and rolled back on failure.
      */
-    private fun <T> AdminJdbcTable.usingDataSource(lambda: (Session) -> T): T {
+    private fun <T> AdminJdbcTable.usingDataSource(block: (Session) -> T): T {
         val dataSource =
-            getDatabaseKey()?.let { KtorAdminHikariCP.dataSource(it) }
+            getDatabaseKey()?.let(KtorAdminHikariCP::dataSource)
                 ?: KtorAdminHikariCP.dataSource()
+
         val session = session(dataSource)
-        val invoke = using(session, lambda)
-        session.close()
-        return invoke
+
+        return try {
+            session.executeInTransaction(block)
+        } finally {
+            session.close()
+        }
+    }
+
+    /**
+     * Executes the given block inside the current session.
+     *
+     * When auto-commit is disabled, the transaction is committed if the operation
+     * succeeds or rolled back if an exception occurs.
+     */
+    private inline fun <T> Session.executeInTransaction(block: (Session) -> T): T {
+        val transactional = !connection.autoCommit
+
+        return try {
+            val result = block(this)
+
+            if (transactional) {
+                connection.commit()
+            }
+
+            result
+        } catch (t: Throwable) {
+            if (transactional) {
+                runCatching { connection.rollback() }
+            }
+
+            throw t
+        }
     }
 
     /**
@@ -883,6 +914,7 @@ internal object JdbcQueriesRepository {
                                             val joinColumn = reference.foreignKey
                                             "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
                                         }
+
                                         else -> null
                                     }
                                 if (joinCondition != null && joinCondition !in joins) {
@@ -936,6 +968,7 @@ internal object JdbcQueriesRepository {
                                                 val joinColumn = reference.foreignKey
                                                 "LEFT JOIN $joinTable AS $joinAlias ON $currentTable.$referenceColumn = $joinAlias.$joinColumn"
                                             }
+
                                             else -> null
                                         }
                                     if (joinCondition != null && joinCondition !in joins) {
