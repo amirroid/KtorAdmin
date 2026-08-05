@@ -15,7 +15,8 @@ public final class ir/amirroid/ktoradmin/action/ActionOptions {
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class ir/amirroid/ktoradmin/action/CustomAdminAction {
+public abstract interface class ir/amirroid/ktoradmin/action/KtorAdminAction {
+	public fun getAllowEditPageRedirect ()Z
 	public abstract fun getDisplayText ()Ljava/lang/String;
 	public abstract fun getKey ()Ljava/lang/String;
 	public fun getOptions ()Lir/amirroid/ktoradmin/action/ActionOptions;
@@ -23,8 +24,9 @@ public abstract interface class ir/amirroid/ktoradmin/action/CustomAdminAction {
 	public abstract fun setKey (Ljava/lang/String;)V
 }
 
-public final class ir/amirroid/ktoradmin/action/CustomAdminAction$DefaultImpls {
-	public static fun getOptions (Lir/amirroid/ktoradmin/action/CustomAdminAction;)Lir/amirroid/ktoradmin/action/ActionOptions;
+public final class ir/amirroid/ktoradmin/action/KtorAdminAction$DefaultImpls {
+	public static fun getAllowEditPageRedirect (Lir/amirroid/ktoradmin/action/KtorAdminAction;)Z
+	public static fun getOptions (Lir/amirroid/ktoradmin/action/KtorAdminAction;)Lir/amirroid/ktoradmin/action/ActionOptions;
 }
 
 public final class ir/amirroid/ktoradmin/annotation_providers/ExposedTableAnnotationProcessorProvider : com/google/devtools/ksp/processing/SymbolProcessorProvider {
@@ -476,8 +478,8 @@ public final class ir/amirroid/ktoradmin/configuration/KtorAdminConfiguration {
 	public static synthetic fun mongo$default (Lir/amirroid/ktoradmin/configuration/KtorAdminConfiguration;Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/mongo/MongoServerAddress;Lir/amirroid/ktoradmin/mongo/MongoCredential;ILjava/lang/Object;)V
 	public final fun provideMenu (Lkotlin/jvm/functions/Function1;)V
 	public final fun registerAuditLogger (Lir/amirroid/ktoradmin/audit/AuditLogger;)V
-	public final fun registerCustomAdminAction (Lir/amirroid/ktoradmin/action/CustomAdminAction;)V
-	public final fun registerCustomAdminActionForAll (Lir/amirroid/ktoradmin/action/CustomAdminAction;)V
+	public final fun registerCustomAdminAction (Lir/amirroid/ktoradmin/action/KtorAdminAction;)V
+	public final fun registerCustomAdminActionForAll (Lir/amirroid/ktoradmin/action/KtorAdminAction;)V
 	public final fun registerDefaultValueProvider (Lir/amirroid/ktoradmin/provider/defaultvalue/ClientDefaultValueProvider;)V
 	public final fun registerEventListener (Lir/amirroid/ktoradmin/listener/AdminEventListener;)V
 	public final fun registerPreview (Lir/amirroid/ktoradmin/preview/KtorAdminPreview;)V
