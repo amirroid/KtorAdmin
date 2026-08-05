@@ -32,7 +32,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 abstract class JdbcQueriesRepositoryIntegrationTest {
-
     protected open val autoCommit: Boolean = true
 
     private lateinit var dataSource: HikariDataSource
