@@ -5,13 +5,22 @@ package ir.amirroid.ktoradmin.action
  *
  * @property key A unique identifier for the action.
  */
-interface CustomAdminAction {
+interface KtorAdminAction {
     var key: String
 
     /**
      * Gets the human-readable display text for this action.
      */
     val displayText: String
+
+    /**
+     * Defines whether the action can redirect back to an edit/upsert page after execution.
+     *
+     * If false and the previous page is an edit page, the user will be redirected
+     * to the resource list page instead.
+     */
+    val allowEditPageRedirect: Boolean
+        get() = false
 
     /**
      * Configurable options for how this action appears in the admin panel's edit/upsert pages.

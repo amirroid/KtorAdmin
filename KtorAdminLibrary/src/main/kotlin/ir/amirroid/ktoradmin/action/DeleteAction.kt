@@ -19,8 +19,10 @@ import ir.amirroid.ktoradmin.repository.MongoClientRepository
 internal class DeleteAction(
     private val panel: AdminPanel,
     override val displayText: String,
-) : CustomAdminAction {
+) : KtorAdminAction {
     override var key: String = "DELETE"
+
+    override val allowEditPageRedirect: Boolean = false
 
     override val options: ActionOptions =
         ActionOptions(

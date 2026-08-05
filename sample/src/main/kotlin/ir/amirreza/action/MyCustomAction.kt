@@ -1,9 +1,9 @@
 package ir.amirreza.action
 
 import ir.amirroid.ktoradmin.action.ActionOptions
-import ir.amirroid.ktoradmin.action.CustomAdminAction
+import ir.amirroid.ktoradmin.action.KtorAdminAction
 
-class MyCustomAction : CustomAdminAction {
+class MyCustomAction : KtorAdminAction {
     override var key: String = "delete"
     override val displayText: String
         get() = "Delete all"

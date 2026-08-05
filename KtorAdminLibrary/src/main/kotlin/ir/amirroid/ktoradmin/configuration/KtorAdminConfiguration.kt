@@ -2,7 +2,7 @@ package ir.amirroid.ktoradmin.configuration
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import ir.amirroid.ktoradmin.action.CustomAdminAction
+import ir.amirroid.ktoradmin.action.KtorAdminAction
 import ir.amirroid.ktoradmin.audit.AuditDestination
 import ir.amirroid.ktoradmin.audit.AuditErrorHandler
 import ir.amirroid.ktoradmin.audit.AuditEventListener
@@ -293,14 +293,14 @@ class KtorAdminConfiguration {
     /**
      * Registers a custom admin action.
      */
-    fun registerCustomAdminAction(action: CustomAdminAction) {
+    fun registerCustomAdminAction(action: KtorAdminAction) {
         DynamicConfiguration.registerCustomAdminAction(action)
     }
 
     /**
      * Registers a custom admin action for all users.
      */
-    fun registerCustomAdminActionForAll(action: CustomAdminAction) {
+    fun registerCustomAdminActionForAll(action: KtorAdminAction) {
         DynamicConfiguration.registerCustomAdminActionForAll(action)
     }
 

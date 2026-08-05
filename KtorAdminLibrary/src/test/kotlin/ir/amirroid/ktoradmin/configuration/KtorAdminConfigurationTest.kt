@@ -1,6 +1,6 @@
 package ir.amirroid.ktoradmin.configuration
 
-import ir.amirroid.ktoradmin.action.CustomAdminAction
+import ir.amirroid.ktoradmin.action.KtorAdminAction
 import ir.amirroid.ktoradmin.mapper.KtorAdminValueMapper
 import ir.amirroid.ktoradmin.models.FileDeleteStrategy
 import ir.amirroid.ktoradmin.models.forms.LoginFiled
@@ -98,7 +98,7 @@ class KtorAdminConfigurationTest {
         }
 
     private fun action(key: String) =
-        object : CustomAdminAction {
+        object : KtorAdminAction {
             override var key: String = key
             override val displayText: String = key
 

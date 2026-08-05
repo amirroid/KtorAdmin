@@ -4,6 +4,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.csrf.CsrfManager
 import ir.amirroid.ktoradmin.panels.AdminJdbcTable
 import ir.amirroid.ktoradmin.panels.AdminMongoCollection
@@ -78,13 +79,41 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
 
                     // Execute the action and redirect
                     action.performAction(name, ids)
+
                     val previewsUrl =
-                        call.request.headers[HttpHeaders.Referrer] ?: "/admin/${Constants.RESOURCES_PATH}/$pluralName"
+                        getActionRedirectUrl(
+                            referrer = call.request.headers[HttpHeaders.Referrer],
+                            pluralName = pluralName!!,
+                            allowEditPageRedirect = action.allowEditPageRedirect,
+                        )
+
                     call.respondRedirect(previewsUrl)
                 }.onFailure {
                     badRequest("Error: ${it.message}", it)
                 }
             }
         }
+    }
+}
+
+private fun getActionRedirectUrl(
+    referrer: String?,
+    pluralName: String,
+    allowEditPageRedirect: Boolean,
+): String {
+    val listUrl = "/${DynamicConfiguration.adminPath}/${Constants.RESOURCES_PATH}/$pluralName"
+
+    if (referrer == null) {
+        return listUrl
+    }
+
+    val isEditPage =
+        Regex("/${Constants.RESOURCES_PATH}/[^/]+/[^/]+$")
+            .containsMatchIn(referrer)
+
+    return if (isEditPage && !allowEditPageRedirect) {
+        listUrl
+    } else {
+        referrer
     }
 }
