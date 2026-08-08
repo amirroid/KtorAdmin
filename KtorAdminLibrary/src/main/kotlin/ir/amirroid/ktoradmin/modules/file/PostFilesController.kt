@@ -11,6 +11,7 @@ import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.repository.FileRepository
 import ir.amirroid.ktoradmin.utils.notFound
 import ir.amirroid.ktoradmin.utils.withAuthenticate
+import ir.amirroid.ktoradmin.validators.checkHasRole
 
 fun Routing.handleGenerateFileUrl(
     panels: List<AdminPanel>,
@@ -36,49 +37,47 @@ fun Routing.handleGenerateFileUrl(
                 return@post
             }
             val (pluralName, itemName) = field
-            val itemUploadTarget =
-                panels
-                    .firstOrNull {
-                        it.getPluralName() == pluralName
-                    }?.let { panel ->
-                        if (panel.isShowInAdminPanel().not()) {
-                            return@post call.notFound("No table found with plural name: $pluralName")
-                        }
-                        when (panel) {
-                            is AdminJdbcTable ->
-                                panel
-                                    .getAllColumns()
-                                    .firstOrNull {
-                                        it.columnName == itemName
-                                    }?.uploadTarget
-
-                            is AdminMongoCollection ->
-                                panel
-                                    .getAllFields()
-                                    .firstOrNull {
-                                        it.fieldName == itemName
-                                    }?.uploadTarget
-
-                            else -> null
-                        }
-                    }
-            if (itemUploadTarget == null) {
-                call.respond(
-                    message = mapOf("ir/amirroid/ktoradmin/errorirroid/ktoradmin/error" to "Field does not exist"),
-                    status = HttpStatusCode.BadRequest,
-                )
-                return@post
+            val panel = panels.firstOrNull { it.getPluralName() == pluralName }
+            if (panel == null || panel.isShowInAdminPanel().not()) {
+                return@post call.notFound("No table found with plural name: $pluralName")
             }
-            FileRepository
-                .generateMediaUrl(
-                    fileName = fileName,
-                    uploadTarget = itemUploadTarget,
-                    call = call,
-                ).let {
+            call.checkHasRole(panel) {
+                val itemUploadTarget =
+                    when (panel) {
+                        is AdminJdbcTable ->
+                            panel
+                                .getAllColumns()
+                                .firstOrNull {
+                                    it.columnName == itemName
+                                }?.uploadTarget
+
+                        is AdminMongoCollection ->
+                            panel
+                                .getAllFields()
+                                .firstOrNull {
+                                    it.fieldName == itemName
+                                }?.uploadTarget
+
+                        else -> null
+                    }
+                if (itemUploadTarget == null) {
                     call.respond(
-                        mapOf("url" to it),
+                        message = mapOf("ir/amirroid/ktoradmin/errorirroid/ktoradmin/error" to "Field does not exist"),
+                        status = HttpStatusCode.BadRequest,
                     )
+                    return@checkHasRole
                 }
+                FileRepository
+                    .generateMediaUrl(
+                        fileName = fileName,
+                        uploadTarget = itemUploadTarget,
+                        call = call,
+                    ).let {
+                        call.respond(
+                            mapOf("url" to it),
+                        )
+                    }
+            }
         }
     }
 }

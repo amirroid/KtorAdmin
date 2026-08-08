@@ -10,6 +10,7 @@ import ir.amirroid.ktoradmin.panels.AdminPanel
 internal class TestJdbcTable(
     private val columns: Collection<ColumnSet> = emptyList(),
     private val tableName: String = "test_table",
+    private val pluralName: String = "Tests",
     private val panelListColumns: List<String> = columns.map { it.columnName },
     private val filters: List<String> = emptyList(),
     private val searches: List<String> = emptyList(),
@@ -18,6 +19,7 @@ internal class TestJdbcTable(
     private val databaseKey: String? = null,
     private val defaultActions: List<Action> = emptyList(),
     private val customActions: List<String> = emptyList(),
+    private val accessRoles: List<String>? = null,
 ) : AdminJdbcTable {
     override fun getAllColumns(): Collection<ColumnSet> = columns
 
@@ -25,9 +27,9 @@ internal class TestJdbcTable(
 
     override fun getPanelListColumns(): List<String> = panelListColumns
 
-    override fun getSingularName(): String = "Test"
+    override fun getSingularName(): String = pluralName.removeSuffix("s")
 
-    override fun getPluralName(): String = "Tests"
+    override fun getPluralName(): String = pluralName
 
     override fun getGroupName(): String? = null
 
@@ -41,7 +43,7 @@ internal class TestJdbcTable(
 
     override fun getFilters(): List<String> = filters
 
-    override fun getAccessRoles(): List<String>? = null
+    override fun getAccessRoles(): List<String>? = accessRoles
 
     override fun getDefaultOrder(): Order? = defaultOrder
 
@@ -73,6 +75,7 @@ internal fun adminPanel(
     pluralName: String,
     customActions: List<String> = emptyList(),
     defaultActions: List<Action> = emptyList(),
+    accessRoles: List<String>? = null,
 ): AdminPanel =
     object : AdminPanel {
         override fun getSingularName(): String = pluralName.removeSuffix("s")
@@ -91,7 +94,7 @@ internal fun adminPanel(
 
         override fun getFilters(): List<String> = emptyList()
 
-        override fun getAccessRoles(): List<String>? = null
+        override fun getAccessRoles(): List<String>? = accessRoles
 
         override fun getDefaultOrder(): Order? = null
 

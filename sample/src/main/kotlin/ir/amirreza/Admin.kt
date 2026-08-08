@@ -71,7 +71,7 @@ fun Application.configureAdmin(database: Database) {
             ),
         )
         fileDeleteStrategy = FileDeleteStrategy.DELETE
-//        authenticateName = "admin"
+        authenticateName = "admin"
         mediaPath = MEDIA_PATH
         registerTranslator(PersianKtorAdminTranslator)
         mediaRoot = MEDIA_ROOT

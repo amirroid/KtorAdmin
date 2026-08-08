@@ -55,12 +55,11 @@ internal suspend fun RoutingContext.handleSaveConfirmation(panels: List<AdminPan
             call.respondText("Primary key is missing for: $pluralName", status = HttpStatusCode.BadRequest)
 
         else -> {
-            if (!panel.hasEditAction) {
-                call.badRequest("Edit action is disabled")
-                return
-            }
-
             call.checkHasRole(panel) {
+                if (!panel.hasEditAction) {
+                    call.badRequest("Edit action is disabled")
+                    return@checkHasRole
+                }
                 val parameters = call.receiveParameters()
                 val csrfToken = parameters[CSRF_TOKEN_FIELD_NAME]
 
