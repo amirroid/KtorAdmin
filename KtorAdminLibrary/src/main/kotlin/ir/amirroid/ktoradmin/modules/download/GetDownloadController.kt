@@ -19,6 +19,7 @@ import ir.amirroid.ktoradmin.utils.invalidateRequest
 import ir.amirroid.ktoradmin.utils.notFound
 import ir.amirroid.ktoradmin.utils.serverError
 import ir.amirroid.ktoradmin.utils.withAuthenticate
+import ir.amirroid.ktoradmin.validators.checkHasRole
 
 fun Routing.configureDownloadFilesRouting(
     authenticateName: String?,
@@ -32,26 +33,28 @@ fun Routing.configureDownloadFilesRouting(
                     return@get call.badRequest("To use this feature, please enable this option in the configuration.")
                 }
                 val pluralName = call.parameters["pluralName"]
-                val csrfToken = call.parameters[CSRF_TOKEN_FIELD_NAME]
-                if (CsrfManager.validateToken(csrfToken).not()) {
-                    return@get call.invalidateRequest()
-                }
                 val panel = panels.find { it.getPluralName() == pluralName }
                 if (panel == null || panel.isShowInAdminPanel().not()) {
                     call.notFound("No table found with plural name: $pluralName")
                 } else {
-                    call.response.header(
-                        HttpHeaders.ContentDisposition,
-                        "attachment; filename=\"${pluralName}_data.csv\"",
-                    )
-                    val file =
-                        when (panel) {
-                            is AdminJdbcTable -> JdbcQueriesRepository.getAllDataAsCsvFile(panel)
-                            is AdminMongoCollection -> MongoClientRepository.getAllDataAsCsvFile(panel)
-                            else -> "return@get"
+                    call.checkHasRole(panel) {
+                        val csrfToken = call.parameters[CSRF_TOKEN_FIELD_NAME]
+                        if (CsrfManager.validateToken(csrfToken).not()) {
+                            return@checkHasRole call.invalidateRequest()
                         }
-                    val bytes = file.toByteArray()
-                    call.respondBytes(contentType = ContentType.Text.CSV) { bytes }
+                        call.response.header(
+                            HttpHeaders.ContentDisposition,
+                            "attachment; filename=\"${pluralName}_data.csv\"",
+                        )
+                        val file =
+                            when (panel) {
+                                is AdminJdbcTable -> JdbcQueriesRepository.getAllDataAsCsvFile(panel)
+                                is AdminMongoCollection -> MongoClientRepository.getAllDataAsCsvFile(panel)
+                                else -> "return@checkHasRole"
+                            }
+                        val bytes = file.toByteArray()
+                        call.respondBytes(contentType = ContentType.Text.CSV) { bytes }
+                    }
                 }
             }.onFailure {
                 call.serverError(it.message.orEmpty(), it)
@@ -66,33 +69,36 @@ fun Routing.configureDownloadFilesRouting(
                 }
                 val pluralName = call.parameters["pluralName"]
                 val primaryKey = call.parameters["primaryKey"] ?: return@get call.badRequest("Primary key is missing")
-                val csrfToken = call.parameters[CSRF_TOKEN_FIELD_NAME]
-
-                if (!CsrfManager.validateToken(csrfToken)) {
-                    return@get call.invalidateRequest()
-                }
 
                 val panel =
                     panels.find { it.getPluralName() == pluralName }?.takeIf { it.isShowInAdminPanel() }
                         ?: return@get call.notFound("No table found with plural name: $pluralName")
 
-                val font =
-                    (DynamicConfiguration.template as? DefaultAdminTemplate)
-                        ?.settings
-                        ?.typography
-                        ?.font
-                val regularFontPath = font?.regular ?: "/static/font/IstokWeb-Regular.ttf"
-                val boldFontPath = font?.bold ?: "/static/font/IstokWeb-Bold.ttf"
+                call.checkHasRole(panel) {
+                    val csrfToken = call.parameters[CSRF_TOKEN_FIELD_NAME]
 
-                val pdfData =
-                    PdfHelper.generatePdf(panel, primaryKey, call, regularFontPath, boldFontPath)
-                        ?: return@get call.badRequest("Error generating PDF")
+                    if (!CsrfManager.validateToken(csrfToken)) {
+                        return@checkHasRole call.invalidateRequest()
+                    }
 
-                call.response.header(
-                    HttpHeaders.ContentDisposition,
-                    "attachment; filename=\"output_${pluralName}_$primaryKey.pdf\"",
-                )
-                call.respondBytes(pdfData, ContentType.Application.Pdf)
+                    val font =
+                        (DynamicConfiguration.template as? DefaultAdminTemplate)
+                            ?.settings
+                            ?.typography
+                            ?.font
+                    val regularFontPath = font?.regular ?: "/static/font/IstokWeb-Regular.ttf"
+                    val boldFontPath = font?.bold ?: "/static/font/IstokWeb-Bold.ttf"
+
+                    val pdfData =
+                        PdfHelper.generatePdf(panel, primaryKey, this, regularFontPath, boldFontPath)
+                            ?: return@checkHasRole call.badRequest("Error generating PDF")
+
+                    call.response.header(
+                        HttpHeaders.ContentDisposition,
+                        "attachment; filename=\"output_${pluralName}_$primaryKey.pdf\"",
+                    )
+                    call.respondBytes(pdfData, ContentType.Application.Pdf)
+                }
             }.onFailure {
                 call.serverError(it.message.orEmpty(), it)
             }

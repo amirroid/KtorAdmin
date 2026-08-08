@@ -14,6 +14,7 @@ import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.panels.findWithPluralName
 import ir.amirroid.ktoradmin.repository.JdbcQueriesRepository
 import ir.amirroid.ktoradmin.utils.withAuthenticate
+import ir.amirroid.ktoradmin.validators.checkHasRole
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -66,47 +67,49 @@ internal fun Routing.configureAutoCompleteRouting(
                     return@post
                 }
 
-                val columnSet = ownerTable.getAllColumns().find { it.columnName == columnName }
-                if (columnSet == null || !columnSet.hasAutoComplete) {
-                    call.respondText { "Autocomplete field not found: $columnName" }
-                    return@post
+                call.checkHasRole(ownerTable) {
+                    val columnSet = ownerTable.getAllColumns().find { it.columnName == columnName }
+                    if (columnSet == null || !columnSet.hasAutoComplete) {
+                        call.respondText { "Autocomplete field not found: $columnName" }
+                        return@checkHasRole
+                    }
+
+                    val reference = columnSet.reference
+                    if (reference == null || (reference !is Reference.ManyToOne && reference !is Reference.OneToOne)) {
+                        call.respondText { "Invalid reference type for autocomplete field: $columnName" }
+                        return@checkHasRole
+                    }
+
+                    val referencedTableName = reference.tableName
+                    val referencedTable =
+                        panels.find { panel ->
+                            panel is AdminJdbcTable && panel.getTableName() == referencedTableName
+                        } as? AdminJdbcTable
+
+                    if (referencedTable == null) {
+                        call.respondText { "Referenced table not found: $referencedTableName" }
+                        return@checkHasRole
+                    }
+
+                    val request = call.receive<AutoCompleteRequest>()
+                    val search = request.search.takeIf { it.isNotBlank() }
+                    val page = request.page.coerceAtLeast(0)
+
+                    val pageSize = DynamicConfiguration.autocompletePageSize
+
+                    val searchFields = columnSet.autoCompleteSearchFields
+
+                    val results =
+                        JdbcQueriesRepository.searchReferences(
+                            table = referencedTable,
+                            search = search,
+                            page = page,
+                            pageSize = pageSize,
+                            searchFields = searchFields,
+                        )
+
+                    call.respond(results)
                 }
-
-                val reference = columnSet.reference
-                if (reference == null || (reference !is Reference.ManyToOne && reference !is Reference.OneToOne)) {
-                    call.respondText { "Invalid reference type for autocomplete field: $columnName" }
-                    return@post
-                }
-
-                val referencedTableName = reference.tableName
-                val referencedTable =
-                    panels.find { panel ->
-                        panel is AdminJdbcTable && panel.getTableName() == referencedTableName
-                    } as? AdminJdbcTable
-
-                if (referencedTable == null) {
-                    call.respondText { "Referenced table not found: $referencedTableName" }
-                    return@post
-                }
-
-                val request = call.receive<AutoCompleteRequest>()
-                val search = request.search.takeIf { it.isNotBlank() }
-                val page = request.page.coerceAtLeast(0)
-
-                val pageSize = DynamicConfiguration.autocompletePageSize
-
-                val searchFields = columnSet.autoCompleteSearchFields
-
-                val results =
-                    JdbcQueriesRepository.searchReferences(
-                        table = referencedTable,
-                        search = search,
-                        page = page,
-                        pageSize = pageSize,
-                        searchFields = searchFields,
-                    )
-
-                call.respond(results)
             }
         }
     }

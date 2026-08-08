@@ -35,9 +35,9 @@ internal suspend fun ApplicationCall.handleCustomPage(
         val user = principal<KtorAdminPrincipal>()
         val username = user?.name
 
-        if (page.permissions != null && user != null) {
-            val userRoles = user.roles ?: emptyList()
-            if (page.permissions.none { it in userRoles }) {
+        if (page.permissions != null) {
+            val userRoles = user?.roles ?: emptyList()
+            if (user == null || page.permissions.none { it in userRoles }) {
                 return forbidden("You do not have permission to access this page.")
             }
         }

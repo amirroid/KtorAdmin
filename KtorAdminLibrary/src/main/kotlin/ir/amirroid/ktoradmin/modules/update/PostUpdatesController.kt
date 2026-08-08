@@ -71,11 +71,11 @@ internal suspend fun RoutingContext.handleUpdateRequest(panels: List<AdminPanel>
         call.notFound("No table found with plural name: $pluralName")
         return
     }
-    if (panel.hasEditAction.not()) {
-        call.badRequest("Edit action is disabled")
-        return
-    }
     call.checkHasRole(panel) {
+        if (panel.hasEditAction.not()) {
+            call.badRequest("Edit action is disabled")
+            return@checkHasRole
+        }
         runCatching {
             when (panel) {
                 is AdminJdbcTable -> updateData(pluralName, primaryKey, panel, panels)

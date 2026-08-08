@@ -62,7 +62,6 @@ private fun generateErrorHtml(
     """
         <html>
         <head>
-            <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
             <style>
                 * {
                     margin: 0;

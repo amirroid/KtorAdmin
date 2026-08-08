@@ -39,13 +39,12 @@ internal suspend fun RoutingContext.handleActions(panels: List<AdminPanel>) {
         panel == null || panel.isShowInAdminPanel().not() -> {
             call.notFound("No panel found with plural name: $pluralName")
         }
-        // Handle case when action is not found
-        action == null -> {
-            call.notFound("Action '$actionName' not found in panel with plural name: $pluralName")
-        }
-        // Process the action if both panel and action exist
         else -> {
             call.checkHasRole(panel) {
+                if (action == null) {
+                    call.notFound("Action '$actionName' not found in panel with plural name: $pluralName")
+                    return@checkHasRole
+                }
                 runCatching {
                     // Parse form data and validate CSRF token
                     val form = call.receiveParameters()
