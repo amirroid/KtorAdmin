@@ -33,6 +33,7 @@
 * [AutoNowDate](features/autonowdate.md)
 * [Self-Adaptive Audit Log](features/audit-log.md)
 * [Custom Pages](features/custom-pages.md)
+* [Inline Editing](features/inline-editing.md)
 * [Additional Features](features/additional-features.md)
 
 ## Security

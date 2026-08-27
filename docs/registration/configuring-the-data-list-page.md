@@ -86,6 +86,18 @@ object Tasks : Table("tasks")
 
 ***
 
+#### **4. Inline Editing with `@InlineEditable`**
+
+You can enable direct in-table editing for specific columns using the `@InlineEditable` annotation:
+
+* **Text/Numeric Fields**: Annotated fields allow quick modification directly in the table. Press <kbd>Enter</kbd> or click outside to save, or <kbd>Escape</kbd> to cancel.
+* **Boolean Fields**: Annotated boolean fields are rendered as clickable checkboxes that toggle and persist status in real time.
+* **Security & Validation**: Every change is validated server-side via `PATCH` requests with CSRF protection, role authorization, and event notifications.
+
+For detailed information, see the [Inline Editing Documentation](../features/inline-editing.md).
+
+***
+
 #### **Conclusion**
 
-These annotations provide flexibility in managing how data is displayed, searched, and filtered in the list view. By using `@PanelDisplayList`, `@AdminQueries`, and `@DefaultOrder`, you can customize the admin panel's data presentation efficiently.
+These annotations and features provide flexibility in managing how data is displayed, searched, filtered, and edited in the list view. By using `@PanelDisplayList`, `@AdminQueries`, `@DefaultOrder`, and Inline Editing, you can customize the admin panel's data presentation and workflows efficiently.

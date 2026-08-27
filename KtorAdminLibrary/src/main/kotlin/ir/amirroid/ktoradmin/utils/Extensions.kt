@@ -48,6 +48,7 @@ internal fun ColumnSet.toSuitableStringForFile() =
     |    preview = ${preview?.let { "\"${it}\"" }},
     |    hasAutoComplete = $hasAutoComplete,
     |    autoCompleteSearchFields = ${autoCompleteSearchFields.toSuitableStringForFile()},
+    |    hasInlineEdit = $hasInlineEdit,
     |)
 """.trimMargin("|")
 
@@ -79,6 +80,7 @@ internal fun FieldSet.toSuitableStringForFile() =
     |    autoNowDate = ${autoNowDate?.toFormattedString()},
     |    preview = ${preview?.let { "\"${it}\"" }},
     |    hasConfirmation = $hasConfirmation,
+    |    hasInlineEdit = $hasInlineEdit,
     |)
 """.trimMargin("|")
 
