@@ -748,6 +748,7 @@ public final class ir/amirroid/ktoradmin/models/ColumnSet {
 	public final fun getValueMapper ()Ljava/lang/String;
 	public final fun getVerboseName ()Ljava/lang/String;
 	public fun hashCode ()I
+	public final fun isInlineEditable ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1064,6 +1065,7 @@ public final class ir/amirroid/ktoradmin/models/field/FieldSet {
 	public final fun getUploadTarget ()Lir/amirroid/ktoradmin/models/UploadTarget;
 	public final fun getVerboseName ()Ljava/lang/String;
 	public fun hashCode ()I
+	public final fun isInlineEditable ()Z
 	public fun toString ()Ljava/lang/String;
 }
 

@@ -301,6 +301,11 @@
                         #foreach($item in $row.data)
                             #set($field = $fields.get($foreach.index))
                             #set($isCheckBox = $field.type.name == "BOOLEAN")
+                            #if($field.columnName)
+                                #set($fieldName = $field.columnName)
+                            #else
+                                #set($fieldName = $field.fieldName)
+                            #end
                             #if($!field.reference and $!item.value)
                                 #set($isReference = true)
                             #else
@@ -310,8 +315,7 @@
                             #if($isCheckBox)
                                 <td data-col="checkbox">
                                     <label class="custom-checkbox">
-                                        <input type="checkbox" class="checkbox-input" #if($item == "true" || $item ==
-                                            "1") checked #end disabled>
+                                        <input type="checkbox" class="checkbox-input inline-boolean-checkbox" #if($item == "true" || $item == "1") checked #end #if(!$field.isInlineEditable) disabled #end data-primary-key="$row.primaryKey" data-field-name="$fieldName">
                                         <span class="checkmark">
                                 <svg width="11" height="8" class="checkmark-icon" viewBox="0 0 11 8" fill="none"
                                      xmlns="http://www.w3.org/2000/svg">
@@ -322,11 +326,6 @@
                                     </label>
                                 </td>
                             #elseif($isFile)
-                                #if($field.columnName)
-                                    #set($fieldName = $field.columnName)
-                                #else
-                                    #set($fieldName = $field.fieldName)
-                                #end
                                 <td>
                                     <button class="file-link"
                                             onclick="generateUrl('$item', '$pluralNameBase', '$fieldName')">
@@ -376,9 +375,15 @@
                                     </div>
                                 </td>
                             #else
-                                <td>
-                                    <div class="item-text">$!item</div>
-                                </td>
+                                #if($field.isInlineEditable)
+                                    <td class="inline-editable-cell" data-field-name="$fieldName" data-field-type="$field.type.name" data-primary-key="$row.primaryKey" data-value="$!item">
+                                        <div class="item-text inline-editable-text">$!item</div>
+                                    </td>
+                                #else
+                                    <td>
+                                        <div class="item-text">$!item</div>
+                                    </td>
+                                #end
                             #end
                         #end
                     </tr>
@@ -526,6 +531,8 @@
 </div>
 <script>
     const adminPath = "$adminPath"
+    const csrfToken = "$csrfToken"
+    const pluralNameBase = "$pluralNameBase"
 </script>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/table_list.js"></script>

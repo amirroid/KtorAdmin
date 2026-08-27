@@ -67,11 +67,167 @@ function handleClicks() {
 
     rows.forEach(row => {
         row.addEventListener("click", function (event) {
-            if (!event.target.closest('.file-link, .checkbox-input, .checkmark')) {
+            if (!event.target.closest('.file-link, .checkbox-input, .checkmark, .inline-editable-cell, .inline-edit-input')) {
                 redirectToEdit(row.dataset.primaryKey);
             }
         });
     });
+}
+
+function handleInlineBooleanEdits() {
+    const checkboxes = document.querySelectorAll('.inline-boolean-checkbox:not([disabled])');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+        cb.addEventListener('change', async function (e) {
+            e.stopPropagation();
+            const primaryKey = cb.dataset.primaryKey;
+            const fieldName = cb.dataset.fieldName;
+            const isChecked = cb.checked;
+            const newValue = isChecked ? "true" : "false";
+
+            const result = await sendPatchRequest(primaryKey, fieldName, newValue);
+            if (!result || result.status !== 'success') {
+                cb.checked = !isChecked;
+            }
+        });
+    });
+}
+
+function handleInlineCellEdits() {
+    const editableCells = document.querySelectorAll('.inline-editable-cell');
+    editableCells.forEach(cell => {
+        cell.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (cell.classList.contains('inline-editing') || cell.classList.contains('inline-saving')) return;
+            startInlineEdit(cell);
+        });
+    });
+}
+
+function startInlineEdit(cell) {
+    const originalValue = cell.dataset.value || '';
+    const fieldName = cell.dataset.fieldName;
+    const fieldType = cell.dataset.fieldType;
+    const primaryKey = cell.dataset.primaryKey;
+
+    cell.classList.add('inline-editing');
+
+    const input = document.createElement('input');
+    input.type = (fieldType === 'INTEGER' || fieldType === 'UINTEGER' || fieldType === 'SHORT' ||
+                  fieldType === 'USHORT' || fieldType === 'LONG' || fieldType === 'ULONG' ||
+                  fieldType === 'DOUBLE' || fieldType === 'FLOAT' || fieldType === 'BIG_DECIMAL' ||
+                  fieldType === 'DECIMAL128') ? 'number' : 'text';
+    input.className = 'inline-edit-input';
+    input.value = originalValue;
+
+    cell.innerHTML = '';
+    cell.appendChild(input);
+    input.focus();
+    input.select();
+
+    let committed = false;
+
+    async function commitEdit() {
+        if (committed) return;
+        committed = true;
+
+        const newValue = input.value;
+        if (newValue === originalValue) {
+            finishEdit(originalValue, originalValue);
+            return;
+        }
+
+        cell.classList.remove('inline-editing');
+        cell.classList.add('inline-saving');
+        cell.innerHTML = `<div class="item-text inline-editable-text">${escapeHtml(newValue)}</div>`;
+
+        const result = await sendPatchRequest(primaryKey, fieldName, newValue);
+        cell.classList.remove('inline-saving');
+        if (result && result.status === 'success') {
+            cell.dataset.value = newValue;
+            cell.classList.add('inline-success');
+            setTimeout(() => cell.classList.remove('inline-success'), 1200);
+            finishEdit(newValue, result.displayValue !== undefined ? result.displayValue : newValue);
+        } else {
+            cell.classList.add('inline-error');
+            setTimeout(() => cell.classList.remove('inline-error'), 1200);
+            finishEdit(originalValue, originalValue);
+        }
+    }
+
+    function cancelEdit() {
+        if (committed) return;
+        committed = true;
+        finishEdit(originalValue, originalValue);
+    }
+
+    function finishEdit(val, displayVal) {
+        cell.classList.remove('inline-editing');
+        cell.dataset.value = val;
+        cell.innerHTML = `<div class="item-text inline-editable-text">${escapeHtml(displayVal)}</div>`;
+    }
+
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            commitEdit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+        }
+    });
+
+    input.addEventListener('blur', function () {
+        commitEdit();
+    });
+
+    input.addEventListener('click', function (e) {
+        e.stopPropagation();
+    });
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+async function sendPatchRequest(primaryKey, fieldName, value) {
+    try {
+        const token = (typeof csrfToken !== 'undefined') ? csrfToken : '';
+        const plural = (typeof pluralNameBase !== 'undefined') ? pluralNameBase : cleanUrl().pathname.split('/').filter(Boolean).pop();
+        const response = await fetch(`/${adminPath}/resources/${plural}/${primaryKey}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': token
+            },
+            body: JSON.stringify({
+                field: fieldName,
+                value: value,
+                _csrf: token
+            })
+        });
+
+        const json = await response.json();
+        if (response.ok && json.status === 'success') {
+            return json;
+        } else {
+            const errorMsg = json.message || 'Failed to update field';
+            showAlert(`ERROR: ${errorMsg}`, 'error');
+            return null;
+        }
+    } catch (err) {
+        console.error(err);
+        showAlert(`ERROR: ${err.message || 'Network error'}`, 'error');
+        return null;
+    }
 }
 
 function handleSearches() {
@@ -91,6 +247,8 @@ function handleSearches() {
 document.addEventListener('DOMContentLoaded', function () {
     handleFilterInputs()
     handleClicks()
+    handleInlineBooleanEdits()
+    handleInlineCellEdits()
     handleSearches()
 });
 

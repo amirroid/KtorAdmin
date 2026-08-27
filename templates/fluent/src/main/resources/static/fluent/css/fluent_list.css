@@ -91,3 +91,53 @@
 .fluent-filter-label { font-size: 12px; font-weight: 600; color: var(--fluent-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fluent-filter-date-group { display: flex; gap: 4px; }
 .fluent-filter-date-group input { flex: 1; min-width: 0; }
+
+/* Fluent Inline Editing */
+.inline-editable-cell {
+    cursor: pointer;
+    position: relative;
+    border-radius: var(--fluent-radius-sm);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inline-editable-cell:hover:not(.inline-editing) {
+    background-color: var(--fluent-surface-hover);
+    outline: 1px dashed var(--fluent-brand);
+}
+
+.fluent-inline-edit-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-family: var(--fluent-font-family);
+    color: var(--fluent-text-primary);
+    background-color: var(--fluent-surface);
+    border: 1px solid var(--fluent-brand);
+    border-radius: var(--fluent-radius-sm);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+}
+
+.inline-editable-cell.inline-saving {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.inline-editable-cell.inline-success {
+    animation: fluent-inline-success-flash 1.2s ease-out;
+}
+
+.inline-editable-cell.inline-error {
+    animation: fluent-inline-error-flash 1.2s ease-out;
+}
+
+@keyframes fluent-inline-success-flash {
+    0% { background-color: rgba(16, 124, 65, 0.3); outline: 2px solid #107C41; }
+    100% { background-color: transparent; outline: 2px solid transparent; }
+}
+
+@keyframes fluent-inline-error-flash {
+    0% { background-color: rgba(209, 52, 56, 0.3); outline: 2px solid #D13438; }
+    100% { background-color: transparent; outline: 2px solid transparent; }
+}

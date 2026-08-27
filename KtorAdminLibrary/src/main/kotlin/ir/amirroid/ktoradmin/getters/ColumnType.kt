@@ -58,9 +58,9 @@ internal fun String.toTypedValueNullable(columnType: ColumnType): Any? =
     }
 
 internal fun String.toBoolean(): Boolean? =
-    when (this) {
-        Constants.TRUE_FORM -> true
-        Constants.FALSE_FORM -> false
+    when (lowercase()) {
+        Constants.TRUE_FORM, "true", "1" -> true
+        Constants.FALSE_FORM, "false", "0" -> false
         else -> null
     }
 
