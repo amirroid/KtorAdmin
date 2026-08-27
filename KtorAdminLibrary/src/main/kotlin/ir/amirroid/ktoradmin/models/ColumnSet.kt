@@ -81,18 +81,21 @@ data class ColumnSet(
     val autoCompleteSearchFields: List<String> = emptyList(),
 ) {
     val isInlineEditable: Boolean
-        get() = !readOnly &&
-            !hasConfirmation &&
-            !hasRichEditor &&
-            !hasTextArea &&
-            reference == null &&
-            uploadTarget == null &&
-            computedColumn == null &&
-            autoNowDate == null &&
-            (type == ColumnType.STRING ||
-                type == ColumnType.CHAR ||
-                type == ColumnType.BOOLEAN ||
-                type.isNumeric)
+        get() =
+            !readOnly &&
+                !hasConfirmation &&
+                !hasRichEditor &&
+                !hasTextArea &&
+                reference == null &&
+                uploadTarget == null &&
+                computedColumn == null &&
+                autoNowDate == null &&
+                (
+                    type == ColumnType.STRING ||
+                        type == ColumnType.CHAR ||
+                        type == ColumnType.BOOLEAN ||
+                        type.isNumeric
+                )
 }
 
 internal fun ColumnSet.getCurrentDateClass() =

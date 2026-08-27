@@ -268,11 +268,12 @@ private fun parseJsonPatchData(json: String): PatchRequestData {
         val key = unescapeJson(match.groupValues[1])
         val strValue = match.groups[2]?.value
         val rawValue = match.groups[3]?.value
-        val value = when {
-            strValue != null -> unescapeJson(strValue)
-            rawValue != null && rawValue != "null" -> rawValue
-            else -> null
-        }
+        val value =
+            when {
+                strValue != null -> unescapeJson(strValue)
+                rawValue != null && rawValue != "null" -> rawValue
+                else -> null
+            }
         map[key] = value
     }
 
@@ -281,9 +282,10 @@ private fun parseJsonPatchData(json: String): PatchRequestData {
     var value = map["value"]
 
     if (field == null) {
-        val candidate = map.entries.firstOrNull {
-            it.key != CSRF_TOKEN_FIELD_NAME && it.key != "csrfToken"
-        }
+        val candidate =
+            map.entries.firstOrNull {
+                it.key != CSRF_TOKEN_FIELD_NAME && it.key != "csrfToken"
+            }
         if (candidate != null) {
             field = candidate.key
             value = candidate.value
@@ -294,14 +296,16 @@ private fun parseJsonPatchData(json: String): PatchRequestData {
 }
 
 private fun unescapeJson(input: String): String =
-    input.replace("\\\"", "\"")
+    input
+        .replace("\\\"", "\"")
         .replace("\\\\", "\\")
         .replace("\\n", "\n")
         .replace("\\r", "\r")
         .replace("\\t", "\t")
 
 private fun escapeJson(str: String): String =
-    str.replace("\\", "\\\\")
+    str
+        .replace("\\", "\\\\")
         .replace("\"", "\\\"")
         .replace("\b", "\\b")
         .replace("\n", "\\n")

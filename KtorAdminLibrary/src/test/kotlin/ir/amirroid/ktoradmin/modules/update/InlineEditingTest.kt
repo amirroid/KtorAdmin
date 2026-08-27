@@ -41,11 +41,12 @@ class InlineEditingTest {
         DynamicConfiguration.adminPath = "admin"
 
         val dbName = "test_db_" + UUID.randomUUID().toString().replace("-", "")
-        val config = HikariConfig().apply {
-            jdbcUrl = "jdbc:h2:mem:$dbName;DB_CLOSE_DELAY=-1"
-            driverClassName = "org.h2.Driver"
-            maximumPoolSize = 5
-        }
+        val config =
+            HikariConfig().apply {
+                jdbcUrl = "jdbc:h2:mem:$dbName;DB_CLOSE_DELAY=-1"
+                driverClassName = "org.h2.Driver"
+                maximumPoolSize = 5
+            }
         dataSource = HikariDataSource(config)
         KtorAdminHikariCP.defaultCustom(dataSource)
 
@@ -60,37 +61,40 @@ class InlineEditingTest {
                         active BOOLEAN NOT NULL,
                         code VARCHAR(255) NOT NULL
                     )
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 stmt.execute(
                     """
                     INSERT INTO products (id, name, price, active, code)
                     VALUES (1, 'Laptop', 999, true, 'SKU-001')
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }
         }
 
-        productsTable = TestJdbcTable(
-            columns = listOf(idCol, nameCol, priceCol, activeCol, readOnlyCol),
-            tableName = "products",
-            pluralName = "Products",
-            defaultActions = listOf(Action.ADD, Action.EDIT, Action.DELETE),
-        )
+        productsTable =
+            TestJdbcTable(
+                columns = listOf(idCol, nameCol, priceCol, activeCol, readOnlyCol),
+                tableName = "products",
+                pluralName = "Products",
+                defaultActions = listOf(Action.ADD, Action.EDIT, Action.DELETE),
+            )
 
-        readOnlyTable = TestJdbcTable(
-            columns = listOf(idCol, readOnlyCol),
-            tableName = "products",
-            pluralName = "ReadOnlyProducts",
-            defaultActions = listOf(Action.ADD, Action.EDIT, Action.DELETE),
-        )
+        readOnlyTable =
+            TestJdbcTable(
+                columns = listOf(idCol, readOnlyCol),
+                tableName = "products",
+                pluralName = "ReadOnlyProducts",
+                defaultActions = listOf(Action.ADD, Action.EDIT, Action.DELETE),
+            )
 
-        noEditActionTable = TestJdbcTable(
-            columns = listOf(idCol, nameCol),
-            tableName = "products",
-            pluralName = "NoEditProducts",
-            defaultActions = listOf(Action.ADD, Action.DELETE),
-        )
+        noEditActionTable =
+            TestJdbcTable(
+                columns = listOf(idCol, nameCol),
+                tableName = "products",
+                pluralName = "NoEditProducts",
+                defaultActions = listOf(Action.ADD, Action.DELETE),
+            )
     }
 
     @AfterTest
@@ -110,187 +114,210 @@ class InlineEditingTest {
     }
 
     @Test
-    fun `should successfully inline update a string column via JSON PATCH`() = testApplication {
-        application { setupTestRouting(listOf(productsTable)) }
+    fun `should successfully inline update a string column via JSON PATCH`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
 
-        val validCsrf = CsrfManager.generateToken()
-        val response = client.patch("/admin/resources/Products/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(CSRF_TOKEN_HEADER_NAME, validCsrf)
-            setBody("{\"field\": \"name\", \"value\": \"Gaming Laptop\"}")
-        }
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("{\"field\": \"name\", \"value\": \"Gaming Laptop\"}")
+                }
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        val body = response.bodyAsText()
-        assertTrue(body.contains("status"))
-        assertTrue(body.contains("success"))
-        assertTrue(body.contains("name"))
-        assertTrue(body.contains("Gaming Laptop"))
+            assertEquals(HttpStatusCode.OK, response.status)
+            val body = response.bodyAsText()
+            assertTrue(body.contains("status"))
+            assertTrue(body.contains("success"))
+            assertTrue(body.contains("name"))
+            assertTrue(body.contains("Gaming Laptop"))
 
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt ->
-                val rs = stmt.executeQuery("SELECT name FROM products WHERE id = 1")
-                assertTrue(rs.next())
-                assertEquals("Gaming Laptop", rs.getString("name"))
-            }
-        }
-    }
-
-    @Test
-    fun `should successfully inline update an integer column via JSON PATCH`() = testApplication {
-        application { setupTestRouting(listOf(productsTable)) }
-
-        val validCsrf = CsrfManager.generateToken()
-        val response = client.patch("/admin/resources/Products/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(CSRF_TOKEN_HEADER_NAME, validCsrf)
-            setBody("{\"field\": \"price\", \"value\": \"1299\"}")
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt ->
-                val rs = stmt.executeQuery("SELECT price FROM products WHERE id = 1")
-                assertTrue(rs.next())
-                assertEquals(1299, rs.getInt("price"))
-            }
-        }
-    }
-
-    @Test
-    fun `should successfully inline update a boolean column via JSON PATCH`() = testApplication {
-        application { setupTestRouting(listOf(productsTable)) }
-
-        val validCsrf = CsrfManager.generateToken()
-        val response = client.patch("/admin/resources/Products/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(CSRF_TOKEN_HEADER_NAME, validCsrf)
-            setBody("{\"field\": \"active\", \"value\": \"false\"}")
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt ->
-                val rs = stmt.executeQuery("SELECT active FROM products WHERE id = 1")
-                assertTrue(rs.next())
-                assertFalse(rs.getBoolean("active"))
-            }
-        }
-    }
-
-    @Test
-    fun `should successfully inline update via form-urlencoded PATCH`() = testApplication {
-        application { setupTestRouting(listOf(productsTable)) }
-
-        val validCsrf = CsrfManager.generateToken()
-        val response = client.patch("/admin/resources/Products/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
-            header(CSRF_TOKEN_HEADER_NAME, validCsrf)
-            setBody("field=name&value=Ultrabook")
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt ->
-                val rs = stmt.executeQuery("SELECT name FROM products WHERE id = 1")
-                assertTrue(rs.next())
-                assertEquals("Ultrabook", rs.getString("name"))
-            }
-        }
-    }
-
-    @Test
-    fun `should reject PATCH with invalid CSRF token`() = testApplication {
-        application { setupTestRouting(listOf(productsTable)) }
-
-        val response = client.patch("/admin/resources/Products/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(CSRF_TOKEN_HEADER_NAME, "invalid-csrf-token")
-            setBody("{\"field\": \"name\", \"value\": \"Hacked Laptop\"}")
-        }
-
-        assertEquals(HttpStatusCode.Forbidden, response.status)
-        val body = response.bodyAsText()
-        assertTrue(body.contains("Invalid CSRF token"))
-    }
-
-    @Test
-    fun `should reject PATCH on read-only column`() = testApplication {
-        application { setupTestRouting(listOf(productsTable)) }
-
-        val validCsrf = CsrfManager.generateToken()
-        val response = client.patch("/admin/resources/Products/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(CSRF_TOKEN_HEADER_NAME, validCsrf)
-            setBody("{\"field\": \"code\", \"value\": \"NEW-SKU\"}")
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        val body = response.bodyAsText()
-        assertTrue(body.contains("cannot be edited inline"))
-    }
-
-    @Test
-    fun `should reject PATCH when edit action is disabled`() = testApplication {
-        application { setupTestRouting(listOf(noEditActionTable)) }
-
-        val validCsrf = CsrfManager.generateToken()
-        val response = client.patch("/admin/resources/NoEditProducts/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(CSRF_TOKEN_HEADER_NAME, validCsrf)
-            setBody("{\"field\": \"name\", \"value\": \"Should Fail\"}")
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        val body = response.bodyAsText()
-        assertTrue(body.contains("Edit action is disabled"))
-    }
-
-    @Test
-    fun `should reject PATCH with invalid data type value`() = testApplication {
-        application { setupTestRouting(listOf(productsTable)) }
-
-        val validCsrf = CsrfManager.generateToken()
-        val response = client.patch("/admin/resources/Products/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(CSRF_TOKEN_HEADER_NAME, validCsrf)
-            setBody("{\"field\": \"price\", \"value\": \"not-a-number\"}")
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-    }
-
-    @Test
-    fun `should notify event listener on inline update`() = testApplication {
-        application { setupTestRouting(listOf(productsTable)) }
-
-        var receivedEvent: ColumnEvent? = null
-        var updatedTable: String? = null
-        var updatedPk: String? = null
-
-        DynamicConfiguration.currentEventListener = object : AdminEventListener() {
-            override suspend fun onUpdateJdbcData(tableName: String, objectPrimaryKey: String, events: List<ColumnEvent>) {
-                updatedTable = tableName
-                updatedPk = objectPrimaryKey
-                receivedEvent = events.firstOrNull()
+            dataSource.connection.use { conn ->
+                conn.createStatement().use { stmt ->
+                    val rs = stmt.executeQuery("SELECT name FROM products WHERE id = 1")
+                    assertTrue(rs.next())
+                    assertEquals("Gaming Laptop", rs.getString("name"))
+                }
             }
         }
 
-        val validCsrf = CsrfManager.generateToken()
-        val response = client.patch("/admin/resources/Products/1") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(CSRF_TOKEN_HEADER_NAME, validCsrf)
-            setBody("{\"field\": \"name\", \"value\": \"EventListenerTest\"}")
+    @Test
+    fun `should successfully inline update an integer column via JSON PATCH`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
+
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("{\"field\": \"price\", \"value\": \"1299\"}")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            dataSource.connection.use { conn ->
+                conn.createStatement().use { stmt ->
+                    val rs = stmt.executeQuery("SELECT price FROM products WHERE id = 1")
+                    assertTrue(rs.next())
+                    assertEquals(1299, rs.getInt("price"))
+                }
+            }
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("products", updatedTable)
-        assertEquals("1", updatedPk)
-        assertNotNull(receivedEvent)
-        assertEquals("name", receivedEvent?.columnSet?.columnName)
-        assertEquals("EventListenerTest", receivedEvent?.value)
-    }
+    @Test
+    fun `should successfully inline update a boolean column via JSON PATCH`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
+
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("{\"field\": \"active\", \"value\": \"false\"}")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            dataSource.connection.use { conn ->
+                conn.createStatement().use { stmt ->
+                    val rs = stmt.executeQuery("SELECT active FROM products WHERE id = 1")
+                    assertTrue(rs.next())
+                    assertFalse(rs.getBoolean("active"))
+                }
+            }
+        }
+
+    @Test
+    fun `should successfully inline update via form-urlencoded PATCH`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
+
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("field=name&value=Ultrabook")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            dataSource.connection.use { conn ->
+                conn.createStatement().use { stmt ->
+                    val rs = stmt.executeQuery("SELECT name FROM products WHERE id = 1")
+                    assertTrue(rs.next())
+                    assertEquals("Ultrabook", rs.getString("name"))
+                }
+            }
+        }
+
+    @Test
+    fun `should reject PATCH with invalid CSRF token`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
+
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, "invalid-csrf-token")
+                    setBody("{\"field\": \"name\", \"value\": \"Hacked Laptop\"}")
+                }
+
+            assertEquals(HttpStatusCode.Forbidden, response.status)
+            val body = response.bodyAsText()
+            assertTrue(body.contains("Invalid CSRF token"))
+        }
+
+    @Test
+    fun `should reject PATCH on read-only column`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
+
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("{\"field\": \"code\", \"value\": \"NEW-SKU\"}")
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            val body = response.bodyAsText()
+            assertTrue(body.contains("cannot be edited inline"))
+        }
+
+    @Test
+    fun `should reject PATCH when edit action is disabled`() =
+        testApplication {
+            application { setupTestRouting(listOf(noEditActionTable)) }
+
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/NoEditProducts/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("{\"field\": \"name\", \"value\": \"Should Fail\"}")
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            val body = response.bodyAsText()
+            assertTrue(body.contains("Edit action is disabled"))
+        }
+
+    @Test
+    fun `should reject PATCH with invalid data type value`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
+
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("{\"field\": \"price\", \"value\": \"not-a-number\"}")
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+    @Test
+    fun `should notify event listener on inline update`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
+
+            var receivedEvent: ColumnEvent? = null
+            var updatedTable: String? = null
+            var updatedPk: String? = null
+
+            DynamicConfiguration.currentEventListener =
+                object : AdminEventListener() {
+                    override suspend fun onUpdateJdbcData(
+                        tableName: String,
+                        objectPrimaryKey: String,
+                        events: List<ColumnEvent>,
+                    ) {
+                        updatedTable = tableName
+                        updatedPk = objectPrimaryKey
+                        receivedEvent = events.firstOrNull()
+                    }
+                }
+
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("{\"field\": \"name\", \"value\": \"EventListenerTest\"}")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("products", updatedTable)
+            assertEquals("1", updatedPk)
+            assertNotNull(receivedEvent)
+            assertEquals("name", receivedEvent?.columnSet?.columnName)
+            assertEquals("EventListenerTest", receivedEvent?.value)
+        }
 }

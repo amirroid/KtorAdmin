@@ -519,11 +519,12 @@ internal object MongoClientRepository {
         field: FieldSet,
         value: String?,
     ): String? {
-        val typedValue = if (value == null || (value.isEmpty() && field.nullable)) {
-            null
-        } else {
-            value.formatParameter(field)
-        }
+        val typedValue =
+            if (value == null || (value.isEmpty() && field.nullable)) {
+                null
+            } else {
+                value.formatParameter(field)
+            }
         val updatedFieldBson =
             set(
                 field.fieldName.toString(),
