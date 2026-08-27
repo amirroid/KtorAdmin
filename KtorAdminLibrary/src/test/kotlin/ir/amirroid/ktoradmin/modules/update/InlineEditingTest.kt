@@ -31,10 +31,11 @@ class InlineEditingTest {
     private lateinit var noEditActionTable: TestJdbcTable
 
     private val idCol = column("id", ColumnType.INTEGER, showInPanel = true)
-    private val nameCol = column("name", ColumnType.STRING, showInPanel = true)
-    private val priceCol = column("price", ColumnType.INTEGER, showInPanel = true)
-    private val activeCol = column("active", ColumnType.BOOLEAN, showInPanel = true)
-    private val readOnlyCol = column("code", ColumnType.STRING, showInPanel = true) { copy(readOnly = true) }
+    private val nameCol = column("name", ColumnType.STRING, showInPanel = true) { copy(hasInlineEdit = true) }
+    private val priceCol = column("price", ColumnType.INTEGER, showInPanel = true) { copy(hasInlineEdit = true) }
+    private val activeCol = column("active", ColumnType.BOOLEAN, showInPanel = true) { copy(hasInlineEdit = true) }
+    private val nonAnnotatedCol = column("description", ColumnType.STRING, showInPanel = true) // hasInlineEdit = false
+    private val readOnlyCol = column("code", ColumnType.STRING, showInPanel = true) { copy(readOnly = true, hasInlineEdit = true) }
 
     @BeforeTest
     fun setup() {
@@ -74,7 +75,7 @@ class InlineEditingTest {
 
         productsTable =
             TestJdbcTable(
-                columns = listOf(idCol, nameCol, priceCol, activeCol, readOnlyCol),
+                columns = listOf(idCol, nameCol, priceCol, activeCol, nonAnnotatedCol, readOnlyCol),
                 tableName = "products",
                 pluralName = "Products",
                 defaultActions = listOf(Action.ADD, Action.EDIT, Action.DELETE),
@@ -229,6 +230,24 @@ class InlineEditingTest {
             assertEquals(HttpStatusCode.Forbidden, response.status)
             val body = response.bodyAsText()
             assertTrue(body.contains("Invalid CSRF token"))
+        }
+
+    @Test
+    fun `should reject PATCH on non-annotated column without InlineEditable`() =
+        testApplication {
+            application { setupTestRouting(listOf(productsTable)) }
+
+            val validCsrf = CsrfManager.generateToken()
+            val response =
+                client.patch("/admin/resources/Products/1") {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    header(CSRF_TOKEN_HEADER_NAME, validCsrf)
+                    setBody("{\"field\": \"description\", \"value\": \"Updated description\"}")
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+            val body = response.bodyAsText()
+            assertTrue(body.contains("cannot be edited inline"))
         }
 
     @Test

@@ -11,6 +11,7 @@ import ir.amirroid.ktoradmin.annotations.enumeration.Enumeration
 import ir.amirroid.ktoradmin.annotations.field.FieldInfo
 import ir.amirroid.ktoradmin.annotations.info.ColumnInfo
 import ir.amirroid.ktoradmin.annotations.info.IgnoreColumn
+import ir.amirroid.ktoradmin.annotations.inline_editable.InlineEditable
 import ir.amirroid.ktoradmin.annotations.limit.Limits
 import ir.amirroid.ktoradmin.annotations.preview.Preview
 import ir.amirroid.ktoradmin.annotations.references.ManyToManyReferences
@@ -198,6 +199,7 @@ object PropertiesRepository {
             hasTextArea = hasTextAreaField,
             hasAutoComplete = hasAutoComplete,
             autoCompleteSearchFields = autoCompleteSearchFields,
+            hasInlineEdit = hasInlineEditableAnnotation(property.annotations),
         )
     }
 
@@ -558,8 +560,15 @@ object PropertiesRepository {
             hasRichEditor = hasRichEditor,
             hasTextArea = hasTextAreaField,
             hasConfirmation = hasConfirmationAnnotation(property.annotations),
+            hasInlineEdit = hasInlineEditableAnnotation(property.annotations),
         )
     }
+
+    /**
+     * Checks if a property has the InlineEditable annotation.
+     */
+    private fun hasInlineEditableAnnotation(annotations: Sequence<KSAnnotation>): Boolean =
+        annotations.any { it.qualifiedName == InlineEditable::class.qualifiedName }
 
     /**
      * Checks if a property has the Enumeration annotation.

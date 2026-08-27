@@ -8,6 +8,7 @@ import ir.amirroid.ktoradmin.annotations.enumeration.Enumeration
 import ir.amirroid.ktoradmin.annotations.exposed.ExposedTable
 import ir.amirroid.ktoradmin.annotations.info.ColumnInfo
 import ir.amirroid.ktoradmin.annotations.info.IgnoreColumn
+import ir.amirroid.ktoradmin.annotations.inline_editable.InlineEditable
 import ir.amirroid.ktoradmin.annotations.limit.Limits
 import ir.amirroid.ktoradmin.annotations.order.DefaultOrder
 import ir.amirroid.ktoradmin.annotations.preview.Preview
@@ -54,6 +55,7 @@ object Tasks : Table("tasks") {
     @IgnoreColumn
     val id = integer("id").autoIncrement()
 
+    @InlineEditable
     @ValueMapper("test")
     val name = varchar("name", length = 150)
 
@@ -87,6 +89,7 @@ object Tasks : Table("tasks") {
     @ManyToManyReferences("users", "tasks_users", "task_id", "user_id")
     val users = EmptyColumn()
 
+    @InlineEditable
     @ColumnInfo(
         unique = true
     )
@@ -120,6 +123,7 @@ object Tasks : Table("tasks") {
 
     val data = binary("data").nullable()
 
+    @InlineEditable
     val checked = bool("checked").default(true)
 
     override val primaryKey = PrimaryKey(id)

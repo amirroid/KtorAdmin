@@ -139,9 +139,6 @@ public abstract interface annotation class ir/amirroid/ktoradmin/annotations/inf
 	public abstract fun columnNames ()[Ljava/lang/String;
 }
 
-public abstract interface annotation class ir/amirroid/ktoradmin/annotations/inline_editable/InlineEditable : java/lang/annotation/Annotation {
-}
-
 public abstract interface annotation class ir/amirroid/ktoradmin/annotations/limit/Limits : java/lang/annotation/Annotation {
 	public abstract fun allowedMimeTypes ()[Ljava/lang/String;
 	public abstract fun maxBytes ()J
@@ -695,8 +692,8 @@ public abstract interface class ir/amirroid/ktoradmin/mapper/KtorAdminValueMappe
 }
 
 public final class ir/amirroid/ktoradmin/models/ColumnSet {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/ColumnType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;Lir/amirroid/ktoradmin/models/common/Reference;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/util/List;ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/util/List;Z)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/ColumnType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;Lir/amirroid/ktoradmin/models/common/Reference;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/util/List;ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/util/List;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/ColumnType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;Lir/amirroid/ktoradmin/models/common/Reference;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/util/List;ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/ColumnType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;Lir/amirroid/ktoradmin/models/common/Reference;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/util/List;ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Lir/amirroid/ktoradmin/models/Limit;
 	public final fun component11 ()Lir/amirroid/ktoradmin/models/common/Reference;
@@ -715,7 +712,6 @@ public final class ir/amirroid/ktoradmin/models/ColumnSet {
 	public final fun component23 ()Ljava/lang/String;
 	public final fun component24 ()Z
 	public final fun component25 ()Ljava/util/List;
-	public final fun component26 ()Z
 	public final fun component3 ()Lir/amirroid/ktoradmin/models/types/ColumnType;
 	public final fun component4 ()Z
 	public final fun component5 ()Z
@@ -723,8 +719,8 @@ public final class ir/amirroid/ktoradmin/models/ColumnSet {
 	public final fun component7 ()Ljava/util/List;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/ColumnType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;Lir/amirroid/ktoradmin/models/common/Reference;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/util/List;ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/util/List;Z)Lir/amirroid/ktoradmin/models/ColumnSet;
-	public static synthetic fun copy$default (Lir/amirroid/ktoradmin/models/ColumnSet;Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/ColumnType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;Lir/amirroid/ktoradmin/models/common/Reference;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/util/List;ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/util/List;ZILjava/lang/Object;)Lir/amirroid/ktoradmin/models/ColumnSet;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/ColumnType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;Lir/amirroid/ktoradmin/models/common/Reference;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/util/List;ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/util/List;)Lir/amirroid/ktoradmin/models/ColumnSet;
+	public static synthetic fun copy$default (Lir/amirroid/ktoradmin/models/ColumnSet;Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/ColumnType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;Lir/amirroid/ktoradmin/models/common/Reference;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/util/List;ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/util/List;ILjava/lang/Object;)Lir/amirroid/ktoradmin/models/ColumnSet;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllowedMimeTypes ()Ljava/util/List;
 	public final fun getAutoCompleteSearchFields ()Ljava/util/List;
@@ -737,7 +733,6 @@ public final class ir/amirroid/ktoradmin/models/ColumnSet {
 	public final fun getEnumerationValues ()Ljava/util/List;
 	public final fun getHasAutoComplete ()Z
 	public final fun getHasConfirmation ()Z
-	public final fun getHasInlineEdit ()Z
 	public final fun getHasRichEditor ()Z
 	public final fun getHasTextArea ()Z
 	public final fun getLimits ()Lir/amirroid/ktoradmin/models/Limit;
@@ -753,7 +748,6 @@ public final class ir/amirroid/ktoradmin/models/ColumnSet {
 	public final fun getValueMapper ()Ljava/lang/String;
 	public final fun getVerboseName ()Ljava/lang/String;
 	public fun hashCode ()I
-	public final fun isInlineEditable ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1030,8 +1024,8 @@ public final class ir/amirroid/ktoradmin/models/events/FileEvent {
 }
 
 public final class ir/amirroid/ktoradmin/models/field/FieldSet {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/FieldType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/lang/String;ZZ)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/FieldType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/lang/String;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/FieldType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/FieldType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Lir/amirroid/ktoradmin/models/Limit;
 	public final fun component11 ()Z
@@ -1041,7 +1035,6 @@ public final class ir/amirroid/ktoradmin/models/field/FieldSet {
 	public final fun component15 ()Z
 	public final fun component16 ()Ljava/lang/String;
 	public final fun component17 ()Z
-	public final fun component18 ()Z
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Lir/amirroid/ktoradmin/models/types/FieldType;
 	public final fun component4 ()Z
@@ -1050,8 +1043,8 @@ public final class ir/amirroid/ktoradmin/models/field/FieldSet {
 	public final fun component7 ()Ljava/util/List;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/FieldType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/lang/String;ZZ)Lir/amirroid/ktoradmin/models/field/FieldSet;
-	public static synthetic fun copy$default (Lir/amirroid/ktoradmin/models/field/FieldSet;Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/FieldType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/lang/String;ZZILjava/lang/Object;)Lir/amirroid/ktoradmin/models/field/FieldSet;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/FieldType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/lang/String;Z)Lir/amirroid/ktoradmin/models/field/FieldSet;
+	public static synthetic fun copy$default (Lir/amirroid/ktoradmin/models/field/FieldSet;Ljava/lang/String;Ljava/lang/String;Lir/amirroid/ktoradmin/models/types/FieldType;ZZLir/amirroid/ktoradmin/models/UploadTarget;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lir/amirroid/ktoradmin/models/Limit;ZLjava/lang/String;Lir/amirroid/ktoradmin/models/date/AutoNowDate;ZZLjava/lang/String;ZILjava/lang/Object;)Lir/amirroid/ktoradmin/models/field/FieldSet;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllowedMimeTypes ()Ljava/util/List;
 	public final fun getAutoNowDate ()Lir/amirroid/ktoradmin/models/date/AutoNowDate;
@@ -1060,7 +1053,6 @@ public final class ir/amirroid/ktoradmin/models/field/FieldSet {
 	public final fun getEnumerationValues ()Ljava/util/List;
 	public final fun getFieldName ()Ljava/lang/String;
 	public final fun getHasConfirmation ()Z
-	public final fun getHasInlineEdit ()Z
 	public final fun getHasRichEditor ()Z
 	public final fun getHasTextArea ()Z
 	public final fun getLimits ()Lir/amirroid/ktoradmin/models/Limit;
@@ -1072,7 +1064,6 @@ public final class ir/amirroid/ktoradmin/models/field/FieldSet {
 	public final fun getUploadTarget ()Lir/amirroid/ktoradmin/models/UploadTarget;
 	public final fun getVerboseName ()Ljava/lang/String;
 	public fun hashCode ()I
-	public final fun isInlineEditable ()Z
 	public fun toString ()Ljava/lang/String;
 }
 

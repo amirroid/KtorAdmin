@@ -79,10 +79,12 @@ data class ColumnSet(
     val defaultValueProviderKey: String? = null,
     val hasAutoComplete: Boolean = false,
     val autoCompleteSearchFields: List<String> = emptyList(),
+    val hasInlineEdit: Boolean = false,
 ) {
     val isInlineEditable: Boolean
         get() =
-            !readOnly &&
+            hasInlineEdit &&
+                !readOnly &&
                 !hasConfirmation &&
                 !hasRichEditor &&
                 !hasTextArea &&

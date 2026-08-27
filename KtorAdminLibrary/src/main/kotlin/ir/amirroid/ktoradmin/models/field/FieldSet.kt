@@ -54,10 +54,12 @@ data class FieldSet(
     val hasTextArea: Boolean = false,
     val preview: String? = null,
     val hasConfirmation: Boolean = false,
+    val hasInlineEdit: Boolean = false,
 ) {
     val isInlineEditable: Boolean
         get() =
-            !readOnly &&
+            hasInlineEdit &&
+                !readOnly &&
                 !hasConfirmation &&
                 !hasRichEditor &&
                 !hasTextArea &&
