@@ -455,7 +455,7 @@ internal object Validators {
         value: String,
         translator: KtorAdminTranslator,
     ): String? {
-        if (value !in Constants.booleanForms) return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_BOOLEAN)
+        if (value.lowercase() !in Constants.booleanForms) return translator.translate(KtorAdminTranslator.Keys.ERROR_INVALID_BOOLEAN)
         return null
     }
 

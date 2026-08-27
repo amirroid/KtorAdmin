@@ -916,3 +916,53 @@ th:last-child::before {
 .close-dialog:hover {
     background: var(--highlight-color);
 }
+
+/* Inline Editing */
+.inline-editable-cell {
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    border-radius: 4px;
+}
+
+.inline-editable-cell:hover:not(.inline-editing) {
+    background-color: var(--secondary-color-20);
+    outline: 1px dashed var(--secondary-color);
+}
+
+.inline-edit-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--primary-color);
+    background-color: var(--white);
+    border: 1.5px solid var(--secondary-color);
+    border-radius: 6px;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--secondary-color-20);
+}
+
+.inline-editable-cell.inline-saving {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.inline-editable-cell.inline-success {
+    animation: inline-success-flash 1.2s ease-out;
+}
+
+.inline-editable-cell.inline-error {
+    animation: inline-error-flash 1.2s ease-out;
+}
+
+@keyframes inline-success-flash {
+    0% { background-color: rgba(52, 199, 89, 0.4); outline: 2px solid #34c759; }
+    100% { background-color: transparent; outline: 2px solid transparent; }
+}
+
+@keyframes inline-error-flash {
+    0% { background-color: rgba(255, 69, 58, 0.4); outline: 2px solid #ff453a; }
+    100% { background-color: transparent; outline: 2px solid transparent; }
+}

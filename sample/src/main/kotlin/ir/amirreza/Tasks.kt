@@ -41,7 +41,7 @@ enum class Priority {
     "DESC"
 )
 @PanelDisplayList(
-    "name", "priority", "file", "checked", "user_id"
+    "name", "number", "checked", "priority", "file", "user_id"
 )
 @ExposedTable(
     tableName = "tasks",

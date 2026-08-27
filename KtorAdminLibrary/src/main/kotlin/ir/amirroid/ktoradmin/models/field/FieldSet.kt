@@ -54,7 +54,23 @@ data class FieldSet(
     val hasTextArea: Boolean = false,
     val preview: String? = null,
     val hasConfirmation: Boolean = false,
-)
+) {
+    val isInlineEditable: Boolean
+        get() = !readOnly &&
+            !hasConfirmation &&
+            !hasRichEditor &&
+            !hasTextArea &&
+            uploadTarget == null &&
+            computedField == null &&
+            autoNowDate == null &&
+            (type is FieldType.String ||
+                type is FieldType.Integer ||
+                type is FieldType.Long ||
+                type is FieldType.Double ||
+                type is FieldType.Float ||
+                type is FieldType.Decimal128 ||
+                type is FieldType.Boolean)
+}
 
 internal fun FieldSet.getCurrentDate() =
     when (type) {

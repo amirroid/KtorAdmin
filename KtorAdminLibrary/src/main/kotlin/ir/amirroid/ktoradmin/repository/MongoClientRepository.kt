@@ -513,6 +513,31 @@ internal object MongoClientRepository {
         return id
     }
 
+    suspend fun updateAField(
+        panel: AdminMongoCollection,
+        primaryKey: String,
+        field: FieldSet,
+        value: String?,
+    ): String? {
+        val typedValue = if (value == null || (value.isEmpty() && field.nullable)) {
+            null
+        } else {
+            value.formatParameter(field)
+        }
+        val updatedFieldBson =
+            set(
+                field.fieldName.toString(),
+                typedValue,
+            )
+        val id =
+            panel
+                .getCollection()
+                .updateOne(panel.getPrimaryKeyFilter(primaryKey), updatedFieldBson)
+                .upsertedId
+                ?.toStringId()
+        return id
+    }
+
     /**
      * Creates filters for querying by multiple primary keys, handling ObjectId conversion if needed.
      *

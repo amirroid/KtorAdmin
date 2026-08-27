@@ -162,10 +162,10 @@
                                 <td data-col="checkbox"><div class="fluent-table-checkbox"><input type="checkbox" class="select-field-checkbox" data-primary-key="$row.primaryKey"></div></td>
                                 #foreach($item in $row.data)
                                     #set($field = $fields.get($foreach.index))
+                                    #if($field.columnName) #set($fieldName = $field.columnName) #else #set($fieldName = $field.fieldName) #end
                                     #if($field.type.name == "BOOLEAN")
-                                        <td data-col="checkbox"><div class="fluent-table-checkbox"><input type="checkbox" #if($item == "true" || $item == "1") checked #end disabled></div></td>
+                                        <td data-col="checkbox"><div class="fluent-table-checkbox"><input type="checkbox" class="inline-boolean-checkbox" #if($item == "true" || $item == "1") checked #end #if(!$field.isInlineEditable) disabled #end data-primary-key="$row.primaryKey" data-field-name="$fieldName"></div></td>
                                     #elseif($field.type.name == "FILE" and $item and $item != "N/A")
-                                        #if($field.columnName) #set($fieldName = $field.columnName) #else #set($fieldName = $field.fieldName) #end
                                         <td><a href="javascript:void(0)" class="fluent-link" onclick="generateUrl('$item', '$pluralNameBase', '$fieldName')">$translations['link']</a></td>
                                     #elseif($!field.reference and $!item.value)
                                         <td><a href="javascript:void(0)" class="fluent-link ref-link" onclick="redirectToEditWithPluralName('$item.pluralName', '$item.value')">$item.value</a></td>
@@ -173,7 +173,11 @@
                                         #foreach($enumItem in $field.enumerationValues) #if($enumItem == $!item) #set($color = $field.statusColors.get($foreach.index)) #end #end
                                         <td><span class="fluent-status-badge" style="border-color:$color;color:$color;"><span class="fluent-status-dot" style="background-color:$color;"></span>$!item</span></td>
                                     #else
-                                        <td><span class="item-text">$!item</span></td>
+                                        #if($field.isInlineEditable)
+                                            <td class="inline-editable-cell" data-field-name="$fieldName" data-field-type="$field.type.name" data-primary-key="$row.primaryKey" data-value="$!item"><span class="item-text inline-editable-text">$!item</span></td>
+                                        #else
+                                            <td><span class="item-text">$!item</span></td>
+                                        #end
                                     #end
                                 #end
                             </tr>
@@ -204,7 +208,11 @@
         </div>
     </div>
 </div>
-<script>const adminPath = "$adminPath";</script>
+<script>
+    const adminPath = "$adminPath";
+    const csrfToken = "$csrfToken";
+    const pluralNameBase = "$pluralNameBase";
+</script>
 <script src="/static/fluent/js/fluent_common.js"></script>
 <script src="/static/fluent/js/fluent_table_list.js"></script>
 </body>

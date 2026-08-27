@@ -4,6 +4,7 @@ import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.models.common.Reference
 import ir.amirroid.ktoradmin.models.date.AutoNowDate
 import ir.amirroid.ktoradmin.models.types.ColumnType
+import ir.amirroid.ktoradmin.models.types.isNumeric
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -78,7 +79,21 @@ data class ColumnSet(
     val defaultValueProviderKey: String? = null,
     val hasAutoComplete: Boolean = false,
     val autoCompleteSearchFields: List<String> = emptyList(),
-)
+) {
+    val isInlineEditable: Boolean
+        get() = !readOnly &&
+            !hasConfirmation &&
+            !hasRichEditor &&
+            !hasTextArea &&
+            reference == null &&
+            uploadTarget == null &&
+            computedColumn == null &&
+            autoNowDate == null &&
+            (type == ColumnType.STRING ||
+                type == ColumnType.CHAR ||
+                type == ColumnType.BOOLEAN ||
+                type.isNumeric)
+}
 
 internal fun ColumnSet.getCurrentDateClass() =
     when (type) {

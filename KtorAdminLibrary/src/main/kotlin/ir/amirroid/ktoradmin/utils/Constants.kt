@@ -7,7 +7,7 @@ object Constants {
     // VALUES
     const val TRUE_FORM = "on"
     const val FALSE_FORM = "off"
-    val booleanForms = listOf(TRUE_FORM, FALSE_FORM)
+    val booleanForms = listOf(TRUE_FORM, FALSE_FORM, "true", "false", "1", "0")
 
     // Formats
     const val LOCAL_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm"

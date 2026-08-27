@@ -5,6 +5,7 @@ import ir.amirroid.ktoradmin.configuration.DynamicConfiguration
 import ir.amirroid.ktoradmin.modules.actions.handleActions
 import ir.amirroid.ktoradmin.modules.add.handleAddRequest
 import ir.amirroid.ktoradmin.modules.confirmation.handleSaveConfirmation
+import ir.amirroid.ktoradmin.modules.update.handlePatchRequest
 import ir.amirroid.ktoradmin.modules.update.handleUpdateRequest
 import ir.amirroid.ktoradmin.panels.AdminPanel
 import ir.amirroid.ktoradmin.utils.Constants
@@ -21,6 +22,9 @@ internal fun Routing.configureSavesRouting(
             }
             post("${Constants.RESOURCES_PATH}/{pluralName}/{primaryKey}") {
                 handleUpdateRequest(panels)
+            }
+            patch("${Constants.RESOURCES_PATH}/{pluralName}/{primaryKey}") {
+                handlePatchRequest(panels)
             }
             post("${Constants.RESOURCES_PATH}/{pluralName}/{primaryKey}/{field}") {
                 handleSaveConfirmation(panels)
