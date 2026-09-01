@@ -1,5 +1,5 @@
 [versions]
-awsS3 = "2.54.7"
+awsS3 = "2.54.9"
 exposed = "1.5.0"
 h2 = "2.4.240"
 hibernate = "7.4.7.Final"
