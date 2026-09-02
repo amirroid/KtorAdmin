@@ -14,12 +14,12 @@ import java.util.Date
 internal fun Any?.formatToDisplayInTable(columnType: ColumnType): String =
     when {
         this is Timestamp && (columnType == ColumnType.DATETIME || columnType == ColumnType.TIMESTAMP_WITH_TIMEZONE) -> {
-            val formatter = DateTimeFormatter.ofPattern("dd EEE yyyy - HH:mm:ss")
+            val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy - HH:mm:ss")
             toLocalDateTime().format(formatter)
         }
 
         this is Timestamp && columnType == ColumnType.DATE -> {
-            val formatter = DateTimeFormatter.ofPattern("dd EEE yyyy")
+            val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
             toLocalDateTime().format(formatter)
         }
 
@@ -32,10 +32,10 @@ internal fun Any?.formatToDisplayInCollection(fieldType: FieldType): String =
     when {
         this is Date -> {
             if (fieldType == FieldType.Date) {
-                val formatter = SimpleDateFormat("dd EEE yyyy")
+                val formatter = SimpleDateFormat("dd MMM yyyy")
                 formatter.format(this) ?: "N/A"
             } else {
-                val formatter = SimpleDateFormat("dd EEE yyyy - HH:mm:ss")
+                val formatter = SimpleDateFormat("dd MMM yyyy - HH:mm:ss")
                 formatter.format(this) ?: "N/A"
             }
         }
