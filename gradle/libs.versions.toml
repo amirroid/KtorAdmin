@@ -2,7 +2,7 @@
 awsS3 = "2.55.6"
 exposed = "1.5.0"
 h2 = "2.5.252"
-hibernate = "7.4.10.Final"
+hibernate = "7.4.11.Final"
 hibernateValidator = "9.1.4.Final"
 hikari = "7.1.0"
 itext = "9.7.1"
